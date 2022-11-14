@@ -7,8 +7,16 @@ assignees: ''
 
 ---
 
-<!-- matchme-description --> # Description
+Estimated story points:<!-- story-points -->
 
-<!-- matchme-acceptance-criteria --> # Acceptance criteria
+# Description
+<!-- description-start --> 
 
-<!-- matchme-estimated-story-points --> # Estimated story points
+
+<!-- description-end --> 
+
+# Acceptance criteria
+<!-- acceptance-criteria-start -->
+
+
+<!-- acceptance-criteria-end -->
