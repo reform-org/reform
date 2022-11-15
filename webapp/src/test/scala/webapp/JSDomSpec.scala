@@ -22,6 +22,11 @@ import org.scalatest.matchers.should.Matchers
 
 abstract class JSDomSpec extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
 
+  @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
+    val _ = evaluateForSideEffectOnly
+    () // Return unit to prevent warning due to discarding value
+  }
+
   override def beforeEach(): Unit = {
 
     document.body.innerHTML = ""
@@ -29,7 +34,7 @@ abstract class JSDomSpec extends AnyFlatSpec with Matchers with BeforeAndAfterEa
     // prepare body with <div id="app"></div>
     val root = document.createElement("div")
     root.id = "app"
-    document.body.appendChild(root)
+    discard { document.body.appendChild(root) }
     ()
   }
 }
