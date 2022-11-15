@@ -7,6 +7,8 @@ cd "$SCRIPTPATH"
 
 sbt --client scalafmtAll
 sbt --client test
+# ensure every text file ends with a newline
+for f in $(git grep --cached -Il ''); do tail -c1 $f | read -r _ || echo >> $f; done
 
 FILES=$(git diff --name-only --cached)
 echo "$FILES" | xargs git add
