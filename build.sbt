@@ -3,6 +3,7 @@ Global / onChangedBuildSource := IgnoreSourceChanges // not working well with we
 name                     := "Reform"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 val versions = new {
   val outwatch  = "1.0.0-RC11"
