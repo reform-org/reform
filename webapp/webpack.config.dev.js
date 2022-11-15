@@ -1,6 +1,6 @@
-const {webDev} = require("@fun-stack/fun-pack");
+import { webDev } from "@fun-stack/fun-pack";
 
-module.exports = webDev({
+export default webDev({
   indexHtml: "src/main/html/index.html",
   // assetsDir: "assets",
   extraStaticDirs: [

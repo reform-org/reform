@@ -1,7 +1,7 @@
-const {webProd} = require("@fun-stack/fun-pack");
+import { webProd } from "@fun-stack/fun-pack";
 
 // https://github.com/fun-stack/fun-pack
-module.exports = webProd({
+export default webProd({
   indexHtml: "src/main/html/index.html",
   // assetsDir: "assets"
 });

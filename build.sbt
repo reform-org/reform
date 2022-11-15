@@ -6,13 +6,13 @@ ThisBuild / scalaVersion := "2.13.10"
 
 val versions = new {
   val outwatch  = "1.0.0-RC11"
-  val funPack   = "0.2.0"
+  val funPack   = "0.2.6"
   val scalaTest = "3.2.14"
 }
 
 lazy val scalaJsMacrotaskExecutor = Seq(
   // https://github.com/scala-js/scala-js-macrotask-executor
-  libraryDependencies       += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
+  libraryDependencies       += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0",
   Compile / npmDependencies += "setimmediate"  -> "1.0.5", // polyfill
 )
 
@@ -40,8 +40,8 @@ lazy val webapp = project
     )), // configure Scala.js to emit a JavaScript module instead of a top-level script
     scalaJSUseMainModuleInitializer   := true, // On Startup, call the main function
     webpackDevServerPort              := 12345,
-    webpack / version                 := "4.46.0",
-    startWebpackDevServer / version   := "3.11.3",
+    webpack / version                 := "5.75.0",
+    startWebpackDevServer / version   := "4.11.1",
     webpackDevServerExtraArgs         := Seq("--color"),
     fullOptJS / webpackEmitSourceMaps := true,
     fastOptJS / webpackBundlingMode   := BundlingMode
