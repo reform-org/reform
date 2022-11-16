@@ -18,11 +18,8 @@ package webapp
 import outwatch._
 import outwatch.dsl._
 import cats.effect.SyncIO
-
-import colibri.Subject
-
-// Outwatch documentation:
-// https://outwatch.github.io/docs/readme.html
+import rescala.default.{Event, Signal, Var}
+import colibri.{Cancelable, Observer, Source, Subject}
 
 object Main {
   def main(args: Array[String]): Unit =
@@ -36,7 +33,7 @@ object Main {
 
   def counter = SyncIO {
     // https://outwatch.github.io/docs/readme.html#example-counter
-    val number = Subject.behavior(0)
+    val number = Var(0)
     div(
       button("+", onClick(number.map(_ + 1)) --> number, marginRight := "10px"),
       number,
@@ -45,7 +42,7 @@ object Main {
 
   def inputField = SyncIO {
     // https://outwatch.github.io/docs/readme.html#example-input-field
-    val text = Subject.behavior("")
+    val text = Var("")
     div(
       input(
         tpe := "text",

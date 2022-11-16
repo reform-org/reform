@@ -1,19 +1,20 @@
 Global / onChangedBuildSource := IgnoreSourceChanges // not working well with webpack devserver
 
+// https://docs.scala-lang.org/scala3/guides/migration/tutorial-sbt.html
 name                     := "Reform"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "2.13.10"
+ThisBuild / scalaVersion := "3.2.1"
 ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 val versions = new {
-  val outwatch  = "1.0.0-RC11"
+  val outwatch  = "1.0.0-RC12"
   val funPack   = "0.2.0"
   val scalaTest = "3.2.14"
 }
 
 lazy val scalaJsMacrotaskExecutor = Seq(
   // https://github.com/scala-js/scala-js-macrotask-executor
-  libraryDependencies       += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.0.0",
+  libraryDependencies       += "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.0",
   Compile / npmDependencies += "setimmediate"  -> "1.0.5", // polyfill
 )
 
@@ -24,8 +25,10 @@ lazy val webapp = project
   )
   .settings(scalaJsMacrotaskExecutor)
   .settings(
+    resolvers += "jitpack" at "https://jitpack.io",
     libraryDependencies          ++= Seq(
       "io.github.outwatch" %%% "outwatch"  % versions.outwatch,
+      "com.github.rescala-lang.rescala" %%% "rescala" % "bfe10f7ab2d79f13f0263677dffb90aec6d448c2",
       "org.scalatest"      %%% "scalatest" % versions.scalaTest % Test,
     ),
     Compile / npmDevDependencies ++= Seq(
