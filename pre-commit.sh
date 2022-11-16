@@ -1,12 +1,13 @@
 #!/bin/sh
+
 set -e
 
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH"
 
-sbt --client scalafmtAll
-sbt --client test
+sbt scalafmtAll test
+
 # ensure every text file ends with a newline
 for f in $(git grep --cached -Il ''); do tail -c1 $f | read -r _ || echo >> $f; done
 

@@ -14,6 +14,10 @@ Install pre-commit hook (recommended)
 ```bash
 ln -srf pre-commit.sh .git/hooks/pre-commit
 ```
+For Windows: (run in elevated commandprompt)
+```bash
+cmd /c mklink ".git\\hooks\\pre-commit" "..\\..\\pre-commit.sh"
+```
 
 The pre-commit hook starts an sbt build server for better performance which you can stop with the following command:
 ```bash
