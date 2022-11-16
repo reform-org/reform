@@ -1,5 +1,6 @@
 #!/bin/sh
-set -ex
+
+set -e
 
 SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
