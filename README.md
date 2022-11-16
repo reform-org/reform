@@ -1,18 +1,34 @@
-# Outwatch Example
+# reform
 
 ## Prerequisites
 
 You should make sure that the following components are pre-installed on your machine:
 
- - [Node.js](https://nodejs.org/en/download/)
+ - [Node.js **16**](https://nodejs.org/en/download/) (install using https://github.com/nvm-sh/nvm)
  - [Yarn](https://yarnpkg.com/en/docs/install)
 
-## Working in dev mode
+## Development
 
-Run
+Install pre-commit hook (recommended)
 
+```bash
+ln -srf pre-commit.sh .git/hooks/pre-commit
+```
+
+The pre-commit hook starts an sbt build server for better performance which you can stop with the following command:
+```bash
+sbt --client shutdown
+```
+
+You can also start or use that server with
+```bash
+sbt --client
+```
+yourself.
+
+To develop the application run
 ```sh
-sbt dev
+sbt --client dev
 ```
 
 Then open `http://localhost:12345` in your browser.
