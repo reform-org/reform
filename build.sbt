@@ -5,6 +5,7 @@ name                     := "Reform"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.2.1"
 ThisBuild / wartremoverErrors ++= Warts.unsafe
+ThisBuild / logLevel := Level.Debug;
 
 val versions = new {
   val outwatch  = "1.0.0-RC12"
@@ -34,15 +35,13 @@ lazy val webapp = project
     Compile / npmDevDependencies ++= Seq(
       "@fun-stack/fun-pack" -> versions.funPack, // sane defaults for webpack development and production, see webpack.config.*.js
     ),
-    scalacOptions --= Seq(
-      "-Xfatal-warnings",
-    ), // overwrite option from https://github.com/DavidGregory084/sbt-tpolecat
 
     scalaJSLinkerConfig ~= (_.withModuleKind(
       ModuleKind.CommonJSModule,
     )), // configure Scala.js to emit a JavaScript module instead of a top-level script
     scalaJSUseMainModuleInitializer   := true, // On Startup, call the main function
     webpackDevServerPort              := 12345,
+    //  node /home/moritz/Documents/reform/webapp/target/scala-3.2.1/scalajs-bundler/main/node_modules/webpack/bin/webpack --profile --json --config /home/moritz/Documents/reform/webapp/target/scala-3.2.1/scalajs-bundler/main/webpack.config.dev.js | jq .errors
     webpack / version := "5.75.0",
     startWebpackDevServer / version := "4.11.1",
     webpackCliVersion := "4.10.0",
