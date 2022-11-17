@@ -1,0 +1,3 @@
+[submodule "fun-pack"]
+	path = fun-pack
+	url = git@github.com:reform-org/fun-pack.git

@@ -8,7 +8,7 @@ ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 val versions = new {
   val outwatch  = "1.0.0-RC12"
-  val funPack   = "0.2.0"
+  val funPack   = "file:/home/osh/Programming/scala/reform/fun-pack"
   val scalaTest = "3.2.14"
 }
 
@@ -38,14 +38,14 @@ lazy val webapp = project
       "-Xfatal-warnings",
     ), // overwrite option from https://github.com/DavidGregory084/sbt-tpolecat
 
-    useYarn := true, // Makes scalajs-bundler use yarn instead of npm
     scalaJSLinkerConfig ~= (_.withModuleKind(
       ModuleKind.CommonJSModule,
     )), // configure Scala.js to emit a JavaScript module instead of a top-level script
     scalaJSUseMainModuleInitializer   := true, // On Startup, call the main function
     webpackDevServerPort              := 12345,
-    webpack / version                 := "4.46.0",
-    startWebpackDevServer / version   := "3.11.3",
+    webpack / version := "5.75.0",
+    startWebpackDevServer / version := "4.11.1",
+    webpackCliVersion := "4.10.0",
     webpackDevServerExtraArgs         := Seq("--color"),
     fullOptJS / webpackEmitSourceMaps := true,
     fastOptJS / webpackBundlingMode   := BundlingMode
