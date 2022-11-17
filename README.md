@@ -32,7 +32,7 @@ yourself.
 
 To develop the application run
 ```sh
-sbt --client dev
+sbt dev
 ```
 
 Then open `http://localhost:12345` in your browser.
