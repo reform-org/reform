@@ -4,8 +4,19 @@
 
 You should make sure that the following components are pre-installed on your machine:
 
- - [Node.js **16**](https://nodejs.org/en/download/) (install using https://github.com/nvm-sh/nvm)
- - [Yarn](https://yarnpkg.com/en/docs/install)
+ - [Node.js](https://nodejs.org/en/download/)
+
+## Setup
+
+```bash
+git clone https://github.com/reform-org/reform
+cd reform
+git submodule update --init
+cd fun-pack
+npm ci
+cd ..
+sbt fullOptJS
+```
 
 ## Development
 
