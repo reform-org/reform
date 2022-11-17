@@ -8,7 +8,7 @@ ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 val versions = new {
   val outwatch  = "1.0.0-RC12"
-  val funPack   = "file:/home/osh/Programming/scala/reform/fun-pack"
+  val funPack   = "file:./../../../../../fun-pack"
   val scalaTest = "3.2.14"
 }
 
