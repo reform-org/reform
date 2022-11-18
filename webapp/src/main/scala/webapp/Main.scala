@@ -22,6 +22,7 @@ import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
 import js.annotation._
+import webapp.services._
 
 // object JavaScriptHot {
 //   @js.native
@@ -56,38 +57,12 @@ import js.annotation._
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit =
-    Outwatch.renderInto[SyncIO]("#app", app).unsafeRunSync()
+    implicit val services = ServicesDefault
+    Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
 
-  def app = div(
-    h1(cls := "font-bold underline", "Hello world!"),
-    counter,
-    inputField,
-    cls := "h-56 grid grid-cols-3 gap-4 content-center",
+  def app(using services: Services) = body(
+    services.routing.render,
   )
-
-  def counter = SyncIO {
-    // https://outwatch.github.io/docs/readme.html#example-counter
-    val number = Var(0)
-    div(
-      button("+", onClick(number.map(_ + 1)) --> number, marginRight := "10px"),
-      number,
-    )
-  }
-
-  def inputField = SyncIO {
-    // https://outwatch.github.io/docs/readme.html#example-input-field
-    val text = Var("")
-    div(
-      input(
-        tpe := "text",
-        value <-- text,
-        onInput.value --> text,
-      ),
-      button("clear", onClick.as("") --> text),
-      div("text: ", text),
-      div("length: ", text.map(_.length)),
-    )
-  }
 }
 
 val _ = Main.main()
