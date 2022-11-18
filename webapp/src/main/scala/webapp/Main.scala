@@ -23,36 +23,6 @@ import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
 import js.annotation._
 
-object JavaScriptHot {
-  @js.native
-  @JSGlobal("accept")
-  def accept(): Unit = js.native
-}
-
-object JavaScriptMeta {
-  @js.native
-  @JSGlobal("hot")
-  val hot: JavaScriptHot
-}
-
-object JavaScriptImport {
-  @js.native
-  @JSGlobal("meta")
-  val meta: JavaScriptMeta
-}
-
-object DOMGlobals {
-  @js.native
-  @JSGlobal("import")
-  val javascriptImport: JavaScriptImport = js.native
-
-  def magic(): Unit = {
-    if (javascriptImport.meta.hot) {
-      DOMGlobals.javascriptImport.meta.hot.accept()
-    }
-  }
-}
-
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit =
@@ -88,5 +58,3 @@ object Main {
     )
   }
 }
-
-val _ = Main.main()
