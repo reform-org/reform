@@ -20,13 +20,46 @@ import outwatch.dsl._
 import cats.effect.SyncIO
 import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
+import scala.scalajs.js
+import js.annotation._
 
+object JavaScriptHot {
+  @js.native
+  @JSGlobal("accept")
+  def accept(): Unit = js.native
+}
+
+object JavaScriptMeta {
+  @js.native
+  @JSGlobal("hot")
+  val hot: JavaScriptHot
+}
+
+object JavaScriptImport {
+  @js.native
+  @JSGlobal("meta")
+  val meta: JavaScriptMeta
+}
+
+object DOMGlobals {
+  @js.native
+  @JSGlobal("import")
+  val javascriptImport: JavaScriptImport = js.native
+
+  def magic(): Unit = {
+    if (javascriptImport.meta.hot) {
+      DOMGlobals.javascriptImport.meta.hot.accept()
+    }
+  }
+}
+
+// https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit =
     Outwatch.renderInto[SyncIO]("#app", app).unsafeRunSync()
 
   def app = div(
-    h1("Hello World!"),
+    h1(cls := "text-8xl font-bold underline", "Hello world!"),
     counter,
     inputField,
   )
@@ -54,5 +87,6 @@ object Main {
       div("length: ", text.map(_.length)),
     )
   }
-
 }
+
+val _ = Main.main()
