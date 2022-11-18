@@ -23,35 +23,35 @@ import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
 import js.annotation._
 
-object JavaScriptHot {
-  @js.native
-  @JSGlobal("accept")
-  def accept(): Unit = js.native
-}
+// object JavaScriptHot {
+//   @js.native
+//   @JSGlobal("accept")
+//   def accept(): Unit = js.native
+// }
 
-object JavaScriptMeta {
-  @js.native
-  @JSGlobal("hot")
-  val hot: JavaScriptHot
-}
+// object JavaScriptMeta {
+//   @js.native
+//   @JSGlobal("hot")
+//   val hot: JavaScriptHot
+// }
 
-object JavaScriptImport {
-  @js.native
-  @JSGlobal("meta")
-  val meta: JavaScriptMeta
-}
+// object JavaScriptImport {
+//   @js.native
+//   @JSGlobal("meta")
+//   val meta: JavaScriptMeta
+// }
 
-object DOMGlobals {
-  @js.native
-  @JSGlobal("import")
-  val javascriptImport: JavaScriptImport = js.native
+// object DOMGlobals {
+//   @js.native
+//   @JSGlobal("import")
+//   val javascriptImport: JavaScriptImport = js.native
 
-  def magic(): Unit = {
-    if (javascriptImport.meta.hot) {
-      DOMGlobals.javascriptImport.meta.hot.accept()
-    }
-  }
-}
+//   def magic(): Unit = {
+//     if (javascriptImport.meta.hot) {
+//       DOMGlobals.javascriptImport.meta.hot.accept()
+//     }
+//   }
+// }
 
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
@@ -59,9 +59,10 @@ object Main {
     Outwatch.renderInto[SyncIO]("#app", app).unsafeRunSync()
 
   def app = div(
-    h1(cls := "text-8xl font-bold underline", "Hello world!"),
+    h1(cls := "font-bold underline", "Hello world!"),
     counter,
     inputField,
+    cls := "h-56 grid grid-cols-3 gap-4 content-center",
   )
 
   def counter = SyncIO {
