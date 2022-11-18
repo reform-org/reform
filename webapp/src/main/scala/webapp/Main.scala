@@ -22,7 +22,7 @@ import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
 
 object Main {
-  def main(args: Array[String]): Unit =
+  def main(): Unit =
     Outwatch.renderInto[SyncIO]("#app", app).unsafeRunSync()
 
   def app = div(

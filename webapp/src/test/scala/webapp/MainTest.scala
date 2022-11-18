@@ -15,20 +15,22 @@ limitations under the License.
  */
 package webapp
 
+import utest._
 import org.scalajs.dom._
-import org.scalatest.BeforeAndAfterEach
-import org.scalatest.flatspec.AnyFlatSpec
-import org.scalatest.matchers.should.Matchers
+import outwatch._
+import outwatch.dsl._
+import scala.scalajs.js.annotation._
 
-abstract class JSDomSpec extends AnyFlatSpec with Matchers with BeforeAndAfterEach {
+import cats.effect.SyncIO
 
+@JSExportTopLevel("MainTests")
+object MainTests extends TestSuite {
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
     () // Return unit to prevent warning due to discarding value
   }
 
-  override def beforeEach(): Unit = {
-
+  def utestBeforeEach(): Unit = {
     document.body.innerHTML = ""
 
     // prepare body with <div id="app"></div>
@@ -36,5 +38,30 @@ abstract class JSDomSpec extends AnyFlatSpec with Matchers with BeforeAndAfterEa
     root.id = "app"
     discard { document.body.appendChild(root) }
     ()
+  }
+
+  val tests = Tests {
+    test("test") {
+      utestBeforeEach()
+
+      val message = "Hello World!"
+      Outwatch.renderInto[SyncIO]("#app", h1(message)).unsafeRunSync()
+
+      assert(document.body.innerHTML.contains(message))
+    }
+  }
+
+  @JSExport
+  def main(): Int = {
+    val results                        = TestRunner.runAndPrint(
+      tests,
+      "MyTestSuiteA",
+    )
+    val (summary, successes, failures) = TestRunner.renderResults(
+      Seq(
+        "MyTestSuiteA" -> results,
+      ),
+    )
+    failures
   }
 }

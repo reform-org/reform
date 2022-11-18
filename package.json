@@ -1,0 +1,21 @@
+{
+  "name": "reform",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "coverage": "vitest run --coverage"
+  },
+  "devDependencies": {
+    "jsdom": "^20.0.2",
+    "vite": "^3.2.4",
+    "vitest": "^0.25.2"
+  },
+  "dependencies": {
+    "snabbdom": "github:outwatch/snabbdom#0.7.5"
+  }
+}
