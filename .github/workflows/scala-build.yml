@@ -1,4 +1,4 @@
-name: Scala Test
+name: Scala Build
 
 on:
   push:
@@ -10,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  build:
 
     runs-on: ubuntu-latest
 
@@ -23,7 +23,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - run: npm install
-    - name: Build tests
-      run: sbt "Test / fastLinkJS"
-    - name: Run tests
-      run: npm run test run
+    - name: Build ScalaJS
+      run: sbt fastLinkJS
+    - name: Build JavaScript
+      run: npm run build

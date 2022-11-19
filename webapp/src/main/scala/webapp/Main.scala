@@ -20,39 +20,49 @@ import outwatch.dsl._
 import cats.effect.SyncIO
 import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
+import scala.scalajs.js
+import js.annotation._
+import webapp.services._
 
+// object JavaScriptHot {
+//   @js.native
+//   @JSGlobal("accept")
+//   def accept(): Unit = js.native
+// }
+
+// object JavaScriptMeta {
+//   @js.native
+//   @JSGlobal("hot")
+//   val hot: JavaScriptHot
+// }
+
+// object JavaScriptImport {
+//   @js.native
+//   @JSGlobal("meta")
+//   val meta: JavaScriptMeta
+// }
+
+// object DOMGlobals {
+//   @js.native
+//   @JSGlobal("import")
+//   val javascriptImport: JavaScriptImport = js.native
+
+//   def magic(): Unit = {
+//     if (javascriptImport.meta.hot) {
+//       DOMGlobals.javascriptImport.meta.hot.accept()
+//     }
+//   }
+// }
+
+// https://simerplaha.github.io/html-to-scala-converter/
 object Main {
-  def main(args: Array[String]): Unit =
-    Outwatch.renderInto[SyncIO]("#app", app).unsafeRunSync()
+  def main(): Unit =
+    implicit val services = ServicesDefault
+    Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
 
-  def app = div(
-    h1("Hello World!"),
-    counter,
-    inputField,
+  def app(using services: Services) = body(
+    services.routing.render,
   )
-
-  def counter = SyncIO {
-    // https://outwatch.github.io/docs/readme.html#example-counter
-    val number = Var(0)
-    div(
-      button("+", onClick(number.map(_ + 1)) --> number, marginRight := "10px"),
-      number,
-    )
-  }
-
-  def inputField = SyncIO {
-    // https://outwatch.github.io/docs/readme.html#example-input-field
-    val text = Var("")
-    div(
-      input(
-        tpe := "text",
-        value <-- text,
-        onInput.value --> text,
-      ),
-      button("clear", onClick.as("") --> text),
-      div("text: ", text),
-      div("length: ", text.map(_.length)),
-    )
-  }
-
 }
+
+val _ = Main.main()
