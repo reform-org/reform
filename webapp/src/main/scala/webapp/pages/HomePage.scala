@@ -21,8 +21,19 @@ import outwatch.dsl._
 import rescala.default._
 import webapp.services._
 import webapp._
+import cats.effect.SyncIO
+import colibri.{Cancelable, Observer, Source, Subject}
+import webapp.given
 
 case class HomePage() extends Page:
+  def counter = SyncIO {
+    val number = Var(0)
+    div(
+      button("+", onClick(number.map(_ + 1)) --> number, marginRight := "10px"),
+      number,
+    )
+  }
+
   def render(using services: Services): VNode =
     div(
       h1(cls := "font-bold underline", "Hello world!"),
@@ -43,4 +54,5 @@ case class HomePage() extends Page:
           services.routing.to(ProjectPage("Wir sind schon die besten lol"), true)
         }),
       ),
+      counter,
     )
