@@ -2,10 +2,10 @@
 module.exports = {
   content: [
     "./index.html",
-    "./webapp/src/main/**/*.scala",
+    "./webapp/target/scala-3.2.1/webapp-fastopt/**/*.js",
   ],
   theme: {
     extend: {},
   },
-  plugins: [],
+  plugins: [require("daisyui")],
 }

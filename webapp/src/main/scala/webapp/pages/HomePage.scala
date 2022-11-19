@@ -24,35 +24,48 @@ import webapp._
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
+import webapp.components.navigationHeader
 
 case class HomePage() extends Page:
   def counter = SyncIO {
     val number = Var(0)
     div(
-      button("+", onClick(number.map(_ + 1)) --> number, marginRight := "10px"),
-      number,
+      cls := "grid grid-flow-col grid-rows-1 grid-cols-2",
+      button(
+        cls := "btn",
+        "+",
+        onClick(number.map(_ + 1)) --> number,
+      ),
+      div(
+        cls := "flex justify-center items-center",
+        number,
+      ),
     )
   }
 
   def render(using services: Services): VNode =
     div(
-      h1(cls := "font-bold underline", "Hello world!"),
-      cls := "h-56 grid grid-cols-3 gap-4 content-center",
-      a(
-        href := "/login",
-        "Login",
-        onClick.foreach(e => {
-          e.preventDefault()
-          services.routing.to(LoginPage(), true)
-        }),
+      navigationHeader,
+      div(
+        cls := "p-1 grid grid-flow-col grid-rows-1 grid-cols-3 gap-1",
+        a(
+          cls  := "btn",
+          href := "/login",
+          "Login",
+          onClick.foreach(e => {
+            e.preventDefault()
+            services.routing.to(LoginPage(), true)
+          }),
+        ),
+        a(
+          cls  := "btn",
+          href := "/project/Wir sind schon die besten lol",
+          "Beispielprojekt",
+          onClick.foreach(e => {
+            e.preventDefault()
+            services.routing.to(ProjectPage("Wir sind schon die besten lol"), true)
+          }),
+        ),
+        counter,
       ),
-      a(
-        href := "/project/Wir sind schon die besten lol",
-        "Beispielprojekt",
-        onClick.foreach(e => {
-          e.preventDefault()
-          services.routing.to(ProjectPage("Wir sind schon die besten lol"), true)
-        }),
-      ),
-      counter,
     )

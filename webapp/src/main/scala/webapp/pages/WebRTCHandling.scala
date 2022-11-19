@@ -18,6 +18,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import org.scalajs.dom.UIEvent
 import com.github.plokhotnyuk.jsoniter_scala.core._
+import webapp.components.navigationHeader
 
 case class WebRTCHandling() extends Page {
   private val codec: JsonValueCodec[webrtc.WebRTC.CompleteSession] = JsonCodecMaker.make
@@ -38,25 +39,32 @@ case class WebRTCHandling() extends Page {
 
   def render(using services: Services): VNode = {
     div(
-      p(pre(sessionOutput)),
-      p(
+      navigationHeader,
+      div(
+        cls := "p-1 grid gap-2 grid-cols-1 grid-rows-3",
+        div(cls := "mockup-code", pre(sessionOutput)),
         textArea(
+          cls   := "textarea textarea-bordered",
           sessionInput,
           onInput.value --> sessionInput,
         ),
-      ),
-      div(
-        button(
-          "host",
-          onClick.foreach(_ => hostSession()),
-        ),
-        button(
-          "connect to host",
-          onClick.foreach(_ => connectToHost()),
-        ),
-        button(
-          "confirm connection to client",
-          onClick.foreach(_ => confirmConnectionToClient()),
+        div(
+          cls   := "grid gap-1 grid-cols-3 grid-rows-1",
+          button(
+            cls := "btn",
+            "host",
+            onClick.foreach(_ => hostSession()),
+          ),
+          button(
+            cls := "btn",
+            "connect to host",
+            onClick.foreach(_ => connectToHost()),
+          ),
+          button(
+            cls := "btn",
+            "confirm connection to client",
+            onClick.foreach(_ => confirmConnectionToClient()),
+          ),
         ),
       ),
     )

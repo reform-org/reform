@@ -57,6 +57,7 @@ import webapp.services._
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit =
+    js.`import`("../../../../index.css")
     implicit val services = ServicesDefault
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
 
