@@ -17,7 +17,7 @@ npm install
 Install pre-commit hook (recommended)
 
 ```bash
-ln -srf pre-commit.sh .git/hooks/pre-commit
+ln -sr pre-commit.sh .git/hooks/pre-commit
 ```
 For Windows: (run in elevated commandprompt)
 ```bash
