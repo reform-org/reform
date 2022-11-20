@@ -19,6 +19,7 @@
     "vitest": "^0.25.2"
   },
   "dependencies": {
+    "daisyui": "^2.41.0",
     "snabbdom": "github:outwatch/snabbdom#0.7.5"
   }
 }

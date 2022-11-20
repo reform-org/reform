@@ -1,12 +1,3 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
-body {
-    cursor: url(./webapp/assets/unicorn.png) 15 15, auto;
-
-}
-
-input {
-    border: 1px solid black;
-}

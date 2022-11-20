@@ -21,18 +21,23 @@ import outwatch.dsl._
 import rescala.default._
 import webapp.services._
 import webapp._
+import webapp.components.navigationHeader
 
 case class ProjectPage(id: String) extends Page:
   def render(using services: Services): VNode =
     div(
-      h1(cls := "font-bold underline", "Single project: " + id),
-      cls := "h-56 grid grid-cols-3 gap-4 content-center",
-      a(
-        href := "/",
-        "Home",
-        onClick.foreach(e => {
-          e.preventDefault()
-          services.routing.to(HomePage(), true)
-        }),
+      navigationHeader,
+      div(
+        cls := "p-1",
+        h1(cls := "text-4xl text-center", "Single project: " + id),
+        a(
+          cls  := "btn",
+          href := "/",
+          "Home",
+          onClick.foreach(e => {
+            e.preventDefault()
+            services.routing.to(HomePage(), true)
+          }),
+        ),
       ),
     )
