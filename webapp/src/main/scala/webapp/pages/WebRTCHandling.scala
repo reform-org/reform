@@ -34,7 +34,7 @@ case class WebRTCHandling() extends Page {
 
   override def render(using services: Services): VNode = div(
     navigationHeader,
-    state.map(_.render)
+    state.map(_.render),
   )
 
   private case object Init extends State {
@@ -42,7 +42,7 @@ case class WebRTCHandling() extends Page {
     override def render: VNode = div(
       h2(cls := "text-2xl text-center", "Are you host or client?"),
       div(
-        cls := "p-1 grid gap-2 grid-cols-2 grid-rows-1",
+        cls  := "p-1 grid gap-2 grid-cols-2 grid-rows-1",
         button(
           cls := "btn",
           "Client",
@@ -51,12 +51,18 @@ case class WebRTCHandling() extends Page {
         button(
           cls := "btn",
           "Host",
-        )
-      )
+          onClick.foreach(_ => hostSession()),
+        ),
+      ),
     )
 
     private def askForHostsSessionToken(): Unit = {
       state.set(ClientAskingForHostSessionToken)
+    }
+
+    private def hostSession(): Unit = {
+      val pendingConnection = webrtcIntermediate(WebRTC.offer());
+      state.set(HostPending(pendingConnection))
     }
   }
 
@@ -67,59 +73,75 @@ case class WebRTCHandling() extends Page {
       cls := "p-1 grid gap-2 grid-cols-1 grid-rows-3",
       h2(cls := "text-2xl text-center", "Ask the host for their session token an insert it here"),
       textArea(
-        cls   := "textarea textarea-bordered",
+        cls  := "textarea textarea-bordered",
         sessionToken,
         onInput.value --> sessionToken,
       ),
       button(
-        cls := "btn",
+        cls  := "btn",
         "Connect to host using token",
         onClick.foreach(_ => connectToHost()),
       ),
     )
 
-    private def connectionString: WebRTC.CompleteSession = readFromString(sessionToken.now)(codec)
-
     private def connectToHost(): Unit = {
       val connection = webrtcIntermediate(WebRTC.answer())
-      connection.connector.set(connectionString)
+      connection.connector.set(readFromString(sessionToken.now)(codec))
       state.set(ClientWaitingForHostConfirmation(connection))
     }
   }
 
-  private class ClientWaitingForHostConfirmation(connection: PendingConnection) extends State {
+  private case class ClientWaitingForHostConfirmation(connection: PendingConnection) extends State {
     registry.connect(connection.connector).foreach(_ => onConnected())
 
-    override def render: VNode = div(
-      "aiowdjawiojd",
+    override def render: VNode = code(
+      cls := "w-full",
+      connection.session.map(session => writeToString(session)(codec)),
     )
 
     private def onConnected(): Unit = {
-      println("yay")
+      state.set(Connected)
     }
   }
 
-  // private case  HostPending extends State
-  // private case object Connected extends State
+  private case class HostPending(connection: PendingConnection) extends State {
+    private val sessionToken = Var("")
+    registry.connect(connection.connector).foreach(_ => onConnected())
 
-  // private def showSession(s: WebRTC.CompleteSession): Unit = {
-  //   val message = writeToString(s)(codec)
-  //   sessionOutput.set(message)
-  // }
+    override def render: VNode = div(
+      cls := "p-1",
+      h2(
+        cls := "w-full text-2xl text-center",
+        "Give the client your connection string and ask the client for their session token an insert it here",
+      ),
+      code(
+        cls := "w-full",
+        connection.session.map(session => writeToString(session)(codec)),
+      ),
+      textArea(
+        cls := "w-full textarea textarea-bordered",
+        sessionToken,
+        onInput.value --> sessionToken,
+      ),
+      button(
+        cls := "w-full btn",
+        "Connect to client using token",
+        onClick.foreach(_ => confirmConnectionToClient()),
+      ),
+    )
 
-  // private def confirmConnectionToClient(): Unit = {
-  //   val connectionString = readFromString(sessionInput.now)(codec)
-  //   hostedSessionConnector match
-  //     case None            => throw IllegalStateException("No session is being hosted")
-  //     case Some(connector) => connector.set(connectionString)
-  // }
+    private def confirmConnectionToClient(): Unit = {
+      connection.connector.set(readFromString(sessionToken.now)(codec))
+    }
 
-  // private def hostSession(): Unit = {
-  //   val res = webrtcIntermediate(WebRTC.offer())
-  //   res.session.foreach(showSession)
-  //   hostedSessionConnector = Some(res.connector)
-  //   registry.connect(res.connector).foreach(_ => connected())
-  // }
+    private def onConnected(): Unit = {
+      state.set(Connected)
+    }
+  }
+
+  private case object Connected extends State {
+    def render: VNode = h2(cls := "w-full text-2xl text-center", "Connected")
+  }
 
   private case class PendingConnection(connector: WebRTC.Connector, session: Future[WebRTC.CompleteSession])
 
