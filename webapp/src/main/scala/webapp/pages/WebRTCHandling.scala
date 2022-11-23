@@ -61,7 +61,7 @@ case class WebRTCHandling() extends Page {
 
     private def hostSession(using services: Services): Unit = {
       val pendingConnection = webrtcIntermediate(WebRTC.offer())
-      state.set(HostPending(pendingConnection, services))
+      state.set(HostPending(pendingConnection))
     }
   }
 
@@ -86,11 +86,12 @@ case class WebRTCHandling() extends Page {
     private def connectToHost(using services: Services): Unit = {
       val connection = webrtcIntermediate(WebRTC.answer())
       connection.connector.set(tokenAsSession(sessionToken.now))
-      state.set(ClientWaitingForHostConfirmation(connection, services))
+      state.set(ClientWaitingForHostConfirmation(connection))
     }
   }
 
-  private case class ClientWaitingForHostConfirmation(connection: PendingConnection, services: Services) extends State {
+  private case class ClientWaitingForHostConfirmation(connection: PendingConnection)(using services: Services)
+      extends State {
     services.webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
 
     override def render(using services: Services): VNode = div(
@@ -106,7 +107,7 @@ case class WebRTCHandling() extends Page {
     }
   }
 
-  private case class HostPending(connection: PendingConnection, services: Services) extends State {
+  private case class HostPending(connection: PendingConnection)(using services: Services) extends State {
     private val sessionTokenFromClient = Var("")
     services.webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
 
