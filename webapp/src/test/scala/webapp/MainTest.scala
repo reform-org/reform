@@ -15,11 +15,11 @@ limitations under the License.
  */
 package webapp
 
-import utest._
-import org.scalajs.dom._
-import outwatch._
-import outwatch.dsl._
-import scala.scalajs.js.annotation._
+import utest.*
+import org.scalajs.dom.*
+import outwatch.*
+import outwatch.dsl.*
+import scala.scalajs.js.annotation.*
 
 import cats.effect.SyncIO
 
@@ -53,7 +53,7 @@ object MainTests extends TestSuite {
 
   @JSExport
   def main(): Int = {
-    val results                        = TestRunner.runAndPrint(
+    val results = TestRunner.runAndPrint(
       tests,
       "MyTestSuiteA",
     )

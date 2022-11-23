@@ -15,14 +15,14 @@ limitations under the License.
  */
 package webapp
 
-import outwatch._
-import outwatch.dsl._
+import outwatch.*
+import outwatch.dsl.*
 import cats.effect.SyncIO
 import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
-import js.annotation._
-import webapp.services._
+import js.annotation.*
+import webapp.services.*
 
 // object JavaScriptHot {
 //   @js.native
@@ -56,10 +56,11 @@ import webapp.services._
 
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
-  def main(): Unit =
+  def main(): Unit = {
     js.`import`("../../../../index.css")
     implicit val services = ServicesDefault
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
+  }
 
   def app(using services: Services) = body(
     services.routing.render,

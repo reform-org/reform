@@ -27,6 +27,7 @@ lazy val webapp = project
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
+    scalacOptions ++= Seq("-no-indent"), //, "-rewrite"),
     Compile / scalaJSModuleInitializers    += {
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
     },

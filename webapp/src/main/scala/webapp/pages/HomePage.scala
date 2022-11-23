@@ -16,17 +16,17 @@ limitations under the License.
 package webapp.pages
 
 import org.scalajs.dom
-import outwatch._
-import outwatch.dsl._
-import rescala.default._
-import webapp.services._
-import webapp._
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import webapp.services.*
+import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
 
-case class HomePage() extends Page:
+case class HomePage() extends Page {
   def counter = SyncIO {
     val number = Var(0)
     div(
@@ -49,7 +49,7 @@ case class HomePage() extends Page:
       div(
         cls := "p-1 grid grid-flow-col grid-rows-1 grid-cols-3 gap-1",
         a(
-          cls  := "btn",
+          cls := "btn",
           href := "/login",
           "Login",
           onClick.foreach(e => {
@@ -58,7 +58,7 @@ case class HomePage() extends Page:
           }),
         ),
         a(
-          cls  := "btn",
+          cls := "btn",
           href := "/project/Wir sind schon die besten lol",
           "Beispielprojekt",
           onClick.foreach(e => {
@@ -69,3 +69,4 @@ case class HomePage() extends Page:
         counter,
       ),
     )
+}

@@ -15,10 +15,12 @@ limitations under the License.
  */
 package webapp
 
-import webapp.services._
+import webapp.services.*
 
-trait Services:
+trait Services {
   lazy val routing: RoutingService
+}
 
-object ServicesDefault extends Services:
+object ServicesDefault extends Services {
   lazy val routing = RoutingService()
+}
