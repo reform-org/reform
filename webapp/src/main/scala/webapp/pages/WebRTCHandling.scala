@@ -97,6 +97,10 @@ case class WebRTCHandling() extends Page {
 
     override def render: VNode = code(
       cls := "w-full",
+      h2(
+        cls := "w-full text-2xl text-center",
+        "Give the host your confirmation token and wait for them to confirm the connection",
+      ),
       connection.session.map(sessionAsToken),
     )
 
