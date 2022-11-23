@@ -76,6 +76,11 @@ def navigationMenu(using services: Services)(classes: String) = {
         }),
       ),
     ),
+    li(
+      i(
+        services.webrtc.registry.remotes.size + " Connections",
+      ),
+    ),
   )
 }
 
