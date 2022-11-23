@@ -95,13 +95,12 @@ case class WebRTCHandling() extends Page {
   private case class ClientWaitingForHostConfirmation(connection: PendingConnection) extends State {
     registry.connect(connection.connector).foreach(_ => onConnected())
 
-    override def render: VNode = code(
-      cls := "w-full",
+    override def render: VNode = div(
       h2(
-        cls := "w-full text-2xl text-center",
+        cls    := "w-full text-2xl text-center",
         "Give the host your confirmation token and wait for them to confirm the connection",
       ),
-      connection.session.map(sessionAsToken),
+      code(cls := "w-full max-w-full", div(cls := "overflow-x-auto", connection.session.map(sessionAsToken))),
     )
 
     private def onConnected(): Unit = {
@@ -120,8 +119,8 @@ case class WebRTCHandling() extends Page {
         "Give the client your session token. Then ask the client for their session token and insert it here",
       ),
       code(
-        cls := "w-full",
-        connection.session.map(sessionAsToken),
+        cls := "w-full max-w-full",
+        div(cls := "overflow-x-auto", connection.session.map(sessionAsToken)),
       ),
       textArea(
         cls := "w-full textarea textarea-bordered",
