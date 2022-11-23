@@ -1,6 +1,5 @@
 package webapp.pages
 
-import loci.registry.Registry
 import loci.communicator.webrtc
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
@@ -29,7 +28,6 @@ case class WebRTCHandling() extends Page {
   }
 
   private val codec: JsonValueCodec[webrtc.WebRTC.CompleteSession] = JsonCodecMaker.make
-  private val registry                                             = new Registry
 
   private val state: Var[State] = Var(Init)
 
