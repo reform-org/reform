@@ -16,14 +16,14 @@ limitations under the License.
 package webapp.pages
 
 import org.scalajs.dom
-import outwatch._
-import outwatch.dsl._
-import rescala.default._
-import webapp.services._
-import webapp._
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import webapp.services.*
+import webapp.*
 import webapp.components.navigationHeader
 
-case class ProjectPage(id: String) extends Page:
+case class ProjectPage(id: String) extends Page {
   def render(using services: Services): VNode =
     div(
       navigationHeader,
@@ -31,7 +31,7 @@ case class ProjectPage(id: String) extends Page:
         cls := "p-1",
         h1(cls := "text-4xl text-center", "Single project: " + id),
         a(
-          cls  := "btn",
+          cls := "btn",
           href := "/",
           "Home",
           onClick.foreach(e => {
@@ -41,3 +41,4 @@ case class ProjectPage(id: String) extends Page:
         ),
       ),
     )
+}

@@ -6,11 +6,11 @@ import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import org.scalajs.dom
-import outwatch._
-import outwatch.dsl._
-import rescala.default._
-import webapp.services._
-import webapp._
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import webapp.services.*
+import webapp.*
 import webapp.given
 import cats.effect.SyncIO
 
@@ -41,7 +41,7 @@ case class WebRTCHandling() extends Page {
     override def render(using services: Services): VNode = div(
       h2(cls := "text-2xl text-center", "Are you host or client?"),
       div(
-        cls  := "p-1 grid gap-2 grid-cols-2 grid-rows-1",
+        cls := "p-1 grid gap-2 grid-cols-2 grid-rows-1",
         button(
           cls := "btn",
           "Client",
@@ -72,12 +72,12 @@ case class WebRTCHandling() extends Page {
       cls := "p-1 grid gap-2 grid-cols-1 grid-rows-3",
       h2(cls := "text-2xl text-center", "Ask the host for their session token an insert it here"),
       textArea(
-        cls  := "textarea textarea-bordered",
+        cls := "textarea textarea-bordered",
         sessionToken,
         onInput.value --> sessionToken,
       ),
       button(
-        cls  := "btn",
+        cls := "btn",
         "Connect to host using token",
         onClick.foreach(_ => connectToHost),
       ),
@@ -95,7 +95,7 @@ case class WebRTCHandling() extends Page {
 
     override def render(using services: Services): VNode = div(
       h2(
-        cls    := "w-full text-2xl text-center",
+        cls := "w-full text-2xl text-center",
         "Give the host your confirmation token and wait for them to confirm the connection",
       ),
       code(cls := "w-full max-w-full", div(cls := "overflow-x-auto", connection.session.map(sessionAsToken))),
@@ -152,8 +152,8 @@ case class WebRTCHandling() extends Page {
   private def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
 
   private def webrtcIntermediate(cf: ConnectorFactory) = {
-    val p      = Promise[WebRTC.CompleteSession]()
-    val answer = cf complete p.success
+    val p = Promise[WebRTC.CompleteSession]()
+    val answer = cf.complete(p.success)
     PendingConnection(answer, p.future)
   }
 }

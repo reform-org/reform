@@ -16,22 +16,22 @@ limitations under the License.
 package webapp.components
 
 import org.scalajs.dom
-import outwatch._
-import outwatch.dsl._
-import rescala.default._
-import webapp.services._
-import webapp._
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import webapp.services.*
+import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
-import webapp.pages._
+import webapp.pages.*
 import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
 
 def navigationMenu(using services: Services)(classes: String) = {
   ul(
     tabIndex := 0,
-    cls      := classes,
+    cls := classes,
     li(
       a(
         "Home",
@@ -85,7 +85,7 @@ def navigationMenu(using services: Services)(classes: String) = {
 }
 
 def navigationHeader(using services: Services) = {
-  import svg._
+  import svg.*
   div(
     cls := "navbar bg-base-300",
     div(
@@ -94,19 +94,19 @@ def navigationHeader(using services: Services) = {
         cls := "dropdown",
         label(
           tabIndex := 0,
-          id       := "dropdown-button",
-          cls      := "btn btn-ghost lg:hidden",
+          id := "dropdown-button",
+          cls := "btn btn-ghost lg:hidden",
           svg(
-            xmlns   := "http://www.w3.org/2000/svg",
-            cls     := "h-5 w-5",
-            fill    := "none",
+            xmlns := "http://www.w3.org/2000/svg",
+            cls := "h-5 w-5",
+            fill := "none",
             viewBox := "0 0 24 24",
-            stroke  := "currentColor",
+            stroke := "currentColor",
             path(
-              VModifier.attr("stroke-linecap")  := "round",
+              VModifier.attr("stroke-linecap") := "round",
               VModifier.attr("stroke-linejoin") := "round",
-              VModifier.attr("stroke-width")    := "2",
-              d                                 := "M4 6h16M4 12h8m-8 6h16",
+              VModifier.attr("stroke-width") := "2",
+              d := "M4 6h16M4 12h8m-8 6h16",
             ),
           ),
         ),

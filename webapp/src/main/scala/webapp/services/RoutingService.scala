@@ -15,41 +15,44 @@ limitations under the License.
  */
 package webapp.services
 
-import colibri._
-import colibri.router._
+import colibri.*
+import colibri.router.*
 import colibri.router.Router
-import org.scalajs.dom._
+import org.scalajs.dom.*
 import org.scalajs.dom
-import outwatch._
-import outwatch.dsl._
-import rescala.default._
-import scala.reflect.Selectable._
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import scala.reflect.Selectable.*
 import scala.scalajs.js
-import webapp._
-import webapp.pages._
+import webapp.*
+import webapp.pages.*
 
-trait Page:
+trait Page {
   def render(using services: Services): VNode
+}
 
 class RoutingState(
-  // if canReturn is true then the page will show in mobile mode
-  // an go back arrow in the top left corner
-  val canReturn: Boolean,
+    // if canReturn is true then the page will show in mobile mode
+    // an go back arrow in the top left corner
+    val canReturn: Boolean,
 ) extends js.Object
 
-class RoutingService():
+class RoutingService() {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
   def render(using services: Services): Signal[VNode] =
     page.map(_.render)
 
-  def to(newPage: Page, preventReturn: Boolean = false) =
+  def to(newPage: Page, preventReturn: Boolean = false) = {
     window.history.pushState(RoutingState(!preventReturn), "", linkPath(newPage))
     page.set(newPage)
+  }
 
-  def toReplace(newPage: Page, preventReturn: Boolean = false) =
+  def toReplace(newPage: Page, preventReturn: Boolean = false) = {
     window.history.replaceState(RoutingState(!preventReturn), "", linkPath(newPage))
     page.set(newPage)
+  }
 
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
@@ -70,3 +73,4 @@ class RoutingService():
 
   // Change path when url changes by user action
   window.onpopstate = _ => page.set(Routes.fromPath(Path(window.location.pathname)))
+}
