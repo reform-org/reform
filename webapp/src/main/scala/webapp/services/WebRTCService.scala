@@ -13,14 +13,21 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp
+package webapp.services
 
-import webapp.services._
+import colibri._
+import colibri.router._
+import colibri.router.Router
+import loci.registry.Registry
+import org.scalajs.dom._
+import org.scalajs.dom
+import outwatch._
+import outwatch.dsl._
+import rescala.default._
+import scala.reflect.Selectable._
+import scala.scalajs.js
+import webapp._
+import webapp.pages._
 
-trait Services:
-  lazy val routing: RoutingService
-  lazy val webrtc: WebRTCService
-
-object ServicesDefault extends Services:
-  lazy val routing = RoutingService()
-  lazy val webrtc  = WebRTCService()
+class WebRTCService():
+  val registry = new Registry
