@@ -20,6 +20,7 @@ import scala.concurrent.{Future, Promise}
 import org.scalajs.dom.{console, UIEvent}
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.components.navigationHeader
+import webapp.utils.Base64
 
 case class WebRTCHandling() extends Page {
 
@@ -61,7 +62,7 @@ case class WebRTCHandling() extends Page {
     }
 
     private def hostSession(): Unit = {
-      val pendingConnection = webrtcIntermediate(WebRTC.offer());
+      val pendingConnection = webrtcIntermediate(WebRTC.offer())
       state.set(HostPending(pendingConnection))
     }
   }
@@ -86,7 +87,7 @@ case class WebRTCHandling() extends Page {
 
     private def connectToHost(): Unit = {
       val connection = webrtcIntermediate(WebRTC.answer())
-      connection.connector.set(readFromString(sessionToken.now)(codec))
+      connection.connector.set(tokenAsSession(sessionToken.now))
       state.set(ClientWaitingForHostConfirmation(connection))
     }
   }
@@ -96,7 +97,7 @@ case class WebRTCHandling() extends Page {
 
     override def render: VNode = code(
       cls := "w-full",
-      connection.session.map(session => writeToString(session)(codec)),
+      connection.session.map(sessionAsToken),
     )
 
     private def onConnected(): Unit = {
@@ -105,23 +106,23 @@ case class WebRTCHandling() extends Page {
   }
 
   private case class HostPending(connection: PendingConnection) extends State {
-    private val sessionToken = Var("")
+    private val sessionTokenFromClient = Var("")
     registry.connect(connection.connector).foreach(_ => onConnected())
 
     override def render: VNode = div(
       cls := "p-1",
       h2(
         cls := "w-full text-2xl text-center",
-        "Give the client your connection string and ask the client for their session token an insert it here",
+        "Give the client your session token. Then ask the client for their session token and insert it here",
       ),
       code(
         cls := "w-full",
-        connection.session.map(session => writeToString(session)(codec)),
+        connection.session.map(sessionAsToken),
       ),
       textArea(
         cls := "w-full textarea textarea-bordered",
-        sessionToken,
-        onInput.value --> sessionToken,
+        sessionTokenFromClient,
+        onInput.value --> sessionTokenFromClient,
       ),
       button(
         cls := "w-full btn",
@@ -131,7 +132,7 @@ case class WebRTCHandling() extends Page {
     )
 
     private def confirmConnectionToClient(): Unit = {
-      connection.connector.set(readFromString(sessionToken.now)(codec))
+      connection.connector.set(tokenAsSession(sessionTokenFromClient.now))
     }
 
     private def onConnected(): Unit = {
@@ -144,6 +145,10 @@ case class WebRTCHandling() extends Page {
   }
 
   private case class PendingConnection(connector: WebRTC.Connector, session: Future[WebRTC.CompleteSession])
+
+  private def sessionAsToken(s: WebRTC.CompleteSession) = Base64.encode(writeToString(s)(codec))
+
+  private def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
 
   private def webrtcIntermediate(cf: ConnectorFactory) = {
     val p      = Promise[WebRTC.CompleteSession]()
