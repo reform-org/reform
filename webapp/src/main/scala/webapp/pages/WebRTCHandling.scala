@@ -6,11 +6,11 @@ import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import org.scalajs.dom
-import outwatch.*
-import outwatch.dsl.*
-import rescala.default.*
+import outwatch._
+import outwatch.dsl._
+import rescala.default._
 import webapp.services._
-import webapp.*
+import webapp._
 import webapp.given
 import cats.effect.SyncIO
 
