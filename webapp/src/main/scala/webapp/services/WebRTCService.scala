@@ -55,28 +55,49 @@ import scala.scalajs.js.timers.setTimeout
 class WebRTCService() {
   val registry = new Registry
 
-  val replicaId: String = ThreadLocalRandom.current().nextLong().toHexString
+  // every client has an id
+  val replicaID: String = ThreadLocalRandom.current().nextLong().toHexString
 
   def test() = {
-    val lwwInit = DeltaBufferRDT(replicaId, LWWRegisterInterface.empty[Int])
+    val lwwInit = DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
 
     val lww: DeltaBufferRDT[LWWRegister[Int]] = MVRegisterSyntax(lwwInit).write(TimedVal(0, lwwInit.replicaID, 0, 0));
 
+    // later replace with input field
     val testValue = rescala.default.Evt[Int]();
 
-    val deltaEvt = Evt[DottedName[LWWRegister[Int]]]()
+    // probably receives the changes from other peers
+    val deltaEvent = Evt[DottedName[LWWRegister[Int]]]()
 
     // TODO FIXME Storing.storedAs persists this value
 
-    // createTaskRef
-    val counterSignalPeerA: Signal[DeltaBufferRDT[LWWRegister[Int]]] = Events.foldAll(lww)(current => {
+    // TaskData.scala
+    // look at foldAll documentation+example
+    val counterSignal: Signal[DeltaBufferRDT[LWWRegister[Int]]] = Events.foldAll(lww)(current => {
       Seq(
-        testValue.act2({ v => current.resetDeltaBuffer().map(_ => v) }),
-        deltaEvt.act2({ delta => current.resetDeltaBuffer().applyDelta(delta) }),
+        // if the user changes the value, update the register with the new value
+        testValue.act2({ v =>
+          {
+            printf("I got %d", v)
+            current.resetDeltaBuffer().map(_ => current + v)
+          }
+        }),
+        // if we receive a delta from a peer, apply it
+        deltaEvent.act2({ delta => current.resetDeltaBuffer().applyDelta(delta) }),
       )
     })
 
     testValue.fire(1)
 
+    val taskData = counterSignal.map(x => LWWRegisterInterface.LWWRegisterSyntax(x).read.getOrElse(1337))
+
+    val t = new java.util.Timer()
+    val task = new java.util.TimerTask {
+      def run() = {
+        val test: Int = taskData.now;
+        println(test)
+      }
+    }
+    t.schedule(task, 1000L, 1000L)
   }
 }

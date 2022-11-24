@@ -37,7 +37,6 @@ case class WebRTCHandling() extends Page {
   )
 
   private case object Init extends State {
-
     override def render(using services: Services): VNode = div(
       h2(cls := "text-2xl text-center", "Are you host or client?"),
       div(
