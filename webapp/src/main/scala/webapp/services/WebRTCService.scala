@@ -62,7 +62,7 @@ class WebRTCService() {
 
     val lww: DeltaBufferRDT[LWWRegister[Int]] = MVRegisterSyntax(lwwInit).write(TimedVal(0, lwwInit.replicaID, 0, 0));
 
-    val testValue = rescala.default.Event[Int](None);
+    val testValue = rescala.default.Evt[Int]();
 
     val deltaEvt = Evt[DottedName[LWWRegister[Int]]]()
 
@@ -76,6 +76,7 @@ class WebRTCService() {
       )
     })
 
-    // testValue.set(1)
+    testValue.fire(1)
+
   }
 }
