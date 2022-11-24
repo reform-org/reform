@@ -51,6 +51,13 @@ import rescala.extra.Tags.*
 import scala.Function.const
 import scala.collection.mutable
 import scala.scalajs.js.timers.setTimeout
+import scala.concurrent.Future
+import kofre.base.DecomposeLattice
+import kofre.base.Bottom
+import loci.transmitter.RemoteRef
+import scala.util.Success
+import scala.util.Failure
+import scribe.Execution.global
 
 class WebRTCService() {
   val registry = new Registry
@@ -88,6 +95,10 @@ class WebRTCService() {
       )
     })
 
+    distributeDeltaCRDT(counterSignal, deltaEvent, registry)(
+      Binding[Dotted[LWWRegister[Int]] => Unit]("counter"),
+    )
+
     // magic to convert our counterSignal to the value inside
     val taskData = counterSignal.map(x => LWWRegisterInterface.LWWRegisterSyntax(x).read.getOrElse(1337))
 
@@ -100,5 +111,77 @@ class WebRTCService() {
       }
     }
     t.schedule(task, 1000L, 1000L)
+
+  }
+
+  def distributeDeltaCRDT[A](
+      signal: Signal[DeltaBufferRDT[A]],
+      deltaEvt: Evt[DottedName[A]],
+      registry: Registry,
+  )(binding: Binding[Dotted[A] => Unit, Dotted[A] => Future[Unit]])(implicit
+      dcl: DecomposeLattice[Dotted[A]],
+      bottom: Bottom[Dotted[A]],
+  ): Unit = {
+    // listens for deltas from peers
+    registry.bindSbj(binding) { (remoteRef: RemoteRef, deltaState: Dotted[A]) =>
+      // if we receive a delta from a peer, fire the deltaEvent
+      deltaEvt.fire(DottedName(remoteRef.toString, deltaState))
+    }
+
+    var observers = Map[RemoteRef, Disconnectable]()
+    var resendBuffer = Map[RemoteRef, Dotted[A]]()
+
+    def registerRemote(remoteRef: RemoteRef): Unit = {
+      val remoteUpdate: Dotted[A] => Future[Unit] = registry.lookup(binding, remoteRef)
+
+      // Send full state to initialize remote
+      val currentState = signal.readValueOnce.state
+      if (currentState != bottom.empty) remoteUpdate(currentState)
+
+      // Whenever the crdt is changed propagate the delta
+      // Praktisch wäre etwas wie crdt.observeDelta
+      val observer = signal.observe { s =>
+        val deltaStateList = s.deltaBuffer.collect {
+          case DottedName(replicaID, deltaState) if replicaID != remoteRef.toString => deltaState
+        } ++ resendBuffer.get(remoteRef).toList
+
+        val combinedState = deltaStateList.reduceOption(DecomposeLattice[Dotted[A]].merge)
+
+        combinedState.foreach { s =>
+          // in case the update fails this is the resend buffer
+          val mergedResendBuffer = resendBuffer.updatedWith(remoteRef) {
+            case None       => Some(s)
+            case Some(prev) => Some(DecomposeLattice[Dotted[A]].merge(prev, s))
+          }
+
+          if (remoteRef.connected) {
+            // send the update to the remote
+            remoteUpdate(s).onComplete {
+              case Success(_) =>
+                // if the update was successful, we don't need to resend it
+                resendBuffer = resendBuffer.removed(remoteRef)
+              case Failure(_) =>
+                // if the update failed, we need to resend it
+                resendBuffer = mergedResendBuffer
+            }
+          } else {
+            // if the remote is not connected we need to resend the delta later
+            resendBuffer = mergedResendBuffer
+          }
+        }
+      }
+      observers += (remoteRef -> observer)
+    }
+
+    // if a remote joins, register it to send updates to it
+    registry.remoteJoined.monitor(registerRemote)
+    // also register all existing peers
+    registry.remotes.foreach(registerRemote)
+    // remove disconnected peers from observers
+    registry.remoteLeft.monitor { remoteRef =>
+      println(s"removing remote $remoteRef")
+      observers(remoteRef).disconnect()
+    }
+    ()
   }
 }
