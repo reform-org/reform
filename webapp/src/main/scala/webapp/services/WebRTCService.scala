@@ -59,27 +59,28 @@ class WebRTCService() {
   val replicaID: String = ThreadLocalRandom.current().nextLong().toHexString
 
   def test() = {
-    val lwwInit = DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
+    // a last writer wins register. This means the last value written is the actual value.
+    val lastWriterWinsInit = DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
+    // initialize the last writer wins with 0 and our replica id
+    val lastWriterWins: DeltaBufferRDT[LWWRegister[Int]] =
+      MVRegisterSyntax(lastWriterWinsInit).write(TimedVal(0, lastWriterWinsInit.replicaID, 0, 0));
 
-    val lww: DeltaBufferRDT[LWWRegister[Int]] = MVRegisterSyntax(lwwInit).write(TimedVal(0, lwwInit.replicaID, 0, 0));
+    // event that fires when the user wants to change the value
+    val testChangeEvent = rescala.default.Evt[Int]();
 
-    // later replace with input field
-    val testValue = rescala.default.Evt[Int]();
-
-    // probably receives the changes from other peers
+    // event that fires when changes from other peers are received
     val deltaEvent = Evt[DottedName[LWWRegister[Int]]]()
 
     // TODO FIXME Storing.storedAs persists this value
 
     // TaskData.scala
     // look at foldAll documentation+example
-    val counterSignal: Signal[DeltaBufferRDT[LWWRegister[Int]]] = Events.foldAll(lww)(current => {
+    val counterSignal: Signal[DeltaBufferRDT[LWWRegister[Int]]] = Events.foldAll(lastWriterWins)(current => {
       Seq(
         // if the user changes the value, update the register with the new value
-        testValue.act2({ v =>
+        testChangeEvent.act2({ v =>
           {
-            printf("I got %d", v)
-            current.resetDeltaBuffer().map(_ => current + v)
+            current.resetDeltaBuffer().map(current => current + v)
           }
         }),
         // if we receive a delta from a peer, apply it
@@ -87,8 +88,7 @@ class WebRTCService() {
       )
     })
 
-    testValue.fire(1)
-
+    // magic to convert our counterSignal to the value inside
     val taskData = counterSignal.map(x => LWWRegisterInterface.LWWRegisterSyntax(x).read.getOrElse(1337))
 
     val t = new java.util.Timer()
@@ -96,6 +96,7 @@ class WebRTCService() {
       def run() = {
         val test: Int = taskData.now;
         println(test)
+        testChangeEvent.fire(1)
       }
     }
     t.schedule(task, 1000L, 1000L)
