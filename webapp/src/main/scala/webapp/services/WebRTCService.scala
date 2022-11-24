@@ -58,14 +58,22 @@ import loci.transmitter.RemoteRef
 import scala.util.Success
 import scala.util.Failure
 import scribe.Execution.global
+import webapp.Codecs.*
 
-class WebRTCService() {
+import com.github.plokhotnyuk.jsoniter_scala.core.*
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import loci.communicator.webrtc
+import loci.communicator.webrtc.WebRTC
+import loci.communicator.webrtc.WebRTC.ConnectorFactory
+import loci.registry.Registry
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Future, Promise}
+import loci.serializer.jsoniterScala.given
+
+class WebRTCService {
   val registry = new Registry
 
-  // every client has an id
-  val replicaID: String = ThreadLocalRandom.current().nextLong().toHexString
-
-  def test() = {
+  def createCounterRef(): rescala.default.Signal[DeltaBufferRDT[LWWRegister[Int]]] = {
     // a last writer wins register. This means the last value written is the actual value.
     val lastWriterWinsInit = DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
     // initialize the last writer wins with 0 and our replica id
@@ -112,6 +120,7 @@ class WebRTCService() {
     }
     t.schedule(task, 1000L, 1000L)
 
+    counterSignal
   }
 
   def distributeDeltaCRDT[A](
