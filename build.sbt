@@ -1,3 +1,4 @@
+import scala.sys.process
 import org.scalajs.linker.interface.ModuleSplitStyle
 import org.scalajs.linker.interface.ModuleInitializer
 
@@ -11,8 +12,14 @@ ThisBuild / scalaVersion := "3.2.1"
 lazy val webapp = project
   .enablePlugins(
     ScalaJSPlugin,
+    ScalablyTypedConverterExternalNpmPlugin,
   )
   .settings(
+    stIgnore += "daisyui",
+    externalNpm := {
+      process.Process("npm", baseDirectory.value.getParentFile()).!
+      baseDirectory.value.getParentFile()
+    },
     resolvers                              += "jitpack" at "https://jitpack.io",
     libraryDependencies                   ++= Seq(
       "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC12",

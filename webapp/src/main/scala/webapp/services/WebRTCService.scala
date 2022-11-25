@@ -115,6 +115,8 @@ class WebRTCService {
       def run() = {
         val test: Int = taskData.now;
         println(test)
+
+        typings.idbKeyval.mod.set("test", "hi")
       }
     }
     t.schedule(task, 1000L, 1000L)
