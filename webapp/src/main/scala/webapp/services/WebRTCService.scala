@@ -33,9 +33,9 @@ import kofre.datatypes.TimedVal
 import kofre.dotted.Dotted
 import kofre.syntax.DottedName
 import kofre.datatypes.PosNegCounter
-import kofre.base.{DecomposeLattice, Bottom}
+import kofre.base.{Bottom, DecomposeLattice}
 
-import loci.registry.{Registry, Binding}
+import loci.registry.{Binding, Registry}
 import loci.communicator.webrtc
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
@@ -59,7 +59,7 @@ import scala.concurrent.{Future, Promise}
 import scala.Function.const
 import scala.collection.mutable
 import scala.scalajs.js.timers.setTimeout
-import scala.util.{Success, Failure}
+import scala.util.{Failure, Success}
 import scala.reflect.Selectable.*
 import scala.scalajs.js
 
@@ -115,7 +115,7 @@ class WebRTCService {
     (counterSignal, testChangeEvent)
   }
 
-  //receives the changes from all peers, also responsible for sharing own data
+  // receives the changes from all peers, also responsible for sharing own data
   def distributeDeltaCRDT[A](
       signal: Signal[DeltaBufferRDT[A]],
       deltaEvt: Evt[DottedName[A]],
@@ -149,7 +149,6 @@ class WebRTCService {
         } ++ resendBuffer.get(remoteRef).toList
 
         val combinedState = deltaStateList.reduceOption(DecomposeLattice[Dotted[A]].merge)
-
 
         combinedState.foreach { s =>
           // in case the update fails this is the resend buffer
