@@ -29,7 +29,6 @@ import webapp.components.navigationHeader
 case class HomePage() extends Page {
 
   def counter(using services: Services) = SyncIO {
-    services.webrtc.createCounterRef()
     val number = Var(0)
     div(
       cls := "grid grid-flow-col grid-rows-1 grid-cols-2",

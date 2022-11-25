@@ -73,6 +73,8 @@ import loci.serializer.jsoniterScala.given
 class WebRTCService {
   val registry = new Registry
 
+  createCounterRef()
+
   def createCounterRef(): rescala.default.Signal[DeltaBufferRDT[LWWRegister[Int]]] = {
     // a last writer wins register. This means the last value written is the actual value.
     val lastWriterWinsInit = DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
