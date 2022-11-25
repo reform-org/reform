@@ -17,59 +17,51 @@ package webapp.services
 
 import colibri.*
 import colibri.router.*
-import colibri.router.Router
-import loci.registry.Registry
-import org.scalajs.dom.*
-import org.scalajs.dom
-import outwatch.*
-import outwatch.dsl.*
-import rescala.default.*
-import scala.reflect.Selectable.*
-import scala.scalajs.js
+
 import webapp.*
 import webapp.pages.*
-import kofre.decompose.containers.DeltaBufferRDT
-import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegister
-import java.util.concurrent.ThreadLocalRandom
-import kofre.decompose.interfaces.LWWRegisterInterface
-import kofre.decompose.interfaces.MVRegisterInterface.MVRegisterSyntax
-import kofre.datatypes.TimedVal
-
-import kofre.datatypes.TimedVal
-import kofre.decompose.containers.DeltaBufferRDT
-import kofre.decompose.interfaces.LWWRegisterInterface
-import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegisterSyntax
-import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegister
-import kofre.decompose.interfaces.MVRegisterInterface.MVRegisterSyntax
-import kofre.dotted.Dotted
-import kofre.syntax.DottedName
-import loci.registry.Binding
-import org.scalajs.dom.UIEvent
-import org.scalajs.dom.html.{Input, LI}
-import rescala.default.*
-import rescala.extra.Tags.*
-import scala.Function.const
-import scala.collection.mutable
-import scala.scalajs.js.timers.setTimeout
-import scala.concurrent.Future
-import kofre.base.DecomposeLattice
-import kofre.base.Bottom
-import loci.transmitter.RemoteRef
-import scala.util.Success
-import scala.util.Failure
-import scribe.Execution.global
 import webapp.Codecs.*
 
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import outwatch.*
+import outwatch.dsl.*
+
+import java.util.concurrent.ThreadLocalRandom
+
+import kofre.decompose.interfaces.MVRegisterInterface.MVRegisterSyntax
+import kofre.decompose.containers.DeltaBufferRDT
+import kofre.datatypes.TimedVal
+import kofre.dotted.Dotted
+import kofre.syntax.DottedName
+import kofre.datatypes.PosNegCounter
+import kofre.base.{DecomposeLattice, Bottom}
+
+import loci.registry.{Registry, Binding}
 import loci.communicator.webrtc
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
-import loci.registry.Registry
+import loci.transmitter.RemoteRef
+import loci.serializer.jsoniterScala.given
+
+import org.scalajs.dom.html.{Input, LI}
+import org.scalajs.dom.*
+import org.scalajs.dom
+
+import rescala.default.*
+import rescala.extra.Tags.*
+
+import scribe.Execution.global
+
+import com.github.plokhotnyuk.jsoniter_scala.core.*
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
-import loci.serializer.jsoniterScala.given
-import kofre.datatypes.PosNegCounter
+import scala.Function.const
+import scala.collection.mutable
+import scala.scalajs.js.timers.setTimeout
+import scala.util.{Success, Failure}
+import scala.reflect.Selectable.*
+import scala.scalajs.js
 
 class WebRTCService {
   val registry = new Registry
@@ -77,8 +69,7 @@ class WebRTCService {
   val counter = createCounterRef()
 
   def createCounterRef(): (rescala.default.Signal[DeltaBufferRDT[PosNegCounter]], rescala.default.Evt[Int]) = {
-    // a last writer wins register. This means the last value written is the actual value.
-    val lastWriterWins = DeltaBufferRDT(replicaID, PosNegCounter.zero)
+    val counter = DeltaBufferRDT(replicaID, PosNegCounter.zero)
 
     // event that fires when the user wants to change the value
     val testChangeEvent = rescala.default.Evt[Int]();
@@ -90,7 +81,7 @@ class WebRTCService {
 
     // TaskData.scala
     // look at foldAll documentation+example
-    val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(lastWriterWins)(current => {
+    val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(counter)(current => {
       Seq(
         // if the user changes the value, update the register with the new value
         testChangeEvent.act2({ v =>
@@ -124,6 +115,7 @@ class WebRTCService {
     (counterSignal, testChangeEvent)
   }
 
+  //receives the changes from all peers, also responsible for sharing own data
   def distributeDeltaCRDT[A](
       signal: Signal[DeltaBufferRDT[A]],
       deltaEvt: Evt[DottedName[A]],
@@ -134,13 +126,14 @@ class WebRTCService {
   ): Unit = {
     // listens for deltas from peers
     registry.bindSbj(binding) { (remoteRef: RemoteRef, deltaState: Dotted[A]) =>
-      // if we receive a delta from a peer, fire the deltaEvent
+      // when we receive a delta from a peer, the deltaEvent will be fired
       deltaEvt.fire(DottedName(remoteRef.toString, deltaState))
     }
 
     var observers = Map[RemoteRef, Disconnectable]()
     var resendBuffer = Map[RemoteRef, Dotted[A]]()
 
+    // gets executed everytime a remote joins
     def registerRemote(remoteRef: RemoteRef): Unit = {
       val remoteUpdate: Dotted[A] => Future[Unit] = registry.lookup(binding, remoteRef)
 
@@ -156,6 +149,7 @@ class WebRTCService {
         } ++ resendBuffer.get(remoteRef).toList
 
         val combinedState = deltaStateList.reduceOption(DecomposeLattice[Dotted[A]].merge)
+
 
         combinedState.foreach { s =>
           // in case the update fails this is the resend buffer
