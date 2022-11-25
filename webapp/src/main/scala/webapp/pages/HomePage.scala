@@ -29,17 +29,16 @@ import webapp.components.navigationHeader
 case class HomePage() extends Page {
 
   def counter(using services: Services) = SyncIO {
-    val number = Var(0)
     div(
       cls := "grid grid-flow-col grid-rows-1 grid-cols-2",
       button(
         cls := "btn",
         "+",
-        onClick(number.map(_ + 1)) --> number,
+        onClick.foreach(_ => services.webrtc.counter(1).fire(1)),
       ),
       div(
         cls := "flex justify-center items-center",
-        number,
+        services.webrtc.counter(0).map(x => x.value),
       ),
     )
   }

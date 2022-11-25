@@ -74,9 +74,9 @@ import kofre.datatypes.PosNegCounter
 class WebRTCService {
   val registry = new Registry
 
-  createCounterRef()
+  val counter = createCounterRef()
 
-  def createCounterRef(): rescala.default.Signal[DeltaBufferRDT[PosNegCounter]] = {
+  def createCounterRef(): (rescala.default.Signal[DeltaBufferRDT[PosNegCounter]], rescala.default.Evt[Int]) = {
     // a last writer wins register. This means the last value written is the actual value.
     val lastWriterWins = DeltaBufferRDT(replicaID, PosNegCounter.zero)
 
@@ -115,12 +115,11 @@ class WebRTCService {
       def run() = {
         val test: Int = taskData.now;
         println(test)
-        testChangeEvent.fire(1)
       }
     }
     t.schedule(task, 1000L, 1000L)
 
-    counterSignal
+    (counterSignal, testChangeEvent)
   }
 
   def distributeDeltaCRDT[A](
