@@ -14,6 +14,7 @@ import loci.transmitter.IdenticallyTransmittable
 import scala.annotation.nowarn
 import rescala.default.*
 import java.util.concurrent.ThreadLocalRandom
+import kofre.datatypes.PosNegCounter
 
 object Codecs {
 
@@ -22,7 +23,7 @@ object Codecs {
 
   // TaskData = Int
 
-  implicit val transmittableLWW: IdenticallyTransmittable[Dotted[LWWRegister[Int]]] =
+  implicit val transmittableLWW: IdenticallyTransmittable[Dotted[PosNegCounter]] =
     IdenticallyTransmittable()
 
   implicit val dotKeyCodec: JsonKeyCodec[Dot] = new JsonKeyCodec[Dot] {
@@ -33,19 +34,19 @@ object Codecs {
     override def encodeKey(x: Dot, out: JsonWriter): Unit = out.writeKey(s"${x.time}-${x.replicaId}")
   }
 
-  implicit val codecLwwState: JsonValueCodec[Dotted[DotFun[TimedVal[Int]]]] = JsonCodecMaker.make
+  implicit val codecLwwState: JsonValueCodec[Dotted[kofre.datatypes.PosNegCounter]] = JsonCodecMaker.make
 
-  type LwC = DeltaBufferRDT[LWWRegister[Int]]
+  type LwC = DeltaBufferRDT[PosNegCounter]
   implicit val codecLww: JsonValueCodec[LwC] =
     new JsonValueCodec[LwC] {
       override def decodeValue(in: JsonReader, default: LwC): LwC = {
-        val state: Dotted[LWWRegister[Int]] = codecLwwState.decodeValue(in, default.state)
-        new DeltaBufferRDT[LWWRegister[Int]](state, replicaID, List())
+        val state: Dotted[PosNegCounter] = codecLwwState.decodeValue(in, default.state)
+        new DeltaBufferRDT[PosNegCounter](state, replicaID, List())
       }
       override def encodeValue(x: LwC, out: JsonWriter): Unit = codecLwwState.encodeValue(x.state, out)
       override def nullValue: LwC = {
         println(s"reading null")
-        DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
+        DeltaBufferRDT(replicaID, PosNegCounter.zero)
       }
     }
 

@@ -69,35 +69,33 @@ import loci.registry.Registry
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
 import loci.serializer.jsoniterScala.given
+import kofre.datatypes.PosNegCounter
 
 class WebRTCService {
   val registry = new Registry
 
   createCounterRef()
 
-  def createCounterRef(): rescala.default.Signal[DeltaBufferRDT[LWWRegister[Int]]] = {
+  def createCounterRef(): rescala.default.Signal[DeltaBufferRDT[PosNegCounter]] = {
     // a last writer wins register. This means the last value written is the actual value.
-    val lastWriterWinsInit = DeltaBufferRDT(replicaID, LWWRegisterInterface.empty[Int])
-    // initialize the last writer wins with 0 and our replica id
-    val lastWriterWins: DeltaBufferRDT[LWWRegister[Int]] =
-      MVRegisterSyntax(lastWriterWinsInit).write(TimedVal(0, lastWriterWinsInit.replicaID, 0, 0));
+    val lastWriterWins = DeltaBufferRDT(replicaID, PosNegCounter.zero)
 
     // event that fires when the user wants to change the value
     val testChangeEvent = rescala.default.Evt[Int]();
 
     // event that fires when changes from other peers are received
-    val deltaEvent = Evt[DottedName[LWWRegister[Int]]]()
+    val deltaEvent = Evt[DottedName[PosNegCounter]]()
 
     // TODO FIXME Storing.storedAs persists this value
 
     // TaskData.scala
     // look at foldAll documentation+example
-    val counterSignal: Signal[DeltaBufferRDT[LWWRegister[Int]]] = Events.foldAll(lastWriterWins)(current => {
+    val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(lastWriterWins)(current => {
       Seq(
         // if the user changes the value, update the register with the new value
         testChangeEvent.act2({ v =>
           {
-            current.resetDeltaBuffer().map(current => current + v)
+            current.resetDeltaBuffer().add(v)
           }
         }),
         // if we receive a delta from a peer, apply it
@@ -106,11 +104,11 @@ class WebRTCService {
     })
 
     distributeDeltaCRDT(counterSignal, deltaEvent, registry)(
-      Binding[Dotted[LWWRegister[Int]] => Unit]("counter"),
+      Binding[Dotted[PosNegCounter] => Unit]("counter"),
     )
 
     // magic to convert our counterSignal to the value inside
-    val taskData = counterSignal.map(x => LWWRegisterInterface.LWWRegisterSyntax(x).read.getOrElse(1337))
+    val taskData = counterSignal.map(x => x.value)
 
     val t = new java.util.Timer()
     val task = new java.util.TimerTask {
