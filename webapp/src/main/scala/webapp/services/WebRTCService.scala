@@ -66,12 +66,17 @@ import loci.serializer.jsoniterScala.given
 import kofre.datatypes.PosNegCounter
 import scala.scalajs.js.JSON
 
+case class EventedCounter(
+    signal: rescala.default.Signal[DeltaBufferRDT[PosNegCounter]],
+    incrementValueEvent: rescala.default.Evt[Int],
+)
+
 class WebRTCService {
   val registry = new Registry
 
   val counter = createCounterRef()
 
-  def createCounterRef(): Future[(rescala.default.Signal[DeltaBufferRDT[PosNegCounter]], rescala.default.Evt[Int])] = {
+  def createCounterRef(): Future[EventedCounter] = {
     // restore counter from indexeddb
     val init: Future[PosNegCounter] =
       typings.idbKeyval.mod
@@ -119,20 +124,7 @@ class WebRTCService {
         Binding[Dotted[PosNegCounter] => Unit]("counter"),
       )
 
-      // magic to convert our counterSignal to the value inside
-      val taskData = counterSignal.map(x => x.value)
-
-      val t = new java.util.Timer()
-      val task = new java.util.TimerTask {
-        def run() = {
-          val test: Int = taskData.now;
-          println(test)
-        }
-      }
-      t.schedule(task, 1000L, 1000L)
-
-      (counterSignal, testChangeEvent)
-
+      EventedCounter(counterSignal, testChangeEvent)
     })
   }
 

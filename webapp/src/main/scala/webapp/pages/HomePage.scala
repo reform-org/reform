@@ -35,11 +35,11 @@ case class HomePage() extends Page {
       button(
         cls := "btn",
         "+",
-        onClick.foreach(_ => services.webrtc.counter.map(_(1).fire(1))),
+        onClick.foreach(_ => services.webrtc.counter.map(_.incrementValueEvent.fire(1))),
       ),
       div(
         cls := "flex justify-center items-center",
-        services.webrtc.counter.map(_(0).map(x => x.value)),
+        services.webrtc.counter.map(_.signal.map(_.value)),
       ),
     )
   }
