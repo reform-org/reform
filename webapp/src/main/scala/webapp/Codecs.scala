@@ -16,38 +16,33 @@ import rescala.default.*
 import java.util.concurrent.ThreadLocalRandom
 import kofre.datatypes.PosNegCounter
 
+// Supporting code to serialize and deserialize objects
 object Codecs {
 
   // every client has an id
   val replicaID: String = ThreadLocalRandom.current().nextLong().toHexString
 
-  implicit val transmittableLWW: IdenticallyTransmittable[Dotted[PosNegCounter]] =
+  implicit val transmittablePositiveNegativeCounter: IdenticallyTransmittable[Dotted[PosNegCounter]] =
     IdenticallyTransmittable()
 
-  implicit val dotKeyCodec: JsonKeyCodec[Dot] = new JsonKeyCodec[Dot] {
-    override def decodeKey(in: JsonReader): Dot = {
-      val Array(time, id) = in.readKeyAsString().split("-", 2)
-      Dot(id, time.toLong)
+  implicit val codecDottedPositiveNegativeCounter: JsonValueCodec[Dotted[kofre.datatypes.PosNegCounter]] =
+    JsonCodecMaker.make
+
+  implicit val codecDeltaBufferPositiveNegativeCounter: JsonValueCodec[DeltaBufferRDT[PosNegCounter]] =
+    new JsonValueCodec[DeltaBufferRDT[PosNegCounter]] {
+      override def decodeValue(
+          in: JsonReader,
+          default: DeltaBufferRDT[PosNegCounter],
+      ): DeltaBufferRDT[PosNegCounter] = {
+        val state: Dotted[PosNegCounter] = codecDottedPositiveNegativeCounter.decodeValue(in, default.state)
+        new DeltaBufferRDT[PosNegCounter](state, replicaID, List())
+      }
+      override def encodeValue(x: DeltaBufferRDT[PosNegCounter], out: JsonWriter): Unit =
+        codecDottedPositiveNegativeCounter.encodeValue(x.state, out)
+      override def nullValue: DeltaBufferRDT[PosNegCounter] = {
+        DeltaBufferRDT(replicaID, PosNegCounter.zero)
+      }
     }
-    override def encodeKey(x: Dot, out: JsonWriter): Unit = out.writeKey(s"${x.time}-${x.replicaId}")
-  }
 
-  implicit val codecLwwState: JsonValueCodec[Dotted[kofre.datatypes.PosNegCounter]] = JsonCodecMaker.make
-
-  type LwC = DeltaBufferRDT[PosNegCounter]
-  implicit val codecLww: JsonValueCodec[LwC] = new JsonValueCodec[LwC] {
-    override def decodeValue(in: JsonReader, default: LwC): LwC = {
-      val state: Dotted[PosNegCounter] = codecLwwState.decodeValue(in, default.state)
-      new DeltaBufferRDT[PosNegCounter](state, replicaID, List())
-    }
-    override def encodeValue(x: LwC, out: JsonWriter): Unit = codecLwwState.encodeValue(x.state, out)
-    override def nullValue: LwC = {
-      println(s"reading null")
-      DeltaBufferRDT(replicaID, PosNegCounter.zero)
-    }
-  }
-
-  implicit val codecPosNegCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
-
-  implicit val todoTaskCodec: JsonValueCodec[Int] = JsonCodecMaker.make
+  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
 }
