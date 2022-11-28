@@ -21,8 +21,6 @@ object Codecs {
   // every client has an id
   val replicaID: String = ThreadLocalRandom.current().nextLong().toHexString
 
-  // TaskData = Int
-
   implicit val transmittableLWW: IdenticallyTransmittable[Dotted[PosNegCounter]] =
     IdenticallyTransmittable()
 
@@ -37,41 +35,19 @@ object Codecs {
   implicit val codecLwwState: JsonValueCodec[Dotted[kofre.datatypes.PosNegCounter]] = JsonCodecMaker.make
 
   type LwC = DeltaBufferRDT[PosNegCounter]
-  implicit val codecLww: JsonValueCodec[LwC] =
-    new JsonValueCodec[LwC] {
-      override def decodeValue(in: JsonReader, default: LwC): LwC = {
-        val state: Dotted[PosNegCounter] = codecLwwState.decodeValue(in, default.state)
-        new DeltaBufferRDT[PosNegCounter](state, replicaID, List())
-      }
-      override def encodeValue(x: LwC, out: JsonWriter): Unit = codecLwwState.encodeValue(x.state, out)
-      override def nullValue: LwC = {
-        println(s"reading null")
-        DeltaBufferRDT(replicaID, PosNegCounter.zero)
-      }
+  implicit val codecLww: JsonValueCodec[LwC] = new JsonValueCodec[LwC] {
+    override def decodeValue(in: JsonReader, default: LwC): LwC = {
+      val state: Dotted[PosNegCounter] = codecLwwState.decodeValue(in, default.state)
+      new DeltaBufferRDT[PosNegCounter](state, replicaID, List())
     }
+    override def encodeValue(x: LwC, out: JsonWriter): Unit = codecLwwState.encodeValue(x.state, out)
+    override def nullValue: LwC = {
+      println(s"reading null")
+      DeltaBufferRDT(replicaID, PosNegCounter.zero)
+    }
+  }
+
+  implicit val codecPosNegCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
 
   implicit val todoTaskCodec: JsonValueCodec[Int] = JsonCodecMaker.make
-  /*
-  implicit val taskRefCodec: JsonValueCodec[TaskRef] = JsonCodecMaker.make
-
-  @nowarn()
-  implicit val codecState: JsonValueCodec[Dotted[RGA[TaskRef]]] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-  implicit val codecRGA: JsonValueCodec[DeltaBufferRDT[RGA[TaskRef]]] =
-    new JsonValueCodec[DeltaBufferRDT[RGA[TaskRef]]] {
-      override def decodeValue(
-          in: JsonReader,
-          default: DeltaBufferRDT[RGA[TaskRef]]
-      ): DeltaBufferRDT[RGA[TaskRef]] = {
-        val state = codecState.decodeValue(in, default.state)
-        new DeltaBufferRDT[RGA[TaskRef]](state, replicaId, List())
-      }
-      override def encodeValue(x: DeltaBufferRDT[RGA[TaskRef]], out: JsonWriter): Unit =
-        codecState.encodeValue(x.state, out)
-      override def nullValue: DeltaBufferRDT[RGA[TaskRef]] = DeltaBufferRDT(replicaId, RGA.empty[TaskRef])
-    }
-
-  implicit val transmittableList: IdenticallyTransmittable[Dotted[RGA[TaskRef]]] =
-    IdenticallyTransmittable()
-   */
-
 }

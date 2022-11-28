@@ -25,6 +25,7 @@ import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
+import concurrent.ExecutionContext.Implicits.global
 
 case class HomePage() extends Page {
 
@@ -34,11 +35,11 @@ case class HomePage() extends Page {
       button(
         cls := "btn",
         "+",
-        onClick.foreach(_ => services.webrtc.counter(1).fire(1)),
+        onClick.foreach(_ => services.webrtc.counter.map(_(1).fire(1))),
       ),
       div(
         cls := "flex justify-center items-center",
-        services.webrtc.counter(0).map(x => x.value),
+        services.webrtc.counter.map(_(0).map(x => x.value)),
       ),
     )
   }

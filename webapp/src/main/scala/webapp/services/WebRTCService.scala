@@ -62,57 +62,78 @@ import scala.scalajs.js.timers.setTimeout
 import scala.util.{Failure, Success}
 import scala.reflect.Selectable.*
 import scala.scalajs.js
+import loci.serializer.jsoniterScala.given
+import kofre.datatypes.PosNegCounter
+import scala.scalajs.js.JSON
 
 class WebRTCService {
   val registry = new Registry
 
   val counter = createCounterRef()
 
-  def createCounterRef(): (rescala.default.Signal[DeltaBufferRDT[PosNegCounter]], rescala.default.Evt[Int]) = {
-    val counter = DeltaBufferRDT(replicaID, PosNegCounter.zero)
+  def createCounterRef(): Future[(rescala.default.Signal[DeltaBufferRDT[PosNegCounter]], rescala.default.Evt[Int])] = {
+    // restore counter from indexeddb
+    val init: Future[PosNegCounter] =
+      typings.idbKeyval.mod
+        .get[scala.scalajs.js.Object]("counter")
+        .toFuture
+        .map(value =>
+          value.toOption
+            .map(value => readFromString[PosNegCounter](JSON.stringify(value)))
+            .getOrElse(PosNegCounter.zero),
+        );
 
-    // event that fires when the user wants to change the value
-    val testChangeEvent = rescala.default.Evt[Int]();
+    init.map(init => {
+      // a last writer wins register. This means the last value written is the actual value.
+      val lastWriterWins = DeltaBufferRDT(replicaID, init)
 
-    // event that fires when changes from other peers are received
-    val deltaEvent = Evt[DottedName[PosNegCounter]]()
+      // event that fires when the user wants to change the value
+      val testChangeEvent = rescala.default.Evt[Int]();
 
-    // TODO FIXME Storing.storedAs persists this value
+      // event that fires when changes from other peers are received
+      val deltaEvent = Evt[DottedName[PosNegCounter]]()
 
-    // TaskData.scala
-    // look at foldAll documentation+example
-    val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(counter)(current => {
-      Seq(
-        // if the user changes the value, update the register with the new value
-        testChangeEvent.act2({ v =>
-          {
-            current.resetDeltaBuffer().add(v)
-          }
-        }),
-        // if we receive a delta from a peer, apply it
-        deltaEvent.act2({ delta => current.resetDeltaBuffer().applyDelta(delta) }),
+      // look at foldAll documentation+example
+      val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(lastWriterWins)(current => {
+        Seq(
+          // if the user changes the value, update the register with the new value
+          testChangeEvent.act2({ v =>
+            {
+              current.resetDeltaBuffer().add(v)
+            }
+          }),
+          // if we receive a delta from a peer, apply it
+          deltaEvent.act2({ delta => current.resetDeltaBuffer().applyDelta(delta) }),
+        )
+      })
+
+      counterSignal.observe(
+        value => {
+          // this is async which means this is not robust
+          typings.idbKeyval.mod.set("counter", JSON.parse(writeToString(value.state.store)))
+        },
+        fireImmediately = true,
       )
-    })
 
-    distributeDeltaCRDT(counterSignal, deltaEvent, registry)(
-      Binding[Dotted[PosNegCounter] => Unit]("counter"),
-    )
+      distributeDeltaCRDT(counterSignal, deltaEvent, registry)(
+        Binding[Dotted[PosNegCounter] => Unit]("counter"),
+      )
 
-    // magic to convert our counterSignal to the value inside
-    val taskData = counterSignal.map(x => x.value)
+      // magic to convert our counterSignal to the value inside
+      val taskData = counterSignal.map(x => x.value)
 
-    val t = new java.util.Timer()
-    val task = new java.util.TimerTask {
-      def run() = {
-        val test: Int = taskData.now;
-        println(test)
-
-        typings.idbKeyval.mod.set("test", "hi")
+      val t = new java.util.Timer()
+      val task = new java.util.TimerTask {
+        def run() = {
+          val test: Int = taskData.now;
+          println(test)
+        }
       }
-    }
-    t.schedule(task, 1000L, 1000L)
+      t.schedule(task, 1000L, 1000L)
 
-    (counterSignal, testChangeEvent)
+      (counterSignal, testChangeEvent)
+
+    })
   }
 
   // receives the changes from all peers, also responsible for sharing own data
