@@ -27,17 +27,34 @@ case class ProjectPage(id: String) extends Page {
   def render(using services: Services): VNode =
     div(
       navigationHeader,
-      div(
-        cls := "p-1",
-        h1(cls := "text-4xl text-center", "Single project: " + id),
-        a(
-          cls := "btn",
-          href := "/",
-          "Home",
-          onClick.foreach(e => {
-            e.preventDefault()
-            services.routing.to(HomePage(), true)
-          }),
+      table(
+        cls := "table-auto",
+        thead(
+          tr(
+            th("Song"),
+            th("Artist"),
+            th("Year"),
+          ),
+        ),
+        tbody(
+          tr(
+            td(
+              cls := "text-sm text-gray-900 font-light px-6 py-4 whitespace-nowrap  nowrap",
+              "The Sliding Mr. Bones (Next Stop, Pottersville)",
+            ),
+            td("Malcolm Lockyer"),
+            td("1961"),
+          ),
+          tr(
+            td("Witchy Woman"),
+            td("The Eagles"),
+            td("1972"),
+          ),
+          tr(
+            td("Shining Star"),
+            td("Earth, Wind, and Fire"),
+            td("1975"),
+          ),
         ),
       ),
     )
