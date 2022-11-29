@@ -66,67 +66,8 @@ import loci.serializer.jsoniterScala.given
 import kofre.datatypes.PosNegCounter
 import scala.scalajs.js.JSON
 
-case class EventedCounter(
-    signal: rescala.default.Signal[DeltaBufferRDT[PosNegCounter]],
-    incrementValueEvent: rescala.default.Evt[Int],
-)
-
-class WebRTCService {
+object WebRTCService {
   val registry = new Registry
-
-  val counter = createCounterRef()
-
-  def createCounterRef(): Future[EventedCounter] = {
-    // restore counter from indexeddb
-    val init: Future[PosNegCounter] =
-      typings.idbKeyval.mod
-        .get[scala.scalajs.js.Object]("counter")
-        .toFuture
-        .map(value =>
-          value.toOption
-            .map(value => readFromString[PosNegCounter](JSON.stringify(value)))
-            .getOrElse(PosNegCounter.zero),
-        );
-
-    init.map(init => {
-      // a last writer wins register. This means the last value written is the actual value.
-      val lastWriterWins = DeltaBufferRDT(replicaID, init)
-
-      // event that fires when the user wants to change the value
-      val testChangeEvent = rescala.default.Evt[Int]();
-
-      // event that fires when changes from other peers are received
-      val deltaEvent = Evt[DottedName[PosNegCounter]]()
-
-      // look at foldAll documentation+example
-      val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(lastWriterWins)(current => {
-        Seq(
-          // if the user changes the value, update the register with the new value
-          testChangeEvent.act2({ v =>
-            {
-              current.resetDeltaBuffer().add(v)
-            }
-          }),
-          // if we receive a delta from a peer, apply it
-          deltaEvent.act2({ delta => current.resetDeltaBuffer().applyDelta(delta) }),
-        )
-      })
-
-      counterSignal.observe(
-        value => {
-          // this is async which means this is not robust
-          typings.idbKeyval.mod.set("counter", JSON.parse(writeToString(value.state.store)))
-        },
-        fireImmediately = true,
-      )
-
-      distributeDeltaCRDT(counterSignal, deltaEvent, registry)(
-        Binding[Dotted[PosNegCounter] => Unit]("counter"),
-      )
-
-      EventedCounter(counterSignal, testChangeEvent)
-    })
-  }
 
   // receives the changes from all peers, also responsible for sharing own data
   def distributeDeltaCRDT[A](
