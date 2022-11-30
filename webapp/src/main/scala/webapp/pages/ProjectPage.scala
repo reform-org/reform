@@ -27,6 +27,77 @@ import webapp.components.navigationHeader
 
 case class Project(name: String, maxHours: Int, account: Option[String])
 
+class NewProjectRow {
+
+  private val name = Var("")
+  private val maxHours = Var("")
+  private val account = Var("")
+
+  def render(): VNode =
+    tr(
+      td(
+        input(
+          name,
+          placeholder := "New Project Name",
+          onInput.value --> name,
+        ),
+      ),
+      td(
+        input(
+          `type` := "number",
+          maxHours,
+          placeholder := "0",
+          onInput.value --> maxHours,
+        ),
+      ),
+      td(
+        input(
+          account,
+          placeholder := "Some account",
+          onInput.value --> account,
+        ),
+      ),
+      td(
+        button(
+          cls := "btn",
+          "Create New Project",
+          onClick.foreach(_ => addNewProject()),
+        ),
+      ),
+    )
+
+  def addNewProject(): Unit = {
+    val p = Project(validateName(), validateMaxHours(), validateAccount())
+    println(p)
+  }
+
+  def validateMaxHours(): Int = {
+    val maxHours = this.maxHours.now
+    val hours = maxHours.toIntOption
+
+    if (hours.isEmpty || hours.get < 0) {
+      throw new Exception("Invalid max hours: " + maxHours)
+    }
+
+    hours.get
+  }
+
+  def validateName(): String = {
+    val name = this.name.now
+
+    if (name.isBlank) {
+      throw new Exception("Invalid empty name")
+    }
+
+    name.strip
+  }
+
+  def validateAccount(): Option[String] = {
+    val account = this.account.now
+    if (account.isBlank) None else Some(account)
+  }
+}
+
 case class ProjectPage(id: String) extends Page {
 
   private val projects: Var[List[Project]] = Var(
@@ -37,20 +108,11 @@ case class ProjectPage(id: String) extends Page {
     ),
   )
 
-  private val name = Var("")
+  private val newProjectRow: Var[NewProjectRow] = Var(NewProjectRow())
 
   def render(using services: Services): VNode =
     div(
       navigationHeader,
-      input(
-        name,
-        onInput.value --> name,
-      ),
-      button(
-        cls := "btn",
-        "New",
-        onClick.foreach(_ => addProject(name.now)),
-      ),
       table(
         cls := "table-auto",
         thead(
@@ -58,14 +120,18 @@ case class ProjectPage(id: String) extends Page {
             th("Project"),
             th("Max Hours"),
             th("Account"),
+            th("Stuff"),
           ),
         ),
-        projects.map(renderProjects),
+        tbody(
+          projects.map(renderProjects),
+          newProjectRow.map(_.render()),
+        ),
       ),
     )
 
-  private def renderProjects(projects: List[Project]): VNode =
-    tbody(projects.map { p =>
+  private def renderProjects(projects: List[Project]): List[VNode] =
+    projects.map(p =>
       tr(
         td(p.name),
         td(p.maxHours),
@@ -75,17 +141,13 @@ case class ProjectPage(id: String) extends Page {
           "Delete",
           onClick.foreach(_ => removeProject(p)),
         ),
-      )
-    })
+      ),
+    )
 
   def removeProject(p: Project): Unit = {
     val yes = window.confirm(s"Do you really want to delete the project \"${p.name}\"?")
     if (yes) {
       projects.transform(_.filterNot(_ == p))
     }
-  }
-
-  def addProject(name: String): Unit = {
-    projects.transform(_.appended(Project(name, 0, None)))
   }
 }
