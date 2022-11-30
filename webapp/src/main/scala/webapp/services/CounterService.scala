@@ -49,20 +49,20 @@ object CounterService {
         );
 
     init.map(init => {
-      // a last writer wins register. This means the last value written is the actual value.
-      val lastWriterWins = DeltaBufferRDT(replicaID, init)
+      // a positive negative counter. This means that concurrent updates will be merged by adding them together.
+      val positiveNegativeCounter = DeltaBufferRDT(replicaID, init)
 
       // event that fires when the user wants to change the value
-      val testChangeEvent = rescala.default.Evt[Int]();
+      val changeEvent = rescala.default.Evt[Int]();
 
       // event that fires when changes from other peers are received
       val deltaEvent = Evt[DottedName[PosNegCounter]]()
 
       // look at foldAll documentation+example
-      val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(lastWriterWins)(current => {
+      val counterSignal: Signal[DeltaBufferRDT[PosNegCounter]] = Events.foldAll(positiveNegativeCounter)(current => {
         Seq(
-          // if the user changes the value, update the register with the new value
-          testChangeEvent.act2({ v =>
+          // if the user wants to increase the value, update the register accordingly
+          changeEvent.act2({ v =>
             {
               current.resetDeltaBuffer().add(v)
             }
@@ -74,7 +74,8 @@ object CounterService {
 
       counterSignal.observe(
         value => {
-          // this is async which means this is not robust
+          // write the updated value to persistent storage
+          // TODO FIXME this is async which means this is not robust
           typings.idbKeyval.mod.set("counter", JSON.parse(writeToString(value.state.store)))
         },
         fireImmediately = true,
@@ -84,7 +85,7 @@ object CounterService {
         Binding[Dotted[PosNegCounter] => Unit]("counter"),
       )
 
-      EventedCounter(counterSignal, testChangeEvent)
+      EventedCounter(counterSignal, changeEvent)
     })
   }
 }

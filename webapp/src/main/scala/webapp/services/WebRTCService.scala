@@ -84,7 +84,10 @@ object WebRTCService {
       deltaEvt.fire(DottedName(remoteRef.toString, deltaState))
     }
 
+    // for every remote store an observer that detects changes and sends them to that remote
     var observers = Map[RemoteRef, Disconnectable]()
+
+    // for every remote store the data that needs to be resent to that remote
     var resendBuffer = Map[RemoteRef, Dotted[A]]()
 
     // gets executed everytime a remote joins
@@ -96,19 +99,26 @@ object WebRTCService {
       if (currentState != bottom.empty) remoteUpdate(currentState)
 
       // Whenever the crdt is changed propagate the delta
-      // Praktisch wäre etwas wie crdt.observeDelta
       val observer = signal.observe { s =>
+        // all changes that currently need to be sent to the remote
         val deltaStateList = s.deltaBuffer.collect {
+          // we don't need to send the remote it's own changes so skip them
           case DottedName(replicaID, deltaState) if replicaID != remoteRef.toString => deltaState
         } ++ resendBuffer.get(remoteRef).toList
 
+        // combine the list of changes into a single change for efficiency
         val combinedState = deltaStateList.reduceOption(DecomposeLattice[Dotted[A]].merge)
 
+        // try sending the change to the remote
         combinedState.foreach { s =>
           // in case the update fails this is the resend buffer
           val mergedResendBuffer = resendBuffer.updatedWith(remoteRef) {
-            case None       => Some(s)
-            case Some(prev) => Some(DecomposeLattice[Dotted[A]].merge(prev, s))
+            case None =>
+              // if the resend buffer is empty add the current changes to the resend buffer
+              Some(s)
+            case Some(prev) =>
+              // if the resend buffer is not empty append/merge the current changes to the resend buffer
+              Some(DecomposeLattice[Dotted[A]].merge(prev, s))
           }
 
           if (remoteRef.connected) {
