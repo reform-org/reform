@@ -21,6 +21,8 @@
   },
   "dependencies": {
     "daisyui": "^2.41.0",
-    "snabbdom": "github:outwatch/snabbdom#0.7.5"
+    "idb-keyval": "^6.2.0",
+    "snabbdom": "github:outwatch/snabbdom#0.7.5",
+    "typescript": "^4.9.3"
   }
 }

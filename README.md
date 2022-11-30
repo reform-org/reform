@@ -9,6 +9,8 @@ You should make sure that the following components are pre-installed on your mac
 
 ## Development
 
+Warning: Firefox is not able to load the Source maps, use Chromium.
+
 Install node modules:
 ```
 npm install

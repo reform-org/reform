@@ -19,10 +19,10 @@ import webapp.services.*
 
 trait Services {
   lazy val routing: RoutingService
-  lazy val webrtc: WebRTCService
+  lazy val webrtc: WebRTCService.type
 }
 
 object ServicesDefault extends Services {
   lazy val routing = RoutingService()
-  lazy val webrtc = WebRTCService()
+  lazy val webrtc = WebRTCService
 }

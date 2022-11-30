@@ -25,20 +25,21 @@ import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
+import concurrent.ExecutionContext.Implicits.global
 
 case class HomePage() extends Page {
-  def counter = SyncIO {
-    val number = Var(0)
+
+  def counter(using services: Services) = SyncIO {
     div(
       cls := "grid grid-flow-col grid-rows-1 grid-cols-2",
       button(
         cls := "btn",
         "+",
-        onClick(number.map(_ + 1)) --> number,
+        onClick.foreach(_ => CounterService.counter.map(_.incrementValueEvent.fire(1))),
       ),
       div(
         cls := "flex justify-center items-center",
-        number,
+        CounterService.counter.map(_.signal.map(_.value)),
       ),
     )
   }
