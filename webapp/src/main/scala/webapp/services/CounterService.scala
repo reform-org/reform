@@ -36,9 +36,9 @@ case class EventedCounter(
 object CounterService {
   val counter = createCounterRef()
 
-  def createCounterRef(): Future[EventedCounter] = {
+  def createCounterRef(): EventedCounter = {
     // restore counter from indexeddb
-    val init: Future[PosNegCounter] =
+    /*val init: Future[PosNegCounter] =
       typings.idbKeyval.mod
         .get[scala.scalajs.js.Object]("counter")
         .toFuture
@@ -46,9 +46,10 @@ object CounterService {
           value.toOption
             .map(value => readFromString[PosNegCounter](JSON.stringify(value)))
             .getOrElse(PosNegCounter.zero),
-        );
+        );*/
+    val init = PosNegCounter.zero;
 
-    init.map(init => {
+    //init.map(init => {
       // a positive negative counter. This means that concurrent updates will be merged by adding them together.
       val positiveNegativeCounter = DeltaBufferRDT(replicaID, init)
 
@@ -76,7 +77,7 @@ object CounterService {
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          typings.idbKeyval.mod.set("counter", JSON.parse(writeToString(value.state.store)))
+          //typings.idbKeyval.mod.set("counter", JSON.parse(writeToString(value.state.store)))
         },
         fireImmediately = true,
       )
@@ -86,6 +87,6 @@ object CounterService {
       )
 
       EventedCounter(counterSignal, changeEvent)
-    })
+    //})
   }
 }
