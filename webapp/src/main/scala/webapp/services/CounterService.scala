@@ -27,6 +27,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString
 import webapp.Codecs.{replicaID, given}
 import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
+import webapp.npm.IdbKeyval
 
 case class EventedCounter(
     signal: rescala.default.Signal[DeltaBufferRDT[PosNegCounter]],
@@ -39,7 +40,7 @@ object CounterService {
   def createCounterRef(): Future[EventedCounter] = {
     // restore counter from indexeddb
     val init: Future[PosNegCounter] =
-      typings.idbKeyval.mod
+      IdbKeyval
         .get[scala.scalajs.js.Object]("counter")
         .toFuture
         .map(value =>
@@ -76,7 +77,7 @@ object CounterService {
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          typings.idbKeyval.mod.set("counter", JSON.parse(writeToString(value.state.store)))
+          IdbKeyval.set("counter", JSON.parse(writeToString(value.state.store)))
         },
         fireImmediately = true,
       )

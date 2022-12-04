@@ -16,15 +16,9 @@ lazy val webapp = project
   .dependsOn(rescala)
   .dependsOn(rescala_kofre)
   .enablePlugins(
-    ScalaJSPlugin,
-    ScalablyTypedConverterExternalNpmPlugin,
+    ScalaJSPlugin
   )
   .settings(
-    stIgnore += "daisyui",
-    externalNpm := {
-      process.Process("npm", baseDirectory.value.getParentFile()).!
-      baseDirectory.value.getParentFile()
-    },
     resolvers                              += "jitpack" at "https://jitpack.io",
     libraryDependencies                   ++= Seq(
       "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC12",
