@@ -11,8 +11,7 @@ ThisBuild / scalaVersion := "3.2.1"
 
 lazy val webapp = project
   .enablePlugins(
-    ScalaJSPlugin,
-    ScalablyTypedConverterExternalNpmPlugin,
+    ScalaJSPlugin
   )
   .settings(
     resolvers                              += "jitpack" at "https://jitpack.io",
