@@ -27,11 +27,13 @@ import webapp.components.navigationHeader
 
 case class Project(name: String, maxHours: Int, account: Option[String])
 
-class NewProjectRow {
+private class NewProjectRow {
 
   private val name = Var("")
   private val maxHours = Var("")
   private val account = Var("")
+
+  val onNewProject: Evt[Project] = Evt[Project]()
 
   def render(): VNode =
     tr(
@@ -60,18 +62,25 @@ class NewProjectRow {
       td(
         button(
           cls := "btn",
-          "Create New Project",
+          "Add Project",
           onClick.foreach(_ => addNewProject()),
         ),
       ),
     )
 
-  def addNewProject(): Unit = {
-    val p = Project(validateName(), validateMaxHours(), validateAccount())
-    println(p)
+  private def addNewProject(): Unit = {
+    try {
+      val p = Project(validateName(), validateMaxHours(), validateAccount())
+      onNewProject.fire(p)
+      name.set("")
+      maxHours.set("")
+      account.set("")
+    } catch {
+      case e: Exception => window.alert(e.getMessage)
+    }
   }
 
-  def validateMaxHours(): Int = {
+  private def validateMaxHours(): Int = {
     val maxHours = this.maxHours.now
     val hours = maxHours.toIntOption
 
@@ -82,7 +91,7 @@ class NewProjectRow {
     hours.get
   }
 
-  def validateName(): String = {
+  private def validateName(): String = {
     val name = this.name.now
 
     if (name.isBlank) {
@@ -92,7 +101,7 @@ class NewProjectRow {
     name.strip
   }
 
-  def validateAccount(): Option[String] = {
+  private def validateAccount(): Option[String] = {
     val account = this.account.now
     if (account.isBlank) None else Some(account)
   }
@@ -108,7 +117,9 @@ case class ProjectPage(id: String) extends Page {
     ),
   )
 
-  private val newProjectRow: Var[NewProjectRow] = Var(NewProjectRow())
+  private val newProjectRow: NewProjectRow = NewProjectRow()
+
+  newProjectRow.onNewProject.observe(p => projects.transform(_.appended(p)))
 
   def render(using services: Services): VNode =
     div(
@@ -125,7 +136,7 @@ case class ProjectPage(id: String) extends Page {
         ),
         tbody(
           projects.map(renderProjects),
-          newProjectRow.map(_.render()),
+          newProjectRow.render(),
         ),
       ),
     )
@@ -144,7 +155,7 @@ case class ProjectPage(id: String) extends Page {
       ),
     )
 
-  def removeProject(p: Project): Unit = {
+  private def removeProject(p: Project): Unit = {
     val yes = window.confirm(s"Do you really want to delete the project \"${p.name}\"?")
     if (yes) {
       projects.transform(_.filterNot(_ == p))
