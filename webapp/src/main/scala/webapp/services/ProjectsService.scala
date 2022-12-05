@@ -29,16 +29,20 @@ import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.IdbKeyval
 import webapp.Project
+import kofre.datatypes.RGA
+import java.util.UUID
 
-case class EventedProject(
-    signal: rescala.default.Signal[DeltaBufferRDT[Project]],
-    setNameEvent: rescala.default.Evt[String],
+case class EventedProjects(
+    signal: rescala.default.Signal[DeltaBufferRDT[RGA[String]]],
+    addNewProjectEvent: rescala.default.Evt[Unit],
 )
 
-object ProjectService {
-  def createProjectRef(id: String): Future[EventedProject] = {
+object ProjectsService {
+  val projects = createProjectsRef()
+
+  def createProjectsRef(): Future[EventedProjects] = {
     // restore counter from indexeddb
-    val init: Future[Project] = Future { Project.empty }
+    val init: Future[RGA[String]] = Future { RGA.empty }
     /*IdbKeyval
         .get[scala.scalajs.js.Object]("counter")
         .toFuture
@@ -50,21 +54,21 @@ object ProjectService {
 
     init.map(init => {
       // a positive negative counter. This means that concurrent updates will be merged by adding them together.
-      val project = DeltaBufferRDT(replicaID, init)
+      val projects = DeltaBufferRDT(replicaID, init)
 
       // event that fires when the user wants to change the value
-      val changeEvent = rescala.default.Evt[String]();
+      val changeEvent = rescala.default.Evt[Unit]();
 
       // event that fires when changes from other peers are received
-      val deltaEvent = Evt[DottedName[Project]]()
+      val deltaEvent = Evt[DottedName[RGA[String]]]()
 
       // look at foldAll documentation+example
-      val projectSignal: Signal[DeltaBufferRDT[Project]] = Events.foldAll(project)(current => {
+      val projectsSignal: Signal[DeltaBufferRDT[RGA[String]]] = Events.foldAll(projects)(current => {
         Seq(
           // if the user wants to increase the value, update the register accordingly
           changeEvent.act2({ v =>
             {
-              current.resetDeltaBuffer().set_name(v)
+              current.resetDeltaBuffer().append(UUID.randomUUID().toString())
             }
           }),
           // if we receive a delta from a peer, apply it
@@ -72,7 +76,7 @@ object ProjectService {
         )
       })
 
-      projectSignal.observe(
+      projectsSignal.observe(
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
@@ -81,11 +85,11 @@ object ProjectService {
         fireImmediately = true,
       )
 
-      WebRTCService.distributeDeltaCRDT(projectSignal, deltaEvent, WebRTCService.registry)(
-        Binding[Dotted[Project] => Unit](s"project-$id"),
+      WebRTCService.distributeDeltaCRDT(projectsSignal, deltaEvent, WebRTCService.registry)(
+        Binding[Dotted[RGA[String]] => Unit]("projects"),
       )
 
-      EventedProject(projectSignal, changeEvent)
+      EventedProjects(projectsSignal, changeEvent)
     })
   }
 }

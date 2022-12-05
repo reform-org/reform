@@ -8,6 +8,9 @@ import kofre.time.Dot
 import kofre.decompose.containers.DeltaBufferRDT
 import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegister
 import kofre.decompose.interfaces.LWWRegisterInterface
+import kofre.decompose.interfaces.GListInterface.GList
+import kofre.decompose.interfaces.GListInterface.GListNode
+import kofre.decompose.interfaces.GListInterface.GListElem
 import kofre.dotted.{DotFun, Dotted}
 import loci.transmitter.IdenticallyTransmittable
 
@@ -15,60 +18,26 @@ import scala.annotation.nowarn
 import rescala.default.*
 import java.util.concurrent.ThreadLocalRandom
 import kofre.datatypes.PosNegCounter
+import java.util.UUID
 
 // Supporting code to serialize and deserialize objects
 object Codecs {
 
   // every client has an id
-  val replicaID: String = ThreadLocalRandom.current().nextLong().toHexString
+  val replicaID: String = UUID.randomUUID().toString()
 
-  implicit val transmittableProject: IdenticallyTransmittable[Dotted[webapp.Project]] =
-    IdenticallyTransmittable()
+  implicit def identicallyTransmittable[A]: IdenticallyTransmittable[A] = IdenticallyTransmittable()
 
-  implicit val transmittablePositiveNegativeCounter: IdenticallyTransmittable[Dotted[PosNegCounter]] =
-    IdenticallyTransmittable()
+  implicit val codecDottedPositiveNegativeCounter: JsonValueCodec[Dotted[PosNegCounter]] = JsonCodecMaker.make
 
-  implicit val codecDottedPositiveNegativeCounter: JsonValueCodec[Dotted[kofre.datatypes.PosNegCounter]] =
-    JsonCodecMaker.make
+  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
 
-  implicit val codecProject: JsonValueCodec[Dotted[webapp.Project]] =
-    JsonCodecMaker.make
+  implicit val codecDottedProject: JsonValueCodec[Dotted[Project]] =
+    JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
-  implicit val codecDot3: JsonValueCodec[Dot] =
-    JsonCodecMaker.make
-
-  implicit val codecDot2: JsonValueCodec[DotFun[String]] =
-    JsonCodecMaker.make
-
-  implicit val codecDot5: JsonValueCodec[String] =
-    JsonCodecMaker.make
-
-  implicit val codedDot6: JsonValueCodec[kofre.datatypes.TimedVal[String]] = JsonCodecMaker.make
-
-  implicit val test: JsonValueCodec[List[(Dot, String)]] = mapEntriesSerializer[String]
-
-  implicit val test2: JsonValueCodec[List[(Dot, TimedVal[String])]] = mapEntriesSerializer[TimedVal[String]]
-
-  implicit def mapEntriesSerializer[A >: scala.Nothing <: scala.Any](implicit
-      test: JsonValueCodec[A],
-  ): JsonValueCodec[List[(Dot, A)]] =
-    JsonCodecMaker.make
-
-  implicit def mapSerializer[A >: scala.Nothing <: scala.Any](implicit
-      test: JsonValueCodec[A],
-  ): JsonValueCodec[Map[Dot, A]] =
-    new JsonValueCodec[Map[Dot, A]] {
-      override def decodeValue(
-          in: JsonReader,
-          default: Map[Dot, A],
-      ): Map[Dot, A] = {
-        Map.from(mapEntriesSerializer.decodeValue(in, default.toList))
-      }
-      override def encodeValue(x: Map[Dot, A], out: JsonWriter): Unit =
-        mapEntriesSerializer.encodeValue(x.toList, out)
-
-      override def nullValue: Map[kofre.time.Dot, A] = Map.empty
-    }
+  @nowarn()
+  implicit val codecDottedRGAString: JsonValueCodec[Dotted[RGA[String]]] =
+    JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
   implicit val codecDeltaBufferPositiveNegativeCounter: JsonValueCodec[DeltaBufferRDT[PosNegCounter]] =
     new JsonValueCodec[DeltaBufferRDT[PosNegCounter]] {
@@ -85,6 +54,4 @@ object Codecs {
         DeltaBufferRDT(replicaID, PosNegCounter.zero)
       }
     }
-
-  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
 }
