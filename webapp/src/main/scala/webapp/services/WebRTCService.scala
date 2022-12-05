@@ -30,8 +30,6 @@ import java.util.concurrent.ThreadLocalRandom
 import kofre.decompose.interfaces.MVRegisterInterface.MVRegisterSyntax
 import kofre.decompose.containers.DeltaBufferRDT
 import kofre.datatypes.TimedVal
-import kofre.dotted.Dotted
-import kofre.syntax.DottedName
 import kofre.datatypes.PosNegCounter
 import kofre.base.{Bottom, DecomposeLattice}
 
@@ -71,43 +69,45 @@ object WebRTCService {
 
   // receives the changes from all peers, also responsible for sharing own data
   def distributeDeltaCRDT[A](
-      signal: Signal[DeltaBufferRDT[A]],
-      deltaEvt: Evt[DottedName[A]],
+      signal: Signal[A],
+      deltaEvt: Evt[A],
       registry: Registry,
-  )(binding: Binding[Dotted[A] => Unit, Dotted[A] => Future[Unit]])(implicit
-      dcl: DecomposeLattice[Dotted[A]],
-      bottom: Bottom[Dotted[A]],
+  )(
+      binding:
+      // the first parameter of the binding is the receive side
+      // the second parameter is what registry.lookup returns for you to update the remote
+      Binding[A => Unit, A => Future[Unit]],
+  )(implicit
+      dcl: DecomposeLattice[A],
+      bottom: Bottom[A],
   ): Unit = {
     // listens for deltas from peers
-    registry.bindSbj(binding) { (remoteRef: RemoteRef, deltaState: Dotted[A]) =>
+    registry.bindSbj(binding) { (remoteRef: RemoteRef, deltaState: A) =>
       // when we receive a delta from a peer, the deltaEvent will be fired
-      deltaEvt.fire(DottedName(remoteRef.toString, deltaState))
+      deltaEvt.fire(deltaState)
     }
 
     // for every remote store an observer that detects changes and sends them to that remote
     var observers = Map[RemoteRef, Disconnectable]()
 
     // for every remote store the data that needs to be resent to that remote
-    var resendBuffer = Map[RemoteRef, Dotted[A]]()
+    var resendBuffer = Map[RemoteRef, A]()
 
     // gets executed everytime a remote joins
     def registerRemote(remoteRef: RemoteRef): Unit = {
-      val remoteUpdate: Dotted[A] => Future[Unit] = registry.lookup(binding, remoteRef)
+      val remoteUpdate: A => Future[Unit] = registry.lookup(binding, remoteRef)
 
       // Send full state to initialize remote
-      val currentState = signal.readValueOnce.state
+      val currentState = signal.readValueOnce
       if (currentState != bottom.empty) remoteUpdate(currentState)
 
       // Whenever the crdt is changed propagate the delta
       val observer = signal.observe { s =>
         // all changes that currently need to be sent to the remote
-        val deltaStateList = s.deltaBuffer.collect {
-          // we don't need to send the remote it's own changes so skip them
-          case DottedName(replicaID, deltaState) if replicaID != remoteRef.toString => deltaState
-        } ++ resendBuffer.get(remoteRef).toList
+        val deltaStateList = List(s) ++ resendBuffer.get(remoteRef).toList
 
         // combine the list of changes into a single change for efficiency
-        val combinedState = deltaStateList.reduceOption(DecomposeLattice[Dotted[A]].merge)
+        val combinedState = deltaStateList.reduceOption(DecomposeLattice[A].merge)
 
         // try sending the change to the remote
         combinedState.foreach { s =>
@@ -118,7 +118,7 @@ object WebRTCService {
               Some(s)
             case Some(prev) =>
               // if the resend buffer is not empty append/merge the current changes to the resend buffer
-              Some(DecomposeLattice[Dotted[A]].merge(prev, s))
+              Some(DecomposeLattice[A].merge(prev, s))
           }
 
           if (remoteRef.connected) {

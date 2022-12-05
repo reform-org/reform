@@ -38,6 +38,10 @@ npm run dev
 
 Then open `http://localhost:5173/` in your browser.
 
+```
+chromium --user-data-dir=$(mktemp -d) http://127.0.0.1:5173/
+```
+
 ## Testing
 
 ```
