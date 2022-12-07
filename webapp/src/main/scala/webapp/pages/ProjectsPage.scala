@@ -107,7 +107,7 @@ private class NewProjectRow {
   }
 }
 
-case class ProjectPage(id: String) extends Page {
+case class ProjectsPage() extends Page {
 
   private val projects: Var[List[Project]] = Var(
     List(

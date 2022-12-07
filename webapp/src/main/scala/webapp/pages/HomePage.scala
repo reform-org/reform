@@ -49,24 +49,6 @@ case class HomePage() extends Page {
       navigationHeader,
       div(
         cls := "p-1 grid grid-flow-col grid-rows-1 grid-cols-3 gap-1",
-        a(
-          cls := "btn",
-          href := "/login",
-          "Login",
-          onClick.foreach(e => {
-            e.preventDefault()
-            services.routing.to(LoginPage(), true)
-          }),
-        ),
-        a(
-          cls := "btn",
-          href := "/project/Wir sind schon die besten lol",
-          "Beispielprojekt",
-          onClick.foreach(e => {
-            e.preventDefault()
-            services.routing.to(ProjectPage("Wir sind schon die besten lol"), true)
-          }),
-        ),
         counter,
       ),
     )
