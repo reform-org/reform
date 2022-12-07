@@ -30,15 +30,6 @@ case class LoginPage() extends Page {
       div(
         cls := "p-1",
         h1(cls := "text-4xl text-center", "Login page"),
-        a(
-          cls := "btn",
-          href := "/",
-          "Home",
-          onClick.foreach(e => {
-            e.preventDefault()
-            services.routing.to(HomePage(), true)
-          }),
-        ),
       ),
     )
 }

@@ -56,12 +56,12 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
-        "Project",
-        href := "/project/test",
+        "Projekte",
+        href := "/projects",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ProjectPage("test"), true)
+          services.routing.to(ProjectsPage(), true)
         }),
       ),
     ),
