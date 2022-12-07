@@ -39,24 +39,24 @@ private class NewProjectRow {
     tr(
       td(
         input(
-          name,
-          placeholder := "New Project Name",
+          value <-- name,
           onInput.value --> name,
+          placeholder := "New Project Name",
         ),
       ),
       td(
         input(
           `type` := "number",
-          maxHours,
-          placeholder := "0",
+          value <-- maxHours,
           onInput.value --> maxHours,
+          placeholder := "0",
         ),
       ),
       td(
         input(
-          account,
-          placeholder := "Some account",
+          value <-- account,
           onInput.value --> account,
+          placeholder := "Some account",
         ),
       ),
       td(
