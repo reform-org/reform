@@ -28,7 +28,7 @@ cmd /c mklink ".git\\hooks\\pre-commit" "..\\..\\pre-commit.sh"
 
 Then start the Scala.js build server with:
 ```bash
-sbt ~fastLinkJS
+SCALA_VERSION=3.2.1 sbt ~fastLinkJS
 ```
 
 In another window start the web dev server with:
@@ -45,7 +45,7 @@ chromium --user-data-dir=$(mktemp -d) http://127.0.0.1:5173/
 ## Testing
 
 ```
-sbt "~Test / fastLinkJS"
+SCALA_VERSION=3.2.1 sbt "~Test / fastLinkJS"
 ```
 
 In a separate window:
