@@ -25,44 +25,46 @@ import webapp.Codecs.{myReplicaID, given}
 import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.IdbKeyval
+import webapp.Project
+import webapp.GrowOnlySet
+import java.util.UUID
 import kofre.syntax.PermIdMutate
 
-case class EventedCounter(
-    signal: rescala.default.Signal[PosNegCounter],
-    incrementValueEvent: rescala.default.Evt[Int],
+case class EventedProjects(
+    signal: rescala.default.Signal[GrowOnlySet[String]],
+    addNewProjectEvent: rescala.default.Evt[String],
 )
 
-object CounterService {
-  val counter = createCounterRef()
+object ProjectsService {
+  val projects = createProjectsRef()
 
-  def createCounterRef(): Future[EventedCounter] = {
+  def createProjectsRef(): Future[EventedProjects] = {
     // restore from indexeddb
-    val init: Future[PosNegCounter] =
-      IdbKeyval
-        .get[scala.scalajs.js.Object]("counter")
-        .toFuture
-        .map(value =>
-          value.toOption
-            .map(value => readFromString[PosNegCounter](JSON.stringify(value)))
-            .getOrElse(PosNegCounter.zero),
-        );
+    val init: Future[GrowOnlySet[String]] = IdbKeyval
+      .get[scala.scalajs.js.Object]("projects")
+      .toFuture
+      .map(value =>
+        value.toOption
+          .map(value => readFromString[GrowOnlySet[String]](JSON.stringify(value)))
+          .getOrElse(GrowOnlySet(Set.empty)),
+      );
 
     init.map(init => {
-      val positiveNegativeCounter = init
+      val projects = init
 
       // event that fires when the user wants to change the value
-      val changeEvent = rescala.default.Evt[Int]();
+      val changeEvent = rescala.default.Evt[String]();
 
       // event that fires when changes from other peers are received
-      val deltaEvent = Evt[PosNegCounter]()
+      val deltaEvent = Evt[GrowOnlySet[String]]()
 
       // look at foldAll documentation+example
-      val counterSignal: Signal[PosNegCounter] = Events.foldAll(positiveNegativeCounter)(current => {
+      val projectsSignal: Signal[GrowOnlySet[String]] = Events.foldAll(projects)(current => {
         Seq(
           // if the user wants to change the value, update the register accordingly
           changeEvent.act2({ v =>
             {
-              current.add(v)(using PermIdMutate.withID(myReplicaID))
+              GrowOnlySet(current.set + v)
             }
           }),
           // if we receive a delta from a peer, apply it
@@ -70,20 +72,20 @@ object CounterService {
         )
       })
 
-      counterSignal.observe(
+      projectsSignal.observe(
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          IdbKeyval.set("counter", JSON.parse(writeToString(value)))
+          IdbKeyval.set("projects", JSON.parse(writeToString(value)))
         },
         fireImmediately = true,
       )
 
-      WebRTCService.distributeDeltaCRDT(counterSignal, deltaEvent, WebRTCService.registry)(
-        Binding[PosNegCounter => Unit]("counter"),
+      WebRTCService.distributeDeltaCRDT(projectsSignal, deltaEvent, WebRTCService.registry)(
+        Binding[GrowOnlySet[String] => Unit]("projects"),
       )
 
-      EventedCounter(counterSignal, changeEvent)
+      EventedProjects(projectsSignal, changeEvent)
     })
   }
 }

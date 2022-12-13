@@ -26,6 +26,6 @@ jobs:
         cache: 'sbt'
     - run: npm install
     - name: Build ScalaJS
-      run: sbt fastLinkJS
+      run: SCALA_VERSION=3.2.1 sbt fastLinkJS
     - name: Build JavaScript
       run: npm run build

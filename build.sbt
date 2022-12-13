@@ -11,10 +11,14 @@ ThisBuild / scalaVersion := "3.2.1"
 
 lazy val rescala = ProjectRef(file("REScala"), "rescalaJS")
 lazy val rescala_kofre = ProjectRef(file("REScala"), "kofreJS")
+lazy val loci_jsoniter = ProjectRef(file("scala-loci"), "lociSerializerJsoniterScalaJS")
+lazy val loci_webrtc = ProjectRef(file("scala-loci"), "lociCommunicatorWebRtcJS")
 
 lazy val webapp = project
   .dependsOn(rescala)
   .dependsOn(rescala_kofre)
+  .dependsOn(loci_webrtc)
+  .dependsOn(loci_jsoniter)
   .enablePlugins(
     ScalaJSPlugin
   )
@@ -24,15 +28,13 @@ lazy val webapp = project
       "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC12",
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % "test",
       "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.1",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala" % "609b4c1b58",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"       % "609b4c1b58",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.17.9",
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.17.9",
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
-    scalacOptions ++= Seq("-no-indent"), //, "-rewrite"),
+    scalacOptions ++= Seq("-no-indent"),
     Compile / scalaJSModuleInitializers    += {
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
     },

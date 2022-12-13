@@ -25,7 +25,19 @@ import webapp.*
 import webapp.given
 import webapp.components.navigationHeader
 
-case class Project(name: String, maxHours: Int, account: Option[String])
+import org.scalajs.dom
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import webapp.services.*
+import webapp.*
+import cats.effect.SyncIO
+import colibri.{Cancelable, Observer, Source, Subject}
+import webapp.given
+import webapp.components.navigationHeader
+import concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import java.util.UUID
 
 private class NewProjectRow {
 
@@ -33,7 +45,7 @@ private class NewProjectRow {
   private val maxHours = Var("")
   private val account = Var("")
 
-  val onNewProject: Evt[Project] = Evt[Project]()
+  val onNewProject: Evt[EventedProject] = Evt[EventedProject]()
 
   def render(): VNode =
     tr(
@@ -70,11 +82,21 @@ private class NewProjectRow {
 
   private def addNewProject(): Unit = {
     try {
-      val p = Project(validateName(), validateMaxHours(), validateAccount())
-      onNewProject.fire(p)
-      name.set("")
-      maxHours.set("")
-      account.set("")
+      val _name = validateName();
+      val _max_hours = validateMaxHours();
+      val _account = validateAccount();
+      val project = ProjectService.createOrGetProject(UUID.randomUUID().toString());
+      project.map(project => {
+        // we probably should special case initialization and not use the event
+        project.changeEvent.fire(p => {
+          p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
+        })
+        onNewProject.fire(project)
+
+        name.set("")
+        maxHours.set("")
+        account.set("")
+      })
     } catch {
       case e: Exception => window.alert(e.getMessage)
     }
@@ -109,19 +131,11 @@ private class NewProjectRow {
 
 case class ProjectsPage() extends Page {
 
-  private val projects: Var[List[Project]] = Var(
-    List(
-      Project("FOP", Integer.MAX_VALUE, Some("KW")),
-      Project("Reform", 69, None),
-      Project("Off-Topic", 0, Some("HK")),
-    ),
-  )
-
   private val newProjectRow: NewProjectRow = NewProjectRow()
 
-  newProjectRow.onNewProject.observe(p => projects.transform(_.appended(p)))
+  newProjectRow.onNewProject.observe(p => ProjectsService.projects.map(_.addNewProjectEvent.fire(p.id)))
 
-  def render(using services: Services): VNode =
+  def render(using services: Services): VNode = {
     div(
       navigationHeader,
       table(
@@ -135,30 +149,35 @@ case class ProjectsPage() extends Page {
           ),
         ),
         tbody(
-          projects.map(renderProjects),
+          ProjectsService.projects.map(
+            _.signal.map(projects =>
+              renderProjects(projects.set.toList.map(projectId => ProjectService.createOrGetProject(projectId))),
+            ),
+          ),
           newProjectRow.render(),
         ),
       ),
     )
+  }
 
-  private def renderProjects(projects: List[Project]): List[VNode] =
+  private def renderProjects(projects: List[Future[EventedProject]]): List[VNode] =
     projects.map(p =>
       tr(
-        td(p.name),
-        td(p.maxHours),
-        td(p.account.getOrElse("-")),
+        td(p.map(_.signal.map(_.name))),
+        td(p.map(_.signal.map(_.maxHours))),
+        td(p.map(_.signal.map(_.accountName))),
         button(
           cls := "btn",
           "Delete",
-          onClick.foreach(_ => removeProject(p)),
+          onClick.foreach(_ => p.map(removeProject)),
         ),
       ),
     )
 
-  private def removeProject(p: Project): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the project \"${p.name}\"?")
+  private def removeProject(p: EventedProject): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
     if (yes) {
-      projects.transform(_.filterNot(_ == p))
+      // ProjectsService.projects.transform(_.filterNot(_ == p))
     }
   }
 }
