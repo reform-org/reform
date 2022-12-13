@@ -45,17 +45,6 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
-        "Users",
-        href := "/users",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(LoginPage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
         "Login",
         href := "/login",
         onClick.foreach(e => {
@@ -73,6 +62,17 @@ def navigationMenu(using services: Services)(classes: String) = {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
           services.routing.to(ProjectsPage(), true)
+        }),
+      ),
+    ),
+    li(
+      a(
+        "Users",
+        href := "/users",
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          services.routing.to(UsersPage(), true)
         }),
       ),
     ),

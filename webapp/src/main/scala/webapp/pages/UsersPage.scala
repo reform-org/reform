@@ -23,13 +23,101 @@ import webapp.services.*
 import webapp.*
 import webapp.components.navigationHeader
 
+
+import org.scalajs.dom
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+import webapp.services.*
+import webapp.*
+import cats.effect.SyncIO
+import colibri.{Cancelable, Observer, Source, Subject}
+import webapp.given
+import webapp.components.navigationHeader
+import concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import java.util.UUID
+
+private class NewUserRow {
+
+  private val username = Var("")
+  private val role = Var("")
+  private val comment = Var("")
+
+  //val onNewProject: Evt[EventedProject] = Evt[EventedProject]()
+
+  def render(): VNode =
+    tr(
+      td(
+        input(
+          value <-- username,
+          onInput.value --> username,
+          placeholder := "New User Name",
+        ),
+      ),
+      td(
+        input(
+          value <-- role,
+          onInput.value --> role,
+          placeholder := "User role",
+        ),
+      ),
+      td(
+        input(
+          value <-- comment,
+          onInput.value --> comment,
+          placeholder := "Some comment",
+        ),
+      ),
+      td(
+        button(
+          cls := "btn",
+          "Create User",
+          //onClick.foreach(_ => addNewProject()),
+        ),
+      ),
+    )
+
+  
+}
+
+
+
+
 case class UsersPage() extends Page {
-  def render(using services: Services): VNode =
+
+  //private val NewUserRow: NewUserRow = NewUserRow()
+
+  //newProjectRow.onNewProject.observe(p => ProjectsService.projects.map(_.addNewProjectEvent.fire(p.id)))
+
+  def render(using services: Services): VNode = {
     div(
       navigationHeader,
       div(
         cls := "p-1",
         h1(cls := "text-4xl text-center", "User page"),
       ),
+      table(
+        cls := "table-auto",
+        thead(
+          tr(
+            th("User"),
+            th("Role"),
+            th("Comment"),
+            th("Stuff"),
+          ),
+        ),
+        tbody(
+          //ProjectsService.projects.map(
+          //  _.signal.map(projects =>
+          //    renderProjects(projects.set.toList.map(projectId => ProjectService.createOrGetProject(projectId))),
+          //  ),
+          //),
+          //newProjectRow.render(),
+        ),
+      ),
     )
+  }
+
+  
 }
