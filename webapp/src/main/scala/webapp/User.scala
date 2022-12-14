@@ -18,9 +18,9 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import webapp.Codecs.myReplicaID
 
-given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
-  def empty = None
-}
+// given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
+//   def empty = None
+// }
 
 case class User(
     _username: Option[TimedVal[String]],

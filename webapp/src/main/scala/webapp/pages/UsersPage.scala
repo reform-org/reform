@@ -16,13 +16,14 @@ limitations under the License.
 package webapp.pages
 
 import org.scalajs.dom
+import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import webapp.services.*
 import webapp.*
+import webapp.given
 import webapp.components.navigationHeader
-
 
 import org.scalajs.dom
 import outwatch.*
@@ -79,24 +80,25 @@ private class NewUserRow {
     )
 
   private def addNewUser(): Unit = {
-    //try {
-       val _username = validateUsername();
-       val _role = validateRole();
-       val _comment = validateComment();
-       val user = UserService.createOrGetUser(UUID.randomUUID().toString());
-       user.map(user => {
-         user.changeEvent.fire(u => {
-           u.withUsername(_username).withRole(_role).withComment(_comment)
-       })
-         onNewUser.fire(user)
+    try {
+      val _username = validateUsername();
+      val _role = validateRole();
+      val _comment = validateComment();
+      val user = UserService.createOrGetUser(UUID.randomUUID().toString());
+      user.map(user => {
+        user.changeEvent.fire(u => {
+          u.withUsername(_username).withRole(_role).withComment(_comment)
+        })
+        onNewUser.fire(user)
 
-         username.set("")
-         role.set("")
-         comment.set("")
-       })
-    //} catch {
-    //  case e: Exception => window.alert(e.getMessage)
-    //} 
+        username.set("")
+        role.set("")
+        comment.set("")
+      })
+    } catch {
+      case e: Exception => window.alert(e.getMessage)
+    } 
+
   }
   
   private def validateUsername(): String = {
@@ -152,12 +154,12 @@ case class UsersPage() extends Page {
           ),
         ),
         tbody(
-          //ProjectsService.projects.map(
-          //  _.signal.map(projects =>
-          //    renderProjects(projects.set.toList.map(projectId => ProjectService.createOrGetProject(projectId))),
-          //  ),
-          //),
-          //newProjectRow.render(),
+          // ProjectsService.projects.map(
+          //   _.signal.map(projects =>
+          //     renderProjects(projects.set.toList.map(projectId => ProjectService.createOrGetProject(projectId))),
+          //   ),
+          // ),
+          // newProjectRow.render(),
         ),
       ),
     )
