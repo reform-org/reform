@@ -65,7 +65,7 @@ case class User(
 object User {
   val empty: User = User(None, None, None)
 
-  implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make
+  implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make
 }
 
 
