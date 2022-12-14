@@ -44,7 +44,7 @@ private class NewUserRow {
   private val role = Var("")
   private val comment = Var("")
 
-  //val onNewProject: Evt[EventedProject] = Evt[EventedProject]()
+ val onNewProject: Evt[EventedProject] = Evt[EventedProject]()
 
   def render(): VNode =
     tr(
@@ -76,8 +76,7 @@ private class NewUserRow {
           //onClick.foreach(_ => addNewProject()),
         ),
       ),
-    )
-
+    ) 
   
 }
 
