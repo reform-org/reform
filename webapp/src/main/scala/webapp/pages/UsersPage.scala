@@ -22,7 +22,7 @@ import outwatch.dsl.*
 import rescala.default.*
 import webapp.services.*
 import webapp.*
-import webapp.given
+import webapp.given 
 import webapp.components.navigationHeader
 
 import org.scalajs.dom
@@ -132,9 +132,9 @@ private class NewUserRow {
 
 case class UsersPage() extends Page {
 
-  //private val NewUserRow: NewUserRow = NewUserRow()
+  private val newUserRow: NewUserRow = NewUserRow()
 
-  //newProjectRow.onNewProject.observe(p => ProjectsService.projects.map(_.addNewProjectEvent.fire(p.id)))
+  newUserRow.onNewUser.observe(p => UsersService.users.map(_.addNewUserEvent.fire(p.id)))
 
   def render(using services: Services): VNode = {
     div(
@@ -154,15 +154,36 @@ case class UsersPage() extends Page {
           ),
         ),
         tbody(
-          // ProjectsService.projects.map(
-          //   _.signal.map(projects =>
-          //     renderProjects(projects.set.toList.map(projectId => ProjectService.createOrGetProject(projectId))),
-          //   ),
-          // ),
-          // newProjectRow.render(),
+           UsersService.users.map(
+             _.signal.map(users =>
+               renderUsers(users.set.toList.map(userId => UserService.createOrGetUser(userId))),
+             ),
+           ),
+           newUserRow.render(),
         ),
       ),
     )
+  }
+
+    private def renderUsers(users: List[Future[EventedUser]]): List[VNode] =
+    users.map(u =>
+      tr(
+        td(u.map(_.signal.map(_.username))),
+        td(u.map(_.signal.map(_.role))),
+        td(u.map(_.signal.map(_.comment))),
+        button(
+          cls := "btn",
+          "Delete",
+          onClick.foreach(_ => u.map(removeUser)),
+        ),
+      ),
+    )
+
+  private def removeUser(u: EventedUser): Unit = {
+    //val yes = window.confirm(s"Do you really want to delete the user \"${u.signal.now.name}\"?")
+    //if (yes) {
+      // ProjectsService.projects.transform(_.filterNot(_ == p))
+    //}
   }
 
   
