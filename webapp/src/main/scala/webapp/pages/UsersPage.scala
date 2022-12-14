@@ -44,7 +44,7 @@ private class NewUserRow {
   private val role = Var("")
   private val comment = Var("")
 
- val onNewProject: Evt[EventedProject] = Evt[EventedProject]()
+ val onNewUser: Evt[EventedUser] = Evt[EventedUser]()
 
   def render(): VNode =
     tr(
@@ -73,11 +73,56 @@ private class NewUserRow {
         button(
           cls := "btn",
           "Create User",
-          //onClick.foreach(_ => addNewProject()),
+          onClick.foreach(_ => addNewUser()),
         ),
       ),
-    ) 
+    )
+
+  private def addNewUser(): Unit = {
+    //try {
+       val _username = validateUsername();
+       val _role = validateRole();
+       val _comment = validateComment();
+       val user = UserService.createOrGetUser(UUID.randomUUID().toString());
+       user.map(user => {
+         user.changeEvent.fire(u => {
+           u.withUsername(_username).withRole(_role).withComment(_comment)
+       })
+         onNewUser.fire(user)
+
+         username.set("")
+         role.set("")
+         comment.set("")
+       })
+    //} catch {
+    //  case e: Exception => window.alert(e.getMessage)
+    //} 
+  }
   
+  private def validateUsername(): String = {
+    val username = this.username.now
+
+    if (username.isBlank) {
+      throw new Exception("Invalid empty Username")
+    }
+
+    username.strip
+  }
+
+  private def validateRole(): String = {
+    val role = this.role.now
+
+    if (role.isBlank) {
+      throw new Exception("Invalid empty Role")
+    }
+
+    role.strip
+  }
+
+  private def validateComment(): Option[String] = {
+    val comment = this.comment.now
+    if (comment.isBlank) None else Some(comment)
+  }
 }
 
 
