@@ -81,7 +81,6 @@ object ProjectService {
 
       projectSignal.observe(
         value => {
-          org.scalajs.dom.console.log(value)
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
           IdbKeyval.set(s"project-$id", JSON.parse(writeToString(value)))

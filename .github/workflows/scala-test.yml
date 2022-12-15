@@ -26,6 +26,6 @@ jobs:
         cache: 'sbt'
     - run: npm install
     - name: Build tests
-      run: SCALA_VERSION=3.2.1 sbt "Test / fastLinkJS"
+      run: sbt "Test / fastLinkJS"
     - name: Run tests
       run: npm run test run
