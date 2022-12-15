@@ -42,10 +42,10 @@ case class Project(
   }
 
   def withAddedMaxHours(addedMaxHours: Int) = {
-    val diffSetAccountName =
-      Project.empty.copy(_maxHours = _maxHours.add(maxHours)(using PermIdMutate.withID(myReplicaID)))
+    val diffSetMaxHours =
+      Project.empty.copy(_maxHours = _maxHours.add(addedMaxHours)(using PermIdMutate.withID(myReplicaID)))
 
-    this.merge(diffSetAccountName) // TODO FIXME probably also use this mutator thing - also to ship deltas to remotes
+    this.merge(diffSetMaxHours) // TODO FIXME probably also use this mutator thing - also to ship deltas to remotes
   }
 
   def name = {
