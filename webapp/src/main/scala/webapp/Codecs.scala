@@ -29,4 +29,10 @@ object Codecs {
   implicit def identicallyTransmittable[A]: IdenticallyTransmittable[A] = IdenticallyTransmittable()
 
   implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
+
+  implicit val codecDeltaForProject: JsonValueCodec[DeltaFor[Project]] = JsonCodecMaker.make
+
+  implicit val codecDeltaForPositiveNegativeCounter: JsonValueCodec[DeltaFor[PosNegCounter]] = JsonCodecMaker.make
+
+  implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
 }

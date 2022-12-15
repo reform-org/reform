@@ -26,6 +26,8 @@ import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.IdbKeyval
 import kofre.syntax.PermIdMutate
+import webapp.DeltaFor
+import webapp.ReplicationGroup
 
 case class EventedCounter(
     signal: rescala.default.Signal[PosNegCounter],
@@ -33,6 +35,7 @@ case class EventedCounter(
 )
 
 object CounterService {
+
   val counter = createCounterRef()
 
   def createCounterRef(): Future[EventedCounter] = {
@@ -79,9 +82,7 @@ object CounterService {
         fireImmediately = true,
       )
 
-      WebRTCService.distributeDeltaCRDT(counterSignal, deltaEvent, WebRTCService.registry)(
-        Binding[PosNegCounter => Unit]("counter"),
-      )
+      WebRTCService.counterReplicator.distributeDeltaRDT("counter", counterSignal, deltaEvent)
 
       EventedCounter(counterSignal, changeEvent)
     })

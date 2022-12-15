@@ -30,6 +30,8 @@ import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.IdbKeyval
 import webapp.Project
 import scala.collection.mutable
+import webapp.DeltaFor
+import webapp.ReplicationGroup
 
 case class EventedProject(
     id: String,
@@ -88,9 +90,7 @@ object ProjectService {
         fireImmediately = true,
       )
 
-      WebRTCService.distributeDeltaCRDT(projectSignal, deltaEvent, WebRTCService.registry)(
-        Binding[Project => Unit](s"project-$id"),
-      )
+      WebRTCService.projectReplicator.distributeDeltaRDT(id, projectSignal, deltaEvent)
 
       EventedProject(id, projectSignal, changeEvent)
     })
