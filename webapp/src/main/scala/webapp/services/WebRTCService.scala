@@ -149,6 +149,7 @@ object WebRTCService {
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
     }
+    println(binding)
     ()
   }
 }

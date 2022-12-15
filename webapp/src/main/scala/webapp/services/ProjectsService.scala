@@ -64,6 +64,7 @@ object ProjectsService {
           // if the user wants to change the value, update the register accordingly
           changeEvent.act2({ v =>
             {
+              println(s"added project to list $v")
               GrowOnlySet(current.set + v)
             }
           }),

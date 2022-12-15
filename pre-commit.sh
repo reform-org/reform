@@ -6,7 +6,7 @@ SCRIPT=$(realpath "$0")
 SCRIPTPATH=$(dirname "$SCRIPT")
 cd "$SCRIPTPATH"
 
-SCALA_VERSION=3.2.1 sbt scalafmtAll "Test / fastLinkJS"
+sbt scalafmtAll "Test / fastLinkJS"
 npm run test run
 
 # ensure every text file ends with a newline
