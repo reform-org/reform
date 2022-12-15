@@ -133,6 +133,7 @@ case class ProjectsPage() extends Page {
 
   private val newProjectRow: NewProjectRow = NewProjectRow()
 
+  // add the project uuid to the projects list
   newProjectRow.onNewProject.observe(p => ProjectsService.projects.map(_.addNewProjectEvent.fire(p.id)))
 
   def render(using services: Services): VNode = {

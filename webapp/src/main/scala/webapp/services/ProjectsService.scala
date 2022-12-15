@@ -29,6 +29,8 @@ import webapp.Project
 import webapp.GrowOnlySet
 import java.util.UUID
 import kofre.syntax.PermIdMutate
+import webapp.DeltaFor
+import webapp.ReplicationGroup
 
 case class EventedProjects(
     signal: rescala.default.Signal[GrowOnlySet[String]],
@@ -36,6 +38,7 @@ case class EventedProjects(
 )
 
 object ProjectsService {
+
   val projects = createProjectsRef()
 
   def createProjectsRef(): Future[EventedProjects] = {
@@ -64,6 +67,7 @@ object ProjectsService {
           // if the user wants to change the value, update the register accordingly
           changeEvent.act2({ v =>
             {
+              println(s"added project to list $v")
               GrowOnlySet(current.set + v)
             }
           }),
@@ -81,9 +85,7 @@ object ProjectsService {
         fireImmediately = true,
       )
 
-      WebRTCService.distributeDeltaCRDT(projectsSignal, deltaEvent, WebRTCService.registry)(
-        Binding[GrowOnlySet[String] => Unit]("projects"),
-      )
+      WebRTCService.projectsReplicator.distributeDeltaRDT("projects", projectsSignal, deltaEvent)
 
       EventedProjects(projectsSignal, changeEvent)
     })
