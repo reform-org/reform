@@ -78,6 +78,10 @@ object ProjectsService {
 
       projectsSignal.observe(
         value => {
+          value.set.foreach(project => {
+            // efficiency is key :kappa:
+            ProjectService.createOrGetProject(project)
+          })
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
           IdbKeyval.set("projects", JSON.parse(writeToString(value)))

@@ -47,7 +47,7 @@ object ProjectService {
     projectMap.getOrElseUpdate(id, createProjectRef(id))
   }
 
-  // TODO FIXME for project creation this could non non-async? Or should it write into the database at creation? Or does this simply create too complex code?
+  // TODO FIXME for project creation this could be non-async? Or should it write into the database at creation? Or does this simply create too complex code?
   private def createProjectRef(id: String): Future[EventedProject] = {
     // restore from indexeddb
     val init: Future[Project] = IdbKeyval
