@@ -25,8 +25,24 @@ import kofre.base.Lattice.Operators
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
+/** @param name
+  *   The name/type of the thing to sync
+  * @param delta
+  *   The payload to sync
+  */
 case class DeltaFor[A](name: String, delta: A)
 
+/** @param api
+  *   the rescala api to use
+  * @param registry
+  *   the connection registry to use
+  * @param binding
+  *   the binding for handling the update
+  * @param dcl
+  *   to split up the thing to sync into its containing lattices
+  * @param bottom
+  *   the neutral element of the thing to sync
+  */
 class ReplicationGroup[Api <: RescalaInterface, A](
     val api: Api,
     registry: Registry,
@@ -37,7 +53,12 @@ class ReplicationGroup[Api <: RescalaInterface, A](
 ) {
   import api.*
 
+  /** Map from concrete thing to handle to the event handler for that.
+    */
   private var localListeners: Map[String, Evt[A]] = Map.empty
+
+  /** Map from the concrete thing to handle to a map of remote ids and the thing to sync.
+    */
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
@@ -58,9 +79,12 @@ class ReplicationGroup[Api <: RescalaInterface, A](
     require(!localListeners.contains(name), s"already registered a RDT with name $name")
     localListeners = localListeners.updated(name, deltaEvt)
 
+    // observe changes to send them to every remote
     var observers = Map[RemoteRef, Disconnectable]()
+    // store data that needs to be resent to a remote
     var resendBuffer = Map[RemoteRef, A]()
 
+    // if there is unhandled data for this concrete thing then fire delta events for that as soon as it's registered
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
@@ -68,13 +92,18 @@ class ReplicationGroup[Api <: RescalaInterface, A](
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
+      // Lookup method to send data to remote
       val remoteUpdate: DeltaFor[A] => Future[Unit] = registry.lookup(binding, remoteRef)
 
       def sendUpdate(delta: A): Unit = {
+        // the contents of the resend buffer and the delta need to be sent
         val allToSend = (resendBuffer.get(remoteRef).merge(Some(delta))).get
+        // remove from resend buffer for now
         resendBuffer = resendBuffer.removed(remoteRef)
 
+        // functions that adds the data to the resend buffer
         def scheduleForLater() = {
+          // add to resend buffer
           resendBuffer = resendBuffer.updatedWith(remoteRef) { current =>
             current.merge(Some(allToSend))
           }
@@ -84,33 +113,42 @@ class ReplicationGroup[Api <: RescalaInterface, A](
         }
 
         if (remoteRef.connected) {
+          // if the remote is connected try to send the data
           remoteUpdate(DeltaFor(name, allToSend)).onComplete {
-            case Success(_) =>
-            case Failure(_) => scheduleForLater()
+            case Success(_) => // success
+            case Failure(_) => scheduleForLater() // failure, add data to resend buffer
           }
         } else {
+          // if the remote is not connected add the data to the resend buffer
           scheduleForLater()
         }
       }
 
       // Send full state to initialize remote
       val currentState = signal.readValueOnce
+      // only send full state if it's not empty for efficiency
       if (currentState != bottom.empty) sendUpdate(currentState)
 
       // Whenever the crdt is changed propagate the delta
-      // Praktisch wäre etwas wie crdt.observeDelta
       val observer = signal.observe { s =>
+        // note: isn't the resendbuffer also added in sendUpdate again?
+        // combine the resend buffer and the current delta
         val deltaStateList = List(s) ++ resendBuffer.get(remoteRef).toList
 
+        // reduce the state change to a single state for efficiency
         val combinedState = deltaStateList.reduceOption(DecomposeLattice[A].merge)
 
         combinedState.foreach(sendUpdate)
       }
+      // add the handler for this remote to the observers
       observers += (remoteRef -> observer)
     }
 
+    // if a remote joins register it to handle updates to it
     registry.remoteJoined.monitor(registerRemote)
+    // also register all existing remotes
     registry.remotes.foreach(registerRemote)
+    // remove remotes that disconnect
     registry.remoteLeft.monitor { remoteRef =>
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
