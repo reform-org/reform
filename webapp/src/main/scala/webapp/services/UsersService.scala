@@ -81,9 +81,7 @@ object UsersService {
         fireImmediately = true,
       )
 
-      WebRTCService.distributeDeltaCRDT(usersSignal, deltaEvent, WebRTCService.registry)(
-        Binding[GrowOnlySet[String] => Unit]("users"),
-      )
+      WebRTCService.usersReplicator.distributeDeltaRDT("users", usersSignal, deltaEvent)
 
       EventedUsers(usersSignal, changeEvent)
     })

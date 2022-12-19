@@ -41,12 +41,12 @@ object UserService {
 
   private val userMap: mutable.Map[String, Future[EventedUser]] = mutable.Map.empty
   def createOrGetUser(id: String): Future[EventedUser] = {
-     userMap.getOrElseUpdate(id, createUserRef(id))
+    userMap.getOrElseUpdate(id, createUserRef(id))
   }
 
   // // TODO FIXME for User creation this could non non-async? Or should it write into the database at creation? Or does this simply create too complex code?
   private def createUserRef(id: String): Future[EventedUser] = {
-     // restore from indexeddb
+    // restore from indexeddb
     val init: Future[User] = IdbKeyval
       .get[scala.scalajs.js.Object](s"user-$id")
       .toFuture
@@ -56,44 +56,42 @@ object UserService {
           .getOrElse(User.empty),
       );
 
-     init.map(init => {
-       val user = init
+    init.map(init => {
+      val user = init
 
-       // event that fires when the user wants to change the value
-       val changeEvent = rescala.default.Evt[User => User]();
+      // event that fires when the user wants to change the value
+      val changeEvent = rescala.default.Evt[User => User]();
 
-       // event that fires when changes from other peers are received
-       val deltaEvent = Evt[User]()
+      // event that fires when changes from other peers are received
+      val deltaEvent = Evt[User]()
 
-       // look at foldAll documentation+example
-       val userSignal: Signal[User] = Events.foldAll(user)(current => {
-         Seq(
-           // if the user wants to increase the value, update the register accordingly
-           changeEvent.act2(_(current)),
-           // if we receive a delta from a peer, apply it
-           deltaEvent.act2(delta => {
-             println("apply delta")
-             current.merge(delta)
-           }),
-         )
-       })
+      // look at foldAll documentation+example
+      val userSignal: Signal[User] = Events.foldAll(user)(current => {
+        Seq(
+          // if the user wants to increase the value, update the register accordingly
+          changeEvent.act2(_(current)),
+          // if we receive a delta from a peer, apply it
+          deltaEvent.act2(delta => {
+            println("apply delta")
+            current.merge(delta)
+          }),
+        )
+      })
 
-       userSignal.observe(
-         value => {
-           org.scalajs.dom.console.log(value)
-           // write the updated value to persistent storage
-           // TODO FIXME this is async which means this is not robust
-           IdbKeyval.set(s"user-$id", JSON.parse(writeToString(value)))
-         },
-         fireImmediately = true,
-       )
+      userSignal.observe(
+        value => {
+          org.scalajs.dom.console.log(value)
+          // write the updated value to persistent storage
+          // TODO FIXME this is async which means this is not robust
+          IdbKeyval.set(s"user-$id", JSON.parse(writeToString(value)))
+        },
+        fireImmediately = true,
+      )
 
-       WebRTCService.distributeDeltaCRDT(userSignal, deltaEvent, WebRTCService.registry)(
-         Binding[User => Unit](s"user-$id"),
-       )
+      WebRTCService.userReplicator.distributeDeltaRDT(s"user-$id", userSignal, deltaEvent)
 
-       EventedUser(id, userSignal, changeEvent)
-     })
+      EventedUser(id, userSignal, changeEvent)
+    })
 
   }
 }

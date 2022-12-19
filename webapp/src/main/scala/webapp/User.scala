@@ -16,11 +16,8 @@ import kofre.decompose.containers.DeltaBufferRDT
 import kofre.datatypes.TimedVal
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import loci.serializer.jsoniterScala.given
 import webapp.Codecs.myReplicaID
-
-// given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
-//   def empty = None
-// }
 
 case class User(
     _username: Option[TimedVal[String]],
@@ -47,8 +44,6 @@ case class User(
     this.merge(diffSetComment)
   }
 
-
-
   def username = {
     _username.map(_.value).getOrElse("not initialized")
   }
@@ -66,6 +61,6 @@ object User {
   val empty: User = User(None, None, None)
 
   implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make
+
+  implicit val deltaCodec: JsonValueCodec[DeltaFor[User]] = JsonCodecMaker.make
 }
-
-
