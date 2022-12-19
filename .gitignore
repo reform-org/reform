@@ -70,4 +70,4 @@ dist-ssr
 *.sln
 *.sw?
 
-out
+out/

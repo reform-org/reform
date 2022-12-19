@@ -65,4 +65,6 @@ object Project {
   val empty: Project = Project(None, PosNegCounter.zero, None)
 
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make
+
+  implicit val deltaCodec: JsonValueCodec[DeltaFor[Project]] = JsonCodecMaker.make
 }

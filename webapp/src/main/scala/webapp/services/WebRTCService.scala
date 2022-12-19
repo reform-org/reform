@@ -73,6 +73,12 @@ object WebRTCService {
   val projectsBinding = Binding[DeltaFor[GrowOnlySet[String]] => Unit]("projects")
   val projectsReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, projectsBinding)
 
+  val userBinding = Binding[DeltaFor[User] => Unit]("user")
+  val userReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, userBinding)
+
+  val usersBinding = Binding[DeltaFor[GrowOnlySet[String]] => Unit]("users")
+  val usersReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, usersBinding)
+
   val counterBinding = Binding[DeltaFor[PosNegCounter] => Unit]("counter")
   val counterReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, counterBinding)
 }
