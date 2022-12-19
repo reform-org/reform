@@ -97,11 +97,7 @@ private class NewUserRow {
       })
     } catch {
       case e: Exception => window.alert(e.getMessage)
-<<<<<<< HEAD
     }
-=======
-    } 
->>>>>>> 953f034 (users page)
 
   }
 
