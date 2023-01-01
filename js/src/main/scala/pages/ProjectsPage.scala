@@ -74,6 +74,7 @@ private class NewProjectRow {
       td(
         button(
           cls := "btn",
+          id := "add-project-button",
           "Add Project",
           onClick.foreach(_ => addNewProject()),
         ),
@@ -161,18 +162,22 @@ case class ProjectsPage() extends Page {
     )
   }
 
-  private def renderProjects(projects: List[Future[EventedProject]]): List[VNode] =
+  private def renderProjects(projects: List[Future[EventedProject]]): List[Future[VNode]] =
     projects.map(p =>
-      tr(
-        td(p.map(_.signal.map(_.name))),
-        td(p.map(_.signal.map(_.maxHours))),
-        td(p.map(_.signal.map(_.accountName))),
-        button(
-          cls := "btn",
-          "Delete",
-          onClick.foreach(_ => p.map(removeProject)),
-        ),
-      ),
+      p.map(p => {
+        tr(
+          attributes.key := p.id,
+          data.id := p.id,
+          td(p.signal.map(_.name)),
+          td(p.signal.map(_.maxHours)),
+          td(p.signal.map(_.accountName)),
+          button(
+            cls := "btn",
+            "Delete",
+            onClick.foreach(_ => removeProject(p)),
+          ),
+        )
+      }),
     )
 
   private def removeProject(p: EventedProject): Unit = {

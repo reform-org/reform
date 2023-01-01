@@ -1,0 +1,35 @@
+name: Scala Selenium
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        submodules: true
+    - name: Set up JDK 11
+      uses: actions/setup-java@v3
+      with:
+        java-version: '11'
+        distribution: 'temurin'
+        cache: 'sbt'
+    - run: npm install
+    - name: Build ScalaJS
+      run: sbt fastLinkJS
+    - name: Build JavaScript
+      run: npm run build
+    - name: Preview
+      run: npm run preview &
+    - name: Selenium
+      run: npm run selenium
