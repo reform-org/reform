@@ -13,12 +13,8 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp
 
-import colibri.*
-import colibri.router.*
-import colibri.router.Router
-import org.scalajs.dom.window
+
 import outwatch.*
 import rescala.default.*
 import webapp.pages.*

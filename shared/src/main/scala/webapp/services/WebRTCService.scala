@@ -15,15 +15,7 @@ limitations under the License.
  */
 package webapp.services
 
-import colibri.*
-import colibri.router.*
-
 import webapp.*
-import webapp.pages.*
-import webapp.Codecs.*
-
-import outwatch.*
-import outwatch.dsl.*
 
 import java.util.concurrent.ThreadLocalRandom
 
@@ -45,7 +37,6 @@ import org.scalajs.dom.*
 import org.scalajs.dom
 
 import rescala.default.*
-import rescala.extra.Tags.*
 
 import scribe.Execution.global
 
