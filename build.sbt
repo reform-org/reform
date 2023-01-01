@@ -1,6 +1,7 @@
 import scala.sys.process
 import org.scalajs.linker.interface.ModuleSplitStyle
 import org.scalajs.linker.interface.ModuleInitializer
+import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
@@ -9,14 +10,25 @@ ThisBuild / version      := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.2.1"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
-lazy val rescala = ProjectRef(file("REScala"), "rescalaJS")
-lazy val rescala_kofre = ProjectRef(file("REScala"), "kofreJS")
+// https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
 
-lazy val webapp = project
-  .dependsOn(rescala)
-  .dependsOn(rescala_kofre)
-  .enablePlugins(
-    ScalaJSPlugin
+lazy val rescalaJS = ProjectRef(file("REScala"), "rescalaJS")
+lazy val rescalaJVM = ProjectRef(file("REScala"), "rescalaJVM")
+lazy val kofreJS = ProjectRef(file("REScala"), "kofreJS")
+lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
+
+lazy val webapp = crossProject(JSPlatform, JVMPlatform)
+  .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
+  .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
+  .in(file("."))
+  .jsSettings(
+    Compile / scalaJSModuleInitializers    += {
+      ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
+    },
+    Test / scalaJSUseTestModuleInitializer := false,
+    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
+    scalaJSLinkerConfig ~= { _.withOptimizer(false) },
   )
   .settings(
     resolvers                              += "jitpack" at "https://jitpack.io",
@@ -30,12 +42,5 @@ lazy val webapp = project
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.17.9",
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
-    scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     scalacOptions ++= Seq("-no-indent"), //, "-rewrite"),
-    Compile / scalaJSModuleInitializers    += {
-      ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
-    },
-    Test / scalaJSUseTestModuleInitializer := false,
-    scalaJSLinkerConfig ~= { _.withOptimizer(false) },
   )
