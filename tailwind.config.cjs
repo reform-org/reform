@@ -2,7 +2,7 @@
 module.exports = {
   content: [
     "./index.html",
-    "./webapp/target/scala-3.2.1/webapp-fastopt/**/*.js",
+    "./js/target/scala-3.2.1/webapp-fastopt/**/*.js",
   ],
   theme: {
     extend: {},
