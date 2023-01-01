@@ -29,13 +29,15 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
+    libraryDependencies                   ++= Seq(
+      "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC12",
+      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.1",
+    )
   )
   .settings(
     resolvers                              += "jitpack" at "https://jitpack.io",
     libraryDependencies                   ++= Seq(
-      "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC12",
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % "test",
-      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.1",
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala" % "609b4c1b58",
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"       % "609b4c1b58",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.17.9",

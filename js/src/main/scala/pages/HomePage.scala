@@ -13,7 +13,7 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp.pages
+
 
 import org.scalajs.dom
 import outwatch.*
@@ -21,15 +21,35 @@ import outwatch.dsl.*
 import rescala.default.*
 import webapp.services.*
 import webapp.*
+import cats.effect.SyncIO
+import colibri.{Cancelable, Observer, Source, Subject}
+import webapp.given
 import webapp.components.navigationHeader
+import concurrent.ExecutionContext.Implicits.global
 
-case class LoginPage() extends Page {
+case class HomePage() extends Page {
+
+  def counter(using services: Services) = SyncIO {
+    div(
+      cls := "grid grid-flow-col grid-rows-1 grid-cols-2",
+      button(
+        cls := "btn",
+        "+",
+        onClick.foreach(_ => CounterService.counter.map(_.incrementValueEvent.fire(1))),
+      ),
+      div(
+        cls := "flex justify-center items-center",
+        CounterService.counter.map(_.signal.map(_.value)),
+      ),
+    )
+  }
+
   def render(using services: Services): VNode =
     div(
       navigationHeader,
       div(
-        cls := "p-1",
-        h1(cls := "text-4xl text-center", "Login page"),
+        cls := "p-1 grid grid-flow-col grid-rows-1 grid-cols-3 gap-1",
+        counter,
       ),
     )
 }
