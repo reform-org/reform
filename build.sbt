@@ -31,17 +31,17 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
     libraryDependencies                   ++= Seq(
       "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC13",
-      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.1",
+      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.8",
     )
   )
   .settings(
     resolvers                              += "jitpack" at "https://jitpack.io",
     libraryDependencies                   ++= Seq(
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % "test",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala" % "609b4c1b58",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"       % "609b4c1b58",
-      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.17.9",
-      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.17.9",
+      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala" % "5df6d12a45d67732763ecab05983484517a926d7",
+      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"       % "5df6d12a45d67732763ecab05983484517a926d7",
+      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.1",
+      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.1",
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq("-no-indent"), //, "-rewrite"),

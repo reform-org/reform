@@ -17,7 +17,7 @@ package webapp.npm
 
 import scala.scalajs.js.Promise
 import scala.scalajs.js
-import js.JSConverters._
+import js.JSConverters.*
 import scala.collection.mutable.Map
 
 object IdbKeyval {
