@@ -397,8 +397,8 @@ async function run() {
 
         console.log("DONE")
     } catch (error) {
-        console.error(error)
         console.log("seed: ", seed)
+        throw error
     }
 }
 
