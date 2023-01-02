@@ -35,6 +35,7 @@ import colibri.{Cancelable, Observer, Source, Subject}
 import outwatch.dsl.svg.idAttr
 import webapp.given
 import webapp.components.navigationHeader
+import webapp.repo.Synced
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -45,8 +46,6 @@ private class NewProjectRow {
   private val name = Var("")
   private val maxHours = Var("")
   private val account = Var("")
-
-  val onNewProject: Evt[EventedProject] = Evt[EventedProject]()
 
   def render(): VNode =
     tr(
@@ -87,13 +86,14 @@ private class NewProjectRow {
       val _name = validateName()
       val _max_hours = validateMaxHours()
       val _account = validateAccount()
-      val project = ProjectService.createOrGetProject(UUID.randomUUID().toString)
+
+      // TODO: Might want to add a method ProjectService.create(_name, _max_hours, _account)
+      val project = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
       project.map(project => {
         // we probably should special case initialization and not use the event
-        project.changeEvent.fire(p => {
+        project.update(p => {
           p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
         })
-        onNewProject.fire(project)
 
         name.set("")
         maxHours.set("")
@@ -135,9 +135,6 @@ case class ProjectsPage() extends Page {
 
   private val newProjectRow: NewProjectRow = NewProjectRow()
 
-  // add the project uuid to the projects list
-  newProjectRow.onNewProject.observe(p => ProjectsService.projects.map(_.addNewProjectEvent.fire(p.id)))
-
   def render(using services: Services): VNode = {
     div(
       navigationHeader,
@@ -152,36 +149,26 @@ case class ProjectsPage() extends Page {
           ),
         ),
         tbody(
-          ProjectsService.projects.map(
-            _.signal.map(projects =>
-              renderProjects(projects.set.toList.map(projectId => ProjectService.createOrGetProject(projectId))),
-            ),
-          ),
+          ProjectService.all.map(renderProjects),
           newProjectRow.render(),
         ),
       ),
     )
   }
 
-  private def renderProjects(projects: List[Future[EventedProject]]): List[Future[VNode]] =
+  private def renderProjects(projects: List[Synced[Project]]): List[VNode] =
     projects.map(p =>
-      p.map(p => {
-        tr(
-          attributes.key := p.id,
-          data.id := p.id,
-          td(p.signal.map(_.name)),
-          td(p.signal.map(_.maxHours)),
-          td(p.signal.map(_.accountName)),
-          button(
-            cls := "btn",
-            "Delete",
-            onClick.foreach(_ => removeProject(p)),
-          ),
-        )
-      }),
+      tr(
+        attributes.key := p.id,
+        data.id := p.id,
+        td(p.signal.map(_.name)),
+        td(p.signal.map(_.maxHours)),
+        td(p.signal.map(_.accountName)),
+        button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+      ),
     )
 
-  private def removeProject(p: EventedProject): Unit = {
+  private def removeProject(p: Synced[Project]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
     if (yes) {
       // ProjectsService.projects.transform(_.filterNot(_ == p))
