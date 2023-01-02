@@ -1,4 +1,4 @@
-name: Scala Test
+name: Scala JVM Test
 
 on:
   push:
@@ -11,7 +11,6 @@ permissions:
 
 jobs:
   test:
-    if: ${{ false }}  # TODO FIXME needs indexeddb mock
 
     runs-on: ubuntu-latest
 
@@ -25,8 +24,5 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
-    - run: npm ci
     - name: Build tests
-      run: sbt "Test / fastLinkJS"
-    - name: Run tests
-      run: npm run test run
+      run: sbt webappJVM/test

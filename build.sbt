@@ -22,10 +22,13 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   //.jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
   .jsSettings(
-    Compile / scalaJSModuleInitializers    += {
+    Compile / scalaJSModuleInitializers    := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
-    },
-    Test / scalaJSUseTestModuleInitializer := false,
+    }),
+    Test / scalaJSUseTestModuleInitializer := false, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
+    Test / scalaJSModuleInitializers := Seq(
+      //{ModuleInitializer.mainMethod("webapp.MainTest", "main").withModuleID("main")}
+    ),
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
