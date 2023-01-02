@@ -20,9 +20,11 @@ import webapp.services.*
 trait Services {
   lazy val routing: RoutingService
   lazy val webrtc: WebRTCService.type
+  val projectService: ProjectService.type
 }
 
 object ServicesDefault extends Services {
   lazy val routing = RoutingService()
   lazy val webrtc = WebRTCService
+  val projectService = ProjectService // not lazy to load in background
 }

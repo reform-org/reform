@@ -16,7 +16,7 @@ limitations under the License.
 package webapp.pages
 
 import org.scalajs.dom
-import org.scalajs.dom.window
+import org.scalajs.dom.{console, window}
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
@@ -82,24 +82,20 @@ private class NewProjectRow {
     )
 
   private def addNewProject(): Unit = {
-    try {
-      val _name = validateName()
-      val _max_hours = validateMaxHours()
-      val _account = validateAccount()
-      val syncedProject = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
-      syncedProject.signal.map(project => {
-        // we probably should special case initialization and not use the event
-        syncedProject.update(p => {
-          p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
-        })
-
-        name.set("")
-        maxHours.set("")
-        account.set("")
+    val _name = validateName()
+    val _max_hours = validateMaxHours()
+    val _account = validateAccount()
+    val syncedProject = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
+    syncedProject.signal.map(project => {
+      // we probably should special case initialization and not use the event
+      syncedProject.update(p => {
+        p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
       })
-    } catch {
-      case e: Exception => window.alert(e.getMessage)
-    }
+
+      name.set("")
+      maxHours.set("")
+      account.set("")
+    })
   }
 
   private def validateMaxHours(): Int = {

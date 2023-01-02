@@ -39,6 +39,9 @@ case class Syncer[A](name: String, defaultValue: A)(using
 
     val signal: Signal[A] = deltaEvents.mergeAllDeltas(defaultValue)
 
+    val synced = Synced(id, signal, deltaEvents.outgoingDeltaEvent)
+    cache.put(id, synced)
+
     // TODO FIXME maybe only initialize the signal when this has resolved and default to defaultValue
     IndexedDB
       .get[A](getKey(id))
@@ -48,12 +51,8 @@ case class Syncer[A](name: String, defaultValue: A)(using
 
     replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
 
-    val synced = Synced(id, signal, deltaEvents.outgoingDeltaEvent)
-
     synced.signal.observe(value => IndexedDB
       .set(getKey(synced.id), value))
-
-    cache.put(id, synced)
 
     synced
   }
