@@ -15,79 +15,58 @@ limitations under the License.
  */
 package webapp.services
 
-import kofre.decompose.containers.DeltaBufferRDT
-import kofre.datatypes.PosNegCounter
-import scala.concurrent.Future
-import scala.scalajs.js.JSON
-import kofre.syntax.DottedName
-import loci.registry.Binding
-import kofre.dotted.Dotted
-import rescala.default.{Events, Evt, Signal}
-import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString}
-import webapp.Codecs.{myReplicaID, given}
-import loci.serializer.jsoniterScala.given
-import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.IndexedDB
 import webapp.Project
-import scala.collection.mutable
-import webapp.DeltaFor
-import webapp.ReplicationGroup
+import webapp.repo.*
 
-case class EventedProject(
-    id: String,
-    signal: rescala.default.Signal[Project],
-    changeEvent: rescala.default.Evt[Project => Project],
-)
+import scala.collection.mutable
+import scala.concurrent.Future
+import rescala.default.*
+
+import concurrent.ExecutionContext.Implicits.global
+import scala.util.Success
 
 object ProjectService {
 
-  private val projectMap: mutable.Map[String, Future[EventedProject]] = mutable.Map.empty
+  private val idsRepo = IdSetRepository("project")
 
-  def createOrGetProject(id: String): Future[EventedProject] = {
-    projectMap.getOrElseUpdate(id, createProjectRef(id))
+  private val syncedIds = SyncedIdSet("project")
+  syncedIds.syncWithRepo(idsRepo)
+
+  private val valuesRepo = Repository[Project]("project", Project.empty)
+
+  private val valueSyncer = Syncer[Project]("project")
+
+  private val cache: mutable.Map[String, Synced[Project]] = mutable.Map.empty
+
+  def getOrCreateSyncedProject(id: String): Future[Synced[Project]] = {
+    if (cache.contains(id)) {
+      return Future(cache(id))
+    }
+
+    createSyncedFromRepo(id)
   }
 
-  // TODO FIXME for project creation this could be non-async? Or should it write into the database at creation? Or does this simply create too complex code?
-  private def createProjectRef(id: String): Future[EventedProject] = {
-    // restore from indexeddb
-    val init: Future[Project] = IndexedDB
-      .get[Project](s"project-$id")
-      .map(option => option.getOrElse(Project.empty))
-
-    init.map(init => {
-      val project = init
-
-      // event that fires when the user wants to change the value
-      val changeEvent = rescala.default.Evt[Project => Project]()
-
-      // event that fires when changes from other peers are received
-      val deltaEvent = Evt[Project]()
-
-      // look at foldAll documentation+example
-      val projectSignal: Signal[Project] = Events.foldAll(project)(current => {
-        Seq(
-          // if the user wants to increase the value, update the register accordingly
-          changeEvent.act2(_(current)),
-          // if we receive a delta from a peer, apply it
-          deltaEvent.act2(delta => {
-            println("apply delta")
-            current.merge(delta)
-          }),
-        )
+  private def createSyncedFromRepo(id: String): Future[Synced[Project]] =
+    valuesRepo
+      .getOrDefault(id)
+      .map(project => {
+        val synced = valueSyncer.sync(id, project)
+        cache.put(id, synced)
+        syncedIds.add(id)
+        updateRepoVersionOnChangesReceived(synced)
+        synced
       })
 
-      projectSignal.observe(
-        value => {
-          // write the updated value to persistent storage
-          // TODO FIXME this is async which means this is not robust
-          IndexedDB.set(s"project-$id", value)
-        },
-        fireImmediately = true,
-      )
+  private def updateRepoVersionOnChangesReceived(synced: Synced[Project]): Unit =
+    synced.signal.observe(value => valuesRepo.set(synced.id, value))
 
-      WebRTCService.projectReplicator.distributeDeltaRDT(id, projectSignal, deltaEvent)
-
-      EventedProject(id, projectSignal, changeEvent)
-    })
+  val all: Signal[List[Synced[Project]]] = {
+    syncedIds.ids
+      .map(ids => {
+        val futures = ids.toList.map(getOrCreateSyncedProject)
+        val future = Future.sequence(futures)
+        Signals.fromFuture(future)
+      })
+      .flatten
   }
 }
