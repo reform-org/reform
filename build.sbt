@@ -46,5 +46,19 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.1"
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
-    scalacOptions ++= Seq("-no-indent") //, "-rewrite"),
+    scalacOptions ++= Seq(
+      // like there could also be sane defaults but no
+      //"-rewrite",
+      "-no-indent",
+      //"-Yexplicit-nulls", // breaks json macro
+      "-Ysafe-init",
+      "-Xfatal-warnings",
+      "--explain-types",
+      "--unchecked",
+      "-deprecation",
+      "-Xmigration",
+      "-Wunused:all",
+      "-explain",
+      //"-Xcheck-macros" // breaks utest
+    )
   )
