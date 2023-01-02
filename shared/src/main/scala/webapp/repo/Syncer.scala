@@ -35,6 +35,8 @@ case class Syncer[A](name: String, defaultValue: A)(using
       return cache(id)
     }
 
+    println(s"getOrDefault should only be called once per id $id")
+
     val deltaEvents = TwoWayDeltaEvents()
 
     val signal: Signal[A] = deltaEvents.mergeAllDeltas(defaultValue)
@@ -75,7 +77,10 @@ case class Syncer[A](name: String, defaultValue: A)(using
       })
 
     private def applyIncomingDelta(current: A) =
-      incomingDeltaEvent.act2(delta => current.merge(delta))
+      incomingDeltaEvent.act2(delta => {
+        println(s"merge, current: $current, delta: $delta, new: ${current.merge(delta)}")
+        current.merge(delta)
+      })
 
     def mergeAllDeltas(value: A): Signal[A] =
       Events.foldAll(value)(current => Seq(applyOutgoingDelta(current), applyIncomingDelta(current)))
