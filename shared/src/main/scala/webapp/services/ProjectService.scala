@@ -27,7 +27,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString
 import webapp.Codecs.{myReplicaID, given}
 import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.IdbKeyval
+import webapp.npm.IndexedDB
 import webapp.Project
 import scala.collection.mutable
 import webapp.DeltaFor
@@ -50,14 +50,9 @@ object ProjectService {
   // TODO FIXME for project creation this could be non-async? Or should it write into the database at creation? Or does this simply create too complex code?
   private def createProjectRef(id: String): Future[EventedProject] = {
     // restore from indexeddb
-    val init: Future[Project] = IdbKeyval
-      .get[scala.scalajs.js.Object](s"project-$id")
-      .toFuture
-      .map(value =>
-        value.toOption
-          .map(value => readFromString[Project](JSON.stringify(value)))
-          .getOrElse(Project.empty),
-      )
+    val init: Future[Project] = IndexedDB
+      .get[Project](s"project-$id")
+      .map(option => option.getOrElse(Project.empty))
 
     init.map(init => {
       val project = init
@@ -85,7 +80,7 @@ object ProjectService {
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          IdbKeyval.set(s"project-$id", JSON.parse(writeToString(value)))
+          IndexedDB.set(s"project-$id", value)
         },
         fireImmediately = true,
       )

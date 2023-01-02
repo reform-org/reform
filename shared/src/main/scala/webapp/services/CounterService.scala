@@ -24,7 +24,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString
 import webapp.Codecs.{myReplicaID, given}
 import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.IdbKeyval
+import webapp.npm.IndexedDB
 import kofre.syntax.PermIdMutate
 import webapp.DeltaFor
 import webapp.ReplicationGroup
@@ -41,14 +41,9 @@ object CounterService {
   def createCounterRef(): Future[EventedCounter] = {
     // restore from indexeddb
     val init: Future[PosNegCounter] =
-      IdbKeyval
-        .get[scala.scalajs.js.Object]("counter")
-        .toFuture
-        .map(value =>
-          value.toOption
-            .map(value => readFromString[PosNegCounter](JSON.stringify(value)))
-            .getOrElse(PosNegCounter.zero),
-        )
+      IndexedDB
+        .get[PosNegCounter]("counter")
+        .map(option => option.getOrElse(PosNegCounter.zero));
 
     init.map(init => {
       val positiveNegativeCounter = init
@@ -77,7 +72,7 @@ object CounterService {
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          IdbKeyval.set("counter", JSON.parse(writeToString(value)))
+          IndexedDB.set("counter", value)
         },
         fireImmediately = true,
       )

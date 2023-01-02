@@ -24,7 +24,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString
 import webapp.Codecs.{myReplicaID, given}
 import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.IdbKeyval
+import webapp.npm.IndexedDB
 import webapp.User
 import webapp.GrowOnlySet
 import java.util.UUID
@@ -40,14 +40,10 @@ object UsersService {
 
   def createUsersRef(): Future[EventedUsers] = {
     // restore from indexeddb
-    val init: Future[GrowOnlySet[String]] = IdbKeyval
-      .get[scala.scalajs.js.Object]("users")
-      .toFuture
-      .map(value =>
-        value.toOption
-          .map(value => readFromString[GrowOnlySet[String]](JSON.stringify(value)))
-          .getOrElse(GrowOnlySet(Set.empty)),
-      )
+    val init: Future[GrowOnlySet[String]] =
+      IndexedDB
+        .get[GrowOnlySet[String]]("users")
+        .map(option => option.getOrElse(GrowOnlySet.empty))
 
     init.map(init => {
       val users = init
@@ -76,7 +72,7 @@ object UsersService {
         value => {
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          IdbKeyval.set("users", JSON.parse(writeToString(value)))
+          IndexedDB.set("users", value)
         },
         fireImmediately = true,
       )
