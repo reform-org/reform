@@ -86,12 +86,10 @@ private class NewProjectRow {
       val _name = validateName()
       val _max_hours = validateMaxHours()
       val _account = validateAccount()
-
-      // TODO: Might want to add a method ProjectService.create(_name, _max_hours, _account)
-      val project = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
-      project.map(project => {
+      val syncedProject = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
+      syncedProject.signal.map(project => {
         // we probably should special case initialization and not use the event
-        project.update(p => {
+        syncedProject.update(p => {
           p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
         })
 
@@ -159,8 +157,6 @@ case class ProjectsPage() extends Page {
   private def renderProjects(projects: List[Synced[Project]]): List[VNode] =
     projects.map(p =>
       tr(
-        attributes.key := p.id,
-        data.id := p.id,
         td(p.signal.map(_.name)),
         td(p.signal.map(_.maxHours)),
         td(p.signal.map(_.accountName)),

@@ -9,28 +9,60 @@ import webapp.services.WebRTCService
 
 import loci.serializer.jsoniterScala.given
 import webapp.Codecs.given
+import scala.collection.mutable
+import scala.concurrent.Future
+import scala.scalajs.js
+import scala.scalajs.js.JSON
+import webapp.npm.IndexedDB
+import com.github.plokhotnyuk.jsoniter_scala.core.*
+import concurrent.ExecutionContext.Implicits.global
 
-case class Syncer[A](name: String)(using
+case class Syncer[A](name: String, defaultValue: A)(using
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
-    codec: JsonValueCodec[DeltaFor[A]],
+    codec: JsonValueCodec[A],
 ) {
 
   private val binding = Binding[DeltaFor[A] => Unit](name)
 
-  // TODO: might be ok to only pass the name and move the binding inside the replication group
   private val replicator = ReplicationGroup(rescala.default, WebRTCService.registry, binding)
 
-  def sync(id: String, value: A): Synced[A] = {
+  private val cache: mutable.Map[String, Synced[A]] = mutable.Map.empty
+
+  def getOrDefault(id: String): Synced[A] = {
+    if (cache.contains(id)) {
+      return cache(id)
+    }
 
     val deltaEvents = TwoWayDeltaEvents()
 
-    val signal: Signal[A] = deltaEvents.mergeAllDeltas(value)
+    val outerSignal: Signal[A] = Signals
+      .fromFuture(
+        IndexedDB
+          .get[A](getKey(id))
+          .map(future =>
+          future.map(value => {
 
-    replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
+            val signal: Signal[A] = deltaEvents.mergeAllDeltas(value)
 
-    Synced(id, signal, deltaEvents.outgoingDeltaEvent)
+            replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
+
+            signal
+          })),
+      )
+      .flatten
+
+    val synced = Synced(id, outerSignal, deltaEvents.outgoingDeltaEvent)
+
+    synced.signal.observe(value => IndexedDB
+      .set(getKey(synced.id), value))
+
+    cache.put(id, synced)
+
+    synced
   }
+
+  private def getKey(id: String): String = s"$name-$id"
 
   private class TwoWayDeltaEvents {
 

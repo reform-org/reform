@@ -24,49 +24,34 @@ import rescala.default.*
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.util.Success
+import webapp.GrowOnlySet
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import webapp.DeltaFor
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 object ProjectService {
 
-  private val idsRepo = IdSetRepository("project")
+  implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
 
-  private val syncedIds = SyncedIdSet("project")
-  syncedIds.syncWithRepo(idsRepo)
+  private val idsSyncer = Syncer[GrowOnlySet[String]]("project-ids", GrowOnlySet.empty)
+  private val valueSyncer = Syncer[Project]("project", Project.empty)
 
-  private val valuesRepo = Repository[Project]("project", Project.empty)
+  private val syncedIds: Synced[GrowOnlySet[String]] = idsSyncer.getOrDefault("ids")
 
-  private val valueSyncer = Syncer[Project]("project")
-
-  private val cache: mutable.Map[String, Synced[Project]] = mutable.Map.empty
-
-  def getOrCreateSyncedProject(id: String): Future[Synced[Project]] = {
-    if (cache.contains(id)) {
-      return Future(cache(id))
-    }
-
-    createSyncedFromRepo(id)
+  def getOrCreateSyncedProject(id: String): Synced[Project] = {
+    addId(id)
+    valueSyncer.getOrDefault(id)
   }
-
-  private def createSyncedFromRepo(id: String): Future[Synced[Project]] =
-    valuesRepo
-      .getOrDefault(id)
-      .map(project => {
-        val synced = valueSyncer.sync(id, project)
-        cache.put(id, synced)
-        syncedIds.add(id)
-        updateRepoVersionOnChangesReceived(synced)
-        synced
-      })
-
-  private def updateRepoVersionOnChangesReceived(synced: Synced[Project]): Unit =
-    synced.signal.observe(value => valuesRepo.set(synced.id, value))
 
   val all: Signal[List[Synced[Project]]] = {
-    syncedIds.ids
-      .map(ids => {
-        val futures = ids.toList.map(getOrCreateSyncedProject)
-        val future = Future.sequence(futures)
-        Signals.fromFuture(future)
-      })
-      .flatten
+    ids.map(ids => {
+      ids.toList.map(getOrCreateSyncedProject)
+    })
   }
+
+  val ids: Signal[Set[String]] =
+    syncedIds.signal.map(_.set)
+
+  def addId(id: String): Unit =
+    syncedIds.update(_.add(id))
 }

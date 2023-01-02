@@ -48,7 +48,6 @@ import scala.reflect.Selectable.*
 import scala.scalajs.js
 import loci.serializer.jsoniterScala.given
 import kofre.datatypes.PosNegCounter
-import webapp.repo.Repository
 
 import scala.concurrent.duration.Duration
 import scala.scalajs.js.JSON
