@@ -97,7 +97,7 @@ class ReplicationGroup[Api <: RescalaInterface, A](
 
       def sendUpdate(delta: A): Unit = {
         // the contents of the resend buffer and the delta need to be sent
-        val allToSend = (resendBuffer.get(remoteRef).merge(Some(delta))).get
+        val allToSend = resendBuffer.get(remoteRef).merge(Some(delta)).get
         // remove from resend buffer for now
         resendBuffer = resendBuffer.removed(remoteRef)
 

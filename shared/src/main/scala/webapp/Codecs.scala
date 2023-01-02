@@ -24,7 +24,7 @@ import java.util.UUID
 object Codecs {
 
   // every client has an id
-  val myReplicaID: String = UUID.randomUUID().toString()
+  val myReplicaID: String = UUID.randomUUID().toString
 
   implicit def identicallyTransmittable[A]: IdenticallyTransmittable[A] = IdenticallyTransmittable()
 

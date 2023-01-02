@@ -18,11 +18,11 @@ package webapp.npm
 import scala.scalajs.js.Promise
 import scala.scalajs.js
 import js.JSConverters.*
-import scala.collection.mutable.Map
+import scala.collection.mutable
 
 object IdbKeyval {
 
-  var data: Map[String, scala.scalajs.js.Dynamic] = Map()
+  var data: mutable.Map[String, scala.scalajs.js.Dynamic] = mutable.Map()
 
   def get[T](key: String): Promise[js.UndefOr[T]] = {
     Promise.resolve(data.get(key).orUndefined.map(v => v.asInstanceOf))

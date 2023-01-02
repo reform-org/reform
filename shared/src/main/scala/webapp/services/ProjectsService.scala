@@ -50,13 +50,13 @@ object ProjectsService {
         value.toOption
           .map(value => readFromString[GrowOnlySet[String]](JSON.stringify(value)))
           .getOrElse(GrowOnlySet(Set.empty)),
-      );
+      )
 
     init.map(init => {
       val projects = init
 
       // event that fires when the user wants to change the value
-      val changeEvent = rescala.default.Evt[String]();
+      val changeEvent = rescala.default.Evt[String]()
 
       // event that fires when changes from other peers are received
       val deltaEvent = Evt[GrowOnlySet[String]]()

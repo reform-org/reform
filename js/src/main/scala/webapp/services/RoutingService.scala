@@ -49,18 +49,13 @@ class RoutingService() {
     page.set(newPage)
   }
 
-  def toReplace(newPage: Page, preventReturn: Boolean = false) = {
-    window.history.replaceState(RoutingState(!preventReturn), "", linkPath(newPage))
-    page.set(newPage)
-  }
-
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 
   def linkPath(newPage: Page) =
     Routes.toPath(newPage).pathString
 
-  def back =
+  def back() =
     window.history.back()
 
   def state =

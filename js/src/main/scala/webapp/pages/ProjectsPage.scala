@@ -24,7 +24,6 @@ import webapp.services.*
 import webapp.*
 import webapp.given
 import webapp.components.navigationHeader
-
 import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
@@ -33,8 +32,10 @@ import webapp.services.*
 import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
+import outwatch.dsl.svg.idAttr
 import webapp.given
 import webapp.components.navigationHeader
+
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
@@ -74,7 +75,7 @@ private class NewProjectRow {
       td(
         button(
           cls := "btn",
-          id := "add-project-button",
+          idAttr := "add-project-button",
           "Add Project",
           onClick.foreach(_ => addNewProject()),
         ),
@@ -83,10 +84,10 @@ private class NewProjectRow {
 
   private def addNewProject(): Unit = {
     try {
-      val _name = validateName();
-      val _max_hours = validateMaxHours();
-      val _account = validateAccount();
-      val project = ProjectService.createOrGetProject(UUID.randomUUID().toString());
+      val _name = validateName()
+      val _max_hours = validateMaxHours()
+      val _account = validateAccount()
+      val project = ProjectService.createOrGetProject(UUID.randomUUID().toString)
       project.map(project => {
         // we probably should special case initialization and not use the event
         project.changeEvent.fire(p => {

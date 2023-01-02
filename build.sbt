@@ -31,7 +31,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
     libraryDependencies                   ++= Seq(
       "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC13",
-      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.8",
+      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.8"
     )
   )
   .settings(
@@ -43,8 +43,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.rescala-lang.rescala"       %%% "rescala"                               % "e522b921dec85ba1f45356dba3849c0577273260",
       "com.github.rescala-lang.rescala"       %%% "kofre"                                 % "e522b921dec85ba1f45356dba3849c0577273260",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.1",
-      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.1",
+      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.1"
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
-    scalacOptions ++= Seq("-no-indent"), //, "-rewrite"),
+    scalacOptions ++= Seq("-no-indent") //, "-rewrite"),
   )
