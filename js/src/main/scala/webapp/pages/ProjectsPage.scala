@@ -85,7 +85,7 @@ private class NewProjectRow {
     val _name = validateName()
     val _max_hours = validateMaxHours()
     val _account = validateAccount()
-    val syncedProject = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
+    val syncedProject = ProjectService.createSyncedProject(UUID.randomUUID().toString)
     syncedProject.update(p => {
       p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
     })

@@ -38,7 +38,7 @@ object ProjectService {
 
   private val syncedIds: Synced[GrowOnlySet[String]] = idsSyncer.getOrDefault("ids")
 
-  def getOrCreateSyncedProject(id: String): Synced[Project] = {
+  def createSyncedProject(id: String): Synced[Project] = {
     val project = valueSyncer.getOrDefault(id)
     addId(id)
     project
@@ -49,7 +49,7 @@ object ProjectService {
 
   val all: Signal[List[Synced[Project]]] = {
     ids.map(ids => {
-      ids.toList.map(getOrCreateSyncedProject)
+      ids.toList.map(valueSyncer.getOrDefault)
     })
   }
 

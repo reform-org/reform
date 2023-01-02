@@ -51,8 +51,11 @@ case class Syncer[A](name: String, defaultValue: A)(using
 
     replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
 
-    synced.signal.observe(value => IndexedDB
-      .set(getKey(synced.id), value))
+    synced.signal.observe(value => {
+      println(s"$name observed $value")
+      IndexedDB
+        .set(getKey(synced.id), value)
+    })
 
     synced
   }
@@ -66,7 +69,10 @@ case class Syncer[A](name: String, defaultValue: A)(using
     val incomingDeltaEvent: Evt[A] = Evt()
 
     private def applyOutgoingDelta(current: A) =
-      outgoingDeltaEvent.act2(_(current))
+      outgoingDeltaEvent.act2(function => {
+        println(s"old: $current, new: ${function(current)}")
+        function(current)
+      })
 
     private def applyIncomingDelta(current: A) =
       incomingDeltaEvent.act2(delta => current.merge(delta))
