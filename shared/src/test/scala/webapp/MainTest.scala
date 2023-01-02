@@ -32,8 +32,8 @@ object MainTest extends TestSuite {
     test("test that creating a project works") {
       assert(ProjectService.all.now.length == 0)
       ProjectService
-        .getOrCreateSyncedProject("einhorn-🦄")
-        .onComplete(_ => {
+        .getOrCreateSyncedProject("einhorn-🦄").signal
+        .map(_ => {
           ProjectService.all.map(println(_))
           assert(ProjectService.all.now.length == 1)
         })

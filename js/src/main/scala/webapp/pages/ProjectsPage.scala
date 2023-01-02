@@ -88,9 +88,9 @@ private class NewProjectRow {
     val syncedProject = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
     syncedProject.signal.map(project => {
       // we probably should special case initialization and not use the event
-      syncedProject.update(p => {
+     /* syncedProject.update(p => {
         p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
-      })
+      })*/
 
       name.set("")
       maxHours.set("")
