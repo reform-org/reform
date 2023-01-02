@@ -43,14 +43,14 @@ object ProjectService {
     valueSyncer.getOrDefault(id)
   }
 
+  val ids: Signal[Set[String]] =
+    syncedIds.signal.map(_.set)
+
   val all: Signal[List[Synced[Project]]] = {
     ids.map(ids => {
       ids.toList.map(getOrCreateSyncedProject)
     })
   }
-
-  val ids: Signal[Set[String]] =
-    syncedIds.signal.map(_.set)
 
   def addId(id: String): Unit =
     syncedIds.update(_.add(id))

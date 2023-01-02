@@ -43,7 +43,7 @@ object CounterService {
     val init: Future[PosNegCounter] =
       IndexedDB
         .get[PosNegCounter]("counter")
-        .map(option => option.getOrElse(PosNegCounter.zero));
+        .map(option => option.getOrElse(PosNegCounter.zero))
 
     init.map(init => {
       val positiveNegativeCounter = init

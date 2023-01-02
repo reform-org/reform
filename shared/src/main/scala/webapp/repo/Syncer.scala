@@ -20,7 +20,8 @@ import concurrent.ExecutionContext.Implicits.global
 case class Syncer[A](name: String, defaultValue: A)(using
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
-    codec: JsonValueCodec[A],
+    deltaCodec: JsonValueCodec[DeltaFor[A]],
+    codec: JsonValueCodec[A]
 ) {
 
   private val binding = Binding[DeltaFor[A] => Unit](name)
@@ -36,23 +37,18 @@ case class Syncer[A](name: String, defaultValue: A)(using
 
     val deltaEvents = TwoWayDeltaEvents()
 
-    val outerSignal: Signal[A] = Signals
-      .fromFuture(
-        IndexedDB
-          .get[A](getKey(id))
-          .map(future =>
-          future.map(value => {
+    val signal: Signal[A] = deltaEvents.mergeAllDeltas(defaultValue)
 
-            val signal: Signal[A] = deltaEvents.mergeAllDeltas(value)
+    // TODO FIXME maybe only initialize the signal when this has resolved and default to defaultValue
+    IndexedDB
+      .get[A](getKey(id))
+      .map(value => {
+        deltaEvents.incomingDeltaEvent.fire(value.getOrElse(defaultValue))
+      })
 
-            replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
+    replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
 
-            signal
-          })),
-      )
-      .flatten
-
-    val synced = Synced(id, outerSignal, deltaEvents.outgoingDeltaEvent)
+    val synced = Synced(id, signal, deltaEvents.outgoingDeltaEvent)
 
     synced.signal.observe(value => IndexedDB
       .set(getKey(synced.id), value))
