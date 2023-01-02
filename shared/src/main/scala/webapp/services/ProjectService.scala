@@ -33,7 +33,7 @@ object ProjectService {
 
   implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
 
-  private val idsSyncer = Syncer[GrowOnlySet[String]]("project-ids", GrowOnlySet(Set("hi")))
+  private val idsSyncer = Syncer[GrowOnlySet[String]]("project-ids", GrowOnlySet.empty)
   private val valueSyncer = Syncer[Project]("project", Project.empty)
 
   private val syncedIds: Synced[GrowOnlySet[String]] = idsSyncer.getOrDefault("ids")
