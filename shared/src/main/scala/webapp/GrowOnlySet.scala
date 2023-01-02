@@ -6,17 +6,27 @@ import kofre.base.Bottom
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
-case class GrowOnlySet[A](set: Set[A])
+case class GrowOnlySet[A](set: Set[A]) {
+
+  def add(value: A): GrowOnlySet[A] =
+    GrowOnlySet(set + value)
+
+  def union(other: GrowOnlySet[A]): GrowOnlySet[A] =
+    GrowOnlySet(set.union(other.set))
+}
 
 object GrowOnlySet {
+
+  def empty[A]: GrowOnlySet[A] = GrowOnlySet(Set.empty)
+
   given stringCodec: JsonValueCodec[GrowOnlySet[String]] = JsonCodecMaker.make
 
   given bottom[E]: Bottom[GrowOnlySet[E]] = new {
-    override def empty: GrowOnlySet[E] = GrowOnlySet(Set.empty)
+    override def empty: GrowOnlySet[E] = GrowOnlySet.empty
   }
 
   implicit def GrowOnlySetLattice[A]: DecomposeLattice[GrowOnlySet[A]] = new DecomposeLattice[GrowOnlySet[A]] {
-    def merge(left: GrowOnlySet[A], right: GrowOnlySet[A]): GrowOnlySet[A] = GrowOnlySet(left.set.union(right.set))
+    def merge(left: GrowOnlySet[A], right: GrowOnlySet[A]): GrowOnlySet[A] = left.union(right)
 
     def decompose(a: GrowOnlySet[A]): Iterable[GrowOnlySet[A]] = List(a)
   }

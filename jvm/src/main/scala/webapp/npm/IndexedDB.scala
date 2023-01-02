@@ -15,17 +15,23 @@ limitations under the License.
  */
 package webapp.npm
 
-import scala.scalajs.js.annotation.JSImport
-import scala.scalajs.js
-import scala.scalajs.js.Promise
+import scala.collection.mutable
+import scala.concurrent.Future
+import scala.scalajs.js.JSConverters.*
 
-// https://github.com/jakearchibald/idb-keyval/blob/main/src/index.ts#L44
-@js.native
-@JSImport("idb-keyval", JSImport.Namespace)
-object IdbKeyval extends js.Object {
+import com.github.plokhotnyuk.jsoniter_scala.core.*
 
-  // TODO FIXME key type is wrong
-  def get[T](key: String): Promise[js.UndefOr[T]] = js.native
+object IndexedDB extends IIndexedDB {
 
-  def set(key: String, value: scala.scalajs.js.Dynamic): Promise[Unit] = js.native
+  private val data: mutable.Map[String, Any] = mutable.Map()
+
+  override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
+    val o = data.get(key).map(_.asInstanceOf)
+    Future.successful(o)
+  }
+
+  override def set[T](key: String, value: T)(using codec: JsonValueCodec[T]): Future[Unit] = {
+    data.put(key, value)
+    Future.successful(())
+  }
 }

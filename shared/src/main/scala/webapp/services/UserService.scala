@@ -27,7 +27,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString
 import webapp.Codecs.{myReplicaID, given}
 import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.IdbKeyval
+import webapp.npm.IndexedDB
 import webapp.User
 import scala.collection.mutable
 
@@ -47,14 +47,10 @@ object UserService {
   // // TODO FIXME for User creation this could non non-async? Or should it write into the database at creation? Or does this simply create too complex code?
   private def createUserRef(id: String): Future[EventedUser] = {
     // restore from indexeddb
-    val init: Future[User] = IdbKeyval
-      .get[scala.scalajs.js.Object](s"user-$id")
-      .toFuture
-      .map(value =>
-        value.toOption
-          .map(value => readFromString[User](JSON.stringify(value)))
-          .getOrElse(User.empty),
-      )
+    val init: Future[User] =
+      IndexedDB
+        .get[User](s"user-$id")
+        .map(option => option.getOrElse(User.empty))
 
     init.map(init => {
       val user = init
@@ -83,7 +79,7 @@ object UserService {
           org.scalajs.dom.console.log(value)
           // write the updated value to persistent storage
           // TODO FIXME this is async which means this is not robust
-          IdbKeyval.set(s"user-$id", JSON.parse(writeToString(value)))
+          IndexedDB.set(s"user-$id", value)
         },
         fireImmediately = true,
       )

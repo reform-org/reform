@@ -43,6 +43,7 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
+// TODO: First two arguments are always the same object in memory
 class ReplicationGroup[Api <: RescalaInterface, A](
     val api: Api,
     registry: Registry,
@@ -102,7 +103,7 @@ class ReplicationGroup[Api <: RescalaInterface, A](
         resendBuffer = resendBuffer.removed(remoteRef)
 
         // functions that adds the data to the resend buffer
-        def scheduleForLater() = {
+        def scheduleForLater(): Unit = {
           // add to resend buffer
           resendBuffer = resendBuffer.updatedWith(remoteRef) { current =>
             current.merge(Some(allToSend))

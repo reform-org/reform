@@ -1,26 +1,14 @@
 package webapp
 
-import com.github.plokhotnyuk.jsoniter_scala.core.{JsonKeyCodec, JsonReader, JsonValueCodec, JsonWriter}
-import com.github.plokhotnyuk.jsoniter_scala.macros.{CodecMakerConfig, JsonCodecMaker}
-import kofre.base.Defs
-import kofre.datatypes.{RGA, TimedVal}
-import kofre.time.Dot
-import kofre.decompose.containers.DeltaBufferRDT
-import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegister
-import kofre.decompose.interfaces.LWWRegisterInterface
-import kofre.decompose.interfaces.GListInterface.GList
-import kofre.decompose.interfaces.GListInterface.GListNode
-import kofre.decompose.interfaces.GListInterface.GListElem
-import kofre.dotted.{DotFun, Dotted}
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import kofre.datatypes.PosNegCounter
 import loci.transmitter.IdenticallyTransmittable
 
-import scala.annotation.nowarn
-import rescala.default.*
-import java.util.concurrent.ThreadLocalRandom
-import kofre.datatypes.PosNegCounter
 import java.util.UUID
 
 // Supporting code to serialize and deserialize objects
+// TODO: Codecs should be declared where they are used
 object Codecs {
 
   // every client has an id
