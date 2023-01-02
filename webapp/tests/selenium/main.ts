@@ -113,7 +113,10 @@ class Peer {
     public static async create() {
         let driver = new Builder()
             .forBrowser('chrome')
-            .setChromeOptions(new chrome.Options().windowSize({ width: 2000, height: 750 }).headless())
+            .setChromeOptions(new chrome.Options()
+                .windowSize({ width: 2000, height: 750 })
+                .headless()
+            )
             //.setFirefoxOptions(/* ... */)
             .build();
 
@@ -203,7 +206,7 @@ async function run() {
             switch (action) {
                 case Actions.CREATE_PEER: {
                     let peer = await Peer.create();
-                    peer.driver.get("http://localhost:4173/")
+                    peer.driver.get("http://localhost:5173/")
                     peers.push(peer)
                     console.log(`[${peer.id}] peer created`)
                     break;
