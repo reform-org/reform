@@ -89,7 +89,7 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       i(
-        services.webrtc.registry.remotes.size + " Connections",
+        s"${services.webrtc.registry.remotes.size} Connections",
       ),
     ),
   )
@@ -105,7 +105,7 @@ def navigationHeader(using services: Services) = {
         cls := "dropdown",
         label(
           tabIndex := 0,
-          id := "dropdown-button",
+          idAttr := "dropdown-button",
           cls := "btn btn-ghost lg:hidden",
           svg(
             xmlns := "http://www.w3.org/2000/svg",

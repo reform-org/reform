@@ -54,13 +54,13 @@ object UserService {
         value.toOption
           .map(value => readFromString[User](JSON.stringify(value)))
           .getOrElse(User.empty),
-      );
+      )
 
     init.map(init => {
       val user = init
 
       // event that fires when the user wants to change the value
-      val changeEvent = rescala.default.Evt[User => User]();
+      val changeEvent = rescala.default.Evt[User => User]()
 
       // event that fires when changes from other peers are received
       val deltaEvent = Evt[User]()

@@ -81,10 +81,10 @@ private class NewUserRow {
 
   private def addNewUser(): Unit = {
     try {
-      val _username = validateUsername();
-      val _role = validateRole();
-      val _comment = validateComment();
-      val user = UserService.createOrGetUser(UUID.randomUUID().toString());
+      val _username = validateUsername()
+      val _role = validateRole()
+      val _comment = validateComment()
+      val user = UserService.createOrGetUser(UUID.randomUUID().toString)
       user.map(user => {
         user.changeEvent.fire(u => {
           u.withUsername(_username).withRole(_role).withComment(_comment)

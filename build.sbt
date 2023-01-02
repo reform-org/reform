@@ -18,8 +18,8 @@ lazy val kofreJS = ProjectRef(file("REScala"), "kofreJS")
 lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
 
 lazy val webapp = crossProject(JSPlatform, JVMPlatform)
-  .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
-  .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
+  //.jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
+  //.jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
   .jsSettings(
     Compile / scalaJSModuleInitializers    += {
@@ -31,18 +31,34 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
     libraryDependencies                   ++= Seq(
       "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC13",
-      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.8",
+      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.8"
     )
   )
   .settings(
     resolvers                              += "jitpack" at "https://jitpack.io",
     libraryDependencies                   ++= Seq(
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % "test",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala" % "5df6d12a45d67732763ecab05983484517a926d7",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"       % "5df6d12a45d67732763ecab05983484517a926d7",
+      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "5df6d12a45d67732763ecab05983484517a926d7",
+      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "5df6d12a45d67732763ecab05983484517a926d7",
+      "com.github.rescala-lang.rescala"       %%% "rescala"                               % "e522b921dec85ba1f45356dba3849c0577273260",
+      "com.github.rescala-lang.rescala"       %%% "kofre"                                 % "e522b921dec85ba1f45356dba3849c0577273260",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.1",
-      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.1",
+      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.1"
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
-    scalacOptions ++= Seq("-no-indent"), //, "-rewrite"),
+    scalacOptions ++= Seq(
+      // like there could also be sane defaults but no
+      //"-rewrite",
+      "-no-indent",
+      //"-Yexplicit-nulls", // breaks json macro
+      "-Ysafe-init",
+      "-Xfatal-warnings",
+      "--explain-types",
+      "--unchecked",
+      "-deprecation",
+      "-Xmigration",
+      "-Wunused:all",
+      "-explain",
+      //"-Xcheck-macros" // breaks utest
+    )
   )

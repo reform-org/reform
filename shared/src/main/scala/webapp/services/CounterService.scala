@@ -48,13 +48,13 @@ object CounterService {
           value.toOption
             .map(value => readFromString[PosNegCounter](JSON.stringify(value)))
             .getOrElse(PosNegCounter.zero),
-        );
+        )
 
     init.map(init => {
       val positiveNegativeCounter = init
 
       // event that fires when the user wants to change the value
-      val changeEvent = rescala.default.Evt[Int]();
+      val changeEvent = rescala.default.Evt[Int]()
 
       // event that fires when changes from other peers are received
       val deltaEvent = Evt[PosNegCounter]()
