@@ -86,16 +86,12 @@ private class NewProjectRow {
     val _max_hours = validateMaxHours()
     val _account = validateAccount()
     val syncedProject = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
-    syncedProject.signal.map(project => {
-      // we probably should special case initialization and not use the event
-     /* syncedProject.update(p => {
-        p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
-      })*/
-
-      name.set("")
-      maxHours.set("")
-      account.set("")
+    syncedProject.update(p => {
+      p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
     })
+    name.set("")
+    maxHours.set("")
+    account.set("")
   }
 
   private def validateMaxHours(): Int = {
