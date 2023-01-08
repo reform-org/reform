@@ -16,9 +16,10 @@ limitations under the License.
 package webapp
 
 import utest.*
-import webapp.services.ProjectService
-import concurrent.ExecutionContext.Implicits.global
 
+import webapp.services.WebRTCService
+
+import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*
 
 @JSExportTopLevel("MainTest")
@@ -28,14 +29,15 @@ object MainTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
+  private val repo = WebRTCService.projectRepo
+
   val tests: Tests = Tests {
     test("test that creating a project works") {
-      assert(ProjectService.all.now.length == 0)
-      ProjectService
-        .getOrCreateSyncedProject("einhorn-🦄")
+      assert(repo.all.now.length == 0)
+      repo.getOrCreateSyncedProject("einhorn-🦄")
         .onComplete(_ => {
-          ProjectService.all.map(println(_))
-          assert(ProjectService.all.now.length == 1)
+          repo.all.map(println(_))
+          assert(repo.all.now.length == 1)
         })
     }
   }

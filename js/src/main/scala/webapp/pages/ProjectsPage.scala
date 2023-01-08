@@ -88,7 +88,7 @@ private class NewProjectRow {
       val _account = validateAccount()
 
       // TODO: Might want to add a method ProjectService.create(_name, _max_hours, _account)
-      val project = ProjectService.getOrCreateSyncedProject(UUID.randomUUID().toString)
+      val project = WebRTCService.projectRepo.getOrCreateSyncedProject(UUID.randomUUID().toString)
       project.map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
@@ -149,7 +149,7 @@ case class ProjectsPage() extends Page {
           ),
         ),
         tbody(
-          ProjectService.all.map(renderProjects),
+          WebRTCService.projectRepo.all.map(renderProjects),
           newProjectRow.render(),
         ),
       ),

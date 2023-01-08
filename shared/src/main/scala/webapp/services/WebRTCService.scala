@@ -56,11 +56,8 @@ import scala.scalajs.js.JSON
 object WebRTCService {
   val registry = new Registry
 
-  val userBinding = Binding[DeltaFor[User] => Unit]("user")
-  val userReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, userBinding)
-
-  val usersBinding = Binding[DeltaFor[GrowOnlySet[String]] => Unit]("users")
-  val usersReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, usersBinding)
+  val projectRepo: Repository[Project] = Repository("project", Project.empty)
+  val userRepo: Repository[User] = Repository("user", User.empty)
 
   val counterBinding = Binding[DeltaFor[PosNegCounter] => Unit]("counter")
   val counterReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, counterBinding)
