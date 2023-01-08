@@ -22,10 +22,10 @@ case class SyncedIdSet(name: String) {
   val ids: Signal[Set[String]] =
     synced.signal.map(_.set)
 
-  def syncWithRepo(repo: IdSetRepository): Unit = {
-    repo.get.map(ids => {
+  def syncWithStorage(storage: IdSetStorage): Unit = {
+    storage.get.map(ids => {
       synced.update(_.union(ids))
     })
-    synced.signal.observe(repo.set)
+    synced.signal.observe(storage.set)
   }
 }
