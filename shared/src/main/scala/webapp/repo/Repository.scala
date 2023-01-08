@@ -27,7 +27,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
 
-case class Repository[A](name: String, defaultValue: A)(using dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
+case class Repository[A](name: String, defaultValue: A)(using
+    dcl: DecomposeLattice[A],
+    bottom: Bottom[A],
+    codec: JsonValueCodec[A],
+) {
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 

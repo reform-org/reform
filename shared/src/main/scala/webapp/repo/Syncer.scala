@@ -41,14 +41,14 @@ case class Syncer[A](name: String)(using
     def mergeAllDeltas(value: A): Signal[A] =
       Events.foldAll(value) { current =>
         Seq(
-          outgoingDeltaEvent act2 { function =>
+          outgoingDeltaEvent.act2 { function =>
             println(s"old: $current, new: ${function(current)}")
             function(current)
           },
-          incomingDeltaEvent act2 { delta =>
+          incomingDeltaEvent.act2 { delta =>
             println(s"merge, current: $current, delta: $delta, new: ${current.merge(delta)}")
             current.merge(delta)
-          }
+          },
         )
       }
   }

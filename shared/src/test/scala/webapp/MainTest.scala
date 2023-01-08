@@ -34,7 +34,8 @@ object MainTest extends TestSuite {
   val tests: Tests = Tests {
     test("test that creating a project works") {
       assert(repo.all.now.length == 0)
-      repo.getOrCreateSyncedProject("einhorn-🦄")
+      repo
+        .getOrCreateSyncedProject("einhorn-🦄")
         .onComplete(_ => {
           repo.all.map(println(_))
           assert(repo.all.now.length == 1)
