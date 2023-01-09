@@ -24,7 +24,6 @@ import webapp.services.*
 import webapp.*
 import webapp.given
 import webapp.components.navigationHeader
-
 import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
@@ -35,6 +34,8 @@ import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
+import webapp.repo.Synced
+
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
@@ -44,8 +45,6 @@ private class NewUserRow {
   private val username = Var("")
   private val role = Var("")
   private val comment = Var("")
-
-  val onNewUser: Evt[EventedUser] = Evt[EventedUser]()
 
   def render(): VNode =
     tr(
@@ -84,12 +83,11 @@ private class NewUserRow {
       val _username = validateUsername()
       val _role = validateRole()
       val _comment = validateComment()
-      val user = UserService.createOrGetUser(UUID.randomUUID().toString)
+      val user = WebRTCService.userRepo.getOrCreateSyncedProject(UUID.randomUUID().toString)
       user.map(user => {
-        user.changeEvent.fire(u => {
+        user.update(u => {
           u.withUsername(_username).withRole(_role).withComment(_comment)
         })
-        onNewUser.fire(user)
 
         username.set("")
         role.set("")
@@ -131,8 +129,6 @@ case class UsersPage() extends Page {
 
   private val newUserRow: NewUserRow = NewUserRow()
 
-  newUserRow.onNewUser.observe(p => UsersService.users.map(_.addNewUserEvent.fire(p.id)))
-
   def render(using services: Services): VNode = {
     div(
       navigationHeader,
@@ -151,30 +147,28 @@ case class UsersPage() extends Page {
           ),
         ),
         tbody(
-          UsersService.users.map(
-            _.signal.map(users => renderUsers(users.set.toList.map(userId => UserService.createOrGetUser(userId)))),
-          ),
+          WebRTCService.userRepo.all.map(renderUsers),
           newUserRow.render(),
         ),
       ),
     )
   }
 
-  private def renderUsers(users: List[Future[EventedUser]]): List[VNode] =
+  private def renderUsers(users: List[Synced[User]]): List[VNode] =
     users.map(u =>
       tr(
-        td(u.map(_.signal.map(_.username))),
-        td(u.map(_.signal.map(_.role))),
-        td(u.map(_.signal.map(_.comment))),
+        td(u.signal.map(_.username)),
+        td(u.signal.map(_.role)),
+        td(u.signal.map(_.comment)),
         button(
           cls := "btn",
           "Delete",
-          onClick.foreach(_ => u.map(removeUser)),
+          onClick.foreach(_ => removeUser(u)),
         ),
       ),
     )
 
-  private def removeUser(u: EventedUser): Unit = {
+  private def removeUser(u: Synced[User]): Unit = {
     // val yes = window.confirm(s"Do you really want to delete the user \"${u.signal.now.name}\"?")
     // if (yes) {
     // ProjectsService.projects.transform(_.filterNot(_ == p))

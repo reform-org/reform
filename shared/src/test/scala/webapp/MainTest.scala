@@ -16,12 +16,11 @@ limitations under the License.
 package webapp
 
 import utest.*
-import org.scalajs.dom.*
-import outwatch.*
-import outwatch.dsl.*
-import scala.scalajs.js.annotation.*
 
-import cats.effect.SyncIO
+import webapp.services.WebRTCService
+
+import concurrent.ExecutionContext.Implicits.global
+import scala.scalajs.js.annotation.*
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
@@ -30,24 +29,17 @@ object MainTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
-  def utestBeforeEach(): Unit = {
-    document.body.innerHTML = ""
+  private val repo = WebRTCService.projectRepo
 
-    // prepare body with <div id="app"></div>
-    val root = document.createElement("div")
-    root.id = "app"
-    discard { document.body.appendChild(root) }
-    ()
-  }
-
-  val tests = Tests {
-    test("test") {
-      utestBeforeEach()
-
-      val message = "Hello World!"
-      Outwatch.renderInto[SyncIO]("#app", h1(message)).unsafeRunSync()
-
-      assert(document.body.innerHTML.contains(message))
+  val tests: Tests = Tests {
+    test("test that creating a project works") {
+      assert(repo.all.now.length == 0)
+      repo
+        .getOrCreateSyncedProject("einhorn-🦄")
+        .onComplete(_ => {
+          repo.all.map(println(_))
+          assert(repo.all.now.length == 1)
+        })
     }
   }
 

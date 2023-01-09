@@ -24,7 +24,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
-    - run: npm install
+    - run: npm ci
     - name: Build ScalaJS
       run: sbt fastLinkJS
     - name: Build JavaScript

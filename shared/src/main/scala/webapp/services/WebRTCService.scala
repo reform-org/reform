@@ -19,33 +19,27 @@ import webapp.*
 import webapp.Codecs.*
 
 import java.util.concurrent.ThreadLocalRandom
-
 import kofre.decompose.interfaces.MVRegisterInterface.MVRegisterSyntax
 import kofre.decompose.containers.DeltaBufferRDT
 import kofre.datatypes.TimedVal
 import kofre.datatypes.PosNegCounter
 import kofre.base.{Bottom, DecomposeLattice}
-
 import loci.registry.{Binding, Registry}
 import loci.communicator.webrtc
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import loci.transmitter.RemoteRef
 import loci.serializer.jsoniterScala.given
-
 import org.scalajs.dom.html.{Input, LI}
 import org.scalajs.dom.*
 import org.scalajs.dom
-
 import rescala.default.*
-
 import scribe.Execution.global
-
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
+import scala.concurrent.{Await, Future, Promise}
 import scala.Function.const
 import scala.collection.mutable
 import scala.scalajs.js.timers.setTimeout
@@ -54,22 +48,16 @@ import scala.reflect.Selectable.*
 import scala.scalajs.js
 import loci.serializer.jsoniterScala.given
 import kofre.datatypes.PosNegCounter
+import webapp.repo.Repository
+
+import scala.concurrent.duration.Duration
 import scala.scalajs.js.JSON
 
 object WebRTCService {
   val registry = new Registry
 
-  val projectBinding = Binding[DeltaFor[Project] => Unit]("project")
-  val projectReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, projectBinding)
-
-  val projectsBinding = Binding[DeltaFor[GrowOnlySet[String]] => Unit]("projects")
-  val projectsReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, projectsBinding)
-
-  val userBinding = Binding[DeltaFor[User] => Unit]("user")
-  val userReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, userBinding)
-
-  val usersBinding = Binding[DeltaFor[GrowOnlySet[String]] => Unit]("users")
-  val usersReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, usersBinding)
+  val projectRepo: Repository[Project] = Repository("project", Project.empty)
+  val userRepo: Repository[User] = Repository("user", User.empty)
 
   val counterBinding = Binding[DeltaFor[PosNegCounter] => Unit]("counter")
   val counterReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, counterBinding)
