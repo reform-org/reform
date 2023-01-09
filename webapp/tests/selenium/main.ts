@@ -157,7 +157,7 @@ async function check(peers: Peer[]) {
         }
     }
 
-    // TODO FIXME do this in parallel
+    // TODO FIXME RACE CONDITION HERE
     await Promise.all(peers.map(async peer => {
         //console.log(`checking state of peer ${peer.id}`)
         let projectsButton = await peer.driver.findElement(By.css(".navbar-center a[href='/projects']"))
@@ -212,7 +212,7 @@ async function run() {
                     break;
                 }
                 case Actions.CREATE_PROJECT: {
-                    if (peers.length == 0) {
+                    if (peers.length === 0) {
                         continue;
                     }
                     let random_peer: Peer = chance.pickone(peers)
@@ -262,7 +262,7 @@ async function run() {
                         let oldIds = new Set([...random_peer.projects.value.keys()])
     
                         let addedProjects = new Set([...ids].filter(x => !oldIds.has(x)))
-                        if (addedProjects.size != 1) {
+                        if (addedProjects.size !== 1) {
                             console.error("couldn't identify which project was added", addedProjects)
                             return false
                         }
@@ -343,7 +343,7 @@ async function run() {
                     break;
                 }
                 case Actions.RELOAD: {
-                    if (peers.length == 0) {
+                    if (peers.length === 0) {
                         continue;
                     }
                     let random_peer: Peer = chance.pickone(peers)
@@ -365,7 +365,7 @@ async function run() {
                     break;
                 }
                 case Actions.DELETE_PEER: {
-                    if (peers.length == 0) {
+                    if (peers.length === 0) {
                         continue;
                     }
                     let random_peer: Peer = chance.pickone(peers)
@@ -375,17 +375,10 @@ async function run() {
 
                     random_peer.connectedTo = []
                     for (let peer of peers) {
-                        // TODO does this work?
                         peer.connectedTo = peer.connectedTo.filter(p => p !== random_peer)
-                        if (peer.connectedTo.includes(random_peer)) {
-                            assert.fail("internal failure")
-                        }
                     }
 
-                    peers = peers.filter(p => p != random_peer)
-                    if (peers.includes(random_peer)) {
-                        assert.fail("internal failure")
-                    }
+                    peers = peers.filter(p => p !== random_peer)
 
                     break;
                 }
