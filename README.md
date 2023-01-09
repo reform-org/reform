@@ -42,6 +42,11 @@ Then open `http://localhost:5173/` in your browser.
 setsid -f chromium --user-data-dir=$(mktemp -d) http://localhost:5173/
 ```
 
+Dependency tree:
+```
+sbt dependencyBrowseTreeHTML
+```
+
 ## Testing
 
 ```
