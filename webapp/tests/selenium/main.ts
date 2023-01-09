@@ -1,4 +1,4 @@
-import { Builder, By, checkedLocator, until, WebDriver, WebElement } from 'selenium-webdriver';
+import { Builder, By, checkedLocator, Condition, until, WebDriver, WebElement } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
 import { Chance } from 'chance';
@@ -142,6 +142,10 @@ class Peer {
 }
 
 async function check(peers: Peer[]) {
+    if (peers.length === 0) {
+        return;
+    }
+
     // emulate sync
     for (let i = 0; i < peers.length; i++) {
         for (let peer of peers) {
@@ -156,39 +160,48 @@ async function check(peers: Peer[]) {
             }
         }
     }
+    
+    let condition = new Condition<boolean>("all peers are fully synced", async () => {
+        console.log("condition");
+        let results = await Promise.all(peers.map<Promise<number>>(async peer => {
+            let projectsButton = await peer.driver.findElement(By.css(".navbar-center a[href='/projects']"))
+            await projectsButton.click()
 
-    // TODO FIXME do this in parallel
-    await Promise.all(peers.map(async peer => {
-        //console.log(`checking state of peer ${peer.id}`)
-        let projectsButton = await peer.driver.findElement(By.css(".navbar-center a[href='/projects']"))
-        await projectsButton.click()
+            let projects = await peer.driver.findElements(By.css("tbody tr[data-id]"));
 
-        //console.log(`checking projects`)
+            let expectedProjects = [...peer.projects.value.entries()].map(([k, v]) => {
+                return [k, v.name.value, [...v.maxHours.value.values()].reduce((partialSum, a) => partialSum + a, 0), v.account.value]
+            }).sort((a, b) => a[0].toString().localeCompare(b[0].toString()))
 
-        let projects = await peer.driver.findElements(By.css("tbody tr[data-id]"));
+            let actualProjects = (await Promise.all(projects.map(async project => {
+                let id = await project.getAttribute("data-id");
+                let tds = await project.findElements(By.css("td"))
+                let name = await tds[0].getText()
+                let maxHours = Number.parseInt(await tds[1].getText())
+                let account = await tds[2].getText()
 
-        let expectedProjects = [...peer.projects.value.entries()].map(([k, v]) => {
-            return [k, v.name.value, [...v.maxHours.value.values()].reduce((partialSum, a) => partialSum + a, 0), v.account.value]
-        }).sort((a, b) => a[0].toString().localeCompare(b[0].toString()))
+                return [id, name, maxHours, account]
+            }))).sort((a, b) => a[0].toString().localeCompare(b[0].toString()))
 
-        let actualProjects = (await Promise.all(projects.map(async project => {
-            let id = await project.getAttribute("data-id");
-            let tds = await project.findElements(By.css("td"))
-            let name = await tds[0].getText()
-            let maxHours = Number.parseInt(await tds[1].getText())
-            let account = await tds[2].getText()
-
-            let projectToMatch = peer.projects.value.get(id);
-            if (projectToMatch === undefined) {
-                assert.fail("projectToMatch is undefined")
+            try {
+                assert.deepEqual(actualProjects, expectedProjects);
+                return 1;
+            } catch (error) {
+                console.error(error)
+                console.log("should try again")
+                return 0;
             }
+        }))
+        let result = results.reduce((prev, curr) => prev + curr);
+        if (result === peers.length) {
+            return true;
+        } else {
+            return null;
+        }
+    });
 
-            return [id, name, maxHours, account]
-        }))).sort((a, b) => a[0].toString().localeCompare(b[0].toString()))
-
-        //console.log("actual: ", actualProjects)
-        assert.deepEqual(actualProjects, expectedProjects)
-    }))
+    let result = await peers[0].driver.wait(condition, 10000, "waiting for peers synced timed out")
+    assert.strictEqual(result, true)
 }
 
 async function run() {
@@ -212,7 +225,7 @@ async function run() {
                     break;
                 }
                 case Actions.CREATE_PROJECT: {
-                    if (peers.length == 0) {
+                    if (peers.length === 0) {
                         continue;
                     }
                     let random_peer: Peer = chance.pickone(peers)
@@ -262,7 +275,7 @@ async function run() {
                         let oldIds = new Set([...random_peer.projects.value.keys()])
     
                         let addedProjects = new Set([...ids].filter(x => !oldIds.has(x)))
-                        if (addedProjects.size != 1) {
+                        if (addedProjects.size !== 1) {
                             console.error("couldn't identify which project was added", addedProjects)
                             return false
                         }
@@ -343,7 +356,7 @@ async function run() {
                     break;
                 }
                 case Actions.RELOAD: {
-                    if (peers.length == 0) {
+                    if (peers.length === 0) {
                         continue;
                     }
                     let random_peer: Peer = chance.pickone(peers)
@@ -365,7 +378,7 @@ async function run() {
                     break;
                 }
                 case Actions.DELETE_PEER: {
-                    if (peers.length == 0) {
+                    if (peers.length === 0) {
                         continue;
                     }
                     let random_peer: Peer = chance.pickone(peers)
@@ -375,17 +388,10 @@ async function run() {
 
                     random_peer.connectedTo = []
                     for (let peer of peers) {
-                        // TODO does this work?
                         peer.connectedTo = peer.connectedTo.filter(p => p !== random_peer)
-                        if (peer.connectedTo.includes(random_peer)) {
-                            assert.fail("internal failure")
-                        }
                     }
 
-                    peers = peers.filter(p => p != random_peer)
-                    if (peers.includes(random_peer)) {
-                        assert.fail("internal failure")
-                    }
+                    peers = peers.filter(p => p !== random_peer)
 
                     break;
                 }
