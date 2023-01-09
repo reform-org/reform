@@ -33,8 +33,9 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
     libraryDependencies                   ++= Seq(
-      "io.github.outwatch"                    %%% "outwatch"                              % "1.0.0-RC13",
-      "com.github.cornerman"                  %%% "colibri-router"                        % "0.7.8"
+      "io.github.outwatch" %%% "outwatch" % "1.0.0-RC13",
+      "com.github.cornerman" %%% "colibri-router" % "0.7.8",
+      "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
     )
   )
   .settings(
