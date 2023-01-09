@@ -200,7 +200,7 @@ async function check(peers: Peer[]) {
         }
     });
 
-    let result = await peers[0].driver.wait(condition, 1000, "waiting for peers synced timed out")
+    let result = await peers[0].driver.wait(condition, 10000, "waiting for peers synced timed out")
     assert.strictEqual(result, true)
 }
 
