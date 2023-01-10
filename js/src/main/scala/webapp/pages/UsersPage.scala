@@ -45,6 +45,7 @@ private class NewUserRow {
   private val username = Var("")
   private val role = Var("")
   private val comment = Var("")
+  private val exists = true
 
   def render(): VNode =
     tr(
@@ -83,10 +84,12 @@ private class NewUserRow {
       val _username = validateUsername()
       val _role = validateRole()
       val _comment = validateComment()
+      val _exists = true
+
       val user = WebRTCService.userRepo.getOrCreateSyncedProject(UUID.randomUUID().toString)
       user.map(user => {
         user.update(u => {
-          u.withUsername(_username).withRole(_role).withComment(_comment)
+          u.withUsername(_username).withRole(_role).withComment(_comment).withExists(_exists)
         })
 
         username.set("")
@@ -155,24 +158,29 @@ case class UsersPage() extends Page {
   }
 
   private def renderUsers(users: List[Synced[User]]): List[VNode] =
-    users.map(u =>
+    users.map(u => if(u.signal.now.exists)
       tr(
         td(u.signal.map(_.username)),
         td(u.signal.map(_.role)),
         td(u.signal.map(_.comment)),
+        //td(u.signal.map(_.exists)),
         button(
           cls := "btn",
           "Delete",
           onClick.foreach(_ => removeUser(u)),
         ),
+      )
+      else 
+        tr(
       ),
     )
 
   private def removeUser(u: Synced[User]): Unit = {
-    // val yes = window.confirm(s"Do you really want to delete the user \"${u.signal.now.name}\"?")
-    // if (yes) {
-    // ProjectsService.projects.transform(_.filterNot(_ == p))
-    // }
+    val yes = window.confirm(s"Do you really want to delete the user \"${u.signal.now.username}\"?")
+    if (yes) {
+      //delete by setting exists to false 
+      u.update(u => u.withExists(false))
+    }
   }
 
 }
