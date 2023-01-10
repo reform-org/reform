@@ -45,7 +45,6 @@ private class NewUserRow {
   private val username = Var("")
   private val role = Var("")
   private val comment = Var("")
-  private val exists = true
 
   def render(): VNode =
     tr(
