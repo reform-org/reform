@@ -6,9 +6,8 @@ import loci.registry.Binding
 import webapp.*
 import rescala.default.*
 import webapp.services.WebRTCService
-
+import webapp.Codecs.*
 import loci.serializer.jsoniterScala.given
-import webapp.Codecs.given
 
 case class Syncer[A](name: String)(using
     dcl: DecomposeLattice[A],

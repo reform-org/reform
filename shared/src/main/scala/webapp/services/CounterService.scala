@@ -16,18 +16,13 @@ limitations under the License.
 package webapp.services
 
 import kofre.datatypes.PosNegCounter
-import scala.concurrent.Future
-import scala.scalajs.js.JSON
-import loci.registry.Binding
-import rescala.default.{Events, Evt, Signal}
-import com.github.plokhotnyuk.jsoniter_scala.core.{readFromString, writeToString}
-import webapp.Codecs.{myReplicaID, given}
-import loci.serializer.jsoniterScala.given
-import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.IndexedDB
 import kofre.syntax.PermIdMutate
-import webapp.DeltaFor
-import webapp.ReplicationGroup
+import rescala.default.Evt
+import concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import rescala.default.*
+import webapp.npm.IndexedDB
+import webapp.Codecs.*
 
 case class EventedCounter(
     signal: rescala.default.Signal[PosNegCounter],
@@ -43,7 +38,7 @@ object CounterService {
     val init: Future[PosNegCounter] =
       IndexedDB
         .get[PosNegCounter]("counter")
-        .map(option => option.getOrElse(PosNegCounter.zero));
+        .map(option => option.getOrElse(PosNegCounter.zero))
 
     init.map(init => {
       val positiveNegativeCounter = init

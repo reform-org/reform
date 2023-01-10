@@ -15,43 +15,13 @@ limitations under the License.
  */
 package webapp.services
 
-import webapp.*
-import webapp.Codecs.*
-
-import java.util.concurrent.ThreadLocalRandom
-import kofre.decompose.interfaces.MVRegisterInterface.MVRegisterSyntax
-import kofre.decompose.containers.DeltaBufferRDT
-import kofre.datatypes.TimedVal
 import kofre.datatypes.PosNegCounter
-import kofre.base.{Bottom, DecomposeLattice}
 import loci.registry.{Binding, Registry}
-import loci.communicator.webrtc
-import loci.communicator.webrtc.WebRTC
-import loci.communicator.webrtc.WebRTC.ConnectorFactory
-import loci.transmitter.RemoteRef
-import loci.serializer.jsoniterScala.given
-import org.scalajs.dom.html.{Input, LI}
-import org.scalajs.dom.*
-import org.scalajs.dom
-import rescala.default.*
-import scribe.Execution.global
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Await, Future, Promise}
-import scala.Function.const
-import scala.collection.mutable
-import scala.scalajs.js.timers.setTimeout
-import scala.util.{Failure, Success}
-import scala.reflect.Selectable.*
-import scala.scalajs.js
-import loci.serializer.jsoniterScala.given
-import kofre.datatypes.PosNegCounter
+import webapp.*
 import webapp.repo.Repository
-
-import scala.concurrent.duration.Duration
-import scala.scalajs.js.JSON
+import webapp.Codecs.*
+import rescala.default.*
+import loci.serializer.jsoniterScala.given
 
 object WebRTCService {
   val registry = new Registry
