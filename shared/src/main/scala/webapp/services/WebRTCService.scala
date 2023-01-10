@@ -21,14 +21,13 @@ import webapp.*
 import webapp.repo.Repository
 import webapp.Codecs.*
 import rescala.default.*
-import loci.serializer.jsoniterScala.given
 
 object WebRTCService {
-  val registry = new Registry
+  val registry: Registry = new Registry
 
+  // TODO: This is not `WebRTC` stuff.
   val projectRepo: Repository[Project] = Repository("project", Project.empty)
   val userRepo: Repository[User] = Repository("user", User.empty)
 
-  val counterBinding = Binding[DeltaFor[PosNegCounter] => Unit]("counter")
-  val counterReplicator = ReplicationGroup(rescala.default, WebRTCService.registry, counterBinding)
+  val counterReplicator: ReplicationGroup[PosNegCounter] = ReplicationGroup("counter")
 }

@@ -12,13 +12,10 @@ import loci.serializer.jsoniterScala.given
 case class Syncer[A](name: String)(using
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
-    codec: JsonValueCodec[DeltaFor[A]],
+    codec: JsonValueCodec[A],
 ) {
 
-  private val binding = Binding[DeltaFor[A] => Unit](name)
-
-  // TODO: might be ok to only pass the name and move the binding inside the replication group
-  private val replicator = ReplicationGroup(rescala.default, WebRTCService.registry, binding)
+  private val replicator = ReplicationGroup(name)
 
   def sync(id: String, value: A): Synced[A] = {
 

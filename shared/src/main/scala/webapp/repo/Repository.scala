@@ -33,8 +33,6 @@ case class Repository[A](name: String, defaultValue: A)(using
     codec: JsonValueCodec[A],
 ) {
 
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
-
   private val idStorage = IdSetStorage(name)
 
   private val syncedIds = SyncedIdSet(name)

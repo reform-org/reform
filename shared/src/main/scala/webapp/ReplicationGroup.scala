@@ -15,14 +15,20 @@ limitations under the License.
  */
 package webapp
 
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.registry.*
 import rescala.interface.*
 import kofre.base.*
+import rescala.default.*
 import loci.transmitter.*
 import kofre.base.Lattice.*
+import loci.serializer.jsoniterScala.given
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
+import webapp.Codecs.*
+import webapp.services.WebRTCService.*
 
 /** @param name
   *   The name/type of the thing to sync
@@ -31,27 +37,18 @@ import scala.util.*
   */
 case class DeltaFor[A](name: String, delta: A)
 
-/** @param api
-  *   the rescala api to use
-  * @param registry
-  *   the connection registry to use
-  * @param binding
-  *   the binding for handling the update
+/** @param name
+  *   The name/type of the thing to sync
   * @param dcl
   *   to split up the thing to sync into its containing lattices
   * @param bottom
   *   the neutral element of the thing to sync
   */
-// TODO: First two arguments are always the same object in memory
-class ReplicationGroup[Api <: RescalaInterface, A](
-    val api: Api,
-    registry: Registry,
-    binding: Binding[DeltaFor[A] => Unit, DeltaFor[A] => Future[Unit]],
-)(using
-    dcl: DecomposeLattice[A],
-    bottom: Bottom[A],
-) {
-  import api.*
+class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
+
+  implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
+
+  private val binding = Binding[DeltaFor[A] => Unit](name)
 
   /** Map from concrete thing to handle to the event handler for that.
     */
