@@ -52,7 +52,7 @@ case class User(
   }
 
   def exists = {
-    _exists.map(_.value).getOrElse(false)
+    _exists.map(_.value).getOrElse(true)
   }
 }
 
