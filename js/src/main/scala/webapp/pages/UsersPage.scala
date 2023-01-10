@@ -156,23 +156,26 @@ case class UsersPage() extends Page {
     )
   }
 
-  private def renderUsers(users: List[Synced[User]]): List[VNode] =
-    users.map(u =>
-      if (u.signal.now.exists)
-        tr(
-          td(u.signal.map(_.username)),
-          td(u.signal.map(_.role)),
-          td(u.signal.map(_.comment)),
-          // td(u.signal.map(_.exists)),
-          button(
-            cls := "btn",
-            "Delete",
-            onClick.foreach(_ => removeUser(u)),
-          ),
-        )
-      else
-        tr(
-        ),
+  private def renderUsers(users: List[Synced[User]]) =
+    users.map(syncedUser =>
+      syncedUser.signal.map(user => {
+        if (user.exists) {
+          Some(
+            tr(
+              td(user.username),
+              td(user.role),
+              td(user.comment),
+              button(
+                cls := "btn",
+                "Delete",
+                onClick.foreach(_ => removeUser(syncedUser)),
+              ),
+            ),
+          )
+        } else {
+          None
+        }
+      }),
     )
 
   private def removeUser(u: Synced[User]): Unit = {
