@@ -180,7 +180,6 @@ case class UsersPage() extends Page {
     if (yes) {
       // delete by setting exists to false
       u.update(u => u.withExists(false))
-      window.location.reload()
     }
   }
 
