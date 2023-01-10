@@ -1,22 +1,11 @@
 package webapp
 
-import kofre.datatypes.PosNegCounter
-import kofre.base.{Bottom, DecomposeLattice, Defs}
-import kofre.base.Defs.Id
-import kofre.dotted.DottedDecompose
-import kofre.syntax.PermIdMutate.withID
-import kofre.syntax.{ArdtOpsContains, DottedName, OpsSyntaxHelper, PermId, PermIdMutate, PermQuery}
-import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegister
-import kofre.decompose.interfaces.LWWRegisterInterface
-import kofre.decompose.interfaces.LWWRegisterInterface.LWWRegisterSyntax
-import kofre.dotted.Dotted
-import kofre.datatypes.PosNegCounter.PNCounterSyntax
-import org.scalajs.dom.svg.Defs
-import kofre.decompose.containers.DeltaBufferRDT
-import kofre.datatypes.TimedVal
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import webapp.Codecs.myReplicaID
+import kofre.base.*
+import kofre.syntax.*
+import kofre.datatypes.*
+import webapp.Codecs.*
 
 given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
   def empty = None

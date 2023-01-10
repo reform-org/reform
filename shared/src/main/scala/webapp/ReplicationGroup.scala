@@ -15,15 +15,14 @@ limitations under the License.
  */
 package webapp
 
-import kofre.base.{Bottom, DecomposeLattice, Lattice}
-import loci.registry.{Binding, Registry}
-import loci.transmitter.RemoteRef
-import rescala.interface.RescalaInterface
-import scribe.Execution.global
-import kofre.base.Lattice.Operators
-
+import loci.registry.*
+import rescala.interface.*
+import kofre.base.*
+import loci.transmitter.*
+import kofre.base.Lattice.*
+import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.{Failure, Success}
+import scala.util.*
 
 /** @param name
   *   The name/type of the thing to sync

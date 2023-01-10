@@ -4,7 +4,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import concurrent.ExecutionContext.Implicits.global
 import webapp.*
-import concurrent.ExecutionContext.Implicits.global
 import rescala.default.*
 
 case class SyncedIdSet(name: String) {
