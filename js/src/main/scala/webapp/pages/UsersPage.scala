@@ -158,27 +158,28 @@ case class UsersPage() extends Page {
   }
 
   private def renderUsers(users: List[Synced[User]]): List[VNode] =
-    users.map(u => if(u.signal.now.exists)
-      tr(
-        td(u.signal.map(_.username)),
-        td(u.signal.map(_.role)),
-        td(u.signal.map(_.comment)),
-        //td(u.signal.map(_.exists)),
-        button(
-          cls := "btn",
-          "Delete",
-          onClick.foreach(_ => removeUser(u)),
-        ),
-      )
-      else 
+    users.map(u =>
+      if (u.signal.now.exists)
         tr(
-      ),
+          td(u.signal.map(_.username)),
+          td(u.signal.map(_.role)),
+          td(u.signal.map(_.comment)),
+          // td(u.signal.map(_.exists)),
+          button(
+            cls := "btn",
+            "Delete",
+            onClick.foreach(_ => removeUser(u)),
+          ),
+        )
+      else
+        tr(
+        ),
     )
 
   private def removeUser(u: Synced[User]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the user \"${u.signal.now.username}\"?")
     if (yes) {
-      //delete by setting exists to false 
+      // delete by setting exists to false
       u.update(u => u.withExists(false))
       window.location.reload()
     }
