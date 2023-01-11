@@ -19,12 +19,14 @@ import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
 import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
+import webapp.services.Page
+import webapp.webrtc.CounterService
+
 import concurrent.ExecutionContext.Implicits.global
 
 case class HomePage() extends Page {

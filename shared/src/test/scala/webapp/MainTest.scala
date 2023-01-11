@@ -16,8 +16,7 @@ limitations under the License.
 package webapp
 
 import utest.*
-
-import webapp.services.WebRTCService
+import webapp.webrtc.WebRTCService
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*

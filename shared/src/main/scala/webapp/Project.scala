@@ -6,6 +6,7 @@ import kofre.base.*
 import kofre.syntax.*
 import kofre.datatypes.*
 import webapp.Codecs.*
+import webapp.webrtc.DeltaFor
 
 given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
   def empty = None

@@ -13,22 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp
+package webapp.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import loci.registry.*
-import rescala.interface.*
 import kofre.base.*
-import rescala.default.*
-import loci.transmitter.*
 import kofre.base.Lattice.*
+import webapp.webrtc.WebRTCService.*
 import loci.serializer.jsoniterScala.given
-import concurrent.ExecutionContext.Implicits.global
+import loci.transmitter.*
+import rescala.default.*
+import rescala.interface.*
+import webapp.Codecs.*
+import loci.registry.Binding
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
-import webapp.Codecs.*
-import webapp.services.WebRTCService.*
 
 /** @param name
   *   The name/type of the thing to sync

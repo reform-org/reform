@@ -13,21 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp.services
+package webapp.webrtc
 
 import kofre.datatypes.PosNegCounter
-import loci.registry.{Binding, Registry}
+import loci.registry.*
 import webapp.*
-import webapp.repo.Repository
 import webapp.Codecs.*
 import rescala.default.*
 
 object WebRTCService {
   val registry: Registry = new Registry
 
-  // TODO: This is not `WebRTC` stuff.
-  val projectRepo: Repository[Project] = Repository("project", Project.empty)
-  val userRepo: Repository[User] = Repository("user", User.empty)
-
+  // TODO: Remove the counter
   val counterReplicator: ReplicationGroup[PosNegCounter] = ReplicationGroup("counter")
 }

@@ -6,6 +6,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.serializer.jsoniterScala.given
 import webapp.Codecs.*
+import webapp.webrtc.DeltaFor
 
 case class User(
     _username: Option[TimedVal[String]],

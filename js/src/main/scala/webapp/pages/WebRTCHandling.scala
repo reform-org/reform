@@ -9,16 +9,16 @@ import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
 import webapp.*
 import webapp.given
 import cats.effect.SyncIO
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
-import org.scalajs.dom.{console, UIEvent}
+import org.scalajs.dom.{UIEvent, console}
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.components.navigationHeader
+import webapp.services.Page
 import webapp.utils.Base64
 
 case class WebRTCHandling() extends Page {

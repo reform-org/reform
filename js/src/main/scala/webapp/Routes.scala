@@ -22,7 +22,7 @@ import org.scalajs.dom.window
 import outwatch.*
 import rescala.default.*
 import webapp.pages.*
-import webapp.services.*
+import webapp.services.Page
 
 object Routes {
   val fromPath: Path => Page = {

@@ -20,7 +20,6 @@ import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
 import webapp.*
 import webapp.given
 import webapp.components.navigationHeader
@@ -28,7 +27,6 @@ import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
 import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
@@ -36,6 +34,9 @@ import outwatch.dsl.svg.idAttr
 import webapp.given
 import webapp.components.navigationHeader
 import webapp.repo.Synced
+import webapp.webrtc.WebRTCService
+import webapp.Repositories.projects
+import webapp.services.Page
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -88,7 +89,7 @@ private class NewProjectRow {
       val _account = validateAccount()
 
       // TODO: Might want to add a method ProjectService.create(_name, _max_hours, _account)
-      val project = WebRTCService.projectRepo.getOrCreateSyncedProject(UUID.randomUUID().toString)
+      val project = projects.getOrCreateSyncedProject(UUID.randomUUID().toString)
       project.map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
@@ -149,7 +150,7 @@ case class ProjectsPage() extends Page {
           ),
         ),
         tbody(
-          WebRTCService.projectRepo.all.map(renderProjects),
+          projects.all.map(renderProjects),
           newProjectRow.render(),
         ),
       ),

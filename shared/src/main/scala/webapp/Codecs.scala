@@ -4,6 +4,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.datatypes.PosNegCounter
 import loci.transmitter.IdenticallyTransmittable
+import webapp.webrtc.DeltaFor
 
 import java.util.UUID
 
