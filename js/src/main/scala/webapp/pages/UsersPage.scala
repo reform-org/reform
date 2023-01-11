@@ -84,7 +84,7 @@ private class NewUserRow {
       val _username = validateUsername()
       val _role = validateRole()
       val _comment = validateComment()
-      val user = users.getOrCreateSyncedProject(UUID.randomUUID().toString)
+      val user = users.create()
       user.map(user => {
         user.update(u => {
           u.withUsername(_username).withRole(_role).withComment(_comment)

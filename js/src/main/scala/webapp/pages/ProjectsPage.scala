@@ -88,8 +88,7 @@ private class NewProjectRow {
       val _max_hours = validateMaxHours()
       val _account = validateAccount()
 
-      // TODO: Might want to add a method ProjectService.create(_name, _max_hours, _account)
-      val project = projects.getOrCreateSyncedProject(UUID.randomUUID().toString)
+      val project = projects.create()
       project.map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
