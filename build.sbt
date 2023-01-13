@@ -47,7 +47,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "de.tu-darmstadt.stg"                   %%% "rescala"                               % "0.32.0",
       "de.tu-darmstadt.stg"                   %%% "kofre"                                 % "0.32.0",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.2",
-      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.2"
+      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3"
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
