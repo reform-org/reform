@@ -22,23 +22,15 @@ import outwatch.dsl.*
 import rescala.default.*
 import webapp.services.*
 import webapp.*
-import webapp.given
-import webapp.components.navigationHeader
-import org.scalajs.dom
-import outwatch.*
-import outwatch.dsl.*
-import rescala.default.*
-import webapp.services.*
-import webapp.*
 import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
+import colibri.*
 import webapp.given
 import webapp.components.navigationHeader
 import webapp.repo.Synced
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import java.util.UUID
+import webapp.Repositories.users
 
 private class NewUserRow {
 
@@ -85,7 +77,7 @@ private class NewUserRow {
       val _comment = validateComment()
       val _exists = true
 
-      val user = WebRTCService.userRepo.getOrCreateSyncedProject(UUID.randomUUID().toString)
+      val user = users.create()
       user.map(user => {
         user.update(u => {
           u.withUsername(_username).withRole(_role).withComment(_comment).withExists(_exists)
@@ -149,7 +141,7 @@ case class UsersPage() extends Page {
           ),
         ),
         tbody(
-          WebRTCService.userRepo.all.map(renderUsers),
+          users.all.map(renderUsers),
           newUserRow.render(),
         ),
       ),

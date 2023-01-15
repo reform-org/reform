@@ -19,9 +19,9 @@ import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
 import webapp.*
 import webapp.components.navigationHeader
+import webapp.services.Page
 
 case class LoginPage() extends Page {
   def render(using services: Services): VNode =

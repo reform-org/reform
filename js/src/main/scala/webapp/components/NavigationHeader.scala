@@ -19,7 +19,6 @@ import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
 import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}

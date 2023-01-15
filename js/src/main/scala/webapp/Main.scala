@@ -22,7 +22,6 @@ import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
 import js.annotation.*
-import webapp.services.*
 
 // object JavaScriptHot {
 //   @js.native
