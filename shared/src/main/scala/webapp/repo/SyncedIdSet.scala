@@ -16,9 +16,8 @@ case class SyncedIdSet(name: String) {
 
   private val synced = syncer.sync("ids", GrowOnlySet.empty)
 
-  def add(id: String): Unit = {
+  def add(id: String): Unit =
     synced.update(_.add(id))
-  }
 
   val ids: Signal[Set[String]] =
     synced.signal.map(_.set)
