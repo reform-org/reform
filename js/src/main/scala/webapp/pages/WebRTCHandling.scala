@@ -15,7 +15,7 @@ import cats.effect.SyncIO
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.{Future, Promise}
-import org.scalajs.dom.{UIEvent, console}
+import org.scalajs.dom.{console, UIEvent}
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.components.navigationHeader
 import webapp.services.Page
