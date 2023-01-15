@@ -37,6 +37,7 @@ import webapp.repo.Synced
 import webapp.webrtc.WebRTCService
 import webapp.Repositories.projects
 import webapp.services.Page
+import webapp.utils.memo
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -169,11 +170,11 @@ case class ProjectsPage() extends Page {
   }
 
   private def renderProjects(projects: Signal[List[Synced[Project]]]) =
-    projects.map(_.map(p =>
+    projects.map(_.map(memo(p =>
       tr(
         attributes.key := p.id,
         data.id := p.id,
         ProjectRow(Some(p)).render()
       ),
-    ))
+    )))
 }
