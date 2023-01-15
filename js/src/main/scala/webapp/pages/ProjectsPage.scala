@@ -92,7 +92,7 @@ private class NewProjectRow {
       project.map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
-          p.withName(_name).withAddedMaxHours(_max_hours).withAccountName(_account)
+          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account)
         })
 
         name.set("")

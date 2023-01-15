@@ -31,9 +31,9 @@ case class Project(
     this.merge(diffSetAccountName)
   }
 
-  def withAddedMaxHours(addedMaxHours: Int) = {
+  def withMaxHours(maxHours: Int) = {
     val diffSetMaxHours =
-      Project.empty.copy(_maxHours = _maxHours.add(addedMaxHours)(using PermIdMutate.withID(myReplicaID)))
+      Project.empty.copy(_maxHours = PosNegCounter.zero.add(maxHours)(using PermIdMutate.withID(myReplicaID)))
 
     this.merge(diffSetMaxHours) // TODO FIXME probably also use this mutator thing - also to ship deltas to remotes
   }
