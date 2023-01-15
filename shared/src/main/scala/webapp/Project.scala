@@ -14,7 +14,7 @@ given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
 
 case class Project(
     _name: Option[TimedVal[String]],
-    _maxHours: PosNegCounter,
+    _maxHours: Option[TimedVal[Int]],
     _accountName: Option[TimedVal[Option[String]]],
 ) derives DecomposeLattice,
       Bottom {
@@ -32,10 +32,9 @@ case class Project(
   }
 
   def withMaxHours(maxHours: Int) = {
-    val diffSetMaxHours =
-      Project.empty.copy(_maxHours = PosNegCounter.zero.add(maxHours)(using PermIdMutate.withID(myReplicaID)))
+    val diffSetMaxHours = Project.empty.copy(_maxHours = Some(TimedVal(maxHours, myReplicaID)))
 
-    this.merge(diffSetMaxHours) // TODO FIXME probably also use this mutator thing - also to ship deltas to remotes
+    this.merge(diffSetMaxHours)
   }
 
   def name = {
@@ -43,7 +42,7 @@ case class Project(
   }
 
   def maxHours = {
-    _maxHours.value
+    _maxHours.map(_.value).getOrElse(0)
   }
 
   def accountName = {
@@ -52,7 +51,7 @@ case class Project(
 }
 
 object Project {
-  val empty: Project = Project(None, PosNegCounter.zero, None)
+  val empty: Project = Project(None, None, None)
 
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make
 
