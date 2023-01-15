@@ -46,8 +46,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "5df6d12a45d67732763ecab05983484517a926d7",
       "de.tu-darmstadt.stg"                   %%% "rescala"                               % "0.32.0",
       "de.tu-darmstadt.stg"                   %%% "kofre"                                 % "0.32.0",
-      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.2",
-      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.2"
+      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.3",
+      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3"
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
@@ -57,12 +57,10 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       //"-Yexplicit-nulls", // breaks json macro
       "-Ysafe-init",
       "-Xfatal-warnings",
-      "--explain-types",
       "--unchecked",
       "-deprecation",
       "-Xmigration",
       "-Wunused:all",
-      "-explain",
       //"-Xcheck-macros" // breaks utest
     )
   )
