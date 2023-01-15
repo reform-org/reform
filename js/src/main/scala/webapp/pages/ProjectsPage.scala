@@ -42,14 +42,14 @@ import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
 
-private class NewProjectRow {
+private case class ProjectRow(existingValue: Option[Synced[Project]]) {
 
   private val name = Var("")
   private val maxHours = Var("")
   private val account = Var("")
 
-  def render(): VNode =
-    tr(
+  def render(): List[outwatch.VModifier] =
+    List(
       td(
         input(
           value <-- name,
@@ -80,7 +80,19 @@ private class NewProjectRow {
           onClick.foreach(_ => addNewProject()),
         ),
       ),
+      existingValue.map(p => {
+        td(
+          button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p)))
+        )
+      })
     )
+  
+  private def removeProject(p: Synced[Project]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
+    if (yes) {
+      // ProjectsService.projects.transform(_.filterNot(_ == p))
+    }
+  }
 
   private def addNewProject(): Unit = {
     try {
@@ -133,7 +145,7 @@ private class NewProjectRow {
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: NewProjectRow = NewProjectRow()
+  private val newProjectRow: ProjectRow = ProjectRow(None)
 
   def render(using services: Services): VNode = {
     div(
@@ -149,29 +161,19 @@ case class ProjectsPage() extends Page {
           ),
         ),
         tbody(
-          projects.all.map(renderProjects),
+          renderProjects(projects.all),
           newProjectRow.render(),
         ),
       ),
     )
   }
 
-  private def renderProjects(projects: List[Synced[Project]]): List[VNode] =
-    projects.map(p =>
+  private def renderProjects(projects: Signal[List[Synced[Project]]]) =
+    projects.map(_.map(p =>
       tr(
         attributes.key := p.id,
         data.id := p.id,
-        td(p.signal.map(_.name)),
-        td(p.signal.map(_.maxHours)),
-        td(p.signal.map(_.accountName)),
-        button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+        ProjectRow(Some(p)).render()
       ),
-    )
-
-  private def removeProject(p: Synced[Project]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
-    if (yes) {
-      // ProjectsService.projects.transform(_.filterNot(_ == p))
-    }
-  }
+    ))
 }
