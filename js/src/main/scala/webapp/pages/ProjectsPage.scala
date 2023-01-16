@@ -49,8 +49,10 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
   private val maxHours = Var("")
   private val account = Var("")
 
-  def render() =
+  def render() = {
+    println("render")
     editing.map(editingNow => {
+      println(s"editing ${editingNow}")
       if (editingNow) {
         Some(
           tr(
@@ -104,7 +106,13 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
                 td(p.signal.map(_.maxHours)),
                 td(p.signal.map(_.accountName)),
                 td(
-                  button(cls := "btn", "Edit", onClick.foreach(_ => editing.set(true))),
+                  button(cls := "btn", "Edit", onClick.foreach(_ => {
+                    println(s"EDITING1 ${editing.now}")
+
+
+                    editing.set(true)
+                    println(s"EDITING2 ${editing.now}")
+                  })),
                   button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
                 )
               )
@@ -113,6 +121,7 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
         }
       }
     })
+  }
 
   private def removeProject(p: Synced[Project]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
@@ -199,15 +208,16 @@ case class ProjectsPage() extends Page {
   private def renderProjects(projects: Signal[List[Synced[Project]]]): rescala.default.Signal[List[rescala.default.Signal[outwatch.VModifier]]] =
     projects.map(
       _.map(
-        memo(syncedProject => { 
+        syncedProject => { 
           syncedProject.signal.map(p => {
             if (p.exists) {
+              println(s"PROJECT ${syncedProject.hashCode()}")
               ProjectRow(Some(syncedProject), Var(false)).render()
             } else {
               None
             }
           })
-        })
+        }
       ),
     )
 }
