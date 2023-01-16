@@ -109,9 +109,9 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       cls := "btn",
                       idAttr := "add-project-button",
                       "Add Project",
-                      onClick.foreach(_ => addNewProject()),
+                      onClick.foreach(_ => createOrUpdate()),
                     ),
-                  ),
+                  )
                 }
                 case None => {
                   td(
@@ -119,7 +119,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       cls := "btn",
                       idAttr := "add-project-button",
                       "Save edit",
-                      //onClick.foreach(_ => saveEdit()),
+                      onClick.foreach(_ => createOrUpdate()),
                     ),
                   )
                 }
@@ -177,9 +177,8 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     }).map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
-          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(true)
+          p.withExists(true).merge(editingValue.now.get)
         })
-
       })
   }
 /*
@@ -217,7 +216,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None, Some(Project.empty))
+  private val newProjectRow: ProjectRow = ProjectRow(None, Var(Some(Project.empty)))
 
   def render(using services: Services): VNode = {
     div(
@@ -247,7 +246,7 @@ case class ProjectsPage() extends Page {
       _.map(syncedProject => {
         syncedProject.signal.map(p => {
           if (p.exists) {
-            ProjectRow(Some(syncedProject), None).render()
+            ProjectRow(Some(syncedProject), Var(None)).render()
           } else {
             None
           }
