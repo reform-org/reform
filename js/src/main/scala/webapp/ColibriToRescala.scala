@@ -33,13 +33,6 @@ given (using scheduler: Scheduler): Sink[Var] with {
   }
 }
 
-given (using scheduler: Scheduler): Sink[Signal] with {
-  def unsafeOnNext[A](sink: Signal[A])(value: A): Unit = sink.set(value)
-  def unsafeOnError[A](sink: Signal[A])(error: Throwable): Unit = scheduler.forceNewTransaction(sink) { implicit turn =>
-    sink.admitPulse(Pulse.Exceptional(error))
-  }
-}
-
 given colibri.Source[Event] with {
   def unsafeSubscribe[A](stream: Event[A])(sink: Observer[A]): Cancelable = {
     val sub = stream.observe(sink.unsafeOnNext, sink.unsafeOnError)

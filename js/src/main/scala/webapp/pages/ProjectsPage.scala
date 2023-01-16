@@ -49,114 +49,115 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     editingValue.map(editingNow => {
       editingNow match {
         case Some(editingNow) => {
-        Some(
-          tr(
-            // attributes.key := p.id,
-            // data.id := p.id,
-            td(
-              input(
-                value := editingNow.name,
-                onInput.value --> {
-                  val evt = Evt[String]()
-                  evt.observe( x => {
-                    // this probably has the same bug
-                    editingValue.transform(value => {
-                      value.map(p => p.withName(x))
-                    })
-                  })
-                  evt
-                },
-                placeholder := "New Project Name",
-              ),
-            ),
-            td(
-              input(
-                `type` := "number",
-                value := editingNow.maxHours.toString(),
-                onInput.value --> {
-                  val evt = Evt[String]()
-                  evt.observe( x => {
-                    // this probably has the same bug
-                    editingValue.transform(value => {
-                      value.map(p => p.withMaxHours(x.toInt))
-                    })
-                  })
-                  evt
-                },
-                placeholder := "0",
-              ),
-            ),
-            td(
-              input(
-                value := editingNow.accountName,
-                onInput.value --> {
-                  val evt = Evt[String]()
-                  evt.observe( x => {
-                    // this probably has the same bug
-                    editingValue.transform(value => {
-                      value.map(p => p.withAccountName(Some(x)))
-                    })
-                  })
-                  evt
-                },
-                placeholder := "Some account",
-              ),
-            ), {
-              existingValue match {
-                case Some(p) => {
-                  td(
-                    button(
-                      cls := "btn",
-                      idAttr := "add-project-button",
-                      "Add Project",
-                      onClick.foreach(_ => createOrUpdate()),
-                    ),
-                  )
-                }
-                case None => {
-                  td(
-                    button(
-                      cls := "btn",
-                      idAttr := "add-project-button",
-                      "Save edit",
-                      onClick.foreach(_ => createOrUpdate()),
-                    ),
-                  )
-                }
-              }
-            },
-            existingValue.map(p => {
+          Some(
+            tr(
+              // attributes.key := p.id,
+              // data.id := p.id,
               td(
-                button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
-              )
-            }),
-          ),
-        )
-      }
-      case None => {
-        existingValue match {
-          case Some(p) =>
-            Some(
-              tr(
-                attributes.key := p.id,
-                data.id := p.id,
-                td(p.signal.map(_.name)),
-                td(p.signal.map(_.maxHours)),
-                td(p.signal.map(_.accountName)),
-                td(
-                  button(
-                    cls := "btn",
-                    "Edit",
-                    onClick.foreach(_ => edit()),
-                  ),
-                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+                input(
+                  value := editingNow.name,
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => {
+                      // this probably has the same bug
+                      editingValue.transform(value => {
+                        value.map(p => p.withName(x))
+                      })
+                    })
+                    evt
+                  },
+                  placeholder := "New Project Name",
                 ),
               ),
-            )
-          case None => None
+              td(
+                input(
+                  `type` := "number",
+                  value := editingNow.maxHours.toString(),
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => {
+                      // this probably has the same bug
+                      editingValue.transform(value => {
+                        value.map(p => p.withMaxHours(x.toInt))
+                      })
+                    })
+                    evt
+                  },
+                  placeholder := "0",
+                ),
+              ),
+              td(
+                input(
+                  value := editingNow.accountName,
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => {
+                      // this probably has the same bug
+                      editingValue.transform(value => {
+                        value.map(p => p.withAccountName(Some(x)))
+                      })
+                    })
+                    evt
+                  },
+                  placeholder := "Some account",
+                ),
+              ), {
+                existingValue match {
+                  case Some(p) => {
+                    td(
+                      button(
+                        cls := "btn",
+                        idAttr := "add-project-button",
+                        "Add Project",
+                        onClick.foreach(_ => createOrUpdate()),
+                      ),
+                    )
+                  }
+                  case None => {
+                    td(
+                      button(
+                        cls := "btn",
+                        idAttr := "add-project-button",
+                        "Save edit",
+                        onClick.foreach(_ => createOrUpdate()),
+                      ),
+                    )
+                  }
+                }
+              },
+              existingValue.map(p => {
+                td(
+                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+                )
+              }),
+            ),
+          )
+        }
+        case None => {
+          existingValue match {
+            case Some(p) =>
+              Some(
+                tr(
+                  attributes.key := p.id,
+                  data.id := p.id,
+                  td(p.signal.map(_.name)),
+                  td(p.signal.map(_.maxHours)),
+                  td(p.signal.map(_.accountName)),
+                  td(
+                    button(
+                      cls := "btn",
+                      "Edit",
+                      onClick.foreach(_ => edit()),
+                    ),
+                    button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+                  ),
+                ),
+              )
+            case None => None
+          }
         }
       }
-    }})
+    })
   }
 
   def removeProject(p: Synced[Project]): Unit = {
@@ -175,13 +176,13 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
         projects.create()
       }
     }).map(project => {
-        // we probably should special case initialization and not use the event
-        project.update(p => {
-          p.withExists(true).merge(editingValue.now.get)
-        })
+      // we probably should special case initialization and not use the event
+      project.update(p => {
+        p.withExists(true).merge(editingValue.now.get)
       })
+    })
   }
-/*
+  /*
   def validateMaxHours(): Int = {
     val maxHoursNow = maxHours.now
     val hours = maxHoursNow.toIntOption
@@ -207,7 +208,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     val accountNow = account.now
     if (accountNow.isBlank) None else Some(accountNow)
   }
-*/
+   */
 
   def edit() = {
     editingValue.set(Some(existingValue.get.signal.now))
