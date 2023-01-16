@@ -43,11 +43,17 @@ import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
 
-private case class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: String) {
+class CustomEditing(initialEditing: Boolean) {
+  println("CustomEditing")
+
+  var editing = Var(initialEditing)
+}
+
+private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: Boolean) {
   println(s"ProjectRow ${existingValue.hashCode()} ${initialEditing}")
 
   def render() = {
-    var editing = Var(initialEditing)
+    var editing: CustomEditing = CustomEditing(initialEditing)
     var name = Var("")
     var maxHours = Var("")
     var account = Var("")
@@ -110,10 +116,10 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
       if (accountNow.isBlank) None else Some(accountNow)
     }
 
-    println(s"render ${existingValue.hashCode()} ${editing.now}")
-    editing.map(editingNow => {
+    println(s"render ${existingValue.hashCode()} ${editing.editing.now}")
+    editing.editing.map(editingNow => {
       println(s"editing ${editingNow}")
-      if (editingNow != "") {
+      if (editingNow) {
         Some(
           tr(
             // attributes.key := p.id,
@@ -170,16 +176,16 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
                     cls := "btn",
                     "Edit",
                     // onClick("dfs") --> editing,
-                    { println(editing.hashCode()); editing }.set(""), // here it works
+                    { println(editing.hashCode()); editing.editing }.set(false), // here it works
                     onClick.foreach(_ => {
                       println(editing.hashCode())
-                      println(s"EDITING1 ${editing.now}")
+                      println(s"EDITING1 ${{ println(editing.hashCode()); editing.editing }.now}")
 
                       println(editing.hashCode())
-                      editing.set("truee")
+                      editing.editing.set(true)
 
                       println(editing.hashCode())
-                      println(s"EDITING2 ${editing.now}")
+                      println(s"EDITING2 ${editing.editing.now}")
                     }),
                   ),
                   button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
@@ -195,7 +201,7 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None, "true")
+  private val newProjectRow: ProjectRow = ProjectRow(None, true)
 
   def render(using services: Services): VNode = {
     div(
@@ -226,7 +232,7 @@ case class ProjectsPage() extends Page {
         syncedProject.signal.map(p => {
           if (p.exists) {
             println(s"PROJECT ${syncedProject.hashCode()}")
-            ProjectRow(Some(syncedProject), "").render()
+            ProjectRow(Some(syncedProject), false).render()
           } else {
             None
           }
