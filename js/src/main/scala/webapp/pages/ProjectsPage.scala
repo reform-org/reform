@@ -48,46 +48,62 @@ private case class ProjectRow(existingValue: Option[Synced[Project]]) {
   private val name = Var("")
   private val maxHours = Var("")
   private val account = Var("")
+  private val editing = Var(false)
 
-  def render(): List[outwatch.VModifier] =
-    List(
-      td(
-        input(
-          value <-- name,
-          onInput.value --> name,
-          placeholder := "New Project Name",
-        ),
-      ),
-      td(
-        input(
-          `type` := "number",
-          value <-- maxHours,
-          onInput.value --> maxHours,
-          placeholder := "0",
-        ),
-      ),
-      td(
-        input(
-          value <-- account,
-          onInput.value --> account,
-          placeholder := "Some account",
-        ),
-      ),
-      td(
-        button(
-          cls := "btn",
-          idAttr := "add-project-button",
-          "Add Project",
-          onClick.foreach(_ => addNewProject()),
-        ),
-      ),
-      existingValue.map(p => {
-        td(
-          button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p)))
+  def render(): Signal[List[outwatch.VModifier]] =
+    editing.map(editing => {
+      if (editing) {
+        List(
+          td(
+            input(
+              value <-- name,
+              onInput.value --> name,
+              placeholder := "New Project Name",
+            ),
+          ),
+          td(
+            input(
+              `type` := "number",
+              value <-- maxHours,
+              onInput.value --> maxHours,
+              placeholder := "0",
+            ),
+          ),
+          td(
+            input(
+              value <-- account,
+              onInput.value --> account,
+              placeholder := "Some account",
+            ),
+          ),
+          td(
+            button(
+              cls := "btn",
+              idAttr := "add-project-button",
+              "Add Project",
+              onClick.foreach(_ => addNewProject()),
+            ),
+          ),
+          existingValue.map(p => {
+            td(
+              button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+            )
+          }),
         )
-      })
-    )
-  
+      } else {
+        existingValue match {
+          case Some(p) =>
+            List(
+              td(p.signal.map(_.name)),
+              td(p.signal.map(_.maxHours)),
+              td(p.signal.map(_.accountName)),
+              button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+            )
+          case None => List()
+        }
+      }
+    })
+
   private def removeProject(p: Synced[Project]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
     if (yes) {
@@ -170,11 +186,15 @@ case class ProjectsPage() extends Page {
   }
 
   private def renderProjects(projects: Signal[List[Synced[Project]]]) =
-    projects.map(_.map(memo(p =>
-      tr(
-        attributes.key := p.id,
-        data.id := p.id,
-        ProjectRow(Some(p)).render()
+    projects.map(
+      _.map(
+        memo(p =>
+          tr(
+            attributes.key := p.id,
+            data.id := p.id,
+            ProjectRow(Some(p)).render(),
+          ),
+        ),
       ),
-    )))
+    )
 }
