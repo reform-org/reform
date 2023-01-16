@@ -119,18 +119,16 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
     println(s"render ${existingValue.hashCode()} ${editing.editing.now}")
 
     def extractedHandler() = {
-      {
-        println(editing.hashCode())
-        println(s"EDITING1 ${{
-            println(editing.hashCode()); editing.editing
-          }.now}")
+      println(editing.hashCode())
+      println(s"EDITING1 ${{
+          println(editing.hashCode()); editing.editing
+        }.now}")
 
-        println(editing.hashCode())
-        editing.editing.set(true)
+      println(editing.hashCode())
+      editing.editing.set(true)
 
-        println(editing.hashCode())
-        println(s"EDITING2 ${editing.editing.now}")
-      }
+      println(editing.hashCode())
+      println(s"EDITING2 ${editing.editing.now}")
     }
 
     editing.editing.map(editingNow => {
