@@ -44,6 +44,7 @@ import scala.concurrent.Future
 import java.util.UUID
 
 private case class ProjectRow(existingValue: Option[Synced[Project]], editing: Var[Boolean]) {
+  println("ProjectRow")
 
   private val name = Var("")
   private val maxHours = Var("")
