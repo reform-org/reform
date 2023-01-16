@@ -59,6 +59,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                 onInput.value --> {
                   val evt = Evt[String]()
                   evt.observe( x => {
+                    // this probably has the same bug
                     editingValue.transform(value => {
                       value.map(p => p.withName(x))
                     })
@@ -71,15 +72,33 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
             td(
               input(
                 `type` := "number",
-                value <-- maxHours,
-                onInput.value --> maxHours,
+                value := editingNow.maxHours.toString(),
+                onInput.value --> {
+                  val evt = Evt[String]()
+                  evt.observe( x => {
+                    // this probably has the same bug
+                    editingValue.transform(value => {
+                      value.map(p => p.withMaxHours(x.toInt))
+                    })
+                  })
+                  evt
+                },
                 placeholder := "0",
               ),
             ),
             td(
               input(
-                value <-- account,
-                onInput.value --> account,
+                value := editingNow.accountName,
+                onInput.value --> {
+                  val evt = Evt[String]()
+                  evt.observe( x => {
+                    // this probably has the same bug
+                    editingValue.transform(value => {
+                      value.map(p => p.withAccountName(Some(x)))
+                    })
+                  })
+                  evt
+                },
                 placeholder := "Some account",
               ),
             ), {
@@ -100,7 +119,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       cls := "btn",
                       idAttr := "add-project-button",
                       "Save edit",
-                      onClick.foreach(_ => saveEdit()),
+                      //onClick.foreach(_ => saveEdit()),
                     ),
                   )
                 }
@@ -128,9 +147,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                   button(
                     cls := "btn",
                     "Edit",
-                    // onClick("dfs") --> editing,
-                    { println(editing.hashCode()); editing.editing }.set(false), // here it works
-                    onClick.foreach(_ => extractedHandler()),
+                    onClick.foreach(_ => edit()),
                   ),
                   button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
                 ),
@@ -149,30 +166,23 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     }
   }
 
-  def addNewProject(): Unit = {
-    try {
-      val _name = validateName()
-      val _max_hours = validateMaxHours()
-      val _account = validateAccount()
-      val _exists = true
-
-      val project = projects.create()
-      project.map(project => {
+  def createOrUpdate(): Unit = {
+    (existingValue match {
+      case Some(existing) => {
+        Future(existing)
+      }
+      case None => {
+        projects.create()
+      }
+    }).map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
-          // TODO IMPORTANT for editing we should only update the values that changed
-          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
+          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(true)
         })
 
-        name.set("")
-        maxHours.set("")
-        account.set("")
       })
-    } catch {
-      case e: Exception => window.alert(e.getMessage)
-    }
   }
-
+/*
   def validateMaxHours(): Int = {
     val maxHoursNow = maxHours.now
     val hours = maxHoursNow.toIntOption
@@ -198,18 +208,16 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     val accountNow = account.now
     if (accountNow.isBlank) None else Some(accountNow)
   }
+*/
 
-  def extractedHandler() = {
-    name.set(existingValue.get.signal.now.name)
-    maxHours.set(existingValue.get.signal.now.maxHours.toString())
-    account.set(existingValue.get.signal.now.accountName)
-    editing.editing.set(true)
+  def edit() = {
+    editingValue.set(Some(existingValue.get.signal.now))
   }
 }
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None, true)
+  private val newProjectRow: ProjectRow = ProjectRow(None, Some(Project.empty))
 
   def render(using services: Services): VNode = {
     div(
@@ -239,7 +247,7 @@ case class ProjectsPage() extends Page {
       _.map(syncedProject => {
         syncedProject.signal.map(p => {
           if (p.exists) {
-            ProjectRow(Some(syncedProject), false).render()
+            ProjectRow(Some(syncedProject), None).render()
           } else {
             None
           }
