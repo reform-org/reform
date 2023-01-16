@@ -43,12 +43,11 @@ import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
 
-private case class ProjectRow(existingValue: Option[Synced[Project]]) {
+private case class ProjectRow(existingValue: Option[Synced[Project]], editing: Var[Boolean]) {
 
   private val name = Var("")
   private val maxHours = Var("")
   private val account = Var("")
-  private val editing = Var(false)
 
   def render(): Signal[List[outwatch.VModifier]] =
     editing.map(editing => {
@@ -162,7 +161,7 @@ private case class ProjectRow(existingValue: Option[Synced[Project]]) {
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None)
+  private val newProjectRow: ProjectRow = ProjectRow(None, Var(true))
 
   def render(using services: Services): VNode = {
     div(
@@ -192,7 +191,7 @@ case class ProjectsPage() extends Page {
           tr(
             attributes.key := p.id,
             data.id := p.id,
-            ProjectRow(Some(p)).render(),
+            ProjectRow(Some(p), Var(false)).render(),
           ),
         ),
       ),
