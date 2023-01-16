@@ -46,17 +46,25 @@ import java.util.UUID
 private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
 
   def render() = {
-
-    editing.editing.map(editingNow => {
-      if (editingNow) {
+    editingValue.map(editingNow => {
+      editingNow match {
+        case Some(editingNow) => {
         Some(
           tr(
             // attributes.key := p.id,
             // data.id := p.id,
             td(
               input(
-                value <-- name,
-                onInput.value --> name,
+                value := editingNow.name,
+                onInput.value --> {
+                  val evt = Evt[String]()
+                  evt.observe( x => {
+                    editingValue.transform(value => {
+                      value.map(p => p.withName(x))
+                    })
+                  })
+                  evt
+                },
                 placeholder := "New Project Name",
               ),
             ),
@@ -105,7 +113,8 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
             }),
           ),
         )
-      } else {
+      }
+      case None => {
         existingValue match {
           case Some(p) =>
             Some(
@@ -130,7 +139,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
           case None => None
         }
       }
-    })
+    }})
   }
 
   def removeProject(p: Synced[Project]): Unit = {
