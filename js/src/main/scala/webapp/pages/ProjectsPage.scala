@@ -59,7 +59,8 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                   onInput.value --> {
                     val evt = Evt[String]()
                     evt.observe(x => {
-                      // this probably has the same bug
+                      println("hi")
+                      // this **has** the same bug
                       editingValue.transform(value => {
                         value.map(p => p.withName(x))
                       })
