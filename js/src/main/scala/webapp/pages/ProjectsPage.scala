@@ -49,8 +49,6 @@ class CustomEditing(initialEditing: Boolean) {
   var editing = Var(initialEditing)
 }
 
-var editing: CustomEditing = CustomEditing(false)
-
 private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: Boolean) {
   println(s"ProjectRow ${existingValue.hashCode()} ${initialEditing}")
 
@@ -58,6 +56,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
     var name = Var("")
     var maxHours = Var("")
     var account = Var("")
+    var editing: CustomEditing = CustomEditing(initialEditing)
 
     println(s"ddsdsd ${editing.hashCode()}")
 
