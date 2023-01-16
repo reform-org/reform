@@ -50,15 +50,12 @@ class CustomEditing(initialEditing: Boolean) {
 }
 
 private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: Boolean) {
-  println(s"ProjectRow ${existingValue.hashCode()} ${initialEditing}")
 
   def render() = {
     var name = Var("")
     var maxHours = Var("")
     var account = Var("")
     var editing: CustomEditing = CustomEditing(initialEditing)
-
-    println(s"ddsdsd ${editing.hashCode()}")
 
     def removeProject(p: Synced[Project]): Unit = {
       val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
@@ -78,6 +75,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
         project.map(project => {
           // we probably should special case initialization and not use the event
           project.update(p => {
+            // TODO IMPORTANT for editing we should only update the values that changed
             p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
           })
 
@@ -116,23 +114,14 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
       if (accountNow.isBlank) None else Some(accountNow)
     }
 
-    println(s"render ${existingValue.hashCode()} ${editing.editing.now}")
-
     def extractedHandler() = {
-      println(editing.hashCode())
-      println(s"EDITING1 ${{
-          println(editing.hashCode()); editing.editing
-        }.now}")
-
-      println(editing.hashCode())
+      name.set(existingValue.get.signal.now.name)
+      maxHours.set(existingValue.get.signal.now.maxHours.toString())
+      account.set(existingValue.get.signal.now.accountName)
       editing.editing.set(true)
-
-      println(editing.hashCode())
-      println(s"EDITING2 ${editing.editing.now}")
     }
 
     editing.editing.map(editingNow => {
-      println(s"editing ${editingNow}")
       if (editingNow) {
         Some(
           tr(
@@ -160,14 +149,30 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
                 placeholder := "Some account",
               ),
             ),
-            td(
-              button(
-                cls := "btn",
-                idAttr := "add-project-button",
-                "Add Project",
-                onClick.foreach(_ => addNewProject()),
-              ),
-            ),
+            {
+              existingValue match {
+                case Some(p) => {
+                  td(
+                    button(
+                      cls := "btn",
+                      idAttr := "add-project-button",
+                      "Add Project",
+                      onClick.foreach(_ => addNewProject()),
+                    ),
+                  ),
+                }
+                case None => {
+                  td(
+                    button(
+                      cls := "btn",
+                      idAttr := "add-project-button",
+                      "Save edit",
+                      onClick.foreach(_ => saveEdit()),
+                    ),
+                  )
+                }
+              }
+            },
             existingValue.map(p => {
               td(
                 button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
@@ -236,7 +241,6 @@ case class ProjectsPage() extends Page {
       _.map(syncedProject => {
         syncedProject.signal.map(p => {
           if (p.exists) {
-            println(s"PROJECT ${syncedProject.hashCode()}")
             ProjectRow(Some(syncedProject), false).render()
           } else {
             None
