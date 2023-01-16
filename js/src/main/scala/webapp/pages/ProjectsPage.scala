@@ -49,11 +49,12 @@ class CustomEditing(initialEditing: Boolean) {
   var editing = Var(initialEditing)
 }
 
+var editing: CustomEditing = CustomEditing(false)
+
 private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: Boolean) {
   println(s"ProjectRow ${existingValue.hashCode()} ${initialEditing}")
 
   def render() = {
-    var editing: CustomEditing = CustomEditing(initialEditing)
     var name = Var("")
     var maxHours = Var("")
     var account = Var("")
