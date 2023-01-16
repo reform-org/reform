@@ -42,8 +42,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     resolvers                              += "jitpack" at "https://jitpack.io",
     libraryDependencies                   ++= Seq(
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % Test,
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "5df6d12a45d67732763ecab05983484517a926d7",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "5df6d12a45d67732763ecab05983484517a926d7",
+      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "ba22ec4262",
+      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "ba22ec4262",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.3",
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3"
     ),

@@ -23,6 +23,7 @@ import scala.concurrent.Future
 import rescala.default.*
 import webapp.npm.IndexedDB
 import webapp.Codecs.*
+import kofre.syntax.Named
 
 case class EventedCounter(
     signal: rescala.default.Signal[PosNegCounter],
@@ -55,7 +56,7 @@ object CounterService {
           // if the user wants to change the value, update the register accordingly
           changeEvent.act2({ v =>
             {
-              current.add(v)(using PermIdMutate.withID(myReplicaID))
+              Named(myReplicaID, current).add(v).anon
             }
           }),
           // if we receive a delta from a peer, apply it
