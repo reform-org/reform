@@ -55,7 +55,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
               // data.id := p.id,
               td(
                 input(
-                  value := editingNow.name,
+                  value <-- editingValue.map(_.get.name),
                   onInput.value --> {
                     val evt = Evt[String]()
                     evt.observe(x => {
@@ -108,7 +108,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       button(
                         cls := "btn",
                         idAttr := "add-project-button",
-                        "Add Project",
+                        "Edit project",
                         onClick.foreach(_ => createOrUpdate()),
                       ),
                     )
@@ -118,7 +118,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       button(
                         cls := "btn",
                         idAttr := "add-project-button",
-                        "Save edit",
+                        "Add project",
                         onClick.foreach(_ => createOrUpdate()),
                       ),
                     )
@@ -217,7 +217,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None, Var(Some(Project.empty)))
+  private val newProjectRow: ProjectRow = ProjectRow(None, Var(Some(Project.empty.withAccountName(Some("")).withName(""))))
 
   def render(using services: Services): VNode = {
     div(
