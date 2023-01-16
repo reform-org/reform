@@ -9,13 +9,13 @@ import scala.scalajs.js.annotation.JSGlobal
 @JSGlobal
 class WeakMap() extends js.Object {
 
-    def get(key: js.Any): js.UndefOr[js.Any] = js.native
+  def get(key: js.Any): js.UndefOr[js.Any] = js.native
 
-    def set(key: js.Any, value: js.Any): Unit = js.native
+  def set(key: js.Any, value: js.Any): Unit = js.native
 }
 
 def memo[A, R](f: A => R): A => R = {
-  var map = new WeakMap() //js.Dynamic.newInstance(js.Dynamic.global.WeakMap)()
+  var map = new WeakMap() // js.Dynamic.newInstance(js.Dynamic.global.WeakMap)()
 
   (a: A) => {
     val value = map.get(a.asInstanceOf[js.Any])

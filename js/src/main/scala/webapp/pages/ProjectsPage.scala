@@ -49,56 +49,64 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
   private val maxHours = Var("")
   private val account = Var("")
 
-  def render(): Signal[List[outwatch.VModifier]] =
+  def render() =
     editing.map(editing => {
       if (editing) {
-        List(
-          td(
-            input(
-              value <-- name,
-              onInput.value --> name,
-              placeholder := "New Project Name",
-            ),
-          ),
-          td(
-            input(
-              `type` := "number",
-              value <-- maxHours,
-              onInput.value --> maxHours,
-              placeholder := "0",
-            ),
-          ),
-          td(
-            input(
-              value <-- account,
-              onInput.value --> account,
-              placeholder := "Some account",
-            ),
-          ),
-          td(
-            button(
-              cls := "btn",
-              idAttr := "add-project-button",
-              "Add Project",
-              onClick.foreach(_ => addNewProject()),
-            ),
-          ),
-          existingValue.map(p => {
+        Some(
+          tr(
+            //attributes.key := p.id,
+            //data.id := p.id,
             td(
-              button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
-            )
-          }),
+              input(
+                value <-- name,
+                onInput.value --> name,
+                placeholder := "New Project Name",
+              ),
+            ),
+            td(
+              input(
+                `type` := "number",
+                value <-- maxHours,
+                onInput.value --> maxHours,
+                placeholder := "0",
+              ),
+            ),
+            td(
+              input(
+                value <-- account,
+                onInput.value --> account,
+                placeholder := "Some account",
+              ),
+            ),
+            td(
+              button(
+                cls := "btn",
+                idAttr := "add-project-button",
+                "Add Project",
+                onClick.foreach(_ => addNewProject()),
+              ),
+            ),
+            existingValue.map(p => {
+              td(
+                button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+              )
+            }),
+          ),
         )
       } else {
         existingValue match {
           case Some(p) =>
-            List(
-              td(p.signal.map(_.name)),
-              td(p.signal.map(_.maxHours)),
-              td(p.signal.map(_.accountName)),
-              button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+            Some(
+              tr(
+                attributes.key := p.id,
+                data.id := p.id,
+                td(p.signal.map(_.name)),
+                td(p.signal.map(_.maxHours)),
+                td(p.signal.map(_.accountName)),
+                button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+              ),
             )
-          case None => List()
+          case None => None
         }
       }
     })
@@ -187,13 +195,7 @@ case class ProjectsPage() extends Page {
   private def renderProjects(projects: Signal[List[Synced[Project]]]) =
     projects.map(
       _.map(
-        memo(p =>
-          tr(
-            attributes.key := p.id,
-            data.id := p.id,
-            ProjectRow(Some(p), Var(false)).render(),
-          ),
-        ),
+        memo(p => ProjectRow(Some(p), Var(false)).render()),
       ),
     )
 }
