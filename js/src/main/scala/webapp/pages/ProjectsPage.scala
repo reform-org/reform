@@ -43,83 +43,9 @@ import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
 
-class CustomEditing(initialEditing: Boolean) {
-  println("CustomEditing")
-
-  var editing = Var(initialEditing)
-}
-
-private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: Boolean) {
+private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
 
   def render() = {
-    var name = Var("")
-    var maxHours = Var("")
-    var account = Var("")
-    var editing: CustomEditing = CustomEditing(initialEditing)
-
-    def removeProject(p: Synced[Project]): Unit = {
-      val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
-      if (yes) {
-        p.update(p => p.withExists(false))
-      }
-    }
-
-    def addNewProject(): Unit = {
-      try {
-        val _name = validateName()
-        val _max_hours = validateMaxHours()
-        val _account = validateAccount()
-        val _exists = true
-
-        val project = projects.create()
-        project.map(project => {
-          // we probably should special case initialization and not use the event
-          project.update(p => {
-            // TODO IMPORTANT for editing we should only update the values that changed
-            p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
-          })
-
-          name.set("")
-          maxHours.set("")
-          account.set("")
-        })
-      } catch {
-        case e: Exception => window.alert(e.getMessage)
-      }
-    }
-
-    def validateMaxHours(): Int = {
-      val maxHoursNow = maxHours.now
-      val hours = maxHoursNow.toIntOption
-
-      if (hours.isEmpty || hours.get < 0) {
-        throw new Exception("Invalid max hours: " + maxHoursNow)
-      }
-
-      hours.get
-    }
-
-    def validateName(): String = {
-      val nameNow = name.now
-
-      if (nameNow.isBlank) {
-        throw new Exception("Invalid empty name")
-      }
-
-      nameNow.strip
-    }
-
-    def validateAccount(): Option[String] = {
-      val accountNow = account.now
-      if (accountNow.isBlank) None else Some(accountNow)
-    }
-
-    def extractedHandler() = {
-      name.set(existingValue.get.signal.now.name)
-      maxHours.set(existingValue.get.signal.now.maxHours.toString())
-      account.set(existingValue.get.signal.now.accountName)
-      editing.editing.set(true)
-    }
 
     editing.editing.map(editingNow => {
       if (editingNow) {
@@ -148,8 +74,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
                 onInput.value --> account,
                 placeholder := "Some account",
               ),
-            ),
-            {
+            ), {
               existingValue match {
                 case Some(p) => {
                   td(
@@ -206,6 +131,70 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
         }
       }
     })
+  }
+
+  def removeProject(p: Synced[Project]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
+    if (yes) {
+      p.update(p => p.withExists(false))
+    }
+  }
+
+  def addNewProject(): Unit = {
+    try {
+      val _name = validateName()
+      val _max_hours = validateMaxHours()
+      val _account = validateAccount()
+      val _exists = true
+
+      val project = projects.create()
+      project.map(project => {
+        // we probably should special case initialization and not use the event
+        project.update(p => {
+          // TODO IMPORTANT for editing we should only update the values that changed
+          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
+        })
+
+        name.set("")
+        maxHours.set("")
+        account.set("")
+      })
+    } catch {
+      case e: Exception => window.alert(e.getMessage)
+    }
+  }
+
+  def validateMaxHours(): Int = {
+    val maxHoursNow = maxHours.now
+    val hours = maxHoursNow.toIntOption
+
+    if (hours.isEmpty || hours.get < 0) {
+      throw new Exception("Invalid max hours: " + maxHoursNow)
+    }
+
+    hours.get
+  }
+
+  def validateName(): String = {
+    val nameNow = name.now
+
+    if (nameNow.isBlank) {
+      throw new Exception("Invalid empty name")
+    }
+
+    nameNow.strip
+  }
+
+  def validateAccount(): Option[String] = {
+    val accountNow = account.now
+    if (accountNow.isBlank) None else Some(accountNow)
+  }
+
+  def extractedHandler() = {
+    name.set(existingValue.get.signal.now.name)
+    maxHours.set(existingValue.get.signal.now.maxHours.toString())
+    account.set(existingValue.get.signal.now.accountName)
+    editing.editing.set(true)
   }
 }
 
