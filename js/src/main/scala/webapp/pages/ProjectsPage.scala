@@ -167,7 +167,7 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
                   button(
                     cls := "btn",
                     "Edit",
-                    // this.editing.set("dfldihdsf"), // here it works
+                    //editing.set("dfldihdsf"), // here it works
                     onClick.foreach(_ => {
                       println(s"EDITING1 ${editing.now}")
 
