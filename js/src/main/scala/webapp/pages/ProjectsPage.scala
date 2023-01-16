@@ -117,6 +117,22 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
     }
 
     println(s"render ${existingValue.hashCode()} ${editing.editing.now}")
+
+    def extractedHandler() = {
+      {
+        println(editing.hashCode())
+        println(s"EDITING1 ${{
+            println(editing.hashCode()); editing.editing
+          }.now}")
+
+        println(editing.hashCode())
+        editing.editing.set(true)
+
+        println(editing.hashCode())
+        println(s"EDITING2 ${editing.editing.now}")
+      }
+    }
+
     editing.editing.map(editingNow => {
       println(s"editing ${editingNow}")
       if (editingNow) {
@@ -177,16 +193,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], initialEditing:
                     "Edit",
                     // onClick("dfs") --> editing,
                     { println(editing.hashCode()); editing.editing }.set(false), // here it works
-                    onClick.foreach(_ => {
-                      println(editing.hashCode())
-                      println(s"EDITING1 ${{ println(editing.hashCode()); editing.editing }.now}")
-
-                      println(editing.hashCode())
-                      editing.editing.set(true)
-
-                      println(editing.hashCode())
-                      println(s"EDITING2 ${editing.editing.now}")
-                    }),
+                    onClick.foreach(_ => extractedHandler()),
                   ),
                   button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
                 ),
