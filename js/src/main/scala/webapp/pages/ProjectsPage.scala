@@ -44,22 +44,78 @@ import scala.concurrent.Future
 import java.util.UUID
 
 private case class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: String) {
-  private var editing = Var(initialEditing)
-  private var name = Var("")
-  private var maxHours = Var("")
-  private var account = Var("")
-
-  println(s"ProjectRow ${existingValue.hashCode()} ${editing.now}")
+  println(s"ProjectRow ${existingValue.hashCode()} ${initialEditing}")
 
   def render() = {
+    var editing = Var(initialEditing)
+    var name = Var("")
+    var maxHours = Var("")
+    var account = Var("")
+
+    def removeProject(p: Synced[Project]): Unit = {
+      val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
+      if (yes) {
+        p.update(p => p.withExists(false))
+      }
+    }
+
+    def addNewProject(): Unit = {
+      try {
+        val _name = validateName()
+        val _max_hours = validateMaxHours()
+        val _account = validateAccount()
+        val _exists = true
+
+        val project = projects.create()
+        project.map(project => {
+          // we probably should special case initialization and not use the event
+          project.update(p => {
+            p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
+          })
+
+          name.set("")
+          maxHours.set("")
+          account.set("")
+        })
+      } catch {
+        case e: Exception => window.alert(e.getMessage)
+      }
+    }
+
+    def validateMaxHours(): Int = {
+      val maxHoursNow = maxHours.now
+      val hours = maxHoursNow.toIntOption
+
+      if (hours.isEmpty || hours.get < 0) {
+        throw new Exception("Invalid max hours: " + maxHoursNow)
+      }
+
+      hours.get
+    }
+
+    def validateName(): String = {
+      val nameNow = name.now
+
+      if (nameNow.isBlank) {
+        throw new Exception("Invalid empty name")
+      }
+
+      nameNow.strip
+    }
+
+    def validateAccount(): Option[String] = {
+      val accountNow = account.now
+      if (accountNow.isBlank) None else Some(accountNow)
+    }
+
     println(s"render ${existingValue.hashCode()} ${editing.now}")
     editing.map(editingNow => {
       println(s"editing ${editingNow}")
       if (editingNow != "") {
         Some(
           tr(
-            //attributes.key := p.id,
-            //data.id := p.id,
+            // attributes.key := p.id,
+            // data.id := p.id,
             td(
               input(
                 value <-- name,
@@ -108,79 +164,26 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
                 td(p.signal.map(_.maxHours)),
                 td(p.signal.map(_.accountName)),
                 td(
-                  button(cls := "btn", "Edit",
-                   // this.editing.set("dfldihdsf"), // here it works
-                   onClick.foreach(_ => {
-                    println(s"EDITING1 ${this.editing.now}")
+                  button(
+                    cls := "btn",
+                    "Edit",
+                    // this.editing.set("dfldihdsf"), // here it works
+                    onClick.foreach(_ => {
+                      println(s"EDITING1 ${editing.now}")
 
-                    editing.set("truee")
+                      editing.set("truee")
 
-                    println(s"EDITING2 ${this.editing.now}")
-                  })),
+                      println(s"EDITING2 ${editing.now}")
+                    }),
+                  ),
                   button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
-                )
-              )
+                ),
+              ),
             )
           case None => None
         }
       }
     })
-  }
-
-  private def removeProject(p: Synced[Project]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
-    if (yes) {
-      p.update(p => p.withExists(false))
-    }
-  }
-
-  private def addNewProject(): Unit = {
-    try {
-      val _name = validateName()
-      val _max_hours = validateMaxHours()
-      val _account = validateAccount()
-      val _exists = true
-
-      val project = projects.create()
-      project.map(project => {
-        // we probably should special case initialization and not use the event
-        project.update(p => {
-          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
-        })
-
-        name.set("")
-        maxHours.set("")
-        account.set("")
-      })
-    } catch {
-      case e: Exception => window.alert(e.getMessage)
-    }
-  }
-
-  private def validateMaxHours(): Int = {
-    val maxHours = this.maxHours.now
-    val hours = maxHours.toIntOption
-
-    if (hours.isEmpty || hours.get < 0) {
-      throw new Exception("Invalid max hours: " + maxHours)
-    }
-
-    hours.get
-  }
-
-  private def validateName(): String = {
-    val name = this.name.now
-
-    if (name.isBlank) {
-      throw new Exception("Invalid empty name")
-    }
-
-    name.strip
-  }
-
-  private def validateAccount(): Option[String] = {
-    val account = this.account.now
-    if (account.isBlank) None else Some(account)
   }
 }
 
@@ -209,19 +212,19 @@ case class ProjectsPage() extends Page {
     )
   }
 
-  private def renderProjects(projects: Signal[List[Synced[Project]]]): rescala.default.Signal[List[rescala.default.Signal[outwatch.VModifier]]] =
+  private def renderProjects(
+      projects: Signal[List[Synced[Project]]],
+  ): rescala.default.Signal[List[rescala.default.Signal[outwatch.VModifier]]] =
     projects.map(
-      _.map(
-        syncedProject => { 
-          syncedProject.signal.map(p => {
-            if (p.exists) {
-              println(s"PROJECT ${syncedProject.hashCode()}")
-              ProjectRow(Some(syncedProject), "").render()
-            } else {
-              None
-            }
-          })
-        }
-      ),
+      _.map(syncedProject => {
+        syncedProject.signal.map(p => {
+          if (p.exists) {
+            println(s"PROJECT ${syncedProject.hashCode()}")
+            ProjectRow(Some(syncedProject), "").render()
+          } else {
+            None
+          }
+        })
+      }),
     )
 }
