@@ -52,6 +52,8 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
     var maxHours = Var("")
     var account = Var("")
 
+    println(s"ddsdsd ${editing.hashCode()}")
+
     def removeProject(p: Synced[Project]): Unit = {
       val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
       if (yes) {
@@ -167,12 +169,16 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], initialEdi
                   button(
                     cls := "btn",
                     "Edit",
-                    //editing.set("dfldihdsf"), // here it works
+                    // onClick("dfs") --> editing,
+                    { println(editing.hashCode()); editing }.set(""), // here it works
                     onClick.foreach(_ => {
+                      println(editing.hashCode())
                       println(s"EDITING1 ${editing.now}")
 
+                      println(editing.hashCode())
                       editing.set("truee")
 
+                      println(editing.hashCode())
                       println(s"EDITING2 ${editing.now}")
                     }),
                   ),
