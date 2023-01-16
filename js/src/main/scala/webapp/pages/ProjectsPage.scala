@@ -43,18 +43,19 @@ import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
 
-private case class ProjectRow(existingValue: Option[Synced[Project]], editing: Var[Boolean]) {
-  println("ProjectRow")
+private case class ProjectRow(existingValue: Option[Synced[Project]], initialEditing: String) {
+  private var editing = Var(initialEditing)
+  private var name = Var("")
+  private var maxHours = Var("")
+  private var account = Var("")
 
-  private val name = Var("")
-  private val maxHours = Var("")
-  private val account = Var("")
+  println(s"ProjectRow ${existingValue.hashCode()} ${editing.now}")
 
   def render() = {
-    println("render")
+    println(s"render ${existingValue.hashCode()} ${editing.now}")
     editing.map(editingNow => {
       println(s"editing ${editingNow}")
-      if (editingNow) {
+      if (editingNow != "") {
         Some(
           tr(
             //attributes.key := p.id,
@@ -107,12 +108,14 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
                 td(p.signal.map(_.maxHours)),
                 td(p.signal.map(_.accountName)),
                 td(
-                  button(cls := "btn", "Edit", onClick.foreach(_ => {
-                    println(s"EDITING1 ${editing.now}")
+                  button(cls := "btn", "Edit",
+                   // this.editing.set("dfldihdsf"), // here it works
+                   onClick.foreach(_ => {
+                    println(s"EDITING1 ${this.editing.now}")
 
+                    editing.set("truee")
 
-                    editing.set(true)
-                    println(s"EDITING2 ${editing.now}")
+                    println(s"EDITING2 ${this.editing.now}")
                   })),
                   button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
                 )
@@ -183,7 +186,7 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None, Var(true))
+  private val newProjectRow: ProjectRow = ProjectRow(None, "true")
 
   def render(using services: Services): VNode = {
     div(
@@ -213,7 +216,7 @@ case class ProjectsPage() extends Page {
           syncedProject.signal.map(p => {
             if (p.exists) {
               println(s"PROJECT ${syncedProject.hashCode()}")
-              ProjectRow(Some(syncedProject), Var(false)).render()
+              ProjectRow(Some(syncedProject), "").render()
             } else {
               None
             }
