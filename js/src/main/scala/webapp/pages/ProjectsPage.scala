@@ -114,7 +114,7 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
   private def removeProject(p: Synced[Project]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
     if (yes) {
-      // ProjectsService.projects.transform(_.filterNot(_ == p))
+      p.update(p => p.withExists(false))
     }
   }
 
@@ -123,12 +123,13 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
       val _name = validateName()
       val _max_hours = validateMaxHours()
       val _account = validateAccount()
+      val _exists = true
 
       val project = projects.create()
       project.map(project => {
         // we probably should special case initialization and not use the event
         project.update(p => {
-          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account)
+          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account).withExists(_exists)
         })
 
         name.set("")
@@ -192,10 +193,18 @@ case class ProjectsPage() extends Page {
     )
   }
 
-  private def renderProjects(projects: Signal[List[Synced[Project]]]) =
+  private def renderProjects(projects: Signal[List[Synced[Project]]]): rescala.default.Signal[List[rescala.default.Signal[outwatch.VModifier]]] =
     projects.map(
       _.map(
-        memo(p => ProjectRow(Some(p), Var(false)).render()),
+        memo(syncedProject => { 
+          syncedProject.signal.map(p => {
+            if (p.exists) {
+              ProjectRow(Some(syncedProject), Var(false)).render()
+            } else {
+              None
+            }
+          })
+        })
       ),
     )
 }

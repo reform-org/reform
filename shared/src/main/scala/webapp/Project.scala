@@ -16,6 +16,7 @@ case class Project(
     _name: Option[TimedVal[String]],
     _maxHours: Option[TimedVal[Int]],
     _accountName: Option[TimedVal[Option[String]]],
+    _exists: Option[TimedVal[Boolean]],
 ) derives DecomposeLattice,
       Bottom {
 
@@ -37,6 +38,12 @@ case class Project(
     this.merge(diffSetMaxHours)
   }
 
+  def withExists(exists: Boolean) = {
+    val diffSetExists = Project.empty.copy(_exists = Some(TimedVal(exists, myReplicaID)))
+
+    this.merge(diffSetExists)
+  }
+
   def name = {
     _name.map(_.value).getOrElse("not initialized")
   }
@@ -48,10 +55,14 @@ case class Project(
   def accountName = {
     _accountName.map(_.value.getOrElse("no account")).getOrElse("not initialized")
   }
+
+  def exists = {
+    _exists.map(_.value).getOrElse(true)
+  }
 }
 
 object Project {
-  val empty: Project = Project(None, None, None)
+  val empty: Project = Project(None, None, None, None)
 
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make
 
