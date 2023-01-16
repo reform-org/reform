@@ -50,8 +50,8 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
   private val account = Var("")
 
   def render() =
-    editing.map(editing => {
-      if (editing) {
+    editing.map(editingNow => {
+      if (editingNow) {
         Some(
           tr(
             //attributes.key := p.id,
@@ -103,8 +103,11 @@ private case class ProjectRow(existingValue: Option[Synced[Project]], editing: V
                 td(p.signal.map(_.name)),
                 td(p.signal.map(_.maxHours)),
                 td(p.signal.map(_.accountName)),
-                button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
-              ),
+                td(
+                  button(cls := "btn", "Edit", onClick.foreach(_ => editing.set(true))),
+                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
+                )
+              )
             )
           case None => None
         }
