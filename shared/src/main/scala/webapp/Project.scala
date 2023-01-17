@@ -40,7 +40,7 @@ case class Project(
   }
 
   def withExists(exists: Boolean) = {
-    val diffSetExists = Project.empty.copy(_exists = Some(TimedVal(exists, myReplicaID)))
+    val diffSetExists = Project.empty.copy(_exists = Some(LastWriterWins.now(exists, myReplicaID)))
 
     this.merge(diffSetExists)
   }
@@ -58,7 +58,7 @@ case class Project(
   }
 
   def exists = {
-    _exists.map(_.value).getOrElse(true)
+    _exists.map(_.payload).getOrElse(true)
   }
 }
 
