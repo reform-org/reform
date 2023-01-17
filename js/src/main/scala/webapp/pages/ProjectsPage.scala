@@ -45,6 +45,28 @@ import java.util.UUID
 
 private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
 
+  def updateName(x: String) = {
+    println("hi")
+    // this **has** the same bug
+    editingValue.transform(value => {
+      value.map(p => p.withName(x))
+    })
+  }
+
+  def updateMaxHours(x: String) = {
+    // this probably has the same bug
+    editingValue.transform(value => {
+      value.map(p => p.withMaxHours(x.toInt))
+    })
+  }
+
+  def updateAccountName(x: String) = {
+    // this probably has the same bug
+    editingValue.transform(value => {
+      value.map(p => p.withAccountName(Some(x)))
+    })
+  }
+
   def render() = {
     editingValue.map(editingNow => {
       editingNow match {
@@ -58,13 +80,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                   value <-- editingValue.map(_.get.name),
                   onInput.value --> {
                     val evt = Evt[String]()
-                    evt.observe(x => {
-                      println("hi")
-                      // this **has** the same bug
-                      editingValue.transform(value => {
-                        value.map(p => p.withName(x))
-                      })
-                    })
+                    evt.observe(x => updateName(x))
                     evt
                   },
                   placeholder := "New Project Name",
@@ -76,12 +92,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                   value := editingNow.maxHours.toString(),
                   onInput.value --> {
                     val evt = Evt[String]()
-                    evt.observe(x => {
-                      // this probably has the same bug
-                      editingValue.transform(value => {
-                        value.map(p => p.withMaxHours(x.toInt))
-                      })
-                    })
+                    evt.observe(x => updateMaxHours(x))
                     evt
                   },
                   placeholder := "0",
@@ -92,12 +103,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                   value := editingNow.accountName,
                   onInput.value --> {
                     val evt = Evt[String]()
-                    evt.observe(x => {
-                      // this probably has the same bug
-                      editingValue.transform(value => {
-                        value.map(p => p.withAccountName(Some(x)))
-                      })
-                    })
+                    evt.observe(x => updateAccountName(x))
                     evt
                   },
                   placeholder := "Some account",
@@ -109,7 +115,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       button(
                         cls := "btn",
                         idAttr := "add-project-button",
-                        "Edit project",
+                        "Save edit",
                         onClick.foreach(_ => createOrUpdate()),
                       ),
                     )
@@ -218,7 +224,8 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: ProjectRow = ProjectRow(None, Var(Some(Project.empty.withAccountName(Some("")).withName(""))))
+  private val newProjectRow: ProjectRow =
+    ProjectRow(None, Var(Some(Project.empty.withAccountName(Some("")).withName(""))))
 
   def render(using services: Services): VNode = {
     div(
