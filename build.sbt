@@ -18,8 +18,8 @@ lazy val kofreJS = ProjectRef(file("REScala"), "kofreJS")
 lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
 
 lazy val webapp = crossProject(JSPlatform, JVMPlatform)
-  .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
-  .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
+  //.jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
+  //.jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
   .jsSettings(
     Compile / scalaJSModuleInitializers    := Seq({
@@ -44,6 +44,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % Test,
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "ba22ec4262",
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "ba22ec4262",
+      "com.github.reform-org.REScala" %%% "rescala" % "52c6dd15b817b39c43da4e2b2341fa71aba73bb5",
+      "com.github.reform-org.REScala" %%% "kofre" % "52c6dd15b817b39c43da4e2b2341fa71aba73bb5",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.3",
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3"
     ),
