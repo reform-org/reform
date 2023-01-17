@@ -37,7 +37,6 @@ import webapp.repo.Synced
 import webapp.webrtc.WebRTCService
 import webapp.Repositories.projects
 import webapp.services.Page
-import webapp.utils.memo
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
