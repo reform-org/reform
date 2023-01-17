@@ -77,7 +77,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
               // data.id := p.id,
               td(
                 input(
-                  value <-- editingValue.map(_.get.name),
+                  value := editingNow.name,
                   onInput.value --> {
                     val evt = Evt[String]()
                     evt.observe(x => updateName(x))
@@ -111,12 +111,22 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
               ), {
                 existingValue match {
                   case Some(p) => {
-                    td(
-                      button(
-                        cls := "btn",
-                        idAttr := "add-project-button",
-                        "Save edit",
-                        onClick.foreach(_ => createOrUpdate()),
+                    List(
+                      td(
+                        button(
+                          cls := "btn",
+                          idAttr := "add-project-button",
+                          "Save edit",
+                          onClick.foreach(_ => createOrUpdate()),
+                        ),
+                      ),
+                      td(
+                        button(
+                          cls := "btn",
+                          idAttr := "add-project-button",
+                          "Cancel",
+                          onClick.foreach(_ => cancelEdit()),
+                        ),
                       ),
                     )
                   }
@@ -174,19 +184,30 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     }
   }
 
+  def cancelEdit(): Unit = {
+    editingValue.set(None)
+  }
+
   def createOrUpdate(): Unit = {
+    val editingNow = editingValue.now
     (existingValue match {
       case Some(existing) => {
-        Future(existing)
+        existing.update(p => {
+          p.merge(editingNow.get)
+        })
+        editingValue.set(None)
       }
       case None => {
-        projects.create()
+        projects
+          .create()
+          .map(project => {
+            // we probably should special case initialization and not use the event
+            project.update(p => {
+              p.merge(editingNow.get)
+            })
+            editingValue.set(Some(Project.empty.withExists(true).withAccountName(Some("")).withName("")))
+          })
       }
-    }).map(project => {
-      // we probably should special case initialization and not use the event
-      project.update(p => {
-        p.withExists(true).merge(editingValue.now.get)
-      })
     })
   }
   /*
@@ -225,7 +246,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
 case class ProjectsPage() extends Page {
 
   private val newProjectRow: ProjectRow =
-    ProjectRow(None, Var(Some(Project.empty.withAccountName(Some("")).withName(""))))
+    ProjectRow(None, Var(Some(Project.empty.withExists(true).withAccountName(Some("")).withName(""))))
 
   def render(using services: Services): VNode = {
     div(
