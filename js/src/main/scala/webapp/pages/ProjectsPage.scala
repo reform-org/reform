@@ -108,45 +108,40 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                   },
                   placeholder := "Some account",
                 ),
-              ), {
-                existingValue match {
-                  case Some(p) => {
-                    List(
-                      td(
+              ),
+              td(
+                {
+                  existingValue match {
+                    case Some(p) => {
+                      List(
                         button(
                           cls := "btn",
                           idAttr := "add-project-button",
                           "Save edit",
                           onClick.foreach(_ => createOrUpdate()),
                         ),
-                      ),
-                      td(
                         button(
                           cls := "btn",
                           idAttr := "add-project-button",
                           "Cancel",
                           onClick.foreach(_ => cancelEdit()),
                         ),
-                      ),
-                    )
-                  }
-                  case None => {
-                    td(
+                      )
+                    }
+                    case None => {
                       button(
                         cls := "btn",
                         idAttr := "add-project-button",
                         "Add project",
                         onClick.foreach(_ => createOrUpdate()),
-                      ),
-                    )
+                      )
+                    }
                   }
-                }
-              },
-              existingValue.map(p => {
-                td(
-                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
-                )
-              }),
+                },
+                existingValue.map(p => {
+                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p)))
+                }),
+              ),
             ),
           )
         }
