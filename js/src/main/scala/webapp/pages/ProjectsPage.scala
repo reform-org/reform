@@ -73,8 +73,6 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
         case Some(editingNow) => {
           val res = Some(
             tr(
-              // attributes.key := p.id,
-              // data.id := p.id,
               td(
                 input(
                   value := editingNow.name,
@@ -153,7 +151,6 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                 val res = if (p.exists) {
                   Some(
                     tr(
-                      attributes.key := syncedProject.id,
                       data.id := syncedProject.id,
                       td(p.name),
                       td(p.maxHours),
