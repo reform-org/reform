@@ -1,3 +1,3 @@
 [submodule "REScala"]
 	path = REScala
-	url = https://github.com/rescala-lang/REScala
+	url = https://github.com/reform-org/REScala.git

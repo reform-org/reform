@@ -2,6 +2,7 @@ package webapp
 
 import kofre.base.*
 import kofre.datatypes.*
+import kofre.datatypes.LastWriterWins.TimedVal
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.serializer.jsoniterScala.given
@@ -17,43 +18,43 @@ case class User(
       Bottom {
 
   def withUsername(username: String) = {
-    val diffSetUsername = User.empty.copy(_username = Some(TimedVal(username, myReplicaID)))
+    val diffSetUsername = User.empty.copy(_username = Some(LastWriterWins.now(username, myReplicaID)))
 
     this.merge(diffSetUsername)
   }
 
   def withRole(role: String) = {
-    val diffSetRole = User.empty.copy(_role = Some(TimedVal(role, myReplicaID)))
+    val diffSetRole = User.empty.copy(_role = Some(LastWriterWins.now(role, myReplicaID)))
 
     this.merge(diffSetRole)
   }
 
   def withComment(comment: Option[String]) = {
-    val diffSetComment = User.empty.copy(_comment = Some(TimedVal(comment, myReplicaID)))
+    val diffSetComment = User.empty.copy(_comment = Some(LastWriterWins.now(comment, myReplicaID)))
 
     this.merge(diffSetComment)
   }
 
   def withExists(exists: Boolean) = {
-    val diffSetExists = User.empty.copy(_exists = Some(TimedVal(exists, myReplicaID)))
+    val diffSetExists = User.empty.copy(_exists = Some(LastWriterWins.now(exists, myReplicaID)))
 
     this.merge(diffSetExists)
   }
 
   def username = {
-    _username.map(_.value).getOrElse("not initialized")
+    _username.map(_.payload).getOrElse("not initialized")
   }
 
   def role = {
-    _role.map(_.value).getOrElse("not initialized")
+    _role.map(_.payload).getOrElse("not initialized")
   }
 
   def comment = {
-    _comment.map(_.value.getOrElse("no account")).getOrElse("not initialized")
+    _comment.map(_.payload.getOrElse("no account")).getOrElse("not initialized")
   }
 
   def exists = {
-    _exists.map(_.value).getOrElse(true)
+    _exists.map(_.payload).getOrElse(true)
   }
 }
 
