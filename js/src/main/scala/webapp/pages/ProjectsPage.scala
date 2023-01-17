@@ -150,23 +150,27 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedProject) => {
               val res = syncedProject.signal.map(p => {
-                val res = Some(
-                  tr(
-                    attributes.key := syncedProject.id,
-                    data.id := syncedProject.id,
-                    td(p.name),
-                    td(p.maxHours),
-                    td(p.accountName),
-                    td(
-                      button(
-                        cls := "btn",
-                        "Edit",
-                        onClick.foreach(_ => edit()),
+                val res = if (p.exists) {
+                  Some(
+                    tr(
+                      attributes.key := syncedProject.id,
+                      data.id := syncedProject.id,
+                      td(p.name),
+                      td(p.maxHours),
+                      td(p.accountName),
+                      td(
+                        button(
+                          cls := "btn",
+                          "Edit",
+                          onClick.foreach(_ => edit()),
+                        ),
+                        button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(syncedProject))),
                       ),
-                      button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(syncedProject))),
                     ),
-                  ),
-                )
+                  )
+                } else {
+                  None
+                }
                 res
               })
               res
