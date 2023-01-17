@@ -176,6 +176,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
           res
         }
       }
+      res
     })
   }
 
