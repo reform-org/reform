@@ -5,6 +5,7 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import kofre.syntax.*
 import kofre.datatypes.*
+import kofre.datatypes.LastWriterWins.TimedVal
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
@@ -20,33 +21,33 @@ case class Project(
       Bottom {
 
   def withName(name: String) = {
-    val diffSetName = Project.empty.copy(_name = Some(TimedVal(name, myReplicaID)))
+    val diffSetName = Project.empty.copy(_name = Some(LastWriterWins.now(name, myReplicaID)))
 
     this.merge(diffSetName)
   }
 
   def withAccountName(accountName: Option[String]) = {
-    val diffSetAccountName = Project.empty.copy(_accountName = Some(TimedVal(accountName, myReplicaID)))
+    val diffSetAccountName = Project.empty.copy(_accountName = Some(LastWriterWins.now(accountName, myReplicaID)))
 
     this.merge(diffSetAccountName)
   }
 
   def withMaxHours(maxHours: Int) = {
-    val diffSetMaxHours = Project.empty.copy(_maxHours = Some(TimedVal(maxHours, myReplicaID)))
+    val diffSetMaxHours = Project.empty.copy(_maxHours = Some(LastWriterWins.now(maxHours, myReplicaID)))
 
     this.merge(diffSetMaxHours)
   }
 
   def name = {
-    _name.map(_.value).getOrElse("not initialized")
+    _name.map(_.payload).getOrElse("not initialized")
   }
 
   def maxHours = {
-    _maxHours.map(_.value).getOrElse(0)
+    _maxHours.map(_.payload).getOrElse(0)
   }
 
   def accountName = {
-    _accountName.map(_.value.getOrElse("no account")).getOrElse("not initialized")
+    _accountName.map(_.payload.getOrElse("no account")).getOrElse("not initialized")
   }
 }
 

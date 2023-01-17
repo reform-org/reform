@@ -31,12 +31,9 @@ object MainTest extends TestSuite {
   val tests: Tests = Tests {
     test("test that creating a project works") {
       assert(projects.all.now.length == 0)
-      projects
-        .create()
-        .map(_ => {
-          projects.all.map(_.foreach(println(_)))
-          assert(projects.all.now.length == 1)
-        })
+      projects.create()
+      Thread.sleep(1000) // TODO FIXME
+      assert(projects.all.now.length == 1)
     }
   }
 
