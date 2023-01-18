@@ -129,7 +129,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       button(
                         cls := "btn",
                         idAttr := "add-project-button",
-                        "Add project",
+                        "Add Project",
                         onClick.foreach(_ => createOrUpdate()),
                       )
                     }
