@@ -12,17 +12,12 @@ import kofre.datatypes.alternatives.MultiValueRegister
 import kofre.time.VectorClock
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 
-given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
-  def empty = None
-}
-
 case class Project(
     _name: MultiValueRegister[String],
     _maxHours: MultiValueRegister[Int],
     _accountName: MultiValueRegister[Option[String]],
     _exists: MultiValueRegister[Boolean],
-) derives DecomposeLattice,
-      Bottom {
+) derives DecomposeLattice, Bottom {
 
   def withName(name: String) = {
     val diffSetName = Project.empty.copy(_name = _name.write(myReplicaID, name))

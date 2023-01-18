@@ -44,8 +44,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % Test,
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "ba22ec4262",
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "ba22ec4262",
-      "com.github.reform-org.REScala" %%% "rescala" % "52c6dd15b817b39c43da4e2b2341fa71aba73bb5",
-      "com.github.reform-org.REScala" %%% "kofre" % "52c6dd15b817b39c43da4e2b2341fa71aba73bb5",
+      "com.github.rescala-lang.REScala" %%% "rescala" % "169694e17881763808b2ac25bd98219455537d1c",
+      "com.github.rescala-lang.REScala" %%% "kofre" % "169694e17881763808b2ac25bd98219455537d1c",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.3",
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3"
     ),
