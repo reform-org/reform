@@ -8,64 +8,67 @@ import kofre.datatypes.*
 import kofre.datatypes.LastWriterWins.TimedVal
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import kofre.datatypes.alternatives.MultiValueRegister
+import kofre.time.VectorClock
+import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 
 given [A]: Bottom[Option[TimedVal[A]]] = new Bottom[Option[TimedVal[A]]] {
   def empty = None
 }
 
 case class Project(
-    _name: Option[TimedVal[String]],
-    _maxHours: Option[TimedVal[Int]],
-    _accountName: Option[TimedVal[Option[String]]],
-    _exists: Option[TimedVal[Boolean]],
+    _name: MultiValueRegister[String],
+    _maxHours: MultiValueRegister[Int],
+    _accountName: MultiValueRegister[Option[String]],
+    _exists: MultiValueRegister[Boolean],
 ) derives DecomposeLattice,
       Bottom {
 
   def withName(name: String) = {
-    val diffSetName = Project.empty.copy(_name = Some(LastWriterWins.now(name, myReplicaID)))
+    val diffSetName = Project.empty.copy(_name = _name.write(myReplicaID, name))
 
     this.merge(diffSetName)
   }
 
   def withAccountName(accountName: Option[String]) = {
-    val diffSetAccountName = Project.empty.copy(_accountName = Some(LastWriterWins.now(accountName, myReplicaID)))
+    val diffSetAccountName = Project.empty.copy(_accountName = _accountName.write(myReplicaID, accountName))
 
     this.merge(diffSetAccountName)
   }
 
   def withMaxHours(maxHours: Int) = {
-    val diffSetMaxHours = Project.empty.copy(_maxHours = Some(LastWriterWins.now(maxHours, myReplicaID)))
+    val diffSetMaxHours = Project.empty.copy(_maxHours = _maxHours.write(myReplicaID,  maxHours))
 
     this.merge(diffSetMaxHours)
   }
 
   def withExists(exists: Boolean) = {
-    val diffSetExists = Project.empty.copy(_exists = Some(LastWriterWins.now(exists, myReplicaID)))
+    val diffSetExists = Project.empty.copy(_exists = _exists.write(myReplicaID, exists))
 
     this.merge(diffSetExists)
   }
 
   def name = {
-    _name.map(_.payload).getOrElse("not initialized")
+    _name.values.headOption.getOrElse("not initialized")
   }
 
   def maxHours = {
-    _maxHours.map(_.payload).getOrElse(0)
+    _maxHours.values.headOption.getOrElse(0)
   }
 
   def accountName = {
-    _accountName.map(_.payload.getOrElse("no account")).getOrElse("not initialized")
+    _accountName.values.headOption.map(_.getOrElse("no account")).getOrElse("not initialized")
   }
 
   def exists = {
-    _exists.map(_.payload).getOrElse(true)
+    _exists.values.headOption.getOrElse(true)
   }
 }
 
 object Project {
-  val empty: Project = Project(None, None, None, None)
+  val empty: Project = Project(MultiValueRegister(Map.empty), MultiValueRegister(Map.empty), MultiValueRegister(Map.empty), MultiValueRegister(Map.empty))
 
-  implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make
+  implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[Project]] = JsonCodecMaker.make
 }
