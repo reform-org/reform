@@ -40,6 +40,7 @@ import webapp.services.Page
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
+import kofre.time.VectorClock
 
 private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
 
@@ -156,7 +157,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                         {
                           p.accountName
                             .reduceOption((a, b) => {
-                              if (a._1 < b._1) { a }
+                              if (VectorClock.vectorClockTotalOrdering.gt(a._1, b._1)) { a }
                               else { b }
                             })
                             .map(_._2)
