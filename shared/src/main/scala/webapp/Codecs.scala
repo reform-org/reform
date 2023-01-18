@@ -20,7 +20,8 @@ object Codecs {
 
   implicit val idCodec: JsonValueCodec[kofre.base.Id] = JsonCodecMaker.make[String].asInstanceOf
 
-  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
+  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] =
+    JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
   implicit val codecDeltaForPositiveNegativeCounter: JsonValueCodec[DeltaFor[PosNegCounter]] = JsonCodecMaker.make
 

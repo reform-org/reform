@@ -17,7 +17,8 @@ case class Project(
     _maxHours: MultiValueRegister[Int],
     _accountName: MultiValueRegister[Option[String]],
     _exists: MultiValueRegister[Boolean],
-) derives DecomposeLattice, Bottom {
+) derives DecomposeLattice,
+      Bottom {
 
   def withName(name: String) = {
     val diffSetName = Project.empty.copy(_name = _name.write(myReplicaID, name))
@@ -32,7 +33,7 @@ case class Project(
   }
 
   def withMaxHours(maxHours: Int) = {
-    val diffSetMaxHours = Project.empty.copy(_maxHours = _maxHours.write(myReplicaID,  maxHours))
+    val diffSetMaxHours = Project.empty.copy(_maxHours = _maxHours.write(myReplicaID, maxHours))
 
     this.merge(diffSetMaxHours)
   }
@@ -51,8 +52,8 @@ case class Project(
     _maxHours.values.headOption.getOrElse(0)
   }
 
-  def accountName = {
-    _accountName.values.headOption.map(_.getOrElse("no account")).getOrElse("not initialized")
+  def accountName: Iterator[(VectorClock, Option[String])] = {
+    _accountName.versions.iterator
   }
 
   def exists = {
@@ -61,7 +62,12 @@ case class Project(
 }
 
 object Project {
-  val empty: Project = Project(MultiValueRegister(Map.empty), MultiValueRegister(Map.empty), MultiValueRegister(Map.empty), MultiValueRegister(Map.empty))
+  val empty: Project = Project(
+    MultiValueRegister(Map.empty),
+    MultiValueRegister(Map.empty),
+    MultiValueRegister(Map.empty),
+    MultiValueRegister(Map.empty),
+  )
 
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
