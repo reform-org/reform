@@ -62,28 +62,28 @@ private class EntityRow[T <: Entity](repository: Repository[T], existingValue: O
           val res = Some(
             tr(
               editingNow._username.render[User](
-                (u, x) => {
-                  u.withUsername(x)
-                },
                 va => va.toString(),
+                u => u,
+                (u, x) => {
+                  u.copy(_username = _username.set(x))
+                },
                 editingValue,
-                editingNow,
               ),
               editingNow._role.render[User](
-                (u, x) => {
-                  u.withRole(x)
-                },
                 va => va.toString(),
+                u => u,
+                (u, x) => {
+                  u.copy(_role = _role.set(x))
+                },
                 editingValue,
-                editingNow,
               ),
               editingNow._comment.render[User](
-                (u, x) => {
-                  u.withComment(Some(x))
-                },
                 va => va.getOrElse("no comment").toString(),
+                u => Some(u),
+                (u, x) => {
+                  u.u.copy(_comment = _comment.set(Some(x)))
+                },
                 editingValue,
-                editingNow,
               ),
               td(
                 {

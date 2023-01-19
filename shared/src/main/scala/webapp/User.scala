@@ -16,6 +16,10 @@ import outwatch.*
 import outwatch.dsl.*
 import outwatch.StaticVModifier
 
+case class UIAttribute[T](attribute: Attribute[T]) {
+  
+}
+
 case class Attribute[T](register: MultiValueRegister[T]) {
 
   def getAll(): List[T] = {
@@ -30,19 +34,19 @@ case class Attribute[T](register: MultiValueRegister[T]) {
     this.copy(register = register.write(myReplicaID, newValue))
   }
 
-  def update[T](setter: (T, String) => T, editingValue: Var[Option[T]], x: String) = {
+  def update[T](setter: T => T, editingValue: Var[Option[T]], x: String) = {
     editingValue.transform(value => {
-      value.map(p => setter(p, x))
+      value.map(p => setter(p))
     })
   }
 
-  def render[E](setter: (E, String) => E, getter: T => String, editingValue: Var[Option[E]], editingNow: E) = {
+  def render[E, V](readConverter: T => String, writeConverter: String => V, setter: (E, V) => E, editingValue: Var[Option[E]]) = {
     td(
       input(
-        value := getAll().map(x => getter(x)).mkString("/"),
+        value := getAll().map(x => readConverter(x)).mkString("/"),
         onInput.value --> {
           val evt = Evt[String]()
-          evt.observe(x => update(setter, editingValue, x))
+          evt.observe(x => update(l => setter(l, writeConverter(x)), editingValue, x))
           evt
         },
         VModifier.prop("placeholder") := "TODO",
@@ -65,29 +69,6 @@ case class User(
 ) derives DecomposeLattice,
       Bottom {
 
-  def withUsername(username: String) = {
-    val diffSetUsername = User.empty.copy(_username = _username.set(username))
-
-    this.merge(diffSetUsername)
-  }
-
-  def withRole(role: String) = {
-    val diffSetRole = User.empty.copy(_role = _role.set(role))
-
-    this.merge(diffSetRole)
-  }
-
-  def withComment(comment: Option[String]) = {
-    val diffSetComment = User.empty.copy(_comment = _comment.set(comment))
-
-    this.merge(diffSetComment)
-  }
-
-  def withExists(exists: Boolean) = {
-    val diffSetExists = User.empty.copy(_exists = _exists.set(exists))
-
-    this.merge(diffSetExists)
-  }
 }
 
 object User {
