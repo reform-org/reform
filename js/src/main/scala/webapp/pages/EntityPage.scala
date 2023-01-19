@@ -111,11 +111,9 @@ private class EntityRow[T <: Entity[T]](repository: Repository[T], existingValue
                   Some(
                     tr(
                       data.id := syncedEntity.id,
-                      td(duplicateValuesHandler(p._username.getAll().map(_.toString()))),
-                      td(duplicateValuesHandler(p._role.getAll().map(_.toString()))),
-                      td(
-                        duplicateValuesHandler(p._comment.getAll().map(_.toString())),
-                      ),
+                      editingNow.get.getUIAttributes.map(ui => {
+                        td(duplicateValuesHandler(ui.attribute.getAll().map(_.toString())))
+                      }),
                       td(
                         button(
                           cls := "btn",
