@@ -17,4 +17,6 @@ package webapp.pages
 
 import webapp.Repositories
 
-val userPage = EntityPage(Repositories.users)
+case class UsersPage() extends EntityPage(Repositories.users) {
+
+}

@@ -179,7 +179,7 @@ private class EntityRow[T <: Entity[T]](repository: Repository[T], existingValue
   }
 }
 
-case class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
+class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
 
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty)))
