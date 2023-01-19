@@ -43,8 +43,17 @@ import java.util.UUID
 import kofre.time.VectorClock
 import webapp.repo.Repository
 import kofre.base.Bottom
+import kofre.base.Lattice
 
-private class EntityRow[T](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T]) {
+trait Entity {
+  def exists: Attribute[Boolean]
+
+  def identifier: Attribute[String]
+
+  def withExists(exists: Boolean): this.type
+}
+
+private class EntityRow[T <: Entity](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render() = {
     editingValue.map(editingNow => {
@@ -117,7 +126,7 @@ private class EntityRow[T](repository: Repository[T], existingValue: Option[Sync
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedEntity) => {
               val res = syncedEntity.signal.map(p => {
-                val res = if (p._exists.get().getOrElse(true)) {
+                val res = if (p.exists.get().getOrElse(true)) {
                   Some(
                     tr(
                       data.id := syncedEntity.id,
@@ -153,7 +162,7 @@ private class EntityRow[T](repository: Repository[T], existingValue: Option[Sync
   }
 
   def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now._username.get()}\"?")
+    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get()}\"?")
     if (yes) {
       p.update(p => p.withExists(false))
     }
@@ -191,10 +200,10 @@ private class EntityRow[T](repository: Repository[T], existingValue: Option[Sync
   }
 }
 
-case class EntityPage[T](repository: Repository[T])(using bottom: Bottom[T]) extends Page {
+case class EntityPage[T <: Entity](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](None, Var(Some(bottom.empty)))
+    EntityRow[T](repository, None, Var(Some(bottom.empty)))
 
   def render(using services: Services): VNode = {
     div(
@@ -222,7 +231,7 @@ case class EntityPage[T](repository: Repository[T])(using bottom: Bottom[T]) ext
   ) =
     entities.map(
       _.map(syncedEntity => {
-        EntityRow[T](Some(syncedEntity), Var(None)).render()
+        EntityRow[T](repository, Some(syncedEntity), Var(None)).render()
       }),
     )
 }
