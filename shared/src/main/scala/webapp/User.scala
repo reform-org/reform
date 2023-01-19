@@ -16,8 +16,27 @@ import outwatch.*
 import outwatch.dsl.*
 import outwatch.StaticVModifier
 
-case class UIAttribute[T](attribute: Attribute[T]) {
+case class UIAttribute[EntityType, AttributeType](attribute: Attribute[AttributeType], readConverter: AttributeType => String, writeConverter: String => AttributeType, setter: (EntityType, AttributeType) => EntityType) {
   
+  def update[T](setter: EntityType => EntityType, editingValue: Var[Option[EntityType]], x: String) = {
+    editingValue.transform(value => {
+      value.map(p => setter(p))
+    })
+  }
+
+  def render(editingValue: Var[Option[EntityType]]) = {
+    td(
+      input(
+        value := attribute.getAll().map(x => readConverter(x)).mkString("/"),
+        onInput.value --> {
+          val evt = Evt[String]()
+          evt.observe(x => update(l => setter(l, writeConverter(x)), editingValue, x))
+          evt
+        },
+        VModifier.prop("placeholder") := "TODO",
+      ),
+    )
+  }
 }
 
 case class Attribute[T](register: MultiValueRegister[T]) {
@@ -33,26 +52,6 @@ case class Attribute[T](register: MultiValueRegister[T]) {
   def set(newValue: T): Attribute[T] = {
     this.copy(register = register.write(myReplicaID, newValue))
   }
-
-  def update[T](setter: T => T, editingValue: Var[Option[T]], x: String) = {
-    editingValue.transform(value => {
-      value.map(p => setter(p))
-    })
-  }
-
-  def render[E, V](readConverter: T => String, writeConverter: String => V, setter: (E, V) => E, editingValue: Var[Option[E]]) = {
-    td(
-      input(
-        value := getAll().map(x => readConverter(x)).mkString("/"),
-        onInput.value --> {
-          val evt = Evt[String]()
-          evt.observe(x => update(l => setter(l, writeConverter(x)), editingValue, x))
-          evt
-        },
-        VModifier.prop("placeholder") := "TODO",
-      ),
-    )
-  }
 }
 
 object Attribute {
@@ -66,9 +65,35 @@ case class User(
     _role: Attribute[String],
     _comment: Attribute[Option[String]],
     _exists: Attribute[Boolean],
-) derives DecomposeLattice,
+) extends webapp.pages.Entity[User] derives DecomposeLattice,
       Bottom {
 
+        /*
+        editingNow._username.render[User](
+                va => va.toString(),
+                u => u,
+                (u, x) => {
+                  u.copy(_username = _username.set(x))
+                },
+                editingValue,
+              ),
+              editingNow._role.render[User](
+                va => va.toString(),
+                u => u,
+                (u, x) => {
+                  u.copy(_role = _role.set(x))
+                },
+                editingValue,
+              ),
+              editingNow._comment.render[User](
+                va => va.getOrElse("no comment").toString(),
+                u => Some(u),
+                (u, x) => {
+                  u.u.copy(_comment = _comment.set(Some(x)))
+                },
+                editingValue,
+              ),
+              */
 }
 
 object User {

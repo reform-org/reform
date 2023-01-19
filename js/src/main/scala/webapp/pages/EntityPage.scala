@@ -45,15 +45,17 @@ import webapp.repo.Repository
 import kofre.base.Bottom
 import kofre.base.Lattice
 
-trait Entity {
+trait Entity[T] {
   def exists: Attribute[Boolean]
 
   def identifier: Attribute[String]
 
-  def withExists(exists: Boolean): this.type
+  def withExists(exists: Boolean): T
+
+  def getUIAttributes: List[UIAttribute[T, Any]]
 }
 
-private class EntityRow[T <: Entity](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T], lattice: Lattice[T]) {
+private class EntityRow[T <: Entity[T]](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render() = {
     editingValue.map(editingNow => {
@@ -61,30 +63,9 @@ private class EntityRow[T <: Entity](repository: Repository[T], existingValue: O
         case Some(editingNow) => {
           val res = Some(
             tr(
-              editingNow._username.render[User](
-                va => va.toString(),
-                u => u,
-                (u, x) => {
-                  u.copy(_username = _username.set(x))
-                },
-                editingValue,
-              ),
-              editingNow._role.render[User](
-                va => va.toString(),
-                u => u,
-                (u, x) => {
-                  u.copy(_role = _role.set(x))
-                },
-                editingValue,
-              ),
-              editingNow._comment.render[User](
-                va => va.getOrElse("no comment").toString(),
-                u => Some(u),
-                (u, x) => {
-                  u.u.copy(_comment = _comment.set(Some(x)))
-                },
-                editingValue,
-              ),
+              editingNow.getUIAttributes.map(ui => {
+                ui.render(editingValue)
+              }),
               td(
                 {
                   existingValue match {
@@ -200,7 +181,7 @@ private class EntityRow[T <: Entity](repository: Repository[T], existingValue: O
   }
 }
 
-case class EntityPage[T <: Entity](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
+case class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
 
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty)))
