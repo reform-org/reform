@@ -13,60 +13,58 @@ import kofre.time.VectorClock
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 
 case class Project(
-    _name: MultiValueRegister[String],
-    _maxHours: MultiValueRegister[Int],
-    _accountName: MultiValueRegister[Option[String]],
-    _exists: MultiValueRegister[Boolean],
-) derives DecomposeLattice,
+    _name: Attribute[String],
+    _maxHours: Attribute[Int],
+    _accountName: Attribute[Option[String]],
+    _exists: Attribute[Boolean],
+) extends webapp.pages.Entity[Project]
+    derives DecomposeLattice,
       Bottom {
 
-  def withName(name: String) = {
-    val diffSetName = Project.empty.copy(_name = _name.write(myReplicaID, name))
+  def exists: Attribute[Boolean] = _exists
 
-    this.merge(diffSetName)
+  def identifier: Attribute[String] = _name
+
+  def withExists(exists: Boolean): Project = {
+    this.copy(_exists = _exists.set(exists))
   }
 
-  def withAccountName(accountName: Option[String]) = {
-    val diffSetAccountName = Project.empty.copy(_accountName = _accountName.write(myReplicaID, accountName))
-
-    this.merge(diffSetAccountName)
-  }
-
-  def withMaxHours(maxHours: Int) = {
-    val diffSetMaxHours = Project.empty.copy(_maxHours = _maxHours.write(myReplicaID, maxHours))
-
-    this.merge(diffSetMaxHours)
-  }
-
-  def withExists(exists: Boolean) = {
-    val diffSetExists = Project.empty.copy(_exists = _exists.write(myReplicaID, exists))
-
-    this.merge(diffSetExists)
-  }
-
-  def name = {
-    _name.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
-  }
-
-  def maxHours = {
-    _maxHours.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
-  }
-
-  def accountName = {
-    _accountName.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
-  }
-
-  def exists = {
-    _exists.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
+  def getUIAttributes: List[UIAttribute[Project, ? <: Any]] = {
+    List(
+      UIAttribute(
+        _name,
+        va => va.toString(),
+        u => u,
+        (u, x) => {
+          u.copy(_name = _name.set(x))
+        },
+      ),
+      UIAttribute(
+        _maxHours,
+        va => va.toString(),
+        u => u.toInt,
+        (u, x) => {
+          u.copy(_maxHours = _maxHours.set(x))
+        },
+      ),
+      UIAttribute(
+        _accountName,
+        va => va.getOrElse("no account name").toString(),
+        u => Some(u),
+        (u, x) => {
+          u.copy(_accountName = _accountName.set(x))
+        },
+      ),
+    )
   }
 }
 
 object Project {
   val empty: Project = Project(
-    MultiValueRegister(Map.empty),
-    MultiValueRegister(Map.empty),
-    MultiValueRegister(Map.empty),
-    MultiValueRegister(Map.empty),
+    Attribute(MultiValueRegister(Map.empty)),
+    Attribute(MultiValueRegister(Map.empty)),
+    Attribute(MultiValueRegister(Map.empty)),
+    Attribute(MultiValueRegister(Map.empty)),
   )
 
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
