@@ -45,22 +45,18 @@ import kofre.time.VectorClock
 private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
 
   def updateName(x: String) = {
-    println("hi")
-    // this **has** the same bug
     editingValue.transform(value => {
       value.map(p => p.withName(x))
     })
   }
 
   def updateMaxHours(x: String) = {
-    // this probably has the same bug
     editingValue.transform(value => {
       value.map(p => p.withMaxHours(x.toInt))
     })
   }
 
   def updateAccountName(x: String) = {
-    // this probably has the same bug
     editingValue.transform(value => {
       value.map(p => p.withAccountName(Some(x)))
     })
@@ -240,7 +236,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
         projects
           .create()
           .map(project => {
-            // we probably should special case initialization and not use the event
+            //  TODO FIXME we probably should special case initialization and not use the event
             project.update(p => {
               p.merge(editingNow.get)
             })
