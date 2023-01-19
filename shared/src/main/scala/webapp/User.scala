@@ -21,6 +21,7 @@ case class UIAttribute[EntityType, AttributeType](
     readConverter: AttributeType => String,
     writeConverter: String => AttributeType,
     setter: (EntityType, AttributeType) => EntityType,
+    placeholder: String,
 ) {
 
   def update[T](setter: EntityType => EntityType, editingValue: Var[Option[EntityType]], x: String) = {
@@ -38,7 +39,7 @@ case class UIAttribute[EntityType, AttributeType](
           evt.observe(x => update(l => setter(l, writeConverter(x)), editingValue, x))
           evt
         },
-        VModifier.prop("placeholder") := "TODO",
+        VModifier.prop("placeholder") := placeholder,
       ),
     )
   }
@@ -91,6 +92,7 @@ case class User(
         (u, x) => {
           u.copy(_username = _username.set(x))
         },
+        "Username",
       ),
       UIAttribute(
         _role,
@@ -99,6 +101,7 @@ case class User(
         (u, x) => {
           u.copy(_role = _role.set(x))
         },
+        "Role",
       ),
       UIAttribute(
         _comment,
@@ -107,6 +110,7 @@ case class User(
         (u, x) => {
           u.copy(_comment = _comment.set(x))
         },
+        "Comment",
       ),
     )
   }

@@ -38,6 +38,7 @@ case class Project(
         (u, x) => {
           u.copy(_name = _name.set(x))
         },
+        "Name",
       ),
       UIAttribute(
         _maxHours,
@@ -46,6 +47,7 @@ case class Project(
         (u, x) => {
           u.copy(_maxHours = _maxHours.set(x))
         },
+        "Max hours",
       ),
       UIAttribute(
         _accountName,
@@ -54,6 +56,7 @@ case class Project(
         (u, x) => {
           u.copy(_accountName = _accountName.set(x))
         },
+        "Account name",
       ),
     )
   }

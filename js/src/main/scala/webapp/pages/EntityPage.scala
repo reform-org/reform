@@ -195,9 +195,7 @@ class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom
         cls := "table-auto",
         thead(
           tr(
-            th("Username"),
-            th("Role"),
-            th("Comment"),
+            bottom.empty.getUIAttributes.map(attr => th(attr.placeholder)),
             th("Stuff"),
           ),
         ),
