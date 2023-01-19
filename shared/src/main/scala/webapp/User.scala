@@ -68,32 +68,42 @@ case class User(
 ) extends webapp.pages.Entity[User] derives DecomposeLattice,
       Bottom {
 
-        /*
-        editingNow._username.render[User](
+  def exists: Attribute[Boolean] = _exists
+
+  def identifier: Attribute[String] = _username
+
+  def withExists(exists: Boolean): User = {
+    this.copy(_exists = _exists.set(exists))
+  }
+
+  def getUIAttributes: List[UIAttribute[User, ? <: Any]] = {
+    List(
+      UIAttribute(
+        _username,
                 va => va.toString(),
                 u => u,
                 (u, x) => {
                   u.copy(_username = _username.set(x))
                 },
-                editingValue,
               ),
-              editingNow._role.render[User](
+              UIAttribute(
+                _role,
                 va => va.toString(),
                 u => u,
                 (u, x) => {
                   u.copy(_role = _role.set(x))
                 },
-                editingValue,
               ),
-              editingNow._comment.render[User](
+              UIAttribute(
+                _comment,
                 va => va.getOrElse("no comment").toString(),
                 u => Some(u),
                 (u, x) => {
-                  u.u.copy(_comment = _comment.set(Some(x)))
+                  u.copy(_comment = _comment.set(x))
                 },
-                editingValue,
               ),
-              */
+    )
+  }
 }
 
 object User {

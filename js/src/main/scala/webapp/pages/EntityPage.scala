@@ -52,7 +52,7 @@ trait Entity[T] {
 
   def withExists(exists: Boolean): T
 
-  def getUIAttributes: List[UIAttribute[T, Any]]
+  def getUIAttributes: List[UIAttribute[T, ? <: Any]]
 }
 
 private class EntityRow[T <: Entity[T]](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T], lattice: Lattice[T]) {
