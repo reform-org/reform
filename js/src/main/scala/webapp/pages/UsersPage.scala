@@ -44,12 +44,6 @@ import kofre.time.VectorClock
 
 private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Option[User]]) {
 
-  def updateUsername(x: String) = {
-    editingValue.transform(value => {
-      value.map(p => p.withUsername(x))
-    })
-  }
-
   def updateRole(x: String) = {
     editingValue.transform(value => {
       value.map(p => p.withRole(x))
@@ -68,38 +62,29 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
         case Some(editingNow) => {
           val res = Some(
             tr(
-              td(
-                input(
-                  value := editingNow._username.getAll().mkString("/"),
-                  onInput.value --> {
-                    val evt = Evt[String]()
-                    evt.observe(x => updateUsername(x))
-                    evt
-                  },
-                  placeholder := "Username",
-                ),
+              editingNow._username.render[User](
+                (u, x) => {
+                  u.withUsername(x)
+                },
+                va => va.toString(),
+                editingValue,
+                editingNow,
               ),
-              td(
-                input(
-                  value := editingNow._role.getAll().mkString("/"),
-                  onInput.value --> {
-                    val evt = Evt[String]()
-                    evt.observe(x => updateRole(x))
-                    evt
-                  },
-                  placeholder := "admin",
-                ),
+              editingNow._role.render[User](
+                (u, x) => {
+                  u.withRole(x)
+                },
+                va => va.toString(),
+                editingValue,
+                editingNow,
               ),
-              td(
-                input(
-                  value := editingNow._comment.getAll().mkString("/"),
-                  onInput.value --> {
-                    val evt = Evt[String]()
-                    evt.observe(x => updateComment(x))
-                    evt
-                  },
-                  placeholder := "",
-                ),
+              editingNow._comment.render[User](
+                (u, x) => {
+                  u.withComment(Some(x))
+                },
+                va => va.getOrElse("no comment").toString(),
+                editingValue,
+                editingNow,
               ),
               td(
                 {
