@@ -20,162 +20,261 @@ import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.services.*
+import webapp.*
+import webapp.given
+import webapp.components.navigationHeader
+import org.scalajs.dom
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
 import webapp.*
 import cats.effect.SyncIO
-import colibri.*
+import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
 import webapp.repo.Synced
+import webapp.webrtc.WebRTCService
+import webapp.services.Page
+import webapp.Repositories.users
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import webapp.Repositories.users
+import java.util.UUID
+import kofre.time.VectorClock
 
-private class NewUserRow {
+private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Option[User]]) {
 
-  private val username = Var("")
-  private val role = Var("")
-  private val comment = Var("")
+  def updateUsername(x: String) = {
+    editingValue.transform(value => {
+      value.map(p => p.withUsername(x))
+    })
+  }
 
-  def render(): VNode =
-    tr(
-      td(
-        input(
-          value <-- username,
-          onInput.value --> username,
-          placeholder := "New User Name",
-        ),
-      ),
-      td(
-        input(
-          value <-- role,
-          onInput.value --> role,
-          placeholder := "User role",
-        ),
-      ),
-      td(
-        input(
-          value <-- comment,
-          onInput.value --> comment,
-          placeholder := "Some comment",
-        ),
-      ),
-      td(
-        button(
-          cls := "btn",
-          "Create User",
-          onClick.foreach(_ => addNewUser()),
-        ),
-      ),
-    )
+  def updateRole(x: String) = {
+    editingValue.transform(value => {
+      value.map(p => p.withRole(x))
+    })
+  }
 
-  private def addNewUser(): Unit = {
-    try {
-      val _username = validateUsername()
-      val _role = validateRole()
-      val _comment = validateComment()
-      val _exists = true
+  def updateComment(x: String) = {
+    editingValue.transform(value => {
+      value.map(p => p.withComment(Some(x)))
+    })
+  }
 
-      val user = users.create()
-      user.map(user => {
-        user.update(u => {
-          u.withUsername(_username).withRole(_role).withComment(_comment).withExists(_exists)
+  def render() = {
+    editingValue.map(editingNow => {
+      val res = editingNow match {
+        case Some(editingNow) => {
+          val res = Some(
+            tr(
+              td(
+                input(
+                  value := editingNow.username.mkString("/"),
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => updateUsername(x))
+                    evt
+                  },
+                  placeholder := "Username",
+                ),
+              ),
+              td(
+                input(
+                  value := editingNow.role.mkString("/"),
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => updateRole(x))
+                    evt
+                  },
+                  placeholder := "admin",
+                ),
+              ),
+              td(
+                input(
+                  value := editingNow.comment.mkString("/"),
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => updateComment(x))
+                    evt
+                  },
+                  placeholder := "",
+                ),
+              ),
+              td(
+                {
+                  existingValue match {
+                    case Some(p) => {
+                      List(
+                        button(
+                          cls := "btn",
+                          idAttr := "add-User-button",
+                          "Save edit",
+                          onClick.foreach(_ => createOrUpdate()),
+                        ),
+                        button(
+                          cls := "btn",
+                          idAttr := "add-User-button",
+                          "Cancel",
+                          onClick.foreach(_ => cancelEdit()),
+                        ),
+                      )
+                    }
+                    case None => {
+                      button(
+                        cls := "btn",
+                        idAttr := "add-User-button",
+                        "Add User",
+                        onClick.foreach(_ => createOrUpdate()),
+                      )
+                    }
+                  }
+                },
+                existingValue.map(p => {
+                  button(cls := "btn", "Delete", onClick.foreach(_ => removeUser(p)))
+                }),
+              ),
+            ),
+          )
+          Var(res)
+        }
+        case None => {
+          val res: Signal[Option[VNode]] = existingValue match {
+            case Some(syncedUser) => {
+              val res = syncedUser.signal.map(p => {
+                val res = if (p.exists.headOption.getOrElse(true)) {
+                  Some(
+                    tr(
+                      data.id := syncedUser.id,
+                      td(duplicateValuesHandler(p.username.map(_.toString()))),
+                      td(duplicateValuesHandler(p.role.map(_.toString()))),
+                      td(
+                        duplicateValuesHandler(p.comment.map(_.toString())),
+                      ),
+                      td(
+                        button(
+                          cls := "btn",
+                          "Edit",
+                          onClick.foreach(_ => edit()),
+                        ),
+                        button(cls := "btn", "Delete", onClick.foreach(_ => removeUser(syncedUser))),
+                      ),
+                    ),
+                  )
+                } else {
+                  None
+                }
+                res
+              })
+              res
+            }
+            case None => Var(None)
+          }
+          res
+        }
+      }
+      res
+    })
+  }
+
+  def removeUser(p: Synced[User]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the User \"${p.signal.now.username}\"?")
+    if (yes) {
+      p.update(p => p.withExists(false))
+    }
+  }
+
+  def cancelEdit(): Unit = {
+    editingValue.set(None)
+  }
+
+  def createOrUpdate(): Unit = {
+    val editingNow = editingValue.now
+    (existingValue match {
+      case Some(existing) => {
+        existing.update(p => {
+          p.merge(editingNow.get)
         })
+        editingValue.set(None)
+      }
+      case None => {
+        users
+          .create()
+          .map(user => {
+            //  TODO FIXME we probably should special case initialization and not use the event
+            user.update(p => {
+              p.merge(editingNow.get)
+            })
+            editingValue.set(Some(User.empty))
+          })
+      }
+    })
+  }
+  /*
+  def validateMaxHours(): Int = {
+    val maxHoursNow = maxHours.now
+    val hours = maxHoursNow.toIntOption
 
-        username.set("")
-        role.set("")
-        comment.set("")
-      })
-    } catch {
-      case e: Exception => window.alert(e.getMessage)
+    if (hours.isEmpty || hours.get < 0) {
+      throw new Exception("Invalid max hours: " + maxHoursNow)
     }
 
+    hours.get
   }
 
-  private def validateUsername(): String = {
-    val username = this.username.now
+  def validateName(): String = {
+    val nameNow = name.now
 
-    if (username.isBlank) {
-      throw new Exception("Invalid empty Username")
+    if (nameNow.isBlank) {
+      throw new Exception("Invalid empty name")
     }
 
-    username.strip
+    nameNow.strip
   }
 
-  private def validateRole(): String = {
-    val role = this.role.now
-
-    if (role.isBlank) {
-      throw new Exception("Invalid empty Role")
-    }
-
-    role.strip
+  def validateAccount(): Option[String] = {
+    val accountNow = account.now
+    if (accountNow.isBlank) None else Some(accountNow)
   }
+   */
 
-  private def validateComment(): Option[String] = {
-    val comment = this.comment.now
-    if (comment.isBlank) None else Some(comment)
+  def edit() = {
+    editingValue.set(Some(existingValue.get.signal.now))
   }
 }
 
 case class UsersPage() extends Page {
 
-  private val newUserRow: NewUserRow = NewUserRow()
+  private val newUserRow: UserRow =
+    UserRow(None, Var(Some(User.empty)))
 
   def render(using services: Services): VNode = {
     div(
       navigationHeader,
-      div(
-        cls := "p-1",
-        h1(cls := "text-4xl text-center", "User page"),
-      ),
       table(
         cls := "table-auto",
         thead(
           tr(
-            th("User"),
+            th("Username"),
             th("Role"),
             th("Comment"),
             th("Stuff"),
           ),
         ),
         tbody(
-          users.all.map(renderUsers),
+          renderUsers(users.all),
           newUserRow.render(),
         ),
       ),
     )
   }
 
-  private def renderUsers(users: List[Synced[User]]) =
-    users.map(syncedUser =>
-      syncedUser.signal.map(user => {
-        if (user.exists) {
-          Some(
-            tr(
-              td(user.username),
-              td(user.role),
-              td(user.comment),
-              button(
-                cls := "btn",
-                "Delete",
-                onClick.foreach(_ => removeUser(syncedUser)),
-              ),
-            ),
-          )
-        } else {
-          None
-        }
+  private def renderUsers(
+      Users: Signal[List[Synced[User]]],
+  ) =
+    Users.map(
+      _.map(syncedUser => {
+        UserRow(Some(syncedUser), Var(None)).render()
       }),
     )
-
-  private def removeUser(u: Synced[User]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the user \"${u.signal.now.username}\"?")
-    if (yes) {
-      // delete by setting exists to false
-      u.update(u => u.withExists(false))
-    }
-  }
-
 }

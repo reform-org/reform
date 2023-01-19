@@ -10,6 +10,7 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 import kofre.datatypes.alternatives.MultiValueRegister
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
+import kofre.time.VectorClock
 
 case class User(
     _username: MultiValueRegister[String],
@@ -44,19 +45,22 @@ case class User(
   }
 
   def username = {
-    _username.values.headOption.getOrElse("not initialized")
+    _username.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 
   def role = {
-    _role.values.headOption.getOrElse("not initialized")
+    _role.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 
   def comment = {
-    _comment.values.headOption.map(_.getOrElse("no comment")).getOrElse("not initialized")
+    _comment.versions.toList
+      .sortBy(_._1)(using VectorClock.vectorClockTotalOrdering)
+      .map(_._2)
+      .map(_.getOrElse("no comment"))
   }
 
   def exists = {
-    _exists.values.headOption.getOrElse(true)
+    _exists.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 }
 
@@ -66,7 +70,7 @@ object User {
     MultiValueRegister(Map.empty),
     MultiValueRegister(Map.empty),
     MultiValueRegister(Map.empty),
-  )
+  ).withExists(true).withUsername("").withComment(Some("")).withRole("")
 
   implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
