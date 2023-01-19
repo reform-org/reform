@@ -45,19 +45,19 @@ case class Project(
   }
 
   def name = {
-    _name.values.headOption.getOrElse("not initialized")
+    _name.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 
   def maxHours = {
-    _maxHours.values.headOption.getOrElse(0)
+    _maxHours.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 
-  def accountName: Iterator[(VectorClock, Option[String])] = {
-    _accountName.versions.iterator
+  def accountName = {
+    _accountName.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 
   def exists = {
-    _exists.values.headOption.getOrElse(true)
+    _exists.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 }
 
