@@ -70,7 +70,7 @@ object User {
     MultiValueRegister(Map.empty),
     MultiValueRegister(Map.empty),
     MultiValueRegister(Map.empty),
-  ).withExists(true).withUsername("").withComment(Some("")).withRole("")
+  )
 
   implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 

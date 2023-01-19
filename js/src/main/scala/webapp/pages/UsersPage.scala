@@ -205,7 +205,7 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
             user.update(p => {
               p.merge(editingNow.get)
             })
-            editingValue.set(Some(User.empty))
+            editingValue.set(Some(User.empty.withExists(true).withUsername("").withComment(Some("")).withRole("")))
           })
       }
     })
@@ -246,7 +246,7 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
 case class UsersPage() extends Page {
 
   private val newUserRow: UserRow =
-    UserRow(None, Var(Some(User.empty)))
+    UserRow(None, Var(Some(User.empty.withExists(true).withUsername("").withComment(Some("")).withRole(""))))
 
   def render(using services: Services): VNode = {
     div(
