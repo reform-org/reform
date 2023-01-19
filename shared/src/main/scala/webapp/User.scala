@@ -28,7 +28,9 @@ case class Attribute[T](value: MultiValueRegister[T]) {
 }
 
 object Attribute {
-  given bottom[T]: Bottom[Attribute[T]] with { override def empty: Attribute[T] = Attribute(MultiValueRegister(Map.empty)) }
+  given bottom[T]: Bottom[Attribute[T]] with {
+    override def empty: Attribute[T] = Attribute(MultiValueRegister(Map.empty))
+  }
 
   given decomposeLattice[T]: DecomposeLattice[Attribute[T]] = DecomposeLattice.derived
 }
@@ -37,40 +39,41 @@ case class User(
     _username: Attribute[String],
     _role: Attribute[String],
     _comment: Attribute[Option[String]],
-    _exists: Attribute[Boolean]
-) derives DecomposeLattice, Bottom {
+    _exists: Attribute[Boolean],
+) derives DecomposeLattice,
+      Bottom {
 
   def withUsername(username: String) = {
     val diffSetUsername = User.empty.copy(_username = _username.set(username))
 
-   0// this.merge(diffSetUsername)
+    this.merge(diffSetUsername)
   }
 
   def withRole(role: String) = {
     val diffSetRole = User.empty.copy(_role = _role.set(role))
 
-    //this.merge(diffSetRole)
+    this.merge(diffSetRole)
   }
 
   def withComment(comment: Option[String]) = {
     val diffSetComment = User.empty.copy(_comment = _comment.set(comment))
 
-    //this.merge(diffSetComment)
+    this.merge(diffSetComment)
   }
 
   def withExists(exists: Boolean) = {
     val diffSetExists = User.empty.copy(_exists = _exists.set(exists))
 
-    //this.merge(diffSetExists)
+    this.merge(diffSetExists)
   }
 }
 
 object User {
   val empty: User = User(
     Attribute(MultiValueRegister(Map.empty)),
-   Attribute(MultiValueRegister(Map.empty)),
-   Attribute(MultiValueRegister(Map.empty)),
-   Attribute(MultiValueRegister(Map.empty))
+    Attribute(MultiValueRegister(Map.empty)),
+    Attribute(MultiValueRegister(Map.empty)),
+    Attribute(MultiValueRegister(Map.empty)),
   )
 
   implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))

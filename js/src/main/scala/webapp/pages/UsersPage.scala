@@ -70,7 +70,7 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
             tr(
               td(
                 input(
-                  value := editingNow.username.mkString("/"),
+                  value := editingNow._username.getAll().mkString("/"),
                   onInput.value --> {
                     val evt = Evt[String]()
                     evt.observe(x => updateUsername(x))
@@ -81,7 +81,7 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
               ),
               td(
                 input(
-                  value := editingNow.role.mkString("/"),
+                  value := editingNow._role.getAll().mkString("/"),
                   onInput.value --> {
                     val evt = Evt[String]()
                     evt.observe(x => updateRole(x))
@@ -92,7 +92,7 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
               ),
               td(
                 input(
-                  value := editingNow.comment.mkString("/"),
+                  value := editingNow._comment.getAll().mkString("/"),
                   onInput.value --> {
                     val evt = Evt[String]()
                     evt.observe(x => updateComment(x))
@@ -142,14 +142,14 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedUser) => {
               val res = syncedUser.signal.map(p => {
-                val res = if (p.exists.headOption.getOrElse(true)) {
+                val res = if (p._exists.get().getOrElse(true)) {
                   Some(
                     tr(
                       data.id := syncedUser.id,
-                      td(duplicateValuesHandler(p.username.map(_.toString()))),
-                      td(duplicateValuesHandler(p.role.map(_.toString()))),
+                      td(duplicateValuesHandler(p._username.getAll().map(_.toString()))),
+                      td(duplicateValuesHandler(p._role.getAll().map(_.toString()))),
                       td(
-                        duplicateValuesHandler(p.comment.map(_.toString())),
+                        duplicateValuesHandler(p._comment.getAll().map(_.toString())),
                       ),
                       td(
                         button(
@@ -178,7 +178,7 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
   }
 
   def removeUser(p: Synced[User]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the User \"${p.signal.now.username}\"?")
+    val yes = window.confirm(s"Do you really want to delete the User \"${p.signal.now._username.get()}\"?")
     if (yes) {
       p.update(p => p.withExists(false))
     }
