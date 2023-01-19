@@ -12,64 +12,65 @@ import kofre.datatypes.alternatives.MultiValueRegister
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import kofre.time.VectorClock
 
+case class Attribute[T](value: MultiValueRegister[T]) {
+
+  def getAll(): List[T] = {
+    value.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
+  }
+
+  def get(): Option[T] = {
+    getAll().headOption
+  }
+
+  def set(newValue: T): Attribute[T] = {
+    this.copy(value = value.write(myReplicaID, newValue))
+  }
+}
+
+object Attribute {
+  given bottom[T]: Bottom[Attribute[T]] with { override def empty: Attribute[T] = Attribute(MultiValueRegister(Map.empty)) }
+
+  given decomposeLattice[T]: DecomposeLattice[Attribute[T]] = DecomposeLattice.derived
+}
+
 case class User(
-    _username: MultiValueRegister[String],
-    _role: MultiValueRegister[String],
-    _comment: MultiValueRegister[Option[String]],
-    _exists: MultiValueRegister[Boolean],
-) derives DecomposeLattice,
-      Bottom {
+    _username: Attribute[String],
+    _role: Attribute[String],
+    _comment: Attribute[Option[String]],
+    _exists: Attribute[Boolean]
+) derives DecomposeLattice, Bottom {
 
   def withUsername(username: String) = {
-    val diffSetUsername = User.empty.copy(_username = _username.write(myReplicaID, username))
+    val diffSetUsername = User.empty.copy(_username = _username.set(username))
 
-    this.merge(diffSetUsername)
+   0// this.merge(diffSetUsername)
   }
 
   def withRole(role: String) = {
-    val diffSetRole = User.empty.copy(_role = _role.write(myReplicaID, role))
+    val diffSetRole = User.empty.copy(_role = _role.set(role))
 
-    this.merge(diffSetRole)
+    //this.merge(diffSetRole)
   }
 
   def withComment(comment: Option[String]) = {
-    val diffSetComment = User.empty.copy(_comment = _comment.write(myReplicaID, comment))
+    val diffSetComment = User.empty.copy(_comment = _comment.set(comment))
 
-    this.merge(diffSetComment)
+    //this.merge(diffSetComment)
   }
 
   def withExists(exists: Boolean) = {
-    val diffSetExists = User.empty.copy(_exists = _exists.write(myReplicaID, exists))
+    val diffSetExists = User.empty.copy(_exists = _exists.set(exists))
 
-    this.merge(diffSetExists)
-  }
-
-  def username = {
-    _username.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
-  }
-
-  def role = {
-    _role.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
-  }
-
-  def comment = {
-    _comment.versions.toList
-      .sortBy(_._1)(using VectorClock.vectorClockTotalOrdering)
-      .map(_._2)
-      .map(_.getOrElse("no comment"))
-  }
-
-  def exists = {
-    _exists.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
+    //this.merge(diffSetExists)
   }
 }
 
 object User {
   val empty: User = User(
-    MultiValueRegister(Map.empty),
-    MultiValueRegister(Map.empty),
-    MultiValueRegister(Map.empty),
-    MultiValueRegister(Map.empty),
+    Attribute(MultiValueRegister(Map.empty)),
+   Attribute(MultiValueRegister(Map.empty)),
+   Attribute(MultiValueRegister(Map.empty)),
+   Attribute(MultiValueRegister(Map.empty))
   )
 
   implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
