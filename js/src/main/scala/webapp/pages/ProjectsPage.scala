@@ -210,7 +210,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
       }
     })
   }
- 
+
   def edit() = {
     editingValue.set(Some(existingValue.get.signal.now))
   }

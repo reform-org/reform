@@ -55,7 +55,11 @@ trait Entity[T] {
   def getUIAttributes: List[UIAttribute[T, ? <: Any]]
 }
 
-private class EntityRow[T <: Entity[T]](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T], lattice: Lattice[T]) {
+private class EntityRow[T <: Entity[T]](
+    repository: Repository[T],
+    existingValue: Option[Synced[T]],
+    editingValue: Var[Option[T]],
+)(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render() = {
     editingValue.map(editingNow => {
@@ -111,7 +115,7 @@ private class EntityRow[T <: Entity[T]](repository: Repository[T], existingValue
                   Some(
                     tr(
                       data.id := syncedEntity.id,
-                      editingNow.get.getUIAttributes.map(ui => {
+                      p.getUIAttributes.map(ui => {
                         td(duplicateValuesHandler(ui.attribute.getAll().map(_.toString())))
                       }),
                       td(

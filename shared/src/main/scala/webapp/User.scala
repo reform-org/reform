@@ -16,8 +16,13 @@ import outwatch.*
 import outwatch.dsl.*
 import outwatch.StaticVModifier
 
-case class UIAttribute[EntityType, AttributeType](attribute: Attribute[AttributeType], readConverter: AttributeType => String, writeConverter: String => AttributeType, setter: (EntityType, AttributeType) => EntityType) {
-  
+case class UIAttribute[EntityType, AttributeType](
+    attribute: Attribute[AttributeType],
+    readConverter: AttributeType => String,
+    writeConverter: String => AttributeType,
+    setter: (EntityType, AttributeType) => EntityType,
+) {
+
   def update[T](setter: EntityType => EntityType, editingValue: Var[Option[EntityType]], x: String) = {
     editingValue.transform(value => {
       value.map(p => setter(p))
@@ -65,7 +70,8 @@ case class User(
     _role: Attribute[String],
     _comment: Attribute[Option[String]],
     _exists: Attribute[Boolean],
-) extends webapp.pages.Entity[User] derives DecomposeLattice,
+) extends webapp.pages.Entity[User]
+    derives DecomposeLattice,
       Bottom {
 
   def exists: Attribute[Boolean] = _exists
@@ -80,28 +86,28 @@ case class User(
     List(
       UIAttribute(
         _username,
-                va => va.toString(),
-                u => u,
-                (u, x) => {
-                  u.copy(_username = _username.set(x))
-                },
-              ),
-              UIAttribute(
-                _role,
-                va => va.toString(),
-                u => u,
-                (u, x) => {
-                  u.copy(_role = _role.set(x))
-                },
-              ),
-              UIAttribute(
-                _comment,
-                va => va.getOrElse("no comment").toString(),
-                u => Some(u),
-                (u, x) => {
-                  u.copy(_comment = _comment.set(x))
-                },
-              ),
+        va => va.toString(),
+        u => u,
+        (u, x) => {
+          u.copy(_username = _username.set(x))
+        },
+      ),
+      UIAttribute(
+        _role,
+        va => va.toString(),
+        u => u,
+        (u, x) => {
+          u.copy(_role = _role.set(x))
+        },
+      ),
+      UIAttribute(
+        _comment,
+        va => va.getOrElse("no comment").toString(),
+        u => Some(u),
+        (u, x) => {
+          u.copy(_comment = _comment.set(x))
+        },
+      ),
     )
   }
 }
