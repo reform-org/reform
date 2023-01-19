@@ -81,7 +81,6 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
               ),
               td(
                 input(
-                  `type` := "number",
                   value := editingNow.maxHours.mkString("/"),
                   onInput.value --> {
                     val evt = Evt[String]()
