@@ -8,60 +8,67 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.serializer.jsoniterScala.given
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import kofre.datatypes.alternatives.MultiValueRegister
+import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 
 case class User(
-    _username: Option[TimedVal[String]],
-    _role: Option[TimedVal[String]],
-    _comment: Option[TimedVal[Option[String]]],
-    _exists: Option[TimedVal[Boolean]],
+    _username: MultiValueRegister[String],
+    _role: MultiValueRegister[String],
+    _comment: MultiValueRegister[Option[String]],
+    _exists: MultiValueRegister[Boolean],
 ) derives DecomposeLattice,
       Bottom {
 
   def withUsername(username: String) = {
-    val diffSetUsername = User.empty.copy(_username = Some(LastWriterWins.now(username, myReplicaID)))
+    val diffSetUsername = User.empty.copy(_username = _username.write(myReplicaID, username))
 
     this.merge(diffSetUsername)
   }
 
   def withRole(role: String) = {
-    val diffSetRole = User.empty.copy(_role = Some(LastWriterWins.now(role, myReplicaID)))
+    val diffSetRole = User.empty.copy(_role = _role.write(myReplicaID, role))
 
     this.merge(diffSetRole)
   }
 
   def withComment(comment: Option[String]) = {
-    val diffSetComment = User.empty.copy(_comment = Some(LastWriterWins.now(comment, myReplicaID)))
+    val diffSetComment = User.empty.copy(_comment = _comment.write(myReplicaID, comment))
 
     this.merge(diffSetComment)
   }
 
   def withExists(exists: Boolean) = {
-    val diffSetExists = User.empty.copy(_exists = Some(LastWriterWins.now(exists, myReplicaID)))
+    val diffSetExists = User.empty.copy(_exists = _exists.write(myReplicaID, exists))
 
     this.merge(diffSetExists)
   }
 
   def username = {
-    _username.map(_.payload).getOrElse("not initialized")
+    _username.values.headOption.getOrElse("not initialized")
   }
 
   def role = {
-    _role.map(_.payload).getOrElse("not initialized")
+    _role.values.headOption.getOrElse("not initialized")
   }
 
   def comment = {
-    _comment.map(_.payload.getOrElse("no account")).getOrElse("not initialized")
+    _comment.values.headOption.map(_.getOrElse("no comment")).getOrElse("not initialized")
   }
 
   def exists = {
-    _exists.map(_.payload).getOrElse(true)
+    _exists.values.headOption.getOrElse(true)
   }
 }
 
 object User {
-  val empty: User = User(None, None, None, None)
+  val empty: User = User(
+    MultiValueRegister(Map.empty),
+    MultiValueRegister(Map.empty),
+    MultiValueRegister(Map.empty),
+    MultiValueRegister(Map.empty),
+  )
 
-  implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make
+  implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[User]] = JsonCodecMaker.make
 }

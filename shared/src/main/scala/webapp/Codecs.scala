@@ -7,6 +7,7 @@ import webapp.webrtc.DeltaFor
 
 import java.util.UUID
 import com.github.plokhotnyuk.jsoniter_scala.core.{JsonKeyCodec, JsonReader, JsonValueCodec, JsonWriter}
+import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 
 // Supporting code to serialize and deserialize objects
 // TODO: Codecs should be declared where they are used
@@ -19,12 +20,8 @@ object Codecs {
 
   implicit val idCodec: JsonValueCodec[kofre.base.Id] = JsonCodecMaker.make[String].asInstanceOf
 
-  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] = JsonCodecMaker.make
-
-  implicit val idKeyCodec: JsonKeyCodec[kofre.base.Id] = new JsonKeyCodec[kofre.base.Id] {
-    override def decodeKey(in: JsonReader): kofre.base.Id = kofre.base.Id.predefined(in.readKeyAsString())
-    override def encodeKey(x: kofre.base.Id, out: JsonWriter): Unit = out.writeKey(kofre.base.Id.unwrap(x))
-  }
+  implicit val codecPositiveNegativeCounter: JsonValueCodec[PosNegCounter] =
+    JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 
   implicit val codecDeltaForPositiveNegativeCounter: JsonValueCodec[DeltaFor[PosNegCounter]] = JsonCodecMaker.make
 

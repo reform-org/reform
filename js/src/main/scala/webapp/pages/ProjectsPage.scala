@@ -30,7 +30,6 @@ import rescala.default.*
 import webapp.*
 import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
-import outwatch.dsl.svg.idAttr
 import webapp.given
 import webapp.components.navigationHeader
 import webapp.repo.Synced
@@ -41,99 +40,248 @@ import webapp.services.Page
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
+import kofre.time.VectorClock
 
-private class NewProjectRow {
+private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
 
-  private val name = Var("")
-  private val maxHours = Var("")
-  private val account = Var("")
+  def updateName(x: String) = {
+    editingValue.transform(value => {
+      value.map(p => p.withName(x))
+    })
+  }
 
-  def render(): VNode =
-    tr(
-      td(
-        input(
-          value <-- name,
-          onInput.value --> name,
-          placeholder := "New Project Name",
-        ),
-      ),
-      td(
-        input(
-          `type` := "number",
-          value <-- maxHours,
-          onInput.value --> maxHours,
-          placeholder := "0",
-        ),
-      ),
-      td(
-        input(
-          value <-- account,
-          onInput.value --> account,
-          placeholder := "Some account",
-        ),
-      ),
-      td(
-        button(
-          cls := "btn",
-          idAttr := "add-project-button",
-          "Add Project",
-          onClick.foreach(_ => addNewProject()),
-        ),
-      ),
-    )
+  def updateMaxHours(x: String) = {
+    editingValue.transform(value => {
+      value.map(p => p.withMaxHours(x.toInt))
+    })
+  }
 
-  private def addNewProject(): Unit = {
-    try {
-      val _name = validateName()
-      val _max_hours = validateMaxHours()
-      val _account = validateAccount()
+  def updateAccountName(x: String) = {
+    editingValue.transform(value => {
+      value.map(p => p.withAccountName(Some(x)))
+    })
+  }
 
-      val project = projects.create()
-      project.map(project => {
-        // we probably should special case initialization and not use the event
-        project.update(p => {
-          p.withName(_name).withMaxHours(_max_hours).withAccountName(_account)
-        })
+  def render() = {
+    editingValue.map(editingNow => {
+      val res = editingNow match {
+        case Some(editingNow) => {
+          val res = Some(
+            tr(
+              td(
+                input(
+                  value := editingNow.name,
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => updateName(x))
+                    evt
+                  },
+                  placeholder := "New Project Name",
+                ),
+              ),
+              td(
+                input(
+                  `type` := "number",
+                  value := editingNow.maxHours.toString(),
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => updateMaxHours(x))
+                    evt
+                  },
+                  placeholder := "0",
+                ),
+              ),
+              td(
+                input(
+                  value := editingNow.accountName.map(_._2.getOrElse("")).mkString("/"),
+                  onInput.value --> {
+                    val evt = Evt[String]()
+                    evt.observe(x => updateAccountName(x))
+                    evt
+                  },
+                  placeholder := "Some account",
+                ),
+              ),
+              td(
+                {
+                  existingValue match {
+                    case Some(p) => {
+                      List(
+                        button(
+                          cls := "btn",
+                          idAttr := "add-project-button",
+                          "Save edit",
+                          onClick.foreach(_ => createOrUpdate()),
+                        ),
+                        button(
+                          cls := "btn",
+                          idAttr := "add-project-button",
+                          "Cancel",
+                          onClick.foreach(_ => cancelEdit()),
+                        ),
+                      )
+                    }
+                    case None => {
+                      button(
+                        cls := "btn",
+                        idAttr := "add-project-button",
+                        "Add Project",
+                        onClick.foreach(_ => createOrUpdate()),
+                      )
+                    }
+                  }
+                },
+                existingValue.map(p => {
+                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p)))
+                }),
+              ),
+            ),
+          )
+          Var(res)
+        }
+        case None => {
+          val res: Signal[Option[VNode]] = existingValue match {
+            case Some(syncedProject) => {
+              val res = syncedProject.signal.map(p => {
+                val res = if (p.exists) {
+                  Some(
+                    tr(
+                      data.id := syncedProject.id,
+                      td(p.name),
+                      td(p.maxHours),
+                      td(
+                        {
+                          p.accountName
+                            .reduceOption((a, b) => {
+                              if (VectorClock.vectorClockTotalOrdering.gt(a._1, b._1)) { a }
+                              else { b }
+                            })
+                            .map(_._2)
+                        }, {
+                          if (p.accountName.size > 1) {
+                            import outwatch.dsl.svg.*
+                            Some(
+                              span(
+                                cls := "tooltip tooltip-error",
+                                data.tip := "Conflicting values found. Edit to see all values and decide on a single value.",
+                                button(
+                                  svg(
+                                    xmlns := "http://www.w3.org/2000/svg",
+                                    fill := "none",
+                                    viewBox := "0 0 24 24",
+                                    VModifier.attr("stroke-width") := "1.5",
+                                    stroke := "currentColor",
+                                    cls := "w-6 h-6",
+                                    path(
+                                      VModifier.attr("stroke-linecap") := "round",
+                                      VModifier.attr("stroke-linejoin") := "round",
+                                      d := "M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z",
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            )
+                          } else {
+                            None
+                          }
+                        },
+                      ),
+                      td(
+                        button(
+                          cls := "btn",
+                          "Edit",
+                          onClick.foreach(_ => edit()),
+                        ),
+                        button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(syncedProject))),
+                      ),
+                    ),
+                  )
+                } else {
+                  None
+                }
+                res
+              })
+              res
+            }
+            case None => Var(None)
+          }
+          res
+        }
+      }
+      res
+    })
+  }
 
-        name.set("")
-        maxHours.set("")
-        account.set("")
-      })
-    } catch {
-      case e: Exception => window.alert(e.getMessage)
+  def removeProject(p: Synced[Project]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
+    if (yes) {
+      p.update(p => p.withExists(false))
     }
   }
 
-  private def validateMaxHours(): Int = {
-    val maxHours = this.maxHours.now
-    val hours = maxHours.toIntOption
+  def cancelEdit(): Unit = {
+    editingValue.set(None)
+  }
+
+  def createOrUpdate(): Unit = {
+    val editingNow = editingValue.now
+    (existingValue match {
+      case Some(existing) => {
+        existing.update(p => {
+          p.merge(editingNow.get)
+        })
+        editingValue.set(None)
+      }
+      case None => {
+        projects
+          .create()
+          .map(project => {
+            //  TODO FIXME we probably should special case initialization and not use the event
+            project.update(p => {
+              p.merge(editingNow.get)
+            })
+            editingValue.set(Some(Project.empty.withExists(true).withAccountName(Some("")).withName("")))
+          })
+      }
+    })
+  }
+  /*
+  def validateMaxHours(): Int = {
+    val maxHoursNow = maxHours.now
+    val hours = maxHoursNow.toIntOption
 
     if (hours.isEmpty || hours.get < 0) {
-      throw new Exception("Invalid max hours: " + maxHours)
+      throw new Exception("Invalid max hours: " + maxHoursNow)
     }
 
     hours.get
   }
 
-  private def validateName(): String = {
-    val name = this.name.now
+  def validateName(): String = {
+    val nameNow = name.now
 
-    if (name.isBlank) {
+    if (nameNow.isBlank) {
       throw new Exception("Invalid empty name")
     }
 
-    name.strip
+    nameNow.strip
   }
 
-  private def validateAccount(): Option[String] = {
-    val account = this.account.now
-    if (account.isBlank) None else Some(account)
+  def validateAccount(): Option[String] = {
+    val accountNow = account.now
+    if (accountNow.isBlank) None else Some(accountNow)
+  }
+   */
+
+  def edit() = {
+    editingValue.set(Some(existingValue.get.signal.now))
   }
 }
 
 case class ProjectsPage() extends Page {
 
-  private val newProjectRow: NewProjectRow = NewProjectRow()
+  private val newProjectRow: ProjectRow =
+    ProjectRow(None, Var(Some(Project.empty.withExists(true).withAccountName(Some("")).withName(""))))
 
   def render(using services: Services): VNode = {
     div(
@@ -149,29 +297,19 @@ case class ProjectsPage() extends Page {
           ),
         ),
         tbody(
-          projects.all.map(renderProjects),
+          renderProjects(projects.all),
           newProjectRow.render(),
         ),
       ),
     )
   }
 
-  private def renderProjects(projects: List[Synced[Project]]): List[VNode] =
-    projects.map(p =>
-      tr(
-        attributes.key := p.id,
-        data.id := p.id,
-        td(p.signal.map(_.name)),
-        td(p.signal.map(_.maxHours)),
-        td(p.signal.map(_.accountName)),
-        button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p))),
-      ),
+  private def renderProjects(
+      projects: Signal[List[Synced[Project]]],
+  ) =
+    projects.map(
+      _.map(syncedProject => {
+        ProjectRow(Some(syncedProject), Var(None)).render()
+      }),
     )
-
-  private def removeProject(p: Synced[Project]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
-    if (yes) {
-      // ProjectsService.projects.transform(_.filterNot(_ == p))
-    }
-  }
 }
