@@ -34,33 +34,17 @@ import webapp.given
 import webapp.components.navigationHeader
 import webapp.repo.Synced
 import webapp.webrtc.WebRTCService
-import webapp.Repositories.projects
 import webapp.services.Page
+import webapp.Repositories.users
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import java.util.UUID
 import kofre.time.VectorClock
+import webapp.repo.Repository
+import kofre.base.Bottom
 
-private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: Var[Option[Project]]) {
-
-  def updateName(x: String) = {
-    editingValue.transform(value => {
-      value.map(p => p.withName(x))
-    })
-  }
-
-  def updateMaxHours(x: String) = {
-    editingValue.transform(value => {
-      value.map(p => p.withMaxHours(x.toInt))
-    })
-  }
-
-  def updateAccountName(x: String) = {
-    editingValue.transform(value => {
-      value.map(p => p.withAccountName(Some(x)))
-    })
-  }
+private class EntityRow[T](repository: Repository[T], existingValue: Option[Synced[T]], editingValue: Var[Option[T]])(using bottom: Bottom[T]) {
 
   def render() = {
     editingValue.map(editingNow => {
@@ -68,38 +52,29 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
         case Some(editingNow) => {
           val res = Some(
             tr(
-              td(
-                input(
-                  value := editingNow.name.mkString("/"),
-                  onInput.value --> {
-                    val evt = Evt[String]()
-                    evt.observe(x => updateName(x))
-                    evt
-                  },
-                  placeholder := "New Project Name",
-                ),
+              editingNow._username.render[User](
+                (u, x) => {
+                  u.withUsername(x)
+                },
+                va => va.toString(),
+                editingValue,
+                editingNow,
               ),
-              td(
-                input(
-                  value := editingNow.maxHours.mkString("/"),
-                  onInput.value --> {
-                    val evt = Evt[String]()
-                    evt.observe(x => updateMaxHours(x))
-                    evt
-                  },
-                  placeholder := "0",
-                ),
+              editingNow._role.render[User](
+                (u, x) => {
+                  u.withRole(x)
+                },
+                va => va.toString(),
+                editingValue,
+                editingNow,
               ),
-              td(
-                input(
-                  value := editingNow.accountName.map(_.getOrElse("")).mkString("/"),
-                  onInput.value --> {
-                    val evt = Evt[String]()
-                    evt.observe(x => updateAccountName(x))
-                    evt
-                  },
-                  placeholder := "Some account",
-                ),
+              editingNow._comment.render[User](
+                (u, x) => {
+                  u.withComment(Some(x))
+                },
+                va => va.getOrElse("no comment").toString(),
+                editingValue,
+                editingNow,
               ),
               td(
                 {
@@ -108,13 +83,13 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                       List(
                         button(
                           cls := "btn",
-                          idAttr := "add-project-button",
+                          idAttr := "add-entity-button",
                           "Save edit",
                           onClick.foreach(_ => createOrUpdate()),
                         ),
                         button(
                           cls := "btn",
-                          idAttr := "add-project-button",
+                          idAttr := "add-entity-button",
                           "Cancel",
                           onClick.foreach(_ => cancelEdit()),
                         ),
@@ -123,15 +98,15 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                     case None => {
                       button(
                         cls := "btn",
-                        idAttr := "add-project-button",
-                        "Add Project",
+                        idAttr := "add-entity-button",
+                        "Add Entity",
                         onClick.foreach(_ => createOrUpdate()),
                       )
                     }
                   }
                 },
                 existingValue.map(p => {
-                  button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(p)))
+                  button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(p)))
                 }),
               ),
             ),
@@ -140,16 +115,16 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
         }
         case None => {
           val res: Signal[Option[VNode]] = existingValue match {
-            case Some(syncedProject) => {
-              val res = syncedProject.signal.map(p => {
-                val res = if (p.exists.headOption.getOrElse(true)) {
+            case Some(syncedEntity) => {
+              val res = syncedEntity.signal.map(p => {
+                val res = if (p._exists.get().getOrElse(true)) {
                   Some(
                     tr(
-                      data.id := syncedProject.id,
-                      td(duplicateValuesHandler(p.name.map(_.toString()))),
-                      td(duplicateValuesHandler(p.maxHours.map(_.toString()))),
+                      data.id := syncedEntity.id,
+                      td(duplicateValuesHandler(p._username.getAll().map(_.toString()))),
+                      td(duplicateValuesHandler(p._role.getAll().map(_.toString()))),
                       td(
-                        duplicateValuesHandler(p.accountName.map(_.getOrElse("no accout name"))),
+                        duplicateValuesHandler(p._comment.getAll().map(_.toString())),
                       ),
                       td(
                         button(
@@ -157,7 +132,7 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
                           "Edit",
                           onClick.foreach(_ => edit()),
                         ),
-                        button(cls := "btn", "Delete", onClick.foreach(_ => removeProject(syncedProject))),
+                        button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(syncedEntity))),
                       ),
                     ),
                   )
@@ -177,8 +152,8 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
     })
   }
 
-  def removeProject(p: Synced[Project]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the project \"${p.signal.now.name}\"?")
+  def removeEntity(p: Synced[T]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now._username.get()}\"?")
     if (yes) {
       p.update(p => p.withExists(false))
     }
@@ -198,28 +173,28 @@ private class ProjectRow(existingValue: Option[Synced[Project]], editingValue: V
         editingValue.set(None)
       }
       case None => {
-        projects
+        repository
           .create()
-          .map(project => {
+          .map(entity => {
             //  TODO FIXME we probably should special case initialization and not use the event
-            project.update(p => {
+            entity.update(p => {
               p.merge(editingNow.get)
             })
-            editingValue.set(Some(Project.empty.withExists(true).withAccountName(Some("")).withName("")))
+            editingValue.set(Some(bottom.empty))
           })
       }
     })
   }
- 
+
   def edit() = {
     editingValue.set(Some(existingValue.get.signal.now))
   }
 }
 
-case class ProjectsPage() extends Page {
+case class EntityPage[T](repository: Repository[T])(using bottom: Bottom[T]) extends Page {
 
-  private val newProjectRow: ProjectRow =
-    ProjectRow(None, Var(Some(Project.empty.withExists(true).withAccountName(Some("")).withName(""))))
+  private val newUserRow: EntityRow[T] =
+    EntityRow[T](None, Var(Some(bottom.empty)))
 
   def render(using services: Services): VNode = {
     div(
@@ -228,26 +203,26 @@ case class ProjectsPage() extends Page {
         cls := "table-auto",
         thead(
           tr(
-            th("Project"),
-            th("Max Hours"),
-            th("Account"),
+            th("Username"),
+            th("Role"),
+            th("Comment"),
             th("Stuff"),
           ),
         ),
         tbody(
-          renderProjects(projects.all),
-          newProjectRow.render(),
+          renderEntities(repository.all),
+          newUserRow.render(),
         ),
       ),
     )
   }
 
-  private def renderProjects(
-      projects: Signal[List[Synced[Project]]],
+  private def renderEntities(
+      entities: Signal[List[Synced[T]]],
   ) =
-    projects.map(
-      _.map(syncedProject => {
-        ProjectRow(Some(syncedProject), Var(None)).render()
+    entities.map(
+      _.map(syncedEntity => {
+        EntityRow[T](Some(syncedEntity), Var(None)).render()
       }),
     )
 }

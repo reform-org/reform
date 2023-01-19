@@ -14,6 +14,7 @@ import kofre.time.VectorClock
 import rescala.default.*
 import outwatch.*
 import outwatch.dsl.*
+import outwatch.StaticVModifier
 
 case class Attribute[T](register: MultiValueRegister[T]) {
 
@@ -44,7 +45,7 @@ case class Attribute[T](register: MultiValueRegister[T]) {
           evt.observe(x => update(setter, editingValue, x))
           evt
         },
-        placeholder := "TODO",
+        VModifier.prop("placeholder") := "TODO",
       ),
     )
   }

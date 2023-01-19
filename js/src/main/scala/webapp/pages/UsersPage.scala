@@ -195,33 +195,6 @@ private class UserRow(existingValue: Option[Synced[User]], editingValue: Var[Opt
       }
     })
   }
-  /*
-  def validateMaxHours(): Int = {
-    val maxHoursNow = maxHours.now
-    val hours = maxHoursNow.toIntOption
-
-    if (hours.isEmpty || hours.get < 0) {
-      throw new Exception("Invalid max hours: " + maxHoursNow)
-    }
-
-    hours.get
-  }
-
-  def validateName(): String = {
-    val nameNow = name.now
-
-    if (nameNow.isBlank) {
-      throw new Exception("Invalid empty name")
-    }
-
-    nameNow.strip
-  }
-
-  def validateAccount(): Option[String] = {
-    val accountNow = account.now
-    if (accountNow.isBlank) None else Some(accountNow)
-  }
-   */
 
   def edit() = {
     editingValue.set(Some(existingValue.get.signal.now))
