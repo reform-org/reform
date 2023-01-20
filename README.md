@@ -63,7 +63,6 @@ npm run test
 ## Deployment
 
 ```bash
-curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && source ~/.profile && sbt fastLinkJS && npm ci && npm run build
-
-curl -s "https://get.sdkman.io" | bash && source "/opt/buildhome/.sdkman/bin/sdkman-init.sh" && sdk install sbt && sbt fastLinkJS && npm ci && npm run build
+# netlify
+curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt fastLinkJS && npm ci && npm run build
 ```
