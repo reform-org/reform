@@ -64,8 +64,14 @@ npm run test
 
 ```bash
 # netlify
-curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt fastLinkJS && npm ci && npm run build
+#curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt fastLinkJS && npm ci && npm run build
 
-curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt coverage webappJVM/test webappJVM/coverageReport
+#curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt coverage webappJVM/test webappJVM/coverageReport
+
+# TODO maybe this works with netlify and can install other java version?
+curl -s "https://get.sdkman.io" | bash && source ~/.sdkman/bin/sdkman-init.sh && sdk install java && sdk install sbt && sbt fastLinkJS && npm ci && npm run build
+
+
+curl -s "https://get.sdkman.io" | bash && source ~/.sdkman/bin/sdkman-init.sh && sdk install java && sdk install sbt && sbt coverage webappJVM/test webappJVM/coverageReport
 
 ```
