@@ -24,5 +24,9 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
-    - name: Build tests
-      run: sbt webappJVM/test
+    - name: Test
+      run: sbt coverage webappJVM/test webappJVM/coverageReport
+    - uses: actions/upload-artifact@v3
+      with:
+        name: coverage
+        path: jvm/target/scala-*/scoverage-report/

@@ -1,4 +1,4 @@
-import { MainTest } from './js/target/scala-3.2.1/webapp-test-fastopt/main.js'
+import { MainTest } from './js/target/scala-3.2.2-RC2/webapp-test-fastopt/main.js'
 import { assert, expect, test } from 'vitest'
 
 // https://github.com/search?q=repo%3Ascala-js%2Fscala-js+scalajsCom
