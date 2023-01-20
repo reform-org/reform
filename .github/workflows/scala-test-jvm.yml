@@ -29,5 +29,5 @@ jobs:
     - name: Upload coverage data to Coveralls
       run: sbt webappJVM/coverageReport webappJVM/coveralls
       env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        COVERALLS_FLAG_NAME: Scala ${{ matrix.scala }}
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        COVERALLS_FLAG_NAME: Scala
