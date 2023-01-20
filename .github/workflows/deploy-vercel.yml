@@ -32,3 +32,4 @@ jobs:
         run: vercel build --debug --token=${{ secrets.VERCEL_TOKEN }}
       - name: Deploy Project Artifacts to Vercel
         run: vercel deploy --prebuilt --force --debug --token=${{ secrets.VERCEL_TOKEN }}
+# this doesnt update the comment in the pr as this is not a git deploy
