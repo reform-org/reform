@@ -25,7 +25,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Test
-      run: sbt webappJVM/test
+      run: sbt webappJVM/coverage webappJVM/test
     - name: Upload coverage data to Coveralls
       run: sbt webappJVM/coverageReport webappJVM/coveralls
       env:
