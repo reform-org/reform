@@ -62,8 +62,8 @@ npm run test
 
 ## Deployment
 
-https://vercel.com/guides/how-can-i-use-github-actions-with-vercel
-
 ```bash
-curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs setup && sbt fastLinkJS && npm ci && npm run build
+curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && source ~/.profile && sbt fastLinkJS && npm ci && npm run build
+
+curl -s "https://get.sdkman.io" | bash && source "/opt/buildhome/.sdkman/bin/sdkman-init.sh" && sdk install sbt && sbt fastLinkJS && npm ci && npm run build
 ```
