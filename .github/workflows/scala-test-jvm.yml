@@ -28,5 +28,6 @@ jobs:
       run: sbt coverage webappJVM/test
     - uses: codecov/codecov-action@v3
       with:
+        files: ./jvm/target/scala-3.2.2-RC2/coverage-report/cobertura.xml
         fail_ci_if_error: true
         verbose: true
