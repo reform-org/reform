@@ -23,7 +23,4 @@ import rescala.default.*
 
 object WebRTCService {
   val registry: Registry = new Registry
-
-  // TODO: Remove the counter
-  val counterReplicator: ReplicationGroup[PosNegCounter] = ReplicationGroup("counter")
 }
