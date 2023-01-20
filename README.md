@@ -59,3 +59,11 @@ In a separate window:
 ```
 npm run test
 ```
+
+## Deployment
+
+https://vercel.com/guides/how-can-i-use-github-actions-with-vercel
+
+```bash
+curl -fL https://github.com/coursier/launchers/raw/master/cs-x86_64-pc-linux.gz | gzip -d > cs && chmod +x cs && ./cs setup && sbt fastLinkJS && npm ci && npm run build
+```
