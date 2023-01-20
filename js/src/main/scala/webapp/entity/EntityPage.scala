@@ -13,52 +13,36 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp.pages
+package webapp.entity
 
+import cats.effect.SyncIO
+import colibri.{Cancelable, Observer, Source, Subject}
+import kofre.base.*
+import kofre.time.VectorClock
 import org.scalajs.dom
 import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.*
-import webapp.given
-import webapp.components.navigationHeader
-import org.scalajs.dom
-import outwatch.*
-import outwatch.dsl.*
-import rescala.default.*
-import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
-import webapp.components.navigationHeader
-import webapp.repo.Synced
-import webapp.webrtc.WebRTCService
-import webapp.services.Page
 import webapp.Repositories.users
+import webapp.components.navigationHeader
+import webapp.repo.{Repository, Synced}
+import webapp.services.Page
+import webapp.webrtc.WebRTCService
+import webapp.{*, given}
 
-import concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import java.util.UUID
-import kofre.time.VectorClock
-import webapp.repo.Repository
-import kofre.base.Bottom
-import kofre.base.Lattice
+import scala.collection.immutable.List
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
 
-trait Entity[T] {
-  def exists: Attribute[Boolean]
 
-  def identifier: Attribute[String]
-
-  def withExists(exists: Boolean): T
-
-  def getUIAttributes: List[UIAttribute[T, ? <: Any]]
-}
 
 private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
     existingValue: Option[Synced[T]],
     editingValue: Var[Option[T]],
+    uiAttributes: List[UIAttribute[T, ? <: Any]]
 )(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render() = {
@@ -67,7 +51,7 @@ private class EntityRow[T <: Entity[T]](
         case Some(editingNow) => {
           val res = Some(
             tr(
-              editingNow.getUIAttributes.map(ui => {
+              uiAttributes.map(ui => {
                 ui.render(editingValue)
               }),
               td(
@@ -111,12 +95,12 @@ private class EntityRow[T <: Entity[T]](
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedEntity) => {
               val res = syncedEntity.signal.map(p => {
-                val res = if (p.exists.get().getOrElse(true)) {
+                val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
                       data.id := syncedEntity.id,
-                      p.getUIAttributes.map(ui => {
-                        td(duplicateValuesHandler(ui.attribute.getAll().map(_.toString())))
+                      uiAttributes.map(ui => {
+                        td(duplicateValuesHandler(ui.attribute.getAll.map(_.toString())))
                       }),
                       td(
                         button(
@@ -145,7 +129,7 @@ private class EntityRow[T <: Entity[T]](
   }
 
   def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get()}\"?")
+    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
     if (yes) {
       p.update(p => p.withExists(false))
     }
@@ -183,10 +167,10 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
-class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
+abstract class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](repository, None, Var(Some(bottom.empty)))
+    EntityRow[T](repository, None, Var(Some(bottom.empty)), getUIAttributes)
 
   def render(using services: Services): VNode = {
     div(
@@ -195,7 +179,7 @@ class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom
         cls := "table-auto",
         thead(
           tr(
-            bottom.empty.getUIAttributes.map(attr => th(attr.placeholder)),
+            getUIAttributes.map(attr => th(attr.placeholder)),
             th("Stuff"),
           ),
         ),
@@ -212,7 +196,10 @@ class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom
   ) =
     entities.map(
       _.map(syncedEntity => {
-        EntityRow[T](repository, Some(syncedEntity), Var(None)).render()
+        EntityRow[T](repository, Some(syncedEntity), Var(None), getUIAttributes).render()
       }),
     )
+
+  // TODO: Might be only computed once
+  def getUIAttributes: List[UIAttribute[T, ? <: Any]]
 }

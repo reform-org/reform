@@ -16,5 +16,6 @@ limitations under the License.
 package webapp.pages
 
 import webapp.Repositories
+import webapp.entity.*
 
-case class ProjectsPage() extends EntityPage(Repositories.projects) {}
+case class ProjectsPage() extends EntityPage[Project](Repositories.projects) {}

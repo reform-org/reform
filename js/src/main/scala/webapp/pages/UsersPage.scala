@@ -16,5 +16,9 @@ limitations under the License.
 package webapp.pages
 
 import webapp.Repositories
+import webapp.entity.*
 
-case class UsersPage() extends EntityPage(Repositories.users) {}
+case class UsersPage() extends EntityPage[User](Repositories.users) {
+
+
+}
