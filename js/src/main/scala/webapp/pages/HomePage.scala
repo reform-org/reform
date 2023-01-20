@@ -25,33 +25,15 @@ import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.components.navigationHeader
 import webapp.services.Page
-import webapp.webrtc.CounterService
 
 import concurrent.ExecutionContext.Implicits.global
 
 case class HomePage() extends Page {
 
-  def counter(using services: Services) = SyncIO {
-    div(
-      cls := "grid grid-flow-col grid-rows-1 grid-cols-2",
-      button(
-        cls := "btn",
-        "+",
-        onClick.foreach(_ => CounterService.counter.map(_.incrementValueEvent.fire(1))),
-      ),
-      div(
-        cls := "flex justify-center items-center",
-        CounterService.counter.map(_.signal.map(_.value)),
-      ),
-    )
-  }
-
   def render(using services: Services): VNode =
     div(
       navigationHeader,
-      div(
-        cls := "p-1 grid grid-flow-col grid-rows-1 grid-cols-3 gap-1",
-        counter,
-      ),
+      p("Homepage"),
     )
+
 }
