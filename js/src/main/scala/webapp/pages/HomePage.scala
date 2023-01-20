@@ -33,7 +33,7 @@ case class HomePage() extends Page {
   def render(using services: Services): VNode =
     div(
       navigationHeader,
-      p("Homepage"),
+      p("Continous Deployment"),
     )
 
 }
