@@ -23,7 +23,7 @@ jobs:
       - name: Build ScalaJS
         run: sbt fastLinkJS
       - name: Build JavaScript
-        run: npm run build
+        run: npm vite build --base=/dist/
       - name: Test
         run: sbt coverage webappJVM/test webappJVM/coverageReport
       - uses: actions/checkout@v2
