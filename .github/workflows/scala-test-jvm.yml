@@ -25,9 +25,12 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Test
-      run: sbt coverage webappJVM/test
+      run: sbt coverage webappJVM/test webappJVM/coverageReport
+    - name: Test
+      run: ls -la ./jvm/target/scala-3.2.2-RC2/coverage-report/
     - uses: codecov/codecov-action@v3
       with:
-        files: ./jvm/target/scala-3.2.2-RC2/coverage-report/cobertura.xml
+        directory: ./jvm/target/scala-3.2.2-RC2/coverage-report/
+        files: ./cobertura.xml
         fail_ci_if_error: true
         verbose: true
