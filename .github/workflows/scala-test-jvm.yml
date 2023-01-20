@@ -24,5 +24,10 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
-    - name: Build tests
-      run: sbt webappJVM/test
+    - name: Test
+      run: sbt coverage webappJVM/test
+    - name: Upload coverage data to Coveralls
+      run: sbt webappJVM/coverageReport webappJVM/coveralls
+      env:
+        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
+        COVERALLS_FLAG_NAME: Scala
