@@ -26,7 +26,7 @@ jobs:
         cache: 'sbt'
     - name: Test
       run: sbt coverage webappJVM/test webappJVM/coverageReport
-    - uses: codecov/codecov-action@v3
+    - uses: actions/upload-artifact@v3
       with:
-        fail_ci_if_error: true
-        verbose: true
+        name: coverage
+        path: jvm/target/scala-*/scoverage-report/
