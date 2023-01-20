@@ -7,7 +7,8 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 name                     := "Reform"
 ThisBuild / version      := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.2.1"
+ThisBuild / scalaVersion := "3.2.2-RC2"
+ThisBuild / coverageEnabled := true
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -54,7 +55,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       // like there could also be sane defaults but no
       //"-rewrite",
       "-no-indent",
-      //"-Yexplicit-nulls", // breaks json macro
+      //"-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
       "-Xfatal-warnings",
       "--unchecked",
