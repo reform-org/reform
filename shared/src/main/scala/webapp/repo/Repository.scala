@@ -53,6 +53,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       .map(ids => {
         val futures = ids.toList.map(getOrCreate)
         val future = Future.sequence(futures)
+        // maybe if the future has already resolved, this fails?
         Signals.fromFuture(future)
       })
       .flatten
