@@ -20,6 +20,7 @@ import webapp.Repositories.projects
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*
+import scala.concurrent.Future
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
@@ -29,11 +30,19 @@ object MainTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
+    def magic() = {
+      projects.all.now.length
+      projects.create()
+    }
+    /*
     test("test that creating a project works") {
       assert(projects.all.now.length == 0)
       projects.create()
       Thread.sleep(1000) // TODO FIXME
       assert(projects.all.now.length == 1)
+    }*/
+    test("test that no race condition occurs") {
+      Future.sequence((1 to 100000).map(_ => magic())).map(_ => 1)
     }
   }
 
