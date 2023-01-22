@@ -1,7 +1,7 @@
 package webapp.entity
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.{CodecMakerConfig, JsonCodecMaker}
+import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import kofre.datatypes.*
 import kofre.datatypes.LastWriterWins.TimedVal

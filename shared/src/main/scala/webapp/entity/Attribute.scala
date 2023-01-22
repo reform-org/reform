@@ -5,7 +5,7 @@ import kofre.datatypes.alternatives.MultiValueRegister
 import kofre.time.VectorClock
 import webapp.Codecs.myReplicaID
 
-case class Attribute[T](register: MultiValueRegister[T] = MultiValueRegister(Map.empty)) {
+case class Attribute[T](register: MultiValueRegister[T]) {
 
   def getAll: List[T] = {
     register.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
