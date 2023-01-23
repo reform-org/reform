@@ -9,7 +9,7 @@
     "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "selenium": "ts-node --esm webapp/tests/selenium/main.ts",
+    "selenium": "node --loader ts-node/esm --async-stack-traces webapp/tests/selenium/main.ts",
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
