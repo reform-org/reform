@@ -44,29 +44,4 @@ private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
 
 case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name, maxHours, accountName)) {
 
-  /* override def getUIAttributes(project: Project): Seq[UIAttribute[Project, _]] =
-    Seq(
-      UIAttribute(
-        project._name,
-        AttributeHandler.string((p, n) =>
-          p.copy(_name = p._name.set(n))
-        ),
-        "Name"
-      ),
-      UIAttribute(
-        project._maxHours,
-        AttributeHandler.int((p, x) =>
-          p.copy(_maxHours = p._maxHours.set(x))
-        ),
-        "Max Hours"
-      ),
-      UIAttribute(
-        project._accountName,
-        AttributeHandler.optionWithDefault("no account",
-          AttributeHandler.string((p, x) =>
-            p.copy(_accountName = p._accountName.set(x))
-          )),
-        "Account Name"
-      )
-    ) */
 }
