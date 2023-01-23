@@ -241,10 +241,10 @@ async function run() {
                     let projectsButton = await random_peer.driver.findElement(By.css(".navbar-center a[href='/projects']"))
                     await projectsButton.click()
 
-                    let projectNameInput = await random_peer.driver.findElement(By.css("input[placeholder='New Project Name']"))
-                    let maxHoursInput = await random_peer.driver.findElement(By.css("input[placeholder='0']"))
-                    let accountInput = await random_peer.driver.findElement(By.css("input[placeholder='Some account']"))
-                    let addProjectButton = await random_peer.driver.findElement(By.xpath(`//button[text()="Add Project"]`))
+                    let projectNameInput = await random_peer.driver.findElement(By.css("input[placeholder='Name']"))
+                    let maxHoursInput = await random_peer.driver.findElement(By.css("input[placeholder='Max Hours']"))
+                    let accountInput = await random_peer.driver.findElement(By.css("input[placeholder='Account']"))
+                    let addProjectButton = await random_peer.driver.findElement(By.xpath(`//button[text()="Add Entity"]`))
 
                     let projectName = chance.animal()
                     let maxHours = chance.integer({ min: 1, max: 10 })
