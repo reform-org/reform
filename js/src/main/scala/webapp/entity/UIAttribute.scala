@@ -19,7 +19,7 @@ case class UIAttribute[EntityType, AttributeType](
       _.map(e => {
         val attr = getter(e)
         setter(e, attr.set(writeConverter(x)))
-      })
+      }),
     )
   }
 
@@ -28,7 +28,7 @@ case class UIAttribute[EntityType, AttributeType](
   }
 
   def renderEdit(entityVar: Var[Option[EntityType]]) = {
-    entityVar map {
+    entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
         td(

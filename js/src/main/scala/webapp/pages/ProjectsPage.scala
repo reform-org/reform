@@ -23,7 +23,7 @@ private val name: UIAttribute[Project, String] = UIAttribute(
   (p, a) => p.copy(_name = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Name"
+  placeholder = "Name",
 )
 
 case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name)) {
