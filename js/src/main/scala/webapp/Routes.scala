@@ -26,20 +26,22 @@ import webapp.services.Page
 
 object Routes {
   val fromPath: Path => Page = {
-    case Root              => HomePage()
-    case Root / "login"    => LoginPage()
-    case Root / "projects" => ProjectsPage()
-    case Root / "users"    => UsersPage()
-    case Root / "hiwis"    => HiwisPage()
-    case Root / "webrtc"   => WebRTCHandling();
+    case Root                   => HomePage()
+    case Root / "login"         => LoginPage()
+    case Root / "projects"      => ProjectsPage()
+    case Root / "users"         => UsersPage()
+    case Root / "hiwis"         => HiwisPage()
+    case Root / "webrtc"        => WebRTCHandling();
+    case Root / "paymentlevels" => PaymentLevelsPage();
   }
 
   val toPath: Page => Path = {
-    case HomePage()       => Root / ""
-    case LoginPage()      => Root / "login"
-    case ProjectsPage()   => Root / "projects"
-    case UsersPage()      => Root / "users"
-    case HiwisPage()      => Root / "hiwis"
-    case WebRTCHandling() => Root / "webrtc";
+    case HomePage()          => Root / ""
+    case LoginPage()         => Root / "login"
+    case ProjectsPage()      => Root / "projects"
+    case UsersPage()         => Root / "users"
+    case HiwisPage()         => Root / "hiwis"
+    case WebRTCHandling()    => Root / "webrtc";
+    case PaymentLevelsPage() => Root / "paymentlevels";
   }
 }
