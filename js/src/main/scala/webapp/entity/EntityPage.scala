@@ -98,7 +98,7 @@ private class EntityRow[T <: Entity[T]](
                     tr(
                       data.id := syncedEntity.id,
                       uiAttributes.map(attr => {
-                        td(duplicateValuesHandler(attr.getter(p).getAll.map(_.toString())))
+                        td(duplicateValuesHandler(attr.getter(p).getAll.map(attr.readConverter(_))))
                       }),
                       td(
                         button(
