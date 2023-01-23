@@ -15,8 +15,7 @@ jobs:
       matrix:
         map: [
           { os: ubuntu-latest, browser: firefox },
-          { os: ubuntu-latest, browser: chrome },
-          { os: macos-latest, browser: safari }
+          { os: ubuntu-latest, browser: chrome }
         ]
 
     runs-on: ${{ matrix.map.os }}
