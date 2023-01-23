@@ -87,7 +87,7 @@ def navigationMenu(using services: Services)(classes: String) = {
       ),
     ),
     li(
-      a( 
+      a(
         "WebRTC",
         href := "/webrtc",
         onClick.foreach(e => {

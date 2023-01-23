@@ -54,8 +54,7 @@ private class EntityRow[T <: Entity[T]](
                 ui.renderEdit(editingValue)
               }),
               td(
-                cls := "w-1/6 space-x-1 space-y-1",
-                {
+                cls := "w-1/6 space-x-1 space-y-1", {
                   existingValue match {
                     case Some(p) => {
                       List(
@@ -183,7 +182,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
         cls := "items-center w-full px-4 py-4 mx-auto my-5 bg-white rounded-lg shadow-md",
         table(
           cls := "w-full text-left table-auto border-separate border-spacing-y-4",
-          //cls := "table-auto",
+          // cls := "table-auto",
           thead(
             tr(
               uiAttributes.map(a => th(a.placeholder)),
@@ -195,7 +194,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             newUserRow.render(),
           ),
         ),
-      )
+      ),
     )
   }
 
