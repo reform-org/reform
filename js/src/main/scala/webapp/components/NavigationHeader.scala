@@ -77,6 +77,17 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
+        "Paymentlevels",
+        href := "/paymentlevels",
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          services.routing.to(PaymentLevelsPage(), true)
+        }),
+      ),
+    ),
+    li(
+      a(
         "WebRTC",
         href := "/webrtc",
         onClick.foreach(e => {

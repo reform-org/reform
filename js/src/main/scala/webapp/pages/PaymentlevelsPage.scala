@@ -13,16 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
+package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
 
-private val name: UIAttribute[PaymentLevel, String] = UIAttribute(
-  _._name,
-  (p, a) => p.copy(_name = a),
+private val title: UIAttribute[PaymentLevel, String] = UIAttribute(
+  _._title,
+  (p, a) => p.copy(_title = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Name",
+  placeholder = "Title",
 )
 
-case class PaymentLevelsPage() extends EntityPage[PaymentLevel](Repositories.paymentLevels, Seq(name)) {}
+case class PaymentLevelsPage() extends EntityPage[PaymentLevel](Repositories.paymentLevels, Seq(title)) {}
