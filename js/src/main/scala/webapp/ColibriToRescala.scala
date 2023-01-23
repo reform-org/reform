@@ -18,15 +18,16 @@ package webapp
 import colibri.{Cancelable, Observer, Sink}
 import rescala.default.*
 import rescala.operator.Pulse
+import rescala.core.Scheduler
 
-given (using scheduler: Scheduler): Sink[Evt] with {
+given (using scheduler: Scheduler[State]): Sink[Evt] with {
   def unsafeOnNext[A](sink: Evt[A])(value: A): Unit = sink.fire(value)
   def unsafeOnError[A](sink: Evt[A])(error: Throwable): Unit = scheduler.forceNewTransaction(sink) { implicit turn =>
     sink.admitPulse(Pulse.Exceptional(error))
   }
 }
 
-given (using scheduler: Scheduler): Sink[Var] with {
+given (using scheduler: Scheduler[State]): Sink[Var] with {
   def unsafeOnNext[A](sink: Var[A])(value: A): Unit = sink.set(value)
   def unsafeOnError[A](sink: Var[A])(error: Throwable): Unit = scheduler.forceNewTransaction(sink) { implicit turn =>
     sink.admitPulse(Pulse.Exceptional(error))

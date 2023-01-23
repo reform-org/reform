@@ -29,6 +29,7 @@ import loci.registry.Binding
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
+import rescala.core.Disconnectable
 
 /** @param name
   *   The name/type of the thing to sync

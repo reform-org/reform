@@ -1,8 +1,8 @@
-import { Builder, By, checkedLocator, Condition, until, WebDriver, WebElement } from 'selenium-webdriver';
+import { Builder, By, Condition, until, WebDriver } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
+import safari from 'selenium-webdriver/safari.js';
 import { Chance } from 'chance';
-import { Driver } from 'selenium-webdriver/chrome';
 import { strict as assert } from 'node:assert';
 
 // The code in here (especially the selenium communication) needs to be optimized well because it will be run a lot in tests.
@@ -117,8 +117,13 @@ class Peer {
                 .windowSize({ width: 2000, height: 750 })
                 .headless()
             )
-            //.setFirefoxOptions(/* ... */)
+            .setFirefoxOptions(new firefox.Options()
+                .windowSize({ width: 2000, height: 750 })
+                .headless())
+            .setSafariOptions(new safari.Options())
             .build();
+
+        await driver.manage().window().setRect({x: 0, y: 0, width: 2000, height: 750})
 
         await driver.manage().setTimeouts({
             script: 10000,
@@ -411,4 +416,4 @@ async function run() {
     }
 }
 
-run()
+await run()
