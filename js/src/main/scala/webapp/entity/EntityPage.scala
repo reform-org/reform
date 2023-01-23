@@ -42,17 +42,17 @@ private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
     existingValue: Option[Synced[T]],
     editingValue: Var[Option[T]],
-    uiAttributes: List[UIAttribute[T, ? <: Any]]
+    uiAttributes: Seq[UIAttribute[T, ? <: Any]]
 )(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render() = {
     editingValue.map(editingNow => {
       val res = editingNow match {
-        case Some(editingNow) => {
+        case Some(_) => {
           val res = Some(
             tr(
               uiAttributes.map(ui => {
-                ui.render(editingValue)
+                ui.renderEdit(editingValue)
               }),
               td(
                 {
@@ -99,14 +99,14 @@ private class EntityRow[T <: Entity[T]](
                   Some(
                     tr(
                       data.id := syncedEntity.id,
-                      uiAttributes.map(ui => {
-                        td(duplicateValuesHandler(ui.attribute.getAll.map(_.toString())))
+                      uiAttributes.map(attr => {
+                        td(duplicateValuesHandler(attr.getter(p).getAll.map(_.toString())))
                       }),
                       td(
                         button(
                           cls := "btn",
                           "Edit",
-                          onClick.foreach(_ => edit()),
+                          onClick.foreach(_ => startEditing()),
                         ),
                         button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(syncedEntity))),
                       ),
@@ -162,15 +162,15 @@ private class EntityRow[T <: Entity[T]](
     })
   }
 
-  def edit() = {
+  private def startEditing(): Unit = {
     editingValue.set(Some(existingValue.get.signal.now))
   }
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
+abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using bottom: Bottom[T], lattice: Lattice[T]) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](repository, None, Var(Some(bottom.empty)), getUIAttributes)
+    EntityRow[T](repository, None, Var(Some(bottom.empty)), uiAttributes)
 
   def render(using services: Services): VNode = {
     div(
@@ -179,7 +179,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T])(using botto
         cls := "table-auto",
         thead(
           tr(
-            getUIAttributes.map(attr => th(attr.placeholder)),
+            uiAttributes.map(a => th(a.placeholder)),
             th("Stuff"),
           ),
         ),
@@ -196,10 +196,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T])(using botto
   ) =
     entities.map(
       _.map(syncedEntity => {
-        EntityRow[T](repository, Some(syncedEntity), Var(None), getUIAttributes).render()
+        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
       }),
     )
-
-  // TODO: Might be only computed once
-  def getUIAttributes: List[UIAttribute[T, ? <: Any]]
 }

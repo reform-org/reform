@@ -18,4 +18,39 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-case class ProjectsPage() extends EntityPage[Project](Repositories.projects) {}
+private val name: UIAttribute[Project, String] = UIAttribute(
+  _._name,
+  (p, a) => p.copy(_name = a),
+  readConverter = identity,
+  writeConverter = identity,
+  placeholder = "Name"
+)
+
+case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name)) {
+
+  /* override def getUIAttributes(project: Project): Seq[UIAttribute[Project, _]] =
+    Seq(
+      UIAttribute(
+        project._name,
+        AttributeHandler.string((p, n) =>
+          p.copy(_name = p._name.set(n))
+        ),
+        "Name"
+      ),
+      UIAttribute(
+        project._maxHours,
+        AttributeHandler.int((p, x) =>
+          p.copy(_maxHours = p._maxHours.set(x))
+        ),
+        "Max Hours"
+      ),
+      UIAttribute(
+        project._accountName,
+        AttributeHandler.optionWithDefault("no account",
+          AttributeHandler.string((p, x) =>
+            p.copy(_accountName = p._accountName.set(x))
+          )),
+        "Account Name"
+      )
+    ) */
+}
