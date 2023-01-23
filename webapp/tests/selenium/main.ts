@@ -1,6 +1,7 @@
 import { Builder, By, checkedLocator, Condition, until, WebDriver, WebElement } from 'selenium-webdriver';
 import chrome from 'selenium-webdriver/chrome.js';
 import firefox from 'selenium-webdriver/firefox.js';
+import safari from 'selenium-webdriver/safari.js';
 import { Chance } from 'chance';
 import { Driver } from 'selenium-webdriver/chrome';
 import { strict as assert } from 'node:assert';
@@ -117,7 +118,10 @@ class Peer {
                 .windowSize({ width: 2000, height: 750 })
                 .headless()
             )
-            //.setFirefoxOptions(/* ... */)
+            .setFirefoxOptions(new firefox.Options()
+                .windowSize({ width: 2000, height: 750 })
+                .headless())
+            .setSafariOptions(new safari.Options())
             .build();
 
         await driver.manage().setTimeouts({

@@ -11,8 +11,15 @@ permissions:
 
 jobs:
   build:
+    strategy:
+      matrix:
+        map: [
+          { os: ubuntu-latest, browser: firefox },
+          { os: ubuntu-latest, browser: chrome },
+          { os: macos-latest, browser: safari }
+        ]
 
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.map.os }}
 
     steps:
     - uses: actions/checkout@v3
@@ -32,4 +39,4 @@ jobs:
     - name: Preview
       run: npm run preview &
     - name: Selenium
-      run: npm run selenium
+      run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run selenium
