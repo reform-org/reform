@@ -18,4 +18,28 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-case class UsersPage() extends EntityPage[User](Repositories.users, Seq()) {}
+private val username: UIAttribute[User, String] = UIAttribute(
+  _._username,
+  (p, a) => p.copy(_username = a),
+  readConverter = identity,
+  writeConverter = identity,
+  placeholder = "Username",
+)
+
+private val role: UIAttribute[User, String] = UIAttribute(
+  _._role,
+  (p, a) => p.copy(_role = a),
+  readConverter = identity,
+  writeConverter = identity,
+  placeholder = "Role",
+)
+
+private val comment: UIAttribute[User, Option[String]] = UIAttribute(
+  _._comment,
+  (p, a) => p.copy(_comment = a),
+  readConverter = _.getOrElse("no comment"),
+  writeConverter = Some(_),
+  placeholder = "Comment",
+)
+
+case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}

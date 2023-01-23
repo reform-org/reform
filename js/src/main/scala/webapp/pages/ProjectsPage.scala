@@ -26,7 +26,23 @@ private val name: UIAttribute[Project, String] = UIAttribute(
   placeholder = "Name",
 )
 
-case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name)) {
+private val maxHours: UIAttribute[Project, Int] = UIAttribute(
+  _._maxHours,
+  (p, a) => p.copy(_maxHours = a),
+  readConverter = _.toString,
+  writeConverter = _.toInt,
+  placeholder = "Max Hours",
+)
+
+private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
+  _._accountName,
+  (p, a) => p.copy(_accountName = a),
+  readConverter = _.getOrElse("no account"),
+  writeConverter = Some(_),
+  placeholder = "Account",
+)
+
+case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name, maxHours, accountName)) {
 
   /* override def getUIAttributes(project: Project): Seq[UIAttribute[Project, _]] =
     Seq(
