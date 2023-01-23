@@ -49,11 +49,12 @@ private class EntityRow[T <: Entity[T]](
         case Some(_) => {
           val res = Some(
             tr(
+              cls := "hover:bg-gray-100",
               uiAttributes.map(ui => {
                 ui.renderEdit(editingValue)
               }),
               td(
-                {
+                cls := "w-1/6 space-x-1 space-y-1", {
                   existingValue match {
                     case Some(p) => {
                       List(
@@ -96,6 +97,7 @@ private class EntityRow[T <: Entity[T]](
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
+                      cls := "hover:bg-gray-100",
                       data.id := syncedEntity.id,
                       uiAttributes.map(attr => {
                         td(duplicateValuesHandler(attr.getter(p).getAll.map(attr.readConverter(_))))
@@ -176,17 +178,21 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   def render(using services: Services): VNode = {
     div(
       navigationHeader,
-      table(
-        cls := "table-auto",
-        thead(
-          tr(
-            uiAttributes.map(a => th(a.placeholder)),
-            th("Stuff"),
+      div(
+        cls := "items-center w-full px-4 py-4 mx-auto my-5 bg-white rounded-lg shadow-md",
+        table(
+          cls := "w-full text-left table-auto border-separate border-spacing-y-4",
+          // cls := "table-auto",
+          thead(
+            tr(
+              uiAttributes.map(a => th(a.placeholder)),
+              th("Stuff"),
+            ),
           ),
-        ),
-        tbody(
-          renderEntities(repository.all),
-          newUserRow.render(),
+          tbody(
+            renderEntities(repository.all),
+            newUserRow.render(),
+          ),
         ),
       ),
     )

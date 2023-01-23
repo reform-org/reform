@@ -30,6 +30,7 @@ object Routes {
     case Root / "login"    => LoginPage()
     case Root / "projects" => ProjectsPage()
     case Root / "users"    => UsersPage()
+    case Root / "hiwis"    => HiwisPage()
     case Root / "webrtc"   => WebRTCHandling();
   }
 
@@ -38,6 +39,7 @@ object Routes {
     case LoginPage()      => Root / "login"
     case ProjectsPage()   => Root / "projects"
     case UsersPage()      => Root / "users"
+    case HiwisPage()      => Root / "hiwis"
     case WebRTCHandling() => Root / "webrtc";
   }
 }
