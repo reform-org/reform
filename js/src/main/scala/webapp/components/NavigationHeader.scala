@@ -77,6 +77,17 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
+        "Hiwis",
+        href := "/hiwis",
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          services.routing.to(HiwisPage(), true)
+        }),
+      ),
+    ),
+    li(
+      a(
         "WebRTC",
         href := "/webrtc",
         onClick.foreach(e => {
