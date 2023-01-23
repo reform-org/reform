@@ -47,7 +47,7 @@ private val eMail: UIAttribute[Hiwi, String] = UIAttribute(
   (p, a) => p.copy(_eMail = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "email",
+  placeholder = "Email",
 )
 
 case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(firstName, lastName, hours, eMail)) {}
