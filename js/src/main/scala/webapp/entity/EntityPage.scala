@@ -40,7 +40,7 @@ private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
     existingValue: Option[Synced[T]],
     editingValue: Var[Option[T]],
-    uiAttributes: Seq[UIAttribute[T, ? <: Any]],
+    uiAttributes: Seq[UICommonAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render() = {
@@ -99,8 +99,8 @@ private class EntityRow[T <: Entity[T]](
                     tr(
                       cls := "hover:bg-gray-100",
                       data.id := syncedEntity.id,
-                      uiAttributes.map(attr => {
-                        td(duplicateValuesHandler(attr.getter(p).getAll.map(attr.readConverter(_))))
+                      uiAttributes.map(ui => {
+                        ui.render(p)
                       }),
                       td(
                         button(
@@ -167,7 +167,8 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
+abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UICommonAttribute[T, ? <: Any]])(
+    using
     bottom: Bottom[T],
     lattice: Lattice[T],
 ) extends Page {
