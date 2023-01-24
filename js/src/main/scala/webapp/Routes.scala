@@ -33,6 +33,7 @@ object Routes {
     case Root / "hiwis"         => HiwisPage()
     case Root / "webrtc"        => WebRTCHandling();
     case Root / "paymentlevels" => PaymentLevelsPage();
+    case Root / "salarychanges" => SalaryChangesPage();
   }
 
   val toPath: Page => Path = {
@@ -43,5 +44,6 @@ object Routes {
     case HiwisPage()         => Root / "hiwis"
     case WebRTCHandling()    => Root / "webrtc";
     case PaymentLevelsPage() => Root / "paymentlevels";
+    case SalaryChangesPage() => Root / "salarychanges"
   }
 }
