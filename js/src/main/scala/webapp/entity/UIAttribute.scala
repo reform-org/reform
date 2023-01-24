@@ -33,7 +33,7 @@ abstract class UICommonAttribute[EntityType, AttributeType](
 
   def render(entity: EntityType) = {
     val attr = getter(entity)
-    td(duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+    td(cls:="px-6 py-4", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
   def renderEdit(entityVar: Var[Option[EntityType]]): Signal[Option[outwatch.VNode]]
@@ -59,6 +59,7 @@ case class UIAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
+          cls:="px-6 py-4", 
           input(
             tpe := fieldType,
             value := attr.getAll.map(x => readConverter(x)).mkString("/"),
@@ -96,6 +97,7 @@ case class UIDateAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
+          cls:="px-6 py-4", 
           input(
             tpe := "date",
             minAttr := min,
@@ -129,7 +131,7 @@ case class UISelectAttribute[EntityType, AttributeType](
 
   override def render(entity: EntityType) = {
     val attr = getter(entity)
-    td(duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
+    td(cls:="px-6 py-4", duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
   }
 
   def renderEdit(entityVar: Var[Option[EntityType]]) = {
@@ -137,6 +139,7 @@ case class UISelectAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
+          cls:="px-6 py-4", 
           select(
             onInput.value --> {
               val evt = Evt[String]()

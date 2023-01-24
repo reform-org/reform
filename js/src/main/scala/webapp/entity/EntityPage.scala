@@ -49,12 +49,12 @@ private class EntityRow[T <: Entity[T]](
         case Some(_) => {
           val res = Some(
             tr(
-              cls := "hover:bg-gray-100",
+              cls := "border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-700",
               uiAttributes.map(ui => {
                 ui.renderEdit(editingValue)
               }),
               td(
-                cls := "w-1/6 space-x-1 space-y-1", {
+                cls := "px-8 py-4 w-1/5 space-x-1 space-y-1", {
                   existingValue match {
                     case Some(p) => {
                       List(
@@ -97,12 +97,13 @@ private class EntityRow[T <: Entity[T]](
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
-                      cls := "hover:bg-gray-100",
+                      cls := "border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-700",
                       data.id := syncedEntity.id,
                       uiAttributes.map(ui => {
                         ui.render(p)
                       }),
                       td(
+                        cls := "px-8 py-4",
                         button(
                           cls := "btn",
                           "Edit",
@@ -180,14 +181,14 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
     div(
       navigationHeader,
       div(
-        cls := "items-center w-full px-4 py-4 mx-auto my-5 bg-white rounded-lg shadow-md",
+        cls := "relative overflow-x-auto shadow-md sm:rounded-lg pt-4 ",//" px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",
         table(
-          cls := "w-full text-left table-auto border-separate border-spacing-y-4",
+          cls := "w-full text-left table-auto border-collapse ",//border-separate border-spacing-y-4
           // cls := "table-auto",
           thead(
             tr(
-              uiAttributes.map(a => th(a.placeholder)),
-              th("Stuff"),
+              uiAttributes.map(a => th(cls:="px-6 py-4 border-b-2 dark:border-gray-500", a.placeholder)),
+              th(cls:="px-6 py-4 border-b-2 dark:border-gray-500", "Stuff"),
             ),
           ),
           tbody(
