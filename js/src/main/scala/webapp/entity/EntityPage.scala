@@ -167,7 +167,8 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UICommonAttribute[T, ? <: Any]])(using
+abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UICommonAttribute[T, ? <: Any]])(
+    using
     bottom: Bottom[T],
     lattice: Lattice[T],
 ) extends Page {

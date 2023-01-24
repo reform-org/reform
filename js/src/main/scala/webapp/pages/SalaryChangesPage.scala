@@ -26,7 +26,7 @@ private val salaryChangeValue: UIAttribute[SalaryChange, Double] = UIAttribute(
   readConverter = _.toString,
   writeConverter = _.toDouble,
   placeholder = "Value",
-  fieldType = "number"
+  fieldType = "number",
 )
 
 private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = UISelectAttribute(
@@ -36,7 +36,9 @@ private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = 
   readConverter = _.toString,
   writeConverter = _.toString,
   placeholder = "PaymentLevel",
-  options = Repositories.paymentLevels.all.map(list => list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse(""))))),
+  options = Repositories.paymentLevels.all.map(list =>
+    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
+  ),
 )
 
 private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
@@ -46,7 +48,11 @@ private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAt
   editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
   writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
   placeholder = "From",
-  min = "2023-01-24"
+  min = "2023-01-24",
 )
 
-case class SalaryChangesPage() extends EntityPage[SalaryChange](Repositories.salaryChanges, Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate)) {}
+case class SalaryChangesPage()
+    extends EntityPage[SalaryChange](
+      Repositories.salaryChanges,
+      Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
+    ) {}

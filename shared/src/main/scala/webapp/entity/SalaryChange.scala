@@ -23,7 +23,7 @@ case class SalaryChange(
 
   def exists: Attribute[Boolean] = _exists
 
-  def identifier: Attribute[String] = _paymentLevel 
+  def identifier: Attribute[String] = _paymentLevel
 
   def withExists(exists: Boolean): SalaryChange = {
     this.copy(_exists = _exists.set(exists))
