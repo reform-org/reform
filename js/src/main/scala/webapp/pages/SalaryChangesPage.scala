@@ -20,11 +20,11 @@ import webapp.entity.*
 import rescala.default.*
 import webapp.utils.Date
 
-private val salaryChangeValue: UIAttribute[SalaryChange, Double] = UIAttribute(
+private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   _._value,
   (p, a) => p.copy(_value = a),
-  readConverter = _.toString,
-  writeConverter = _.toDouble,
+  readConverter = number => (number / 100.0).toString(),
+  writeConverter = number => Math.round(number.toFloat * 100),
   placeholder = "Value",
   fieldType = "number",
 )

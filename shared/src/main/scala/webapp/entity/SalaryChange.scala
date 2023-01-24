@@ -13,7 +13,7 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class SalaryChange(
-    var _value: Attribute[Double] = Attribute.empty,
+    var _value: Attribute[Int] = Attribute.empty,
     var _paymentLevel: Attribute[String] = Attribute.empty,
     var _fromDate: Attribute[Long] = Attribute.empty,
     var _exists: Attribute[Boolean] = Attribute.empty,
