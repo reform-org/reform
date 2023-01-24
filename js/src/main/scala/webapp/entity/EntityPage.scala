@@ -59,7 +59,7 @@ private class EntityRow[T <: Entity[T]](
                     case Some(p) => {
                       List(
                         button(
-                          cls := "btn",
+                          cls := " btn",
                           idAttr := "add-entity-button",
                           "Save edit",
                           onClick.foreach(_ => createOrUpdate()),
@@ -103,7 +103,8 @@ private class EntityRow[T <: Entity[T]](
                         ui.render(p)
                       }),
                       td(
-                        cls := "px-8 py-4",
+                        cls := "px-8 py-4 w-1/5 space-x-1 space-y-1", 
+                        
                         button(
                           cls := "btn",
                           "Edit",
