@@ -5,7 +5,9 @@ import outwatch.dsl.*
 import rescala.default.*
 import org.scalajs.dom.*
 import webapp.entity.Attribute
+import webapp.Repositories
 import webapp.given
+import webapp.duplicateValuesHandler
 
 class UIOption[NameType](
     val id: String,
@@ -30,7 +32,8 @@ abstract class UICommonAttribute[EntityType, AttributeType](
   }
 
   def render(entity: EntityType) = {
-    td("TODO")
+    val attr = getter(entity)
+    td(duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
   def renderEdit(entityVar: Var[Option[EntityType]]): Signal[Option[outwatch.VNode]]
@@ -123,6 +126,11 @@ case class UISelectAttribute[EntityType, AttributeType](
       writeConverter,
       placeholder,
     ) {
+
+  override def render(entity: EntityType) = {
+    val attr = getter(entity)
+    td(duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
+  }
 
   def renderEdit(entityVar: Var[Option[EntityType]]) = {
     entityVar.map {

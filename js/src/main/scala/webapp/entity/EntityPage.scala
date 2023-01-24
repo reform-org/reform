@@ -99,8 +99,8 @@ private class EntityRow[T <: Entity[T]](
                     tr(
                       cls := "hover:bg-gray-100",
                       data.id := syncedEntity.id,
-                      uiAttributes.map(attr => {
-                        td(duplicateValuesHandler(attr.getter(p).getAll.map(attr.readConverter(_))))
+                      uiAttributes.map(ui => {
+                        ui.render(p)
                       }),
                       td(
                         button(
