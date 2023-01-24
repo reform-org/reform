@@ -18,28 +18,26 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val name: UIAttribute[Project, String] = UIAttribute(
-  _._name,
-  (p, a) => p.copy(_name = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Name",
-)
+private val name = UIAttributeBuilder.string
+  .withPlaceholder("Name")
+  .bind[Project](
+    _.name,
+    (p, a) => p.copy(name = a),
+  )
 
-private val maxHours: UIAttribute[Project, Int] = UIAttribute(
-  _._maxHours,
-  (p, a) => p.copy(_maxHours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  placeholder = "Max Hours",
-)
+private val maxHours = UIAttributeBuilder.int
+  .withPlaceholder("Max Hours")
+  .bind[Project](
+    _.maxHours,
+    (p, a) => p.copy(maxHours = a),
+  )
 
-private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
-  _._accountName,
-  (p, a) => p.copy(_accountName = a),
-  readConverter = _.getOrElse("no account"),
-  writeConverter = Some(_),
-  placeholder = "Account",
-)
+private val accountName = UIAttributeBuilder.string
+  .withPlaceholder("Account")
+  .withDefaultValue("no account")
+  .bind[Project](
+    _.accountName,
+    (p, a) => p.copy(accountName = a),
+  )
 
 case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name, maxHours, accountName)) {}
