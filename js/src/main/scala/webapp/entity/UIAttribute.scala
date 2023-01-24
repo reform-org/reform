@@ -135,6 +135,7 @@ case class UISelectAttribute[EntityType, AttributeType](
               evt.observe(x => setFromString(entityVar, x))
               evt
             },
+            option(value := "", "Bitte wählen..."),
             options.map(o => o.map(v => option(value := v.id, v.name))),
           ),
         )
