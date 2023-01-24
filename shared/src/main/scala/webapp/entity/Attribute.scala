@@ -7,8 +7,8 @@ import webapp.Codecs.myReplicaID
 
 case class Attribute[T](register: MultiValueRegister[T]) {
 
-  def getAll: List[T] = {
-    register.versions.toList.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
+  def getAll: Seq[T] = {
+    register.versions.toSeq.sortBy(_._1)(using VectorClock.vectorClockTotalOrdering).map(_._2)
   }
 
   def get: Option[T] = {
