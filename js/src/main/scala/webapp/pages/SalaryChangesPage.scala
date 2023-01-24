@@ -48,7 +48,7 @@ private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAt
   editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
   writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
   placeholder = "From",
-  min = "2023-01-24",
+  // min = "2023-01-24",
 )
 
 case class SalaryChangesPage()
