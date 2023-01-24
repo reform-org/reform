@@ -3,8 +3,8 @@ package webapp
 import outwatch.*
 import outwatch.dsl.*
 
-def duplicateValuesHandler[T <: outwatch.VModifier](values: List[T]) = {
-  List(
+def duplicateValuesHandler[T <: outwatch.VModifier](values: Seq[T]) = {
+  Seq(
     {
       Some(span(values.headOption.getOrElse("not initialized")))
     }, {
