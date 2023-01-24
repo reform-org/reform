@@ -42,7 +42,7 @@ object Routes {
     case ProjectsPage()      => Root / "projects"
     case UsersPage()         => Root / "users"
     case HiwisPage()         => Root / "hiwis"
-    case WebRTCHandling()    => Root / "webrtc";
+    case WebRTCHandling(_)   => Root / "webrtc";
     case PaymentLevelsPage() => Root / "paymentlevels";
     case SalaryChangesPage() => Root / "salarychanges"
   }

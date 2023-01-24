@@ -21,9 +21,7 @@ import webapp.components.navigationHeader
 import webapp.services.Page
 import webapp.utils.Base64
 
-case class WebRTCHandling() extends Page {
-
-  private val state: Var[State] = Var(Init)
+case class WebRTCHandling(private val state: Var[State] = Var(Init)) extends Page {
 
   override def render(using services: Services): VNode = div(
     navigationHeader,
