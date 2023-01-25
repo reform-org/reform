@@ -13,10 +13,10 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class User(
-    var _username: Attribute[String] = Attribute.empty,
-    var _role: Attribute[String] = Attribute.empty,
-    var _comment: Attribute[Option[String]] = Attribute.empty,
-    var _exists: Attribute[Boolean] = Attribute.empty,
+    var _username: Attribute[String] = Attribute.empty.set(""),
+    var _role: Attribute[String] = Attribute.empty.set(""),
+    var _comment: Attribute[Option[String]] = Attribute.empty.set(None),
+    var _exists: Attribute[Boolean] = Attribute.empty.set(true),
 ) extends Entity[User]
     derives DecomposeLattice,
       Bottom {

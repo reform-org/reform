@@ -12,10 +12,10 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class Project(
-    _name: Attribute[String] = Attribute.empty,
-    _maxHours: Attribute[Int] = Attribute.empty,
-    _accountName: Attribute[Option[String]] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    _name: Attribute[String] = Attribute.empty.set(""),
+    _maxHours: Attribute[Int] = Attribute.empty.set(0),
+    _accountName: Attribute[Option[String]] = Attribute.empty.set(None),
+    _exists: Attribute[Boolean] = Attribute.empty.set(true),
 ) extends Entity[Project]
     derives DecomposeLattice,
       Bottom {

@@ -13,10 +13,10 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class SalaryChange(
-    var _value: Attribute[Int] = Attribute.empty,
-    var _paymentLevel: Attribute[String] = Attribute.empty,
-    var _fromDate: Attribute[Long] = Attribute.empty,
-    var _exists: Attribute[Boolean] = Attribute.empty,
+    var _value: Attribute[Int] = Attribute.empty.set(0),
+    var _paymentLevel: Attribute[String] = Attribute.empty.set(""),
+    var _fromDate: Attribute[Long] = Attribute.empty.set(0),
+    var _exists: Attribute[Boolean] = Attribute.empty.set(true),
 ) extends Entity[SalaryChange]
     derives DecomposeLattice,
       Bottom {

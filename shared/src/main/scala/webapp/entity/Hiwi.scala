@@ -12,11 +12,11 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class Hiwi(
-    _firstName: Attribute[String] = Attribute.empty,
-    _lastName: Attribute[String] = Attribute.empty,
-    _hours: Attribute[Int] = Attribute.empty,
-    _eMail: Attribute[String] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    _firstName: Attribute[String] = Attribute.empty.set(""),
+    _lastName: Attribute[String] = Attribute.empty.set(""),
+    _hours: Attribute[Int] = Attribute.empty.set(0),
+    _eMail: Attribute[String] = Attribute.empty.set(""),
+    _exists: Attribute[Boolean] = Attribute.empty.set(true),
 ) extends Entity[Hiwi]
     derives DecomposeLattice,
       Bottom {

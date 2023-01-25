@@ -12,8 +12,8 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class PaymentLevel(
-    _title: Attribute[String] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    _title: Attribute[String] = Attribute.empty.set(""),
+    _exists: Attribute[Boolean] = Attribute.empty.set(true),
 ) extends Entity[PaymentLevel]
     derives DecomposeLattice,
       Bottom {
