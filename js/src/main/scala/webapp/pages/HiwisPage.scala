@@ -18,36 +18,32 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val firstName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._firstName,
-  (p, a) => p.copy(_firstName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "First Name",
-)
+private val firstName = UIAttributeBuilder.string
+  .withPlaceholder("First Name")
+  .bind[Hiwi](
+    _.firstName,
+    (p, a) => p.copy(firstName = a),
+  )
 
-private val lastName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._lastName,
-  (p, a) => p.copy(_lastName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Last Name",
-)
+private val lastName = UIAttributeBuilder.string
+  .withPlaceholder("Last Name")
+  .bind[Hiwi](
+    _.lastName,
+    (p, a) => p.copy(lastName = a),
+  )
 
-private val hours: UIAttribute[Hiwi, Int] = UIAttribute(
-  _._hours,
-  (p, a) => p.copy(_hours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  placeholder = "Hours",
-)
+private val hours = UIAttributeBuilder.int
+  .withPlaceholder("Hours")
+  .bind[Hiwi](
+    _.hours,
+    (p, a) => p.copy(hours = a),
+  )
 
-private val eMail: UIAttribute[Hiwi, String] = UIAttribute(
-  _._eMail,
-  (p, a) => p.copy(_eMail = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Email",
-)
+private val eMail = UIAttributeBuilder.string
+  .withPlaceholder("Email")
+  .bind[Hiwi](
+    _.eMail,
+    (p, a) => p.copy(eMail = a),
+  )
 
 case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(firstName, lastName, hours, eMail)) {}

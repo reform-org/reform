@@ -23,7 +23,7 @@ import webapp.utils.Date
 private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   _._value,
   (p, a) => p.copy(_value = a),
-  readConverter = number => (number / 100.0).toString(),
+  readConverter = number => (number / 100.0).toString,
   writeConverter = number => Math.round(number.toFloat * 100),
   placeholder = "Value",
   fieldType = "number",
@@ -33,11 +33,11 @@ private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = 
   _._paymentLevel,
   (p, a) => p.copy(_paymentLevel = a),
   // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
-  readConverter = _.toString,
-  writeConverter = _.toString,
+  readConverter = identity,
+  writeConverter = identity,
   placeholder = "PaymentLevel",
   options = Repositories.paymentLevels.all.map(list =>
-    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
+    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
   ),
 )
 
