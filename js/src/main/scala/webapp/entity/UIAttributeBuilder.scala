@@ -9,11 +9,10 @@ case class UIAttributeBuilder[AttributeType](
   def withPlaceholder(placeholder: String): UIAttributeBuilder[AttributeType] =
     copy(placeholder = placeholder)
 
-  def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]]
-    = copy(
-      readConverter = a => readConverter(a.getOrElse(default)),
-      writeConverter = s => Some(writeConverter(s)),
-    )
+  def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] = copy(
+    readConverter = a => readConverter(a.getOrElse(default)),
+    writeConverter = s => Some(writeConverter(s)),
+  )
 
   def bind[EntityType](
       getter: EntityType => Attribute[AttributeType],
@@ -24,9 +23,7 @@ case class UIAttributeBuilder[AttributeType](
 
 object UIAttributeBuilder {
 
-  val string: UIAttributeBuilder[String]
-    = UIAttributeBuilder(identity, identity)
+  val string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
-  val int: UIAttributeBuilder[Int]
-    = UIAttributeBuilder(_.toString, _.toInt)
+  val int: UIAttributeBuilder[Int] = UIAttributeBuilder(_.toString, _.toInt)
 }

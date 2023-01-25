@@ -18,28 +18,26 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val username: UIAttribute[User, String] = UIAttribute(
-  _._username,
-  (p, a) => p.copy(_username = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Username",
-)
+private val username = UIAttributeBuilder.string
+  .withPlaceholder("Username")
+  .bind[User](
+    _.username,
+    (p, a) => p.copy(username = a),
+  )
 
-private val role: UIAttribute[User, String] = UIAttribute(
-  _._role,
-  (p, a) => p.copy(_role = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Role",
-)
+private val role = UIAttributeBuilder.string
+  .withPlaceholder("Role")
+  .bind[User](
+    _._role,
+    (p, a) => p.copy(_role = a),
+  )
 
-private val comment: UIAttribute[User, Option[String]] = UIAttribute(
-  _._comment,
-  (p, a) => p.copy(_comment = a),
-  readConverter = _.getOrElse("no comment"),
-  writeConverter = Some(_),
-  placeholder = "Comment",
-)
+private val comment = UIAttributeBuilder.string
+  .withPlaceholder("Comment")
+  .withDefaultValue("no comment")
+  .bind[User](
+    _.comment,
+    (p, a) => p.copy(comment = a),
+  )
 
 case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}

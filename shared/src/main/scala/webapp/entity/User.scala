@@ -13,9 +13,9 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class User(
-    var _username: Attribute[String] = Attribute.empty,
+    var username: Attribute[String] = Attribute.empty,
     var _role: Attribute[String] = Attribute.empty,
-    var _comment: Attribute[Option[String]] = Attribute.empty,
+    var comment: Attribute[Option[String]] = Attribute.empty,
     var _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[User]
     derives DecomposeLattice,
@@ -23,7 +23,7 @@ case class User(
 
   def exists: Attribute[Boolean] = _exists
 
-  def identifier: Attribute[String] = _username
+  def identifier: Attribute[String] = username
 
   def withExists(exists: Boolean): User = {
     this.copy(_exists = _exists.set(exists))
