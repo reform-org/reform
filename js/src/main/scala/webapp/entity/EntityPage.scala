@@ -49,12 +49,12 @@ private class EntityRow[T <: Entity[T]](
         case Some(_) => {
           val res = Some(
             tr(
-              cls := "border-b hover:bg-violet-100 dark:hover:bg-violet-900 dark:border-violet-900", // "border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-700",
+              cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
               uiAttributes.map(ui => {
                 ui.renderEdit(editingValue)
               }),
               td(
-                cls := "px-8 py-4 w-1/5 space-x-1 space-y-1", {
+                cls := "py-1 space-x-1 w-1/6", {
                   existingValue match {
                     case Some(p) => {
                       List(
@@ -83,7 +83,7 @@ private class EntityRow[T <: Entity[T]](
                   }
                 },
                 existingValue.map(p => {
-                  button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(p)))
+                  button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(p)))
                 }),
               ),
             ),
@@ -97,19 +97,19 @@ private class EntityRow[T <: Entity[T]](
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
-                      cls := "border-b hover:bg-violet-100 dark:hover:bg-violet-900 dark:border-violet-900", // "border-b hover:bg-gray-100 dark:hover:bg-gray-600 dark:border-gray-700",
+                      cls := "border-b hover:bg-violet-100 dark:hover:bg-gray-600 dark:border-gray-700", // "border-b hover:bg-gray-100 dark:hover:bg-violet-900 dark:border-violet-900",
                       data.id := syncedEntity.id,
                       uiAttributes.map(ui => {
                         ui.render(p)
                       }),
                       td(
-                        cls := "px-8 py-4 w-1/5 space-x-1 space-y-1",
+                        cls := "py-1 space-x-1 w-1/6",
                         button(
                           cls := "btn",
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(syncedEntity))),
+                        button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(syncedEntity))),
                       ),
                     ),
                   )
@@ -187,8 +187,8 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
           // cls := "table-auto",
           thead(
             tr(
-              uiAttributes.map(a => th(cls := "px-6 py-4 border-b-2 dark:border-violet-900", a.placeholder)),
-              th(cls := "px-6 py-4 border-b-2 dark:border-violet-900", "Stuff"),
+              uiAttributes.map(a => th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", a.placeholder)),
+              th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", "Stuff"),
             ),
           ),
           tbody(
