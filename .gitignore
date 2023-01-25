@@ -72,3 +72,6 @@ out/
 
 # Local Netlify folder
 .netlify
+
+# PDFs in assets
+public/*.pdf
