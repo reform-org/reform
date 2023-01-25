@@ -110,6 +110,17 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
+        "Suvis",
+        href := "/suvis",
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          services.routing.to(SuvisPage(), true)
+        }),
+      ),
+    ),
+    li(
+      a(
         "WebRTC",
         href := "/webrtc",
         onClick.foreach(e => {
