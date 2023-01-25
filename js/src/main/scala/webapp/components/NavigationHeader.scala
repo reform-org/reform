@@ -110,12 +110,12 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
-        "Suvis",
-        href := "/suvis",
+        "Supervisors",
+        href := "/supervisors",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SuvisPage(), true)
+          services.routing.to(SupervisorsPage(), true)
         }),
       ),
     ),
