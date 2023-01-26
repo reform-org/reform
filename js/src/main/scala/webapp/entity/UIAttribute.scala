@@ -65,7 +65,7 @@ case class UIAttribute[EntityType, AttributeType](
             `type` := fieldType,
             VModifier.attr("form") := formAttr, // TODO FIXME check browser support
             VModifier.prop("required") := required,
-            value := attr.getAll.map(x => readConverter(x)).mkString("/"),
+            value := attr.get.map(x => readConverter(x)).getOrElse(""),
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))
@@ -73,6 +73,16 @@ case class UIAttribute[EntityType, AttributeType](
             },
             VModifier.prop("placeholder") := placeholder,
           ),
+          if (attr.getAll.size > 1) {
+            Some(
+              p(
+                "Conflicting values: ",
+                attr.getAll.map(x => readConverter(x)).mkString("/"),
+              ),
+            )
+          } else {
+            None
+          },
         )
       })
     }
@@ -104,13 +114,23 @@ case class UIDateAttribute[EntityType, AttributeType](
             `type` := "date",
             VModifier.attr("form") := formAttr, // TODO FIXME check browser support
             minAttr := min,
-            value := attr.getAll.map(x => editConverter(x)).mkString("/"),
+            value := attr.get.map(x => editConverter(x)).getOrElse(""),
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))
               evt
             },
           ),
+          if (attr.getAll.size > 1) {
+            Some(
+              p(
+                "Conflicting values: ",
+                attr.getAll.map(x => readConverter(x)).mkString("/"),
+              ),
+            )
+          } else {
+            None
+          },
         )
       })
     }
@@ -150,8 +170,24 @@ case class UISelectAttribute[EntityType, AttributeType](
               evt
             },
             option(value := "", "Bitte wählen..."),
-            options.map(o => o.map(v => option(value := v.id, v.name))),
+            options.map(o =>
+              o.map(v => option(value := v.id, selected := Some(v.id) == attr.get.map(x => readConverter(x)), v.name)),
+            ),
           ),
+          if (attr.getAll.size > 1) {
+            Some(
+              p(
+                "Conflicting values: ", {
+                  options
+                    .map(o => o.filter(p => attr.getAll.map(readConverter).contains(p.id)).map(v => v.name))
+                    .flatten
+                    .map(v => v.mkString("/"))
+                },
+              ),
+            )
+          } else {
+            None
+          },
         )
       })
     }
