@@ -24,6 +24,8 @@ private val username: UIAttribute[User, String] = UIAttribute(
   readConverter = identity,
   writeConverter = identity,
   placeholder = "Username",
+  fieldType = "text",
+  required = true,
 )
 
 private val role: UIAttribute[User, String] = UIAttribute(
@@ -32,6 +34,8 @@ private val role: UIAttribute[User, String] = UIAttribute(
   readConverter = identity,
   writeConverter = identity,
   placeholder = "Role",
+  fieldType = "text",
+  required = true,
 )
 
 private val comment: UIAttribute[User, Option[String]] = UIAttribute(
@@ -40,6 +44,8 @@ private val comment: UIAttribute[User, Option[String]] = UIAttribute(
   readConverter = _.getOrElse("no comment"),
   writeConverter = Some(_),
   placeholder = "Comment",
+  fieldType = "text",
+  required = false, // TODO FIXME this probably still has the not initialized issue
 )
 
 case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}

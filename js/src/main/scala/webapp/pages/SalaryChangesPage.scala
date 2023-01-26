@@ -27,6 +27,7 @@ private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   writeConverter = number => Math.round(number.toFloat * 100),
   placeholder = "Value",
   fieldType = "number",
+  required = true,
 )
 
 private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = UISelectAttribute(

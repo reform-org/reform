@@ -51,18 +51,26 @@ private class EntityRow[T <: Entity[T]](
             tr(
               cls := "hover:bg-gray-100",
               uiAttributes.map(ui => {
-                ui.renderEdit(editingValue)
+                ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
               }),
               td(
-                cls := "w-1/6 space-x-1 space-y-1", {
+                cls := "w-1/6 space-x-1 space-y-1",
+                form(
+                  idAttr := s"form-${existingValue.map(_.id)}",
+                  onSubmit.foreach(e => {
+                    e.preventDefault()
+                    createOrUpdate()
+                  }),
+                ), {
                   existingValue match {
                     case Some(p) => {
                       List(
                         button(
                           cls := "btn",
+                          VModifier.attr("form") := s"form-${existingValue.map(_.id)}",
+                          `type` := "submit",
                           idAttr := "add-entity-button",
                           "Save edit",
-                          onClick.foreach(_ => createOrUpdate()),
                         ),
                         button(
                           cls := "btn",
@@ -75,9 +83,10 @@ private class EntityRow[T <: Entity[T]](
                     case None => {
                       button(
                         cls := "btn",
+                        VModifier.attr("form") := s"form-${existingValue.map(_.id)}",
+                        `type` := "submit",
                         idAttr := "add-entity-button",
                         "Add Entity",
-                        onClick.foreach(_ => createOrUpdate()),
                       )
                     }
                   }

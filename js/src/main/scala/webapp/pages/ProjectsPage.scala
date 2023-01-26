@@ -24,6 +24,8 @@ private val name: UIAttribute[Project, String] = UIAttribute(
   readConverter = identity,
   writeConverter = identity,
   placeholder = "Name",
+  fieldType = "text",
+  required = true,
 )
 
 private val maxHours: UIAttribute[Project, Int] = UIAttribute(
@@ -32,6 +34,8 @@ private val maxHours: UIAttribute[Project, Int] = UIAttribute(
   readConverter = _.toString,
   writeConverter = _.toInt,
   placeholder = "Max Hours",
+  fieldType = "number",
+  required = true,
 )
 
 private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
@@ -40,6 +44,8 @@ private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
   readConverter = _.getOrElse("no account"),
   writeConverter = Some(_),
   placeholder = "Account",
+  fieldType = "text",
+  required = false, // TODO FIXME this probably still has the not initialized error
 )
 
 case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name, maxHours, accountName)) {}

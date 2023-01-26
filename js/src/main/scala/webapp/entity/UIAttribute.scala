@@ -36,7 +36,7 @@ abstract class UICommonAttribute[EntityType, AttributeType](
     td(duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
-  def renderEdit(entityVar: Var[Option[EntityType]]): Signal[Option[outwatch.VNode]]
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[outwatch.VNode]]
 }
 
 case class UIAttribute[EntityType, AttributeType](
@@ -45,7 +45,8 @@ case class UIAttribute[EntityType, AttributeType](
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
     override val placeholder: String,
-    fieldType: String = "text",
+    fieldType: String,
+    required: Boolean,
 ) extends UICommonAttribute[EntityType, AttributeType](
       getter,
       setter,
@@ -54,13 +55,16 @@ case class UIAttribute[EntityType, AttributeType](
       placeholder,
     ) {
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
         td(
           input(
-            tpe := fieldType,
+            cls := "input valid:input-success",
+            `type` := fieldType,
+            VModifier.attr("form") := formAttr, // TODO FIXME check browser support
+            VModifier.prop("required") := required,
             value := attr.getAll.map(x => readConverter(x)).mkString("/"),
             onInput.value --> {
               val evt = Evt[String]()
@@ -91,13 +95,14 @@ case class UIDateAttribute[EntityType, AttributeType](
       placeholder,
     ) {
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
         td(
           input(
-            tpe := "date",
+            `type` := "date",
+            VModifier.attr("form") := formAttr, // TODO FIXME check browser support
             minAttr := min,
             value := attr.getAll.map(x => editConverter(x)).mkString("/"),
             onInput.value --> {
@@ -132,12 +137,13 @@ case class UISelectAttribute[EntityType, AttributeType](
     td(duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
   }
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
         td(
           select(
+            VModifier.attr("form") := formAttr, // TODO FIXME check browser support
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))

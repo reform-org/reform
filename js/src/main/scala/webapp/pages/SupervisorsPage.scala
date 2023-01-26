@@ -24,6 +24,8 @@ private val sfirstName: UIAttribute[Supervisor, String] = UIAttribute(
   readConverter = identity,
   writeConverter = identity,
   placeholder = "First Name",
+  fieldType = "text",
+  required = true,
 )
 
 private val slastName: UIAttribute[Supervisor, String] = UIAttribute(
@@ -32,6 +34,8 @@ private val slastName: UIAttribute[Supervisor, String] = UIAttribute(
   readConverter = identity,
   writeConverter = identity,
   placeholder = "Last Name",
+  fieldType = "text",
+  required = true,
 )
 
 private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
@@ -40,6 +44,8 @@ private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
   readConverter = identity,
   writeConverter = identity,
   placeholder = "Email",
+  fieldType = "text",
+  required = true,
 )
 
 case class SupervisorsPage()
