@@ -57,6 +57,22 @@ case class HomePage() extends Page {
             .andThen(s => console.log(s)), // remove loading spinner here
         ),
       ),
+
+
+      
+    button(
+      cls:="btn",//"" btn-square loading",
+      idAttr := "loading",
+      onClick.foreach(_ => printPDF())
+    ),
     )
 
+}
+
+private def printPDF(): Unit = {
+  document.getElementById("loading").classList.add("loading")
+  val yes = window.confirm(s"Do you really want to delete the entity ?")
+  if (yes){
+    document.getElementById("loading").classList.remove("loading")    
+  }
 }
