@@ -18,7 +18,7 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val firstName: UIAttribute[Hiwi, String] = UIAttribute(
+private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
   _._firstName,
   (p, a) => p.copy(_firstName = a),
   readConverter = identity,
@@ -26,7 +26,7 @@ private val firstName: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "First Name",
 )
 
-private val lastName: UIAttribute[Hiwi, String] = UIAttribute(
+private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
   _._lastName,
   (p, a) => p.copy(_lastName = a),
   readConverter = identity,
@@ -34,7 +34,7 @@ private val lastName: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "Last Name",
 )
 
-private val hours: UIAttribute[Hiwi, Int] = UIAttribute(
+private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
   _._hours,
   (p, a) => p.copy(_hours = a),
   readConverter = _.toString,
@@ -42,7 +42,7 @@ private val hours: UIAttribute[Hiwi, Int] = UIAttribute(
   placeholder = "Hours",
 )
 
-private val eMail: UIAttribute[Hiwi, String] = UIAttribute(
+private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
   _._eMail,
   (p, a) => p.copy(_eMail = a),
   readConverter = identity,
@@ -50,4 +50,4 @@ private val eMail: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "Email",
 )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(firstName, lastName, hours, eMail)) {}
+case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}
