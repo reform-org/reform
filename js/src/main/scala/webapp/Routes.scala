@@ -34,7 +34,7 @@ object Routes {
     case Root / "webrtc"        => WebRTCHandling();
     case Root / "paymentlevels" => PaymentLevelsPage();
     case Root / "salarychanges" => SalaryChangesPage();
-    case Root / "supervisor"         => SupervisorsPage();
+    case Root / "supervisor"    => SupervisorsPage();
   }
 
   val toPath: Page => Path = {
