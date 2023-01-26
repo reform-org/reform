@@ -18,7 +18,7 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
+private val sfirstName: UIAttribute[Supervisor, String] = UIAttribute(
   _._firstName,
   (p, a) => p.copy(_firstName = a),
   readConverter = identity,
@@ -26,7 +26,7 @@ private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "First Name",
 )
 
-private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
+private val slastName: UIAttribute[Supervisor, String] = UIAttribute(
   _._lastName,
   (p, a) => p.copy(_lastName = a),
   readConverter = identity,
@@ -34,15 +34,7 @@ private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "Last Name",
 )
 
-private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
-  _._hours,
-  (p, a) => p.copy(_hours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  placeholder = "Hours",
-)
-
-private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
+private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
   _._eMail,
   (p, a) => p.copy(_eMail = a),
   readConverter = identity,
@@ -50,4 +42,5 @@ private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "Email",
 )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}
+case class SupervisorsPage()
+    extends EntityPage[Supervisor](Repositories.supervisor, Seq(sfirstName, slastName, seMail)) {}
