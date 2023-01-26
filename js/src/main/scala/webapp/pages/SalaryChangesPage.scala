@@ -40,6 +40,7 @@ private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = 
   options = Repositories.paymentLevels.all.map(list =>
     list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
   ),
+  required = true,
 )
 
 private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
@@ -49,6 +50,7 @@ private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAt
   editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
   writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
   placeholder = "From",
+  required = true,
   // min = "2023-01-24",
 )
 

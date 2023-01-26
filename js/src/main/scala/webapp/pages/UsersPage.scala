@@ -41,7 +41,7 @@ private val role: UIAttribute[User, String] = UIAttribute(
 private val comment: UIAttribute[User, Option[String]] = UIAttribute(
   _._comment,
   (p, a) => p.copy(_comment = a),
-  readConverter = _.getOrElse("no comment"),
+  readConverter = _.getOrElse(""),
   writeConverter = Some(_),
   placeholder = "Comment",
   fieldType = "text",

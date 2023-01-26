@@ -10,6 +10,7 @@ import kofre.syntax.*
 import kofre.time.VectorClock
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class Supervisor(
     _firstName: Attribute[String] = Attribute.empty,
@@ -19,6 +20,9 @@ case class Supervisor(
 ) extends Entity[Supervisor]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

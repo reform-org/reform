@@ -41,7 +41,7 @@ private val maxHours: UIAttribute[Project, Int] = UIAttribute(
 private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
   _._accountName,
   (p, a) => p.copy(_accountName = a),
-  readConverter = _.getOrElse("no account"),
+  readConverter = _.getOrElse(""),
   writeConverter = Some(_),
   placeholder = "Account",
   fieldType = "text",

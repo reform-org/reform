@@ -165,7 +165,7 @@ private class EntityRow[T <: Entity[T]](
             entity.update(p => {
               p.merge(editingNow.get)
             })
-            editingValue.set(Some(bottom.empty))
+            editingValue.set(Some(bottom.empty.default))
           })
       }
     })
@@ -183,7 +183,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 ) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](repository, None, Var(Some(bottom.empty)), uiAttributes)
+    EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
   def render(using services: Services): VNode = {
     div(

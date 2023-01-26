@@ -21,6 +21,7 @@ abstract class UICommonAttribute[EntityType, AttributeType](
     val readConverter: AttributeType => String,
     val writeConverter: String => AttributeType,
     val placeholder: String,
+    val required: Boolean,
 ) {
   def setFromString(entityVar: Var[Option[EntityType]], x: String): Unit = {
     entityVar.transform(
@@ -45,14 +46,15 @@ case class UIAttribute[EntityType, AttributeType](
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
     override val placeholder: String,
+    override val required: Boolean,
     fieldType: String,
-    required: Boolean,
 ) extends UICommonAttribute[EntityType, AttributeType](
       getter,
       setter,
       readConverter,
       writeConverter,
       placeholder,
+      required,
     ) {
 
   def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
@@ -64,14 +66,14 @@ case class UIAttribute[EntityType, AttributeType](
             cls := "input valid:input-success",
             `type` := fieldType,
             VModifier.attr("form") := formAttr, // TODO FIXME check browser support
-            VModifier.prop("required") := required,
+            VModifier.attr("required") := required,
             value := attr.get.map(x => readConverter(x)).getOrElse(""),
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))
               evt
             },
-            VModifier.prop("placeholder") := placeholder,
+            VModifier.attr("placeholder") := placeholder,
           ),
           if (attr.getAll.size > 1) {
             Some(
@@ -95,6 +97,7 @@ case class UIDateAttribute[EntityType, AttributeType](
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
     override val placeholder: String,
+    override val required: Boolean,
     editConverter: AttributeType => String,
     min: String = "",
 ) extends UICommonAttribute[EntityType, AttributeType](
@@ -103,6 +106,7 @@ case class UIDateAttribute[EntityType, AttributeType](
       readConverter,
       writeConverter,
       placeholder,
+      required,
     ) {
 
   def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
@@ -111,8 +115,10 @@ case class UIDateAttribute[EntityType, AttributeType](
         val attr = getter(entity)
         td(
           input(
+            cls := "input valid:input-success",
             `type` := "date",
             VModifier.attr("form") := formAttr, // TODO FIXME check browser support
+            VModifier.attr("required") := required,
             minAttr := min,
             value := attr.get.map(x => editConverter(x)).getOrElse(""),
             onInput.value --> {
@@ -143,6 +149,7 @@ case class UISelectAttribute[EntityType, AttributeType](
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
     override val placeholder: String,
+    override val required: Boolean,
     options: Signal[List[UIOption[Signal[String]]]],
 ) extends UICommonAttribute[EntityType, AttributeType](
       getter,
@@ -150,6 +157,7 @@ case class UISelectAttribute[EntityType, AttributeType](
       readConverter,
       writeConverter,
       placeholder,
+      required,
     ) {
 
   override def render(entity: EntityType) = {
@@ -163,13 +171,15 @@ case class UISelectAttribute[EntityType, AttributeType](
         val attr = getter(entity)
         td(
           select(
+            cls := "input valid:input-success",
             VModifier.attr("form") := formAttr, // TODO FIXME check browser support
+            VModifier.attr("required") := required,
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))
               evt
             },
-            option(value := "", "Bitte wählen..."),
+            option(VModifier.attr("value") := "", "Bitte wählen..."),
             options.map(o =>
               o.map(v => option(value := v.id, selected := Some(v.id) == attr.get.map(x => readConverter(x)), v.name)),
             ),

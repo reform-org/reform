@@ -11,6 +11,7 @@ import loci.serializer.jsoniterScala.given
 import rescala.default.*
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class User(
     var _username: Attribute[String] = Attribute.empty,
@@ -20,6 +21,9 @@ case class User(
 ) extends Entity[User]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = User(Attribute.empty, Attribute.empty, Attribute.default, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 
