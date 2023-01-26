@@ -121,6 +121,17 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       a(
+        "ContractSchemas",
+        href := "/contractSchemas",
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          services.routing.to(SupervisorsPage(), true)
+        }),
+      ),
+    ),
+    li(
+      a(
         "WebRTC",
         href := "/webrtc",
         onClick.foreach(e => {
