@@ -37,42 +37,33 @@ case class HomePage() extends Page {
       p("Homepage"),
       button(
         cls := "btn",
+        idAttr := "loadPDF",
         "Fill PDF",
-        onClick.foreach(_ =>
-          PDF
-            .fill(
-              "contract_unlocked.pdf",
-              "arbeitsvertrag2.pdf",
-              Seq(
-                PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
-                PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
-                PDFTextField("Vertragsbeginn", "25.01.2023"),
-                PDFTextField("Vertragsende", "25.01.2024"),
-                PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
-                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
-                PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
-              ),
-            )
-            .andThen(s => console.log(s)), // remove loading spinner here
-        ),
+        onClick.foreach(_ => printPDF()),
       ),
-
-
-      
-    button(
-      cls:="btn",//"" btn-square loading",
-      idAttr := "loading",
-      onClick.foreach(_ => printPDF())
-    ),
     )
-
 }
 
 private def printPDF(): Unit = {
-  document.getElementById("loading").classList.add("loading")
-  val yes = window.confirm(s"Do you really want to delete the entity ?")
-  if (yes){
-    document.getElementById("loading").classList.remove("loading")    
-  }
+  document.getElementById("loadPDF").classList.add("loading")
+  PDF
+    .fill(
+      "contract_unlocked.pdf",
+      "arbeitsvertrag2.pdf",
+      Seq(
+        PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
+        PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
+        PDFTextField("Vertragsbeginn", "25.01.2023"),
+        PDFTextField("Vertragsende", "25.01.2024"),
+        PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
+        PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+        PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
+        PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
+      ),
+    )
+    .andThen(s => console.log(s)) // remove loading spinner here
+  // val yes = window.confirm(s"Do you really want to delete the entity ?")
+  // if (yes){
+  document.getElementById("loadPDF").classList.remove("loading")
+  // }
 }
