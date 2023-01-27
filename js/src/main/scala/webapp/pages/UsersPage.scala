@@ -23,9 +23,9 @@ private val username: UIAttribute[User, String] = UIAttribute(
   (p, a) => p.copy(_username = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Username",
+  label = "Username",
   fieldType = "text",
-  required = true,
+  isRequired = true,
 )
 
 private val role: UIAttribute[User, String] = UIAttribute(
@@ -33,9 +33,9 @@ private val role: UIAttribute[User, String] = UIAttribute(
   (p, a) => p.copy(_role = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Role",
+  label = "Role",
   fieldType = "text",
-  required = true,
+  isRequired = true,
 )
 
 private val comment: UIAttribute[User, Option[String]] = UIAttribute(
@@ -43,9 +43,9 @@ private val comment: UIAttribute[User, Option[String]] = UIAttribute(
   (p, a) => p.copy(_comment = a),
   readConverter = _.getOrElse(""),
   writeConverter = Some(_),
-  placeholder = "Comment",
+  label = "Comment",
   fieldType = "text",
-  required = false, // TODO FIXME this probably still has the not initialized issue
+  isRequired = false, // TODO FIXME this probably still has the not initialized issue
 )
 
 case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}

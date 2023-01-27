@@ -25,9 +25,9 @@ private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   (p, a) => p.copy(_value = a),
   readConverter = number => (number / 100.0).toString(),
   writeConverter = number => Math.round(number.toFloat * 100),
-  placeholder = "Value",
+  label = "Value",
   fieldType = "number",
-  required = true,
+  isRequired = true,
 )
 
 private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = UISelectAttribute(
@@ -36,11 +36,11 @@ private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = 
   // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
   readConverter = _.toString,
   writeConverter = _.toString,
-  placeholder = "PaymentLevel",
+  label = "PaymentLevel",
   options = Repositories.paymentLevels.all.map(list =>
     list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
   ),
-  required = true,
+  isRequired = true,
 )
 
 private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
@@ -49,8 +49,8 @@ private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAt
   readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
   editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
   writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  placeholder = "From",
-  required = true,
+  label = "From",
+  isRequired = true,
   // min = "2023-01-24",
 )
 

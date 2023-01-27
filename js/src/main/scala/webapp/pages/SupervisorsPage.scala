@@ -23,9 +23,9 @@ private val sfirstName: UIAttribute[Supervisor, String] = UIAttribute(
   (p, a) => p.copy(_firstName = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "First Name",
+  label = "First Name",
   fieldType = "text",
-  required = true,
+  isRequired = true,
 )
 
 private val slastName: UIAttribute[Supervisor, String] = UIAttribute(
@@ -33,9 +33,9 @@ private val slastName: UIAttribute[Supervisor, String] = UIAttribute(
   (p, a) => p.copy(_lastName = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Last Name",
+  label = "Last Name",
   fieldType = "text",
-  required = true,
+  isRequired = true,
 )
 
 private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
@@ -43,9 +43,9 @@ private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
   (p, a) => p.copy(_eMail = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Email",
+  label = "Email",
   fieldType = "text",
-  required = true,
+  isRequired = true,
 )
 
 case class SupervisorsPage()

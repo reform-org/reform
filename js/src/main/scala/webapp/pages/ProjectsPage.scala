@@ -23,9 +23,9 @@ private val name: UIAttribute[Project, String] = UIAttribute(
   (p, a) => p.copy(_name = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Name",
+  label = "Name",
   fieldType = "text",
-  required = true,
+  isRequired = true,
 )
 
 private val maxHours: UIAttribute[Project, Int] = UIAttribute(
@@ -33,9 +33,9 @@ private val maxHours: UIAttribute[Project, Int] = UIAttribute(
   (p, a) => p.copy(_maxHours = a),
   readConverter = _.toString,
   writeConverter = _.toInt,
-  placeholder = "Max Hours",
+  label = "Max Hours",
   fieldType = "number",
-  required = true,
+  isRequired = true,
 )
 
 private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
@@ -43,9 +43,9 @@ private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
   (p, a) => p.copy(_accountName = a),
   readConverter = _.getOrElse(""),
   writeConverter = Some(_),
-  placeholder = "Account",
+  label = "Account",
   fieldType = "text",
-  required = false, // TODO FIXME this probably still has the not initialized error
+  isRequired = false, // TODO FIXME this probably still has the not initialized error
 )
 
 case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name, maxHours, accountName)) {}

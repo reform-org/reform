@@ -20,8 +20,8 @@ abstract class UICommonAttribute[EntityType, AttributeType](
     val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     val readConverter: AttributeType => String,
     val writeConverter: String => AttributeType,
-    val placeholder: String,
-    val required: Boolean,
+    val label: String,
+    val isRequired: Boolean,
 ) {
   def setFromString(entityVar: Var[Option[EntityType]], x: String): Unit = {
     entityVar.transform(
@@ -45,16 +45,16 @@ case class UIAttribute[EntityType, AttributeType](
     override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
-    override val placeholder: String,
-    override val required: Boolean,
+    override val label: String,
+    override val isRequired: Boolean,
     fieldType: String,
 ) extends UICommonAttribute[EntityType, AttributeType](
       getter,
       setter,
       readConverter,
       writeConverter,
-      placeholder,
-      required,
+      label,
+      isRequired,
     ) {
 
   def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
@@ -65,15 +65,15 @@ case class UIAttribute[EntityType, AttributeType](
           input(
             cls := "input valid:input-success",
             `type` := fieldType,
-            VModifier.attr("form") := formAttr, // TODO FIXME check browser support
-            VModifier.attr("required") := required,
+            formId := formAttr, // TODO FIXME check browser support
+            required := isRequired,
             value := attr.get.map(x => readConverter(x)).getOrElse(""),
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))
               evt
             },
-            VModifier.attr("placeholder") := placeholder,
+            placeholder := label,
           ),
           if (attr.getAll.size > 1) {
             Some(
@@ -96,8 +96,8 @@ case class UIDateAttribute[EntityType, AttributeType](
     override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
-    override val placeholder: String,
-    override val required: Boolean,
+    override val label: String,
+    override val isRequired: Boolean,
     editConverter: AttributeType => String,
     min: String = "",
 ) extends UICommonAttribute[EntityType, AttributeType](
@@ -105,8 +105,8 @@ case class UIDateAttribute[EntityType, AttributeType](
       setter,
       readConverter,
       writeConverter,
-      placeholder,
-      required,
+      label,
+      isRequired,
     ) {
 
   def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
@@ -117,8 +117,8 @@ case class UIDateAttribute[EntityType, AttributeType](
           input(
             cls := "input valid:input-success",
             `type` := "date",
-            VModifier.attr("form") := formAttr, // TODO FIXME check browser support
-            VModifier.attr("required") := required,
+            formId := formAttr, // TODO FIXME check browser support
+            required := isRequired,
             minAttr := min,
             value := attr.get.map(x => editConverter(x)).getOrElse(""),
             onInput.value --> {
@@ -148,16 +148,16 @@ case class UISelectAttribute[EntityType, AttributeType](
     override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     override val readConverter: AttributeType => String,
     override val writeConverter: String => AttributeType,
-    override val placeholder: String,
-    override val required: Boolean,
+    override val label: String,
+    override val isRequired: Boolean,
     options: Signal[List[UIOption[Signal[String]]]],
 ) extends UICommonAttribute[EntityType, AttributeType](
       getter,
       setter,
       readConverter,
       writeConverter,
-      placeholder,
-      required,
+      label,
+      isRequired,
     ) {
 
   override def render(entity: EntityType) = {
@@ -172,14 +172,14 @@ case class UISelectAttribute[EntityType, AttributeType](
         td(
           select(
             cls := "input valid:input-success",
-            VModifier.attr("form") := formAttr, // TODO FIXME check browser support
-            VModifier.attr("required") := required,
+            formId := formAttr, // TODO FIXME check browser support
+            required := isRequired,
             onInput.value --> {
               val evt = Evt[String]()
               evt.observe(x => setFromString(entityVar, x))
               evt
             },
-            option(VModifier.attr("value") := "", "Bitte wählen..."),
+            option(value := "", "Bitte wählen..."),
             options.map(o =>
               o.map(v => option(value := v.id, selected := Some(v.id) == attr.get.map(x => readConverter(x)), v.name)),
             ),

@@ -67,7 +67,7 @@ private class EntityRow[T <: Entity[T]](
                       List(
                         button(
                           cls := "btn",
-                          VModifier.attr("form") := s"form-${existingValue.map(_.id)}",
+                          formId := s"form-${existingValue.map(_.id)}",
                           `type` := "submit",
                           idAttr := "add-entity-button",
                           "Save edit",
@@ -83,7 +83,7 @@ private class EntityRow[T <: Entity[T]](
                     case None => {
                       button(
                         cls := "btn",
-                        VModifier.attr("form") := s"form-${existingValue.map(_.id)}",
+                        formId := s"form-${existingValue.map(_.id)}",
                         `type` := "submit",
                         idAttr := "add-entity-button",
                         "Add Entity",
@@ -195,7 +195,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
           // cls := "table-auto",
           thead(
             tr(
-              uiAttributes.map(a => th(a.placeholder)),
+              uiAttributes.map(a => th(a.label)),
               th("Stuff"),
             ),
           ),
