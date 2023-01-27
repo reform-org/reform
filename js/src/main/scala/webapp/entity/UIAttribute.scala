@@ -4,10 +4,12 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import org.scalajs.dom.*
+import rescala.default
 import webapp.entity.Attribute
 import webapp.Repositories
 import webapp.given
 import webapp.duplicateValuesHandler
+import webapp.utils.Date
 
 class UIOption[NameType](
     val id: String,
@@ -31,7 +33,7 @@ abstract class UICommonAttribute[EntityType, AttributeType](
     )
   }
 
-  def render(entity: EntityType) = {
+  def render(entity: EntityType): VNode = {
     val attr = getter(entity)
     td(duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
@@ -54,7 +56,7 @@ case class UIAttribute[EntityType, AttributeType](
       placeholder,
     ) {
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -75,15 +77,14 @@ case class UIAttribute[EntityType, AttributeType](
   }
 }
 
-case class UIDateAttribute[EntityType, AttributeType](
-    override val getter: EntityType => Attribute[AttributeType],
-    override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    override val readConverter: AttributeType => String,
-    override val writeConverter: String => AttributeType,
+case class UIDateAttribute[EntityType](
+    override val getter: EntityType => Attribute[Long],
+    override val setter: (EntityType, Attribute[Long]) => EntityType,
+    override val readConverter: Long => String,
+    override val writeConverter: String => Long,
     override val placeholder: String,
-    editConverter: AttributeType => String,
-    min: String = "",
-) extends UICommonAttribute[EntityType, AttributeType](
+    min: String,
+) extends UICommonAttribute[EntityType, Long](
       getter,
       setter,
       readConverter,
@@ -91,7 +92,9 @@ case class UIDateAttribute[EntityType, AttributeType](
       placeholder,
     ) {
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  private val editConverter = Date.epochDayToDate(_, "yyyy-MM-dd")
+
+  def renderEdit(entityVar: Var[Option[EntityType]]): default.Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -127,12 +130,12 @@ case class UISelectAttribute[EntityType, AttributeType](
       placeholder,
     ) {
 
-  override def render(entity: EntityType) = {
+  override def render(entity: EntityType): VNode = {
     val attr = getter(entity)
     td(duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
   }
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(entityVar: Var[Option[EntityType]]): default.Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -150,20 +153,4 @@ case class UISelectAttribute[EntityType, AttributeType](
       })
     }
   }
-}
-
-object UIAttribute {
-
-  /* def string[EntityType](setter: (EntityType, String) => EntityType): AttributeHandler[EntityType, String]
-  = AttributeHandler(identity, identity, setter)
-
-  def int[EntityType](setter: (EntityType, Int) => EntityType): AttributeHandler[EntityType, Int]
-  = AttributeHandler(_.toString, _.toInt, setter)
-
-  def optionWithDefault[EntityType, AttributeType](default: AttributeType, attr: AttributeHandler[EntityType, AttributeType]): AttributeHandler[EntityType, Option[AttributeType]]
-  = AttributeHandler(
-    v => attr.readConverter(v.getOrElse(default)),
-    s => Some(attr.writeConverter(s)),
-    (e, v) => attr.setter(e, v.getOrElse(default))
-  ) */
 }

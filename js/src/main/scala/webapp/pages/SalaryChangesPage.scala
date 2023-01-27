@@ -41,15 +41,13 @@ private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = 
   ),
 )
 
-private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
-  _._fromDate,
-  (p, a) => p.copy(_fromDate = a),
-  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  placeholder = "From",
-  // min = "2023-01-24",
-)
+private val salaryChangeFromDate
+  = UIAttributeBuilder.date
+  .withPlaceholder("From")
+  .bind[SalaryChange](
+    _._fromDate,
+    (p, a) => p.copy(_fromDate = a),
+  )
 
 case class SalaryChangesPage()
     extends EntityPage[SalaryChange](
