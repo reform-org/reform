@@ -1,16 +1,13 @@
 import { Actions, chance, check, Peer, seed } from "./lib.js";
 import { strict as assert } from "node:assert";
+import browserstack from "browserstack-local";
 
 export async function run() {
 	let actions;
 	let peers: Peer[];
 	if (process.env.SELENIUM_BROWSER === "safari") {
 		actions = chance.n(
-			() =>
-				chance.weighted(
-					[Actions.CREATE_PROJECT, Actions.RELOAD],
-					[10, 10],
-				),
+			() => chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10]),
 			200,
 		);
 		let peer = await Peer.create(true);
@@ -114,13 +111,39 @@ export async function run() {
 			await check(peers);
 		}
 
+		if (process.env.SELENIUM_BROWSER === "safari") {
+			await peers[0].driver.executeScript(
+				'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Success!"}}',
+			);
+		}
+
 		await Promise.all(peers.map((peer) => peer.driver.close()));
 
 		console.log("DONE");
 	} catch (error) {
+		console.error(error);
 		console.log("seed: ", seed);
+
+		if (process.env.SELENIUM_BROWSER === "safari") {
+			await peers[0].driver.executeScript(
+				'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "Failed!"}}',
+			);
+		}
+
+		await Promise.allSettled(peers.map((peer) => peer.driver.close()));
+
 		throw error;
 	}
 }
 
-await run();
+const bs_local = new browserstack.Local();
+bs_local.start({}, async function () {
+	console.log("Started BrowserStackLocal");
+	console.log("BrowserStackLocal running:", bs_local.isRunning());
+
+	await run();
+
+	bs_local.stop(function () {
+		console.log("Stopped BrowserStackLocal");
+	});
+});
