@@ -25,12 +25,27 @@ async function quitPeers(peers: Peer[]) {
 }
 
 const bs_local = new browserstack.Local();
-let start = promisify(bs_local.start)
-let stop = promisify(bs_local.stop)
+const start = () => {
+	console.log("start")
+	return new Promise<void>((resolve, reject) => {
+		bs_local.start({}, (error) => {
+			console.log(error)
+			resolve()
+		})
+	})
+}
+const stop = () => {
+	console.log("stop")
+	return new Promise<void>((resolve, reject) => {
+		bs_local.stop(() => {
+			resolve()
+		})
+	})
+}
 
 beforeAll(async () => {
 	if (process.env.BROWSERSTACK_ACCESS_KEY) {
-		await start({})
+		await start()
 	}
 })
 
