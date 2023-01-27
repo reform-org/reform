@@ -19,7 +19,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import kofre.base.Lattice.*
-import webapp.Repositories
+import webapp.webrtc.WebRTCService.*
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.default.*
@@ -59,7 +59,7 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
     */
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
-  Repositories.lociRegistry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
+  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
     localListeners.get(payload.name) match {
       case Some(handler) => handler.fire(payload.delta)
       case None =>
@@ -91,7 +91,7 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
       // Lookup method to send data to remote
-      val remoteUpdate: DeltaFor[A] => Future[Unit] = Repositories.lociRegistry.lookup(binding, remoteRef)
+      val remoteUpdate: DeltaFor[A] => Future[Unit] = registry.lookup(binding, remoteRef)
 
       def sendUpdate(delta: A): Unit = {
         // the contents of the resend buffer and the delta need to be sent
@@ -143,11 +143,11 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
     }
 
     // if a remote joins register it to handle updates to it
-    Repositories.lociRegistry.remoteJoined.monitor(registerRemote)
+    registry.remoteJoined.monitor(registerRemote)
     // also register all existing remotes
-    Repositories.lociRegistry.remotes.foreach(registerRemote)
+    registry.remotes.foreach(registerRemote)
     // remove remotes that disconnect
-    Repositories.lociRegistry.remoteLeft.monitor { remoteRef =>
+    registry.remoteLeft.monitor { remoteRef =>
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
     }

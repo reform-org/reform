@@ -104,7 +104,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
     state: Var[State],
     services: Services,
 ) extends State {
-  Repositories.lociRegistry.connect(connection.connector).foreach(_ => onConnected())
+  services.webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
 
   override def render(using state: Var[State], services: Services): VNode = div(
     h2(
@@ -122,7 +122,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
 private case class HostPending(connection: PendingConnection)(using state: Var[State], services: Services)
     extends State {
   private val sessionTokenFromClient = Var("")
-  Repositories.lociRegistry.connect(connection.connector).foreach(_ => onConnected())
+  services.webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
 
   override def render(using state: Var[State], services: Services): VNode = div(
     cls := "p-1",

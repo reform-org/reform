@@ -28,7 +28,7 @@ import webapp.Repositories.users
 import webapp.components.navigationHeader
 import webapp.repo.{Repository, Synced}
 import webapp.services.Page
-import webapp.Repositories
+import webapp.webrtc.WebRTCService
 import webapp.{*, given}
 
 import java.util.UUID

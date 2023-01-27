@@ -13,17 +13,14 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp
+package webapp.webrtc
 
-import webapp.services.RoutingService
-import webapp.webrtc.WebRTCService
+import kofre.datatypes.PosNegCounter
+import loci.registry.*
+import webapp.*
+import webapp.Codecs.*
+import rescala.default.*
 
-trait Services {
-  lazy val routing: RoutingService
-  lazy val webrtc: WebRTCService.type
-}
-
-object ServicesDefault extends Services {
-  lazy val routing = RoutingService()
-  lazy val webrtc = WebRTCService
+object WebRTCService {
+  val registry: Registry = new Registry
 }
