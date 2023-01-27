@@ -39,31 +39,28 @@ case class HomePage() extends Page {
         cls := "btn",
         idAttr := "loadPDF",
         "Fill PDF",
-        onClick.foreach(_ => printPDF()),
+        onClick.foreach(_ => {
+          document.getElementById("loadPDF").classList.add("loading")
+          PDF
+            .fill(
+              "contract_unlocked.pdf",
+              "arbeitsvertrag2.pdf",
+              Seq(
+                PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
+                PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
+                PDFTextField("Vertragsbeginn", "25.01.2023"),
+                PDFTextField("Vertragsende", "25.01.2024"),
+                PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
+                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
+                PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
+              ),
+            )
+            .andThen(s => {
+              console.log(s)
+              document.getElementById("loadPDF").classList.remove("loading")
+            })
+        }),
       ),
     )
-}
-
-private def printPDF(): Unit = {
-  document.getElementById("loadPDF").classList.add("loading")
-  PDF
-    .fill(
-      "contract_unlocked.pdf",
-      "arbeitsvertrag2.pdf",
-      Seq(
-        PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
-        PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
-        PDFTextField("Vertragsbeginn", "25.01.2023"),
-        PDFTextField("Vertragsende", "25.01.2024"),
-        PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
-        PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-        PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
-        PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
-      ),
-    )
-    .andThen(s => console.log(s)) // remove loading spinner here
-  // val yes = window.confirm(s"Do you really want to delete the entity ?")
-  // if (yes){
-  document.getElementById("loadPDF").classList.remove("loading")
-  // }
 }
