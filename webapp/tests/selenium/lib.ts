@@ -300,6 +300,7 @@ export class Peer {
 
 		await driver.manage().setTimeouts({
 			script: 10000,
+			implicit: 2000,
 		});
 
 		let id = (await driver.getSession()).getId();
