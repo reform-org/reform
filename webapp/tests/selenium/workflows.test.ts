@@ -38,11 +38,13 @@ describe.concurrent("safari-compatible", () => {
 	});
 });
 
-describe.skipIf(process.env.SELENIUM_BROWSER === 'safari').concurrent("safari-incompatible", () => {
-	it("connects", async () => {
-		let peers = await startPeers(2);
-		await loadPage(peers);
-		await peers[0].connectTo(peers[1]);
-		await quitPeers(peers);
+describe
+	.skipIf(process.env.SELENIUM_BROWSER === "safari")
+	.concurrent("safari-incompatible", () => {
+		it("connects", async () => {
+			let peers = await startPeers(2);
+			await loadPage(peers);
+			await peers[0].connectTo(peers[1]);
+			await quitPeers(peers);
+		});
 	});
-});

@@ -41,5 +41,4 @@ jobs:
     - name: Workflow tests
       run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run test
     - name: Selenium
-      if: ${{ matrix.map.browser != 'safari' }}
       run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run selenium

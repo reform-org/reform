@@ -2,23 +2,38 @@ import { Actions, chance, check, Peer, seed } from "./lib.js";
 import { strict as assert } from "node:assert";
 
 export async function run() {
-	let actions = chance.n(
-		() =>
-			chance.weighted(
-				[
-					Actions.CREATE_PEER,
-					Actions.DELETE_PEER,
-					Actions.CREATE_PROJECT,
-					Actions.CONNECT_TO_PEER,
-					Actions.RELOAD,
-				],
-				[10, 10, 20, 20, 10],
-			),
-		200,
-	);
-	//let actions = [Actions.CREATE_PEER, Actions.CREATE_PEER, Actions.CONNECT_TO_PEER, Actions.CREATE_PROJECT]
+	let actions;
+	let peers: Peer[];
+	if (process.env.SELENIUM_BROWSER === "safari") {
+		actions = chance.n(
+			() =>
+				chance.weighted(
+					[Actions.CREATE_PROJECT, Actions.RELOAD],
+					[10, 10, 20, 20, 10],
+				),
+			200,
+		);
+		let peer = await Peer.create(true);
+		await peer.driver.get("http://localhost:5173/");
+		peers = [peer];
+	} else {
+		actions = chance.n(
+			() =>
+				chance.weighted(
+					[
+						Actions.CREATE_PEER,
+						Actions.DELETE_PEER,
+						Actions.CREATE_PROJECT,
+						Actions.CONNECT_TO_PEER,
+						Actions.RELOAD,
+					],
+					[10, 10, 20, 20, 10],
+				),
+			200,
+		);
+		peers = [];
+	}
 
-	let peers: Peer[] = [];
 	try {
 		for (let action of actions) {
 			switch (action) {
