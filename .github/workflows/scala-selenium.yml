@@ -15,7 +15,8 @@ jobs:
       matrix:
         map: [
           { os: ubuntu-latest, browser: firefox },
-          { os: ubuntu-latest, browser: chrome }
+          { os: ubuntu-latest, browser: chrome },
+          { os: macos-latest,  browser: safari }
         ]
 
     runs-on: ${{ matrix.map.os }}
@@ -37,5 +38,7 @@ jobs:
       run: npm run build
     - name: Preview
       run: npm run preview &
+    - name: Workflow tests
+      run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run test
     - name: Selenium
       run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run selenium
