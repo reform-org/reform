@@ -58,7 +58,8 @@ case class HomePage() extends Page {
             .andThen(s => console.log(s)), // remove loading spinner here
         ),
       ),
-      services.webrtc.connections.map(_.map(ref => ref.hashCode().toString()).mkString("; "))
+      services.webrtc.connections.map(_.map(ref => services.webrtc.getAlias(ref)).mkString("; ")),
+      // services.webrtc.aliases.map((k, v) => s"${k.hashCode()} $v").mkString("; ")
     )
 
 }

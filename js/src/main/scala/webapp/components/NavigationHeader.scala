@@ -141,48 +141,78 @@ def navigationMenu(using services: Services)(classes: String) = {
         }),
       ),
     ),
-    li(
-      i(
-        services.webrtc.connections.map(_.size),
-        " Connections"
-      ),
-    ),
   )
 }
 
 def navigationHeader(using services: Services) = {
   import svg.*
+  // div(
+  //   cls := "navbar bg-base-300",
+  //   div(
+  //     cls := "navbar-start",
+  //     div(
+  //       cls := "dropdown",
+  //       label(
+  //         tabIndex := 0,
+  //         idAttr := "dropdown-button",
+  //         cls := "btn btn-ghost lg:hidden",
+  //         svg(
+  //           xmlns := "http://www.w3.org/2000/svg",
+  //           cls := "h-5 w-5",
+  //           fill := "none",
+  //           viewBox := "0 0 24 24",
+  //           stroke := "currentColor",
+  //           path(
+  //             VModifier.attr("stroke-linecap") := "round",
+  //             VModifier.attr("stroke-linejoin") := "round",
+  //             VModifier.attr("stroke-width") := "2",
+  //             d := "M4 6h16M4 12h8m-8 6h16",
+  //           ),
+  //         ),
+  //       ),
+  //       navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+  //     ),
+  //     a(cls := "btn btn-ghost normal-case text-xl", "reform"),
+  //   ),
+  //   div(
+  //     cls := "navbar-center hidden lg:flex",
+  //     navigationMenu("menu menu-horizontal p-0"),
+  //   ),
+  //   div(
+  //     i(
+  //       services.webrtc.connections.map(_.size),
+  //       " Connections",
+  //       cls := "btn btn-ghost",
+  //     ),
+  //   ),
+  // )
   div(
-    cls := "navbar bg-base-300",
+    cls := "navbar bg-base-100",
+    div(cls := "flex-1", a(cls := "btn btn-ghost normal-case text-xl", "daisyUI")),
     div(
-      cls := "navbar-start",
+      cls := "flex-none gap-2",
+      div(cls := "form-control", input(tpe := "text", placeholder := "Search", cls := "input input-bordered")),
       div(
-        cls := "dropdown",
+        cls := "dropdown dropdown-end",
         label(
           tabIndex := 0,
-          idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden",
-          svg(
-            xmlns := "http://www.w3.org/2000/svg",
-            cls := "h-5 w-5",
-            fill := "none",
-            viewBox := "0 0 24 24",
-            stroke := "currentColor",
-            path(
-              VModifier.attr("stroke-linecap") := "round",
-              VModifier.attr("stroke-linejoin") := "round",
-              VModifier.attr("stroke-width") := "2",
-              d := "M4 6h16M4 12h8m-8 6h16",
-            ),
+          cls := "btn btn-ghost btn-circle avatar",
+          div(cls := "w-10 rounded-full", img(src := "https://placeimg.com/80/80/people")),
+        ),
+        ul(
+          tabIndex := 0,
+          cls := "mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52",
+          li(
+            a(cls := "justify-between", "Profile", span(cls := "badge", "New")),
+          ),
+          li(
+            a("Settings"),
+          ),
+          li(
+            a("Logout"),
           ),
         ),
-        navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
       ),
-      a(cls := "btn btn-ghost normal-case text-xl", "reform"),
-    ),
-    div(
-      cls := "navbar-center hidden lg:flex",
-      navigationMenu("menu menu-horizontal p-0"),
     ),
   )
 }

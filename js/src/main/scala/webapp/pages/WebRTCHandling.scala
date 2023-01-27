@@ -34,15 +34,17 @@ private case class PendingConnection(connector: WebRTC.Connector, session: Futur
 
 private def webrtcIntermediate(cf: ConnectorFactory) = {
   val p = Promise[ConnectionInformation]()
-  val answer = cf.complete(s => p.success(new ConnectionInformation(s, "Lukas Schreiber")))
+  val answer = cf.complete(s =>
+    p.success(new ConnectionInformation(s, s"Lukas Schreiber ${scala.scalajs.js.Math.random() * 100}")),
+  )
   PendingConnection(answer, p.future)
 }
 
 private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
 
-private def sessionAsToken(s: ConnectionInformation) = writeToString(s)(codec)//Base64.encode(writeToString(s)(codec))
+private def sessionAsToken(s: ConnectionInformation) = writeToString(s)(codec) //Base64.encode(writeToString(s)(codec))
 
-private def tokenAsSession(s: String) = readFromString(s)(codec)//readFromString(Base64.decode(s))(codec)
+private def tokenAsSession(s: String) = readFromString(s)(codec) //readFromString(Base64.decode(s))(codec)
 
 private sealed trait State {
   def render(using state: Var[State], services: Services): VNode
@@ -105,7 +107,9 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
     state: Var[State],
     services: Services,
 ) extends State {
-  services.webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
+  services.webrtc
+    .registerConnection(connection.connector, connection.session.map(i => i.alias))
+    .foreach(_ => onConnected())
 
   override def render(using state: Var[State], services: Services): VNode = div(
     h2(
@@ -123,7 +127,9 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
 private case class HostPending(connection: PendingConnection)(using state: Var[State], services: Services)
     extends State {
   private val sessionTokenFromClient = Var("")
-  services.webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
+  services.webrtc
+    .registerConnection(connection.connector, connection.session.map(i => i.alias))
+    .foreach(_ => onConnected())
 
   override def render(using state: Var[State], services: Services): VNode = div(
     cls := "p-1",

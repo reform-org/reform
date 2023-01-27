@@ -22,19 +22,39 @@ import webapp.Codecs.*
 import rescala.default.*
 import loci.transmitter.RemoteRef
 import loci.communicator.webrtc.WebRTC
+import loci.communicator.Connector
+import scala.concurrent.Future
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class ConnectionInformation (val session: WebRTC.CompleteSession, val alias: String){}
+class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String) {}
 
 object WebRTCService {
   val registry: Registry = new Registry
+  private val aliases = scala.collection.mutable.Map[RemoteRef, String]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
-  private val addConnectionB = addConnection act (current[Seq[RemoteRef]] :+ _)
-  private val removeConnectionB = removeConnection act (a => current[Seq[RemoteRef]].filter(b => !b.equals(a)))
+  private val addConnectionB = addConnection.act(current[Seq[RemoteRef]] :+ _)
+  private val removeConnectionB = removeConnection.act(r => current[Seq[RemoteRef]].filter(b => !b.equals(r)))
 
   val connections = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
-  
+
+  def registerConnection(connector: Connector[Connections.Protocol], alias: Future[String]): Future[RemoteRef] = {
+    registry
+      .connect(connector)
+      .andThen(r => {
+        alias.onComplete(a => aliases += (r.get -> a.get))
+      })
+  }
+
+  def getAlias(ref: RemoteRef): String = {
+    aliases.get(ref).getOrElse("Anonymous")
+  }
+
+  def getIP(ref: RemoteRef): String = {
+    ""
+  }
+
   registry.remoteJoined.monitor(addConnection.fire)
   registry.remoteLeft.monitor(removeConnection.fire)
 
