@@ -41,8 +41,7 @@ private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = 
   ),
 )
 
-private val salaryChangeFromDate
-  = UIAttributeBuilder.date
+private val salaryChangeFromDate = UIAttributeBuilder.date
   .withPlaceholder("From")
   .bind[SalaryChange](
     _._fromDate,
