@@ -9,7 +9,7 @@ export async function run() {
 			() =>
 				chance.weighted(
 					[Actions.CREATE_PROJECT, Actions.RELOAD],
-					[10, 10, 20, 20, 10],
+					[10, 10],
 				),
 			200,
 		);
