@@ -1,11 +1,12 @@
 import { Actions, chance, check, Peer, seed } from "./lib.js";
 import { strict as assert } from "node:assert";
 import browserstack from "browserstack-local";
+import { promisify } from 'util'
 
 export async function run() {
 	let actions;
 	let peers: Peer[];
-	if (process.env.SELENIUM_BROWSER === "safari") {
+	if (process.env.SELENIUM_BROWSER === "safari" || process.env.BROWSERSTACK_ACCESS_KEY) {
 		actions = chance.n(
 			() => chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10]),
 			200,
@@ -111,7 +112,7 @@ export async function run() {
 			await check(peers);
 		}
 
-		if (process.env.SELENIUM_BROWSER === "safari") {
+		if (process.env.BROWSERSTACK_ACCESS_KEY) {
 			await peers[0].driver.executeScript(
 				'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"passed","reason": "Success!"}}',
 			);
@@ -124,7 +125,7 @@ export async function run() {
 		console.error(error);
 		console.log("seed: ", seed);
 
-		if (process.env.SELENIUM_BROWSER === "safari") {
+		if (process.env.BROWSERSTACK_ACCESS_KEY) {
 			await peers[0].driver.executeScript(
 				'browserstack_executor: {"action": "setSessionStatus", "arguments": {"status":"failed","reason": "Failed!"}}',
 			);
@@ -137,13 +138,16 @@ export async function run() {
 }
 
 const bs_local = new browserstack.Local();
-bs_local.start({}, async function () {
-	console.log("Started BrowserStackLocal");
-	console.log("BrowserStackLocal running:", bs_local.isRunning());
+let start = promisify(bs_local.start)
+let stop = promisify(bs_local.stop)
 
-	await run();
+if (process.env.BROWSERSTACK_ACCESS_KEY) {
+	await start({})
+}
 
-	bs_local.stop(function () {
-		console.log("Stopped BrowserStackLocal");
-	});
-});
+await run()
+
+if (process.env.BROWSERSTACK_ACCESS_KEY) {
+	await stop()
+}
+

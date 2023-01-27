@@ -1,5 +1,7 @@
 import { Peer } from "./lib.js";
-import { assert, describe, expect, it, test } from "vitest";
+import { afterAll, assert, beforeAll, describe, expect, it, test } from "vitest";
+import browserstack from "browserstack-local";
+import { promisify } from 'util'
 
 let headless = true;
 
@@ -21,6 +23,22 @@ async function loadPage(peers: Peer[]) {
 async function quitPeers(peers: Peer[]) {
 	await Promise.allSettled(peers.map((peer) => peer.driver.quit()));
 }
+
+const bs_local = new browserstack.Local();
+let start = promisify(bs_local.start)
+let stop = promisify(bs_local.stop)
+
+beforeAll(async () => {
+	if (process.env.BROWSERSTACK_ACCESS_KEY) {
+		await start({})
+	}
+})
+
+afterAll(async () => {
+	if (process.env.BROWSERSTACK_ACCESS_KEY) {
+		await stop()
+	}
+})
 
 // tests that can also run on mac:
 describe.concurrent("safari-compatible", () => {
