@@ -1,6 +1,6 @@
 package webapp
 
-import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User}
+import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User,Contract}
 import webapp.repo.Repository
 
 object Repositories {
@@ -12,4 +12,5 @@ object Repositories {
   val contractSchemas: Repository[ContractSchema] = Repository("contractSchema", ContractSchema.empty)
   val paymentLevels: Repository[PaymentLevel] = Repository("paymentLevels", PaymentLevel.empty)
   val salaryChanges: Repository[SalaryChange] = Repository("salaryChanges", SalaryChange.empty)
+  val contracts: Repository[Contract] = Repository("contracts", Contract.empty)
 }

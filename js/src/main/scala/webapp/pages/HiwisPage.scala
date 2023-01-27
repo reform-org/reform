@@ -42,7 +42,7 @@ private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
   placeholder = "Hours",
 )
 
-private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
+private val hiwiEMail: UIAttribute[Hiwi, String] = UIAttribute(
   _._eMail,
   (p, a) => p.copy(_eMail = a),
   readConverter = identity,
@@ -50,4 +50,4 @@ private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
   placeholder = "Email",
 )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}
+case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, hiwiEMail)) {}
