@@ -143,7 +143,8 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       i(
-        s"${services.webrtc.registry.remotes.size} Connections",
+        services.webrtc.connections.map(_.size),
+        " Connections"
       ),
     ),
   )

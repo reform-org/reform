@@ -20,7 +20,22 @@ import loci.registry.*
 import webapp.*
 import webapp.Codecs.*
 import rescala.default.*
+import loci.transmitter.RemoteRef
+import loci.communicator.webrtc.WebRTC
+
+class ConnectionInformation (val session: WebRTC.CompleteSession, val alias: String){}
 
 object WebRTCService {
   val registry: Registry = new Registry
+
+  private val removeConnection = Evt[RemoteRef]()
+  private val addConnection = Evt[RemoteRef]()
+  private val addConnectionB = addConnection act (current[Seq[RemoteRef]] :+ _)
+  private val removeConnectionB = removeConnection act (a => current[Seq[RemoteRef]].filter(b => !b.equals(a)))
+
+  val connections = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
+  
+  registry.remoteJoined.monitor(addConnection.fire)
+  registry.remoteLeft.monitor(removeConnection.fire)
+
 }

@@ -28,6 +28,7 @@ import webapp.services.Page
 
 import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.*
+import loci.transmitter.RemoteRef
 
 case class HomePage() extends Page {
 
@@ -57,6 +58,7 @@ case class HomePage() extends Page {
             .andThen(s => console.log(s)), // remove loading spinner here
         ),
       ),
+      services.webrtc.connections.map(_.map(ref => ref.hashCode().toString()).mkString("; "))
     )
 
 }

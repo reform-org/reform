@@ -20,6 +20,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.components.navigationHeader
 import webapp.services.Page
 import webapp.utils.Base64
+import webapp.webrtc.ConnectionInformation
 
 case class WebRTCHandling(private val state: Var[State] = Var(Init)) extends Page {
 
@@ -29,19 +30,19 @@ case class WebRTCHandling(private val state: Var[State] = Var(Init)) extends Pag
   )
 }
 
-private case class PendingConnection(connector: WebRTC.Connector, session: Future[WebRTC.CompleteSession])
+private case class PendingConnection(connector: WebRTC.Connector, session: Future[ConnectionInformation])
 
 private def webrtcIntermediate(cf: ConnectorFactory) = {
-  val p = Promise[WebRTC.CompleteSession]()
-  val answer = cf.complete(p.success)
+  val p = Promise[ConnectionInformation]()
+  val answer = cf.complete(s => p.success(new ConnectionInformation(s, "Lukas Schreiber")))
   PendingConnection(answer, p.future)
 }
 
-private val codec: JsonValueCodec[webrtc.WebRTC.CompleteSession] = JsonCodecMaker.make
+private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
 
-private def sessionAsToken(s: WebRTC.CompleteSession) = Base64.encode(writeToString(s)(codec))
+private def sessionAsToken(s: ConnectionInformation) = writeToString(s)(codec)//Base64.encode(writeToString(s)(codec))
 
-private def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
+private def tokenAsSession(s: String) = readFromString(s)(codec)//readFromString(Base64.decode(s))(codec)
 
 private sealed trait State {
   def render(using state: Var[State], services: Services): VNode
@@ -95,7 +96,7 @@ private case class ClientAskingForHostSessionToken() extends State {
 
   private def connectToHost(using state: Var[State], services: Services): Unit = {
     val connection = webrtcIntermediate(WebRTC.answer())
-    connection.connector.set(tokenAsSession(sessionToken.now))
+    connection.connector.set(tokenAsSession(sessionToken.now).session)
     state.set(ClientWaitingForHostConfirmation(connection))
   }
 }
@@ -147,7 +148,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
   )
 
   private def confirmConnectionToClient(): Unit = {
-    connection.connector.set(tokenAsSession(sessionTokenFromClient.now))
+    connection.connector.set(tokenAsSession(sessionTokenFromClient.now).session)
   }
 
   private def onConnected()(using state: Var[State]): Unit = {
