@@ -23,7 +23,7 @@ case class Hiwi(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = Hiwi(Attribute.empty, Attribute.empty, Attribute.default, Attribute.empty, Attribute.default)
+  def default = Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

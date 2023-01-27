@@ -22,7 +22,7 @@ case class Project(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = Project(Attribute.empty, Attribute.default, Attribute.default, Attribute.default)
+  def default = Project(Attribute.empty, Attribute.empty, Attribute.default, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 
