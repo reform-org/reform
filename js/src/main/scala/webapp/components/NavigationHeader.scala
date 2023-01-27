@@ -33,29 +33,7 @@ def navigationMenu(using services: Services)(classes: String) = {
     cls := classes,
     li(
       a(
-        "Home",
-        href := "/",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HomePage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
-        "Login",
-        href := "/login",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(LoginPage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
-        "Projekte",
+        "Projects",
         href := "/projects",
         onClick.foreach(e => {
           e.preventDefault()
@@ -144,54 +122,65 @@ def navigationMenu(using services: Services)(classes: String) = {
   )
 }
 
-def navigationHeader(using services: Services) = {
+val hamburgerIcon = {
   import svg.*
-  // div(
-  //   cls := "navbar bg-base-300",
-  //   div(
-  //     cls := "navbar-start",
-  //     div(
-  //       cls := "dropdown",
-  //       label(
-  //         tabIndex := 0,
-  //         idAttr := "dropdown-button",
-  //         cls := "btn btn-ghost lg:hidden",
-  //         svg(
-  //           xmlns := "http://www.w3.org/2000/svg",
-  //           cls := "h-5 w-5",
-  //           fill := "none",
-  //           viewBox := "0 0 24 24",
-  //           stroke := "currentColor",
-  //           path(
-  //             VModifier.attr("stroke-linecap") := "round",
-  //             VModifier.attr("stroke-linejoin") := "round",
-  //             VModifier.attr("stroke-width") := "2",
-  //             d := "M4 6h16M4 12h8m-8 6h16",
-  //           ),
-  //         ),
-  //       ),
-  //       navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
-  //     ),
-  //     a(cls := "btn btn-ghost normal-case text-xl", "reform"),
-  //   ),
-  //   div(
-  //     cls := "navbar-center hidden lg:flex",
-  //     navigationMenu("menu menu-horizontal p-0"),
-  //   ),
-  //   div(
-  //     i(
-  //       services.webrtc.connections.map(_.size),
-  //       " Connections",
-  //       cls := "btn btn-ghost",
-  //     ),
-  //   ),
-  // )
+  svg(
+    xmlns := "http://www.w3.org/2000/svg",
+    cls := "h-5 w-5",
+    fill := "none",
+    viewBox := "0 0 24 24",
+    stroke := "currentColor",
+    path(
+      VModifier.attr("stroke-linecap") := "round",
+      VModifier.attr("stroke-linejoin") := "round",
+      VModifier.attr("stroke-width") := "2",
+      d := "M4 6h16M4 12h8m-8 6h16",
+    ),
+  )
+}
+
+val reformLogo = {
+span(
+  cls := "font-bold font-roboto-slab ",
+  "REForm"
+)
+}
+
+def navigationHeader(using services: Services) = {
   div(
-    cls := "navbar bg-base-100",
-    div(cls := "flex-1", a(cls := "btn btn-ghost normal-case text-xl", "daisyUI")),
+    cls := "navbar bg-base-100 shadow",
+    div(
+      cls := "flex-none",
+      div(
+        cls := "dropdown",
+        label(
+          tabIndex := 0,
+          idAttr := "dropdown-button",
+          cls := "btn btn-ghost lg:hidden",
+          hamburgerIcon,
+        ),
+        navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+      ),
+    ),
+    div(
+      cls := "flex-1",
+      a(
+        reformLogo,
+        cls := "btn btn-ghost normal-case text-xl",
+        href := "/",
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          services.routing.to(HomePage(), true)
+        }),
+      ),
+    ),
+    div(
+      cls := "navbar-center hidden lg:flex",
+      navigationMenu("menu menu-horizontal p-0"),
+    ),
     div(
       cls := "flex-none gap-2",
-      div(cls := "form-control", input(tpe := "text", placeholder := "Search", cls := "input input-bordered")),
       div(
         cls := "dropdown dropdown-end",
         label(
@@ -201,7 +190,7 @@ def navigationHeader(using services: Services) = {
         ),
         ul(
           tabIndex := 0,
-          cls := "mt-3 p-2 shadow menu menu-compact dropdown-content bg-base-100 rounded-box w-52",
+          cls := "mt-3 p-2 shadow-xl menu menu-compact dropdown-content bg-base-100 rounded-box w-52",
           li(
             a(cls := "justify-between", "Profile", span(cls := "badge", "New")),
           ),
@@ -210,6 +199,10 @@ def navigationHeader(using services: Services) = {
           ),
           li(
             a("Logout"),
+          ),
+          li(
+            services.webrtc.connections.map(_.size),
+            " Connections",
           ),
         ),
       ),
