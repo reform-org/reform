@@ -293,10 +293,14 @@ export class Peer {
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		//await driver.manage().window().setRect({x: 0, y: 0, width: 2000, height: 750})
+		await driver
+			.manage()
+			.window()
+			.setRect({ x: 0, y: 0, width: 1200, height: 750 });
 
 		await driver.manage().setTimeouts({
 			script: 10000,
+			implicit: 2000,
 		});
 
 		let id = (await driver.getSession()).getId();
