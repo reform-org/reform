@@ -126,7 +126,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
+          services.routing.to(ContractSchemasPage(), true)
         }),
       ),
     ),
@@ -137,7 +137,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
+          services.routing.to(ContractsPage(), true)
         }),
       ),
     ),

@@ -21,7 +21,6 @@ case class Contract(
     _contractHoursPerMonth: Attribute[Int] = Attribute.empty,
     _isDraft: Attribute[Boolean] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
-
 ) extends Entity[Contract]
     derives DecomposeLattice,
       Bottom {

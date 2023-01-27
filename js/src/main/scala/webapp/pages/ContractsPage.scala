@@ -19,7 +19,6 @@ import webapp.Repositories
 import webapp.entity.*
 import webapp.utils.Date
 
-
 private val contractAssociatedHiwi: UIAttribute[Contract, String] = UIAttribute(
   _._contractAssociatedHiwi,
   (p, a) => p.copy(_contractAssociatedHiwi = a),
@@ -60,16 +59,7 @@ private val contractEndDate: UIDateAttribute[Contract, Long] = UIDateAttribute(
   writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
   placeholder = "EndDate",
 )
-/*
-private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
-  _._value,
-  (p, a) => p.copy(_value = a),
-  readConverter = number => (number / 100.0).toString(),
-  writeConverter = number => Math.round(number.toFloat * 100),
-  placeholder = "Value",
-  fieldType = "number",
 
-*/
 private val contractHoursPerMonth: UIAttribute[Contract, Int] = UIAttribute(
   _._contractHoursPerMonth,
   (p, a) => p.copy(_contractHoursPerMonth = a),
@@ -87,4 +77,16 @@ private val contractAssociatedPaymentLevel: UIAttribute[Contract, String] = UIAt
   placeholder = "AssociatedPaymentLevel",
 )
 
-case class ContractsPage() extends EntityPage[Contract](Repositories.contracts, Seq(contractAssociatedHiwi,contractType,contractAssociatedSupervisor,contractStartDate,contractEndDate,contractHoursPerMonth,contractAssociatedPaymentLevel)) {}
+case class ContractsPage()
+    extends EntityPage[Contract](
+      Repositories.contracts,
+      Seq(
+        contractAssociatedHiwi,
+        contractType,
+        contractAssociatedSupervisor,
+        contractStartDate,
+        contractEndDate,
+        contractHoursPerMonth,
+        contractAssociatedPaymentLevel,
+      ),
+    ) {}
