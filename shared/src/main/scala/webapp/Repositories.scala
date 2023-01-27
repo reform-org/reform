@@ -1,6 +1,6 @@
 package webapp
 
-import webapp.entity.{Hiwi, PaymentLevel, Project, User}
+import webapp.entity.*
 import webapp.repo.Repository
 
 object Repositories {
