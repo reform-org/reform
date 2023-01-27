@@ -38,7 +38,7 @@ describe.concurrent("safari-compatible", () => {
 	});
 });
 
-describe.concurrent("safari-incompatible", () => {
+describe.skipIf(process.env.SELENIUM_BROWSER === 'safari').concurrent("safari-incompatible", () => {
 	it("connects", async () => {
 		let peers = await startPeers(2);
 		await loadPage(peers);
