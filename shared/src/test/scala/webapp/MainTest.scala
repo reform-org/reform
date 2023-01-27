@@ -32,8 +32,8 @@ object MainTest extends TestSuite {
     test("test that creating a project works") {
       assert(projects.all.now.length == 0)
       projects.create()
-      Thread.sleep(1000) // TODO FIXME
-      assert(projects.all.now.length == 1)
+      eventually(projects.all.now.length == 1)
+      continually(projects.all.now.length == 1)
     }
   }
 
