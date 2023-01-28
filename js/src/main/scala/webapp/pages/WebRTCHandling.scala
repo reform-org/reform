@@ -108,7 +108,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
 ) extends State {
   registry.connect(connection.connector).foreach(_ => onConnected())
 
-  override def render(using state: Var[State]): VNode = div(
+  override def render(using state: Var[State], registry: Registry): VNode = div(
     h2(
       cls := "w-full text-2xl text-center",
       "Give the host your confirmation token and wait for them to confirm the connection",
@@ -126,7 +126,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
   private val sessionTokenFromClient = Var("")
   registry.connect(connection.connector).foreach(_ => onConnected())
 
-  override def render(using state: Var[State]): VNode = div(
+  override def render(using state: Var[State], registry: Registry): VNode = div(
     cls := "p-1",
     h2(
       cls := "w-full text-2xl text-center",
@@ -158,5 +158,5 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
 }
 
 private case object Connected extends State {
-  def render(using state: Var[State]): VNode = h2(cls := "w-full text-2xl text-center", "Connected")
+  def render(using state: Var[State], registry: Registry): VNode = h2(cls := "w-full text-2xl text-center", "Connected")
 }

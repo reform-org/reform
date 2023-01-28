@@ -25,7 +25,7 @@ import webapp.pages.*
 import webapp.services.Page
 
 object Routes {
-  val fromPath: Path => Page = {
+  def fromPath(using repositories: Repositories): Path => Page = {
     case Root                    => HomePage()
     case Root / "login"          => LoginPage()
     case Root / "projects"       => ProjectsPage()
@@ -38,7 +38,7 @@ object Routes {
     case Root / "contractSchema" => ContractSchemasPage();
   }
 
-  val toPath: Page => Path = {
+  def toPath: Page => Path = {
     case HomePage()            => Root / ""
     case LoginPage()           => Root / "login"
     case ProjectsPage()        => Root / "projects"

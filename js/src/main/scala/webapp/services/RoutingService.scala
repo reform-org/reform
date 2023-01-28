@@ -39,7 +39,7 @@ class RoutingState(
     val canReturn: Boolean,
 ) extends js.Object
 
-class RoutingService() {
+class RoutingService(using repositories: Repositories) {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
   def render(using routing: RoutingService, repositories: Repositories, registry: Registry): Signal[VNode] =
