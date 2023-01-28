@@ -16,10 +16,13 @@ limitations under the License.
 package webapp
 
 import utest.*
-import webapp.Repositories.projects
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*
+import webapp.repo.Repository
+import webapp.Repositories.*
+import webapp.entity.*
+import webapp.{*, given}
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
@@ -28,12 +31,45 @@ object MainTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
+  def testRepository[T <: Entity[T]](repository: Repository[T]) = {
+      assert(repository.all.now.length == 0)
+      repository.create().map(value => {
+        value.signal.now.exists
+        value.signal.now.identifier
+        value.signal.now.withExists(false).exists
+        value.signal.now.default
+      })
+      eventually(repository.all.now.length == 1)
+      continually(repository.all.now.length == 1)
+  }
+
   val tests: Tests = Tests {
-    test("test that creating a project works") {
-      assert(projects.all.now.length == 0)
-      projects.create()
-      eventually(projects.all.now.length == 1)
-      continually(projects.all.now.length == 1)
+    test("test projects repository") {
+      testRepository(projects)
+    }
+
+    test("test users repository") {
+      testRepository(users)
+    }
+
+    test("test hiwis repository") {
+      testRepository(hiwis)
+    }
+
+    test("test supervisor repository") {
+      testRepository(supervisor)
+    }
+
+    test("test contractSchemas repository") {
+      testRepository(contractSchemas)
+    }
+
+    test("test paymentLevels repository") {
+      testRepository(paymentLevels)
+    }
+
+    test("test salaryChanges repository") {
+      testRepository(salaryChanges)
     }
   }
 
