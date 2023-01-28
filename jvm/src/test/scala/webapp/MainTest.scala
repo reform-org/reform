@@ -30,7 +30,7 @@ import webapp.npm.IIndexedDB
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
-  
+
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
     () // Return unit to prevent warning due to discarding value
@@ -64,8 +64,10 @@ object MainTest extends TestSuite {
     test("syncing") {
       val registry0 = Registry()
       val registry1 = Registry()
-      val repositories0 = Repositories(using registry0)
-      val repositories1 = Repositories(using registry1)
+      val indexedDb0: IIndexedDB = IndexedDB()
+      val indexedDb1: IIndexedDB = IndexedDB()
+      val repositories0 = Repositories(using registry0, indexedDb0)
+      val repositories1 = Repositories(using registry1, indexedDb1)
       testRepository(repositories0.projects)
       eventually(repositories0.projects.all.now.length == 1)
       continually(repositories1.projects.all.now.length == 0)

@@ -8,7 +8,10 @@ import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 
-case class Storage[T](private val name: String, private val defaultValue: T)(using codec: JsonValueCodec[T], indexedDb: IIndexedDB) {
+case class Storage[T](private val name: String, private val defaultValue: T)(using
+    codec: JsonValueCodec[T],
+    indexedDb: IIndexedDB,
+) {
 
   def getOrDefault(id: String): Future[T] =
     indexedDb
