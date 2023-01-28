@@ -51,18 +51,26 @@ private class EntityRow[T <: Entity[T]](
             tr(
               cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
               uiAttributes.map(ui => {
-                ui.renderEdit(editingValue)
+                ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
               }),
               td(
-                cls := "py-1 space-x-1 w-1/6", {
+                cls := "py-1 space-x-1 w-1/6",
+                form(
+                  idAttr := s"form-${existingValue.map(_.id)}",
+                  onSubmit.foreach(e => {
+                    e.preventDefault()
+                    createOrUpdate()
+                  }),
+                ), {
                   existingValue match {
                     case Some(p) => {
                       List(
                         button(
-                          cls := " btn",
+                          cls := "btn",
+                          formId := s"form-${existingValue.map(_.id)}",
+                          `type` := "submit",
                           idAttr := "add-entity-button",
                           "Save edit",
-                          onClick.foreach(_ => createOrUpdate()),
                         ),
                         button(
                           cls := "btn",
@@ -75,9 +83,10 @@ private class EntityRow[T <: Entity[T]](
                     case None => {
                       button(
                         cls := "btn",
+                        formId := s"form-${existingValue.map(_.id)}",
+                        `type` := "submit",
                         idAttr := "add-entity-button",
                         "Add Entity",
-                        onClick.foreach(_ => createOrUpdate()),
                       )
                     }
                   }
@@ -157,7 +166,7 @@ private class EntityRow[T <: Entity[T]](
             entity.update(p => {
               p.merge(editingNow.get)
             })
-            editingValue.set(Some(bottom.empty))
+            editingValue.set(Some(bottom.empty.default))
           })
       }
     })
@@ -175,7 +184,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 ) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](repository, None, Var(Some(bottom.empty)), uiAttributes)
+    EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
   def render(using services: Services): VNode = {
     div(
@@ -187,7 +196,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
           // cls := "table-auto",
           thead(
             tr(
-              uiAttributes.map(a => th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", a.placeholder)),
+              uiAttributes.map(a => th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", a.label)),
               th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", "Stuff"),
             ),
           ),

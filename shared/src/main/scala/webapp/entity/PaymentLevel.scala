@@ -10,6 +10,7 @@ import kofre.syntax.*
 import kofre.time.VectorClock
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class PaymentLevel(
     _title: Attribute[String] = Attribute.empty,
@@ -17,6 +18,9 @@ case class PaymentLevel(
 ) extends Entity[PaymentLevel]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = PaymentLevel(Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

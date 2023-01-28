@@ -10,6 +10,7 @@ import kofre.syntax.*
 import kofre.time.VectorClock
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class Hiwi(
     _firstName: Attribute[String] = Attribute.empty,
@@ -20,6 +21,9 @@ case class Hiwi(
 ) extends Entity[Hiwi]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

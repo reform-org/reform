@@ -10,6 +10,7 @@ import kofre.syntax.*
 import kofre.time.VectorClock
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class ContractSchema(
     _name: Attribute[String] = Attribute.empty,
@@ -17,6 +18,9 @@ case class ContractSchema(
 ) extends Entity[ContractSchema]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = ContractSchema(Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

@@ -23,7 +23,9 @@ private val title: UIAttribute[PaymentLevel, String] = UIAttribute(
   (p, a) => p.copy(_title = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Title",
+  label = "Title",
+  fieldType = "text",
+  isRequired = true,
 )
 
 case class PaymentLevelsPage() extends EntityPage[PaymentLevel](Repositories.paymentLevels, Seq(title)) {}
