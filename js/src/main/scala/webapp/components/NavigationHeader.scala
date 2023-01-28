@@ -35,122 +35,61 @@ def navigationMenu(using services: Services)(classes: String) = {
     li(
       a(
         "Home",
-        // href := "/",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(HomePage(), true)
-          navigationLink(HomePage())
-        }),
+        href := navigationLink(HomePage()),
       ),
     ),
     li(
       a(
         "Login",
-        // href := "/login",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(LoginPage(), true)
-          // href := services.routing.linkPath(LoginPage())
-          navigationLink(LoginPage())
-        }),
+        href := navigationLink(LoginPage()),
       ),
     ),
     li(
       a(
         "Projekte",
-        // href := "/projects",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(ProjectsPage(), true)
-          navigationLink(ProjectsPage())
-        }),
+        href := navigationLink(ProjectsPage()),
       ),
     ),
     li(
       a(
         "Users",
-        // href := "/users",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(UsersPage(), true)
-          navigationLink(UsersPage())
-        }),
+        href := navigationLink(UsersPage()),
       ),
     ),
     li(
       a(
         "Paymentlevels",
-        // href := "/paymentlevels",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(PaymentLevelsPage(), true)
-          navigationLink(PaymentLevelsPage())
-        }),
+        href := navigationLink(PaymentLevelsPage()),
       ),
     ),
     li(
       a(
         "SalaryChanges",
-        // href := "/salarychanges",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(SalaryChangesPage(), true)
-          navigationLink(SalaryChangesPage())
-        }),
+        href := navigationLink(SalaryChangesPage()),
       ),
     ),
     li(
       a(
         "Hiwis",
-        // href := "/hiwis",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(HiwisPage(), true)
-          navigationLink(HiwisPage())
-        }),
+        href := navigationLink(HiwisPage()),
       ),
     ),
     li(
       a(
         "Supervisors",
-        // href := "/supervisors",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(SupervisorsPage(), true)
-          navigationLink(SupervisorsPage())
-        }),
+        href := navigationLink(SupervisorsPage()),
       ),
     ),
     li(
       a(
         "ContractSchemas",
-        // href := "/contractSchemas",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(SupervisorsPage(), true)
-          navigationLink(ContractSchemasPage())
-        }),
+        href := navigationLink(ContractSchemasPage()),
       ),
     ),
     li(
       a(
         "WebRTC",
-        // href := "/webrtc",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          // services.routing.to(WebRTCHandling(), true)
-          navigationLink(WebRTCHandling())
-        }),
+        href := navigationLink(WebRTCHandling()),
       ),
     ),
     li(
@@ -198,7 +137,11 @@ def navigationHeader(using services: Services) = {
   )
 }
 
-def navigationLink(using services: Services)(page: Page) = {
-  services.routing.to(page, true)
-  href := services.routing.linkPath(page)
+def navigationLink(using services: Services)(page: Page): String = {
+  onClick.foreach(e => {
+    e.preventDefault()
+    e.target.asInstanceOf[HTMLElement].blur()
+    services.routing.to(page, true)
+  })
+  services.routing.linkPath(page)
 }
