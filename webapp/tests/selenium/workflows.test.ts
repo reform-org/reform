@@ -74,7 +74,6 @@ describe.concurrent("safari-compatible", () => {
 	});
 
 	afterAll(async () => {
-		await peer.driver.sleep(1000)
 		await quitPeers([peer]);
 	})
 });
