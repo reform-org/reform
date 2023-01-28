@@ -23,6 +23,8 @@ import webapp.repo.Repository
 import webapp.Repositories.*
 import webapp.entity.*
 import webapp.{*, given}
+import webapp.webrtc.WebRTCService
+import loci.communicator.tcp.TCP
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
@@ -44,6 +46,11 @@ object MainTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
+    test("syncing") {
+      WebRTCService.registry.listen(TCP(1337))
+      WebRTCService.registry.connect(TCP("localhost", 1337))
+    }
+
     test("test projects repository") {
       testRepository(projects)
     }
