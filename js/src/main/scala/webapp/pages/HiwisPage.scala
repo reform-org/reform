@@ -23,7 +23,9 @@ private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
   (p, a) => p.copy(_firstName = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "First Name",
+  label = "First Name",
+  fieldType = "text",
+  isRequired = true,
 )
 
 private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
@@ -31,7 +33,9 @@ private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
   (p, a) => p.copy(_lastName = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Last Name",
+  label = "Last Name",
+  fieldType = "text",
+  isRequired = true,
 )
 
 private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
@@ -39,7 +43,9 @@ private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
   (p, a) => p.copy(_hours = a),
   readConverter = _.toString,
   writeConverter = _.toInt,
-  placeholder = "Hours",
+  label = "Hours",
+  fieldType = "number",
+  isRequired = true,
 )
 
 private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
@@ -47,7 +53,9 @@ private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
   (p, a) => p.copy(_eMail = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Email",
+  label = "Email",
+  fieldType = "text",
+  isRequired = true,
 )
 
 case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}

@@ -49,20 +49,28 @@ private class EntityRow[T <: Entity[T]](
         case Some(_) => {
           val res = Some(
             tr(
-              cls := "hover:bg-gray-100",
+              cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
               uiAttributes.map(ui => {
-                ui.renderEdit(editingValue)
+                ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
               }),
               td(
-                cls := "w-1/6 space-x-1 space-y-1", {
+                cls := "py-1 space-x-1 w-1/6",
+                form(
+                  idAttr := s"form-${existingValue.map(_.id)}",
+                  onSubmit.foreach(e => {
+                    e.preventDefault()
+                    createOrUpdate()
+                  }),
+                ), {
                   existingValue match {
                     case Some(p) => {
                       List(
                         button(
                           cls := "btn",
+                          formId := s"form-${existingValue.map(_.id)}",
+                          `type` := "submit",
                           idAttr := "add-entity-button",
                           "Save edit",
-                          onClick.foreach(_ => createOrUpdate()),
                         ),
                         button(
                           cls := "btn",
@@ -75,15 +83,16 @@ private class EntityRow[T <: Entity[T]](
                     case None => {
                       button(
                         cls := "btn",
+                        formId := s"form-${existingValue.map(_.id)}",
+                        `type` := "submit",
                         idAttr := "add-entity-button",
                         "Add Entity",
-                        onClick.foreach(_ => createOrUpdate()),
                       )
                     }
                   }
                 },
                 existingValue.map(p => {
-                  button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(p)))
+                  button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(p)))
                 }),
               ),
             ),
@@ -97,18 +106,19 @@ private class EntityRow[T <: Entity[T]](
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
-                      cls := "hover:bg-gray-100",
+                      cls := "border-b hover:bg-violet-100 dark:hover:bg-gray-600 dark:border-gray-700", // "border-b hover:bg-gray-100 dark:hover:bg-violet-900 dark:border-violet-900",
                       data.id := syncedEntity.id,
                       uiAttributes.map(ui => {
                         ui.render(p)
                       }),
                       td(
+                        cls := "py-1 space-x-1 w-1/6",
                         button(
                           cls := "btn",
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        button(cls := "btn", "Delete", onClick.foreach(_ => removeEntity(syncedEntity))),
+                        button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(syncedEntity))),
                       ),
                     ),
                   )
@@ -156,7 +166,7 @@ private class EntityRow[T <: Entity[T]](
             entity.update(p => {
               p.merge(editingNow.get)
             })
-            editingValue.set(Some(bottom.empty))
+            editingValue.set(Some(bottom.empty.default))
           })
       }
     })
@@ -174,20 +184,20 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 ) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](repository, None, Var(Some(bottom.empty)), uiAttributes)
+    EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
   def render(using services: Services): VNode = {
     div(
       navigationHeader,
       div(
-        cls := "items-center w-full px-4 py-4 mx-auto my-5 bg-white rounded-lg shadow-md",
+        cls := "relative overflow-x-auto shadow-md sm:rounded-lg pt-4 ", // " px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",
         table(
-          cls := "w-full text-left table-auto border-separate border-spacing-y-4",
+          cls := "w-full text-left table-auto border-collapse ", // border-separate border-spacing-y-4
           // cls := "table-auto",
           thead(
             tr(
-              uiAttributes.map(a => th(a.placeholder)),
-              th("Stuff"),
+              uiAttributes.map(a => th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", a.label)),
+              th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", "Stuff"),
             ),
           ),
           tbody(

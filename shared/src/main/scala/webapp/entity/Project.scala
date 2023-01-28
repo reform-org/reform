@@ -10,6 +10,7 @@ import kofre.syntax.*
 import kofre.time.VectorClock
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class Project(
     _name: Attribute[String] = Attribute.empty,
@@ -19,6 +20,9 @@ case class Project(
 ) extends Entity[Project]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = Project(Attribute.empty, Attribute.empty, Attribute.default, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

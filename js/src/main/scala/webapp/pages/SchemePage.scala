@@ -23,7 +23,9 @@ private val scname: UIAttribute[ContractSchema, String] = UIAttribute(
   (p, a) => p.copy(_name = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "Name",
+  label = "Name",
+  fieldType = "text",
+  isRequired = true,
 )
 
 case class ContractSchemasPage() extends EntityPage[ContractSchema](Repositories.contractSchemas, Seq(scname)) {}

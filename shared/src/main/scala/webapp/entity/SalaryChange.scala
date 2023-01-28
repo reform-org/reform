@@ -11,6 +11,7 @@ import loci.serializer.jsoniterScala.given
 import rescala.default.*
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
+import webapp.entity.Attribute.given
 
 case class SalaryChange(
     var _value: Attribute[Int] = Attribute.empty,
@@ -20,6 +21,9 @@ case class SalaryChange(
 ) extends Entity[SalaryChange]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

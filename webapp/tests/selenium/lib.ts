@@ -1,4 +1,12 @@
-import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
+import "./fast-selenium.js";
+import {
+	Builder,
+	By,
+	Capabilities,
+	Condition,
+	until,
+	WebDriver,
+} from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
 import safari from "selenium-webdriver/safari.js";
@@ -286,18 +294,59 @@ export class Peer {
 			firefoxOptions = firefoxOptions.headless();
 		}
 
+		const capabilities: Record<string, {}> = {
+			chrome: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "Windows",
+					osVersion: "11",
+					browserVersion: "103.0",
+					buildName: "browserstack-build-1",
+					sessionName: "Parallel test 1",
+				},
+				browserName: "Chrome",
+			},
+			firefox: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "Windows",
+					osVersion: "10",
+					browserVersion: "102.0",
+					buildName: "browserstack-build-1",
+					sessionName: "Parallel test 2",
+				},
+				browserName: "Firefox",
+			},
+			safari: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Big Sur",
+					browserVersion: "14.1",
+					buildName: "browserstack-build-1",
+					sessionName: "Parallel test 3",
+				},
+				browserName: "Safari",
+			},
+		};
+
 		let driver = new Builder()
-			.forBrowser("chrome")
+			.withCapabilities(capabilities[process.env.SELENIUM_BROWSER!])
 			.setChromeOptions(chromeOptions)
 			.setFirefoxOptions(firefoxOptions)
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		//await driver.manage().window().setRect({x: 0, y: 0, width: 2000, height: 750})
-
-		await driver.manage().setTimeouts({
-			script: 10000,
-		});
+		await driver
+			.manage()
+			.window()
+			.setRect({ width: 1200, height: 750 });
 
 		let id = (await driver.getSession()).getId();
 
@@ -387,7 +436,7 @@ export async function check(peers: Peer[]) {
 
 	let result = await peers[0].driver.wait(
 		condition,
-		10000,
+		20000,
 		"waiting for peers synced timed out",
 	);
 	assert.strictEqual(result, true);
