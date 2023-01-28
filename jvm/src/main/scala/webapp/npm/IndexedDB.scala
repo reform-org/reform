@@ -26,7 +26,7 @@ object IndexedDB extends IIndexedDB {
   private val data: mutable.Map[String, Any] = mutable.Map()
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
-    val o = data.get(key).map(_.asInstanceOf)
+    val o = data.get(key).map(_.asInstanceOf[T])
     Future.successful(o)
   }
 
