@@ -26,6 +26,7 @@ import webapp.given
 import webapp.pages.*
 import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
+import webapp.services.Page
 
 def navigationMenu(using services: Services)(classes: String) = {
   ul(
@@ -34,110 +35,121 @@ def navigationMenu(using services: Services)(classes: String) = {
     li(
       a(
         "Home",
-        href := "/",
+        // href := "/",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HomePage(), true)
+          // services.routing.to(HomePage(), true)
+          navigationLink(HomePage())
         }),
       ),
     ),
     li(
       a(
         "Login",
-        href := "/login",
+        // href := "/login",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(LoginPage(), true)
+          // services.routing.to(LoginPage(), true)
+          // href := services.routing.linkPath(LoginPage())
+          navigationLink(LoginPage())
         }),
       ),
     ),
     li(
       a(
         "Projekte",
-        href := "/projects",
+        // href := "/projects",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ProjectsPage(), true)
+          // services.routing.to(ProjectsPage(), true)
+          navigationLink(ProjectsPage())
         }),
       ),
     ),
     li(
       a(
         "Users",
-        href := "/users",
+        // href := "/users",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(UsersPage(), true)
+          // services.routing.to(UsersPage(), true)
+          navigationLink(UsersPage())
         }),
       ),
     ),
     li(
       a(
         "Paymentlevels",
-        href := "/paymentlevels",
+        // href := "/paymentlevels",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(PaymentLevelsPage(), true)
+          // services.routing.to(PaymentLevelsPage(), true)
+          navigationLink(PaymentLevelsPage())
         }),
       ),
     ),
     li(
       a(
         "SalaryChanges",
-        href := "/salarychanges",
+        // href := "/salarychanges",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SalaryChangesPage(), true)
+          // services.routing.to(SalaryChangesPage(), true)
+          navigationLink(SalaryChangesPage())
         }),
       ),
     ),
     li(
       a(
         "Hiwis",
-        href := "/hiwis",
+        // href := "/hiwis",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HiwisPage(), true)
+          // services.routing.to(HiwisPage(), true)
+          navigationLink(HiwisPage())
         }),
       ),
     ),
     li(
       a(
         "Supervisors",
-        href := "/supervisors",
+        // href := "/supervisors",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
+          // services.routing.to(SupervisorsPage(), true)
+          navigationLink(SupervisorsPage())
         }),
       ),
     ),
     li(
       a(
         "ContractSchemas",
-        href := "/contractSchemas",
+        // href := "/contractSchemas",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
+          // services.routing.to(SupervisorsPage(), true)
+          navigationLink(ContractSchemasPage())
         }),
       ),
     ),
     li(
       a(
         "WebRTC",
-        href := "/webrtc",
+        // href := "/webrtc",
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(WebRTCHandling(), true)
+          // services.routing.to(WebRTCHandling(), true)
+          navigationLink(WebRTCHandling())
         }),
       ),
     ),
@@ -184,4 +196,9 @@ def navigationHeader(using services: Services) = {
       navigationMenu("menu menu-horizontal p-0"),
     ),
   )
+}
+
+def navigationLink(using services: Services)(page: Page) = {
+  services.routing.to(page, true)
+  href := services.routing.linkPath(page)
 }
