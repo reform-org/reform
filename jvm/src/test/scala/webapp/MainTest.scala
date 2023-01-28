@@ -59,8 +59,17 @@ object MainTest extends TestSuite {
     }
 
     test("syncing") {
-      registry.listen(TCP(1337))
-      registry.connect(TCP("localhost", 1337))
+      val registry0 = Registry()
+      val registry1 = Registry()
+      val repositories0 = Repositories(using registry0)
+      val repositories1 = Repositories(using registry1)
+      testRepository(repositories0.projects)
+      eventually(repositories0.projects.all.now.length == 1)
+      continually(repositories1.projects.all.now.length == 0)
+      registry0.listen(TCP(1337))
+      registry1.connect(TCP("localhost", 1337))
+      eventually(repositories1.projects.all.now.length == 1)
+      continually(repositories1.projects.all.now.length == 1)
     }
 
     test("test users repository") {
