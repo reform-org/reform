@@ -23,19 +23,10 @@ import webapp.utils.Base64
 
 case class WebRTCHandling(private val state: Var[State] = Var(Init)) extends Page {
 
-  override def render(using services: Services): VNode = {
-    for( a <- 1 to 1000) {
-      val pendingConnection = webrtcIntermediate(WebRTC.offer())
-      services.webrtc.registry.connect(pendingConnection.connector)
-      pendingConnection.session.map(session => {
-        println(writeToString(session)(codec))
-      })
-    }
-    div(
-      navigationHeader,
-      state.map(_.render(using state)),
-    )
-  }
+  override def render(using services: Services): VNode = div(
+    navigationHeader,
+    state.map(_.render(using state)),
+  )
 }
 
 private case class PendingConnection(connector: WebRTC.Connector, session: Future[WebRTC.CompleteSession])
