@@ -16,7 +16,7 @@ import { strict as assert } from "node:assert";
 export let seed = new Chance().integer();
 //let seed = 5475712614006784;
 export var chance = new Chance(seed);
-console.log(`The seed is: ${chance.seed}`);
+console.error(`The seed is: ${chance.seed}`);
 
 // The code in here (especially the selenium communication) needs to be optimized well because it will be run a lot in tests.
 

@@ -16,22 +16,37 @@ import outwatch.dsl.*
 
 case class WebRTCCompression() extends Page {
   private val offers = Var("")
+  private val count = Var(0)
 
   private val codec: JsonValueCodec[webrtc.WebRTC.CompleteSession] = JsonCodecMaker.make
 
-  override def render(using services: Services): VNode = {
-    for( a <- 1 to 1000) {
-      val pendingConnection = webrtcIntermediate(WebRTC.offer())
-      services.webrtc.registry.connect(pendingConnection.connector)
-      pendingConnection.session.map(session => {
-        offers.transform(v =>
-            v + writeToString(session)(codec) + "\n"
-        )
+  def magic(using services: Services): Unit = {
+    val pendingConnection = webrtcIntermediate(WebRTC.offer())
+    services.webrtc.registry.connect(pendingConnection.connector)
+    pendingConnection.session.map(session => {
+      count.transform(value => {
+        if (value < 399) {
+          magic
+        }
+        value + 1
       })
-    }
-    pre(
-        idAttr := "webrtc-compression",
-        offers
+      offers.transform(v =>
+          v + writeToString(session)(codec) + "\n"
+      )
+    })
+  }
+
+  override def render(using services: Services): VNode = {
+    magic
+    div(
+      pre(
+          idAttr := "webrtc-compression-count",
+          count
+      ),
+      pre(
+          idAttr := "webrtc-compression",
+          offers
+      )
     )
   }
 }
