@@ -3,8 +3,9 @@ package webapp
 import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User}
 import webapp.repo.Repository
 import loci.registry.Registry
+import webapp.npm.IIndexedDB
 
-class Repositories(using registry: Registry) {
+class Repositories(using registry: Registry, indexedDb: IIndexedDB) {
 
   val projects: Repository[Project] = Repository("project", Project.empty)
   val users: Repository[User] = Repository("user", User.empty)

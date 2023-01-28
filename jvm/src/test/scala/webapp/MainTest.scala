@@ -25,6 +25,8 @@ import webapp.{*, given}
 import loci.communicator.tcp.TCP
 import loci.registry.Registry
 import webapp.repo.Synced
+import webapp.npm.IndexedDB
+import webapp.npm.IIndexedDB
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
@@ -52,6 +54,7 @@ object MainTest extends TestSuite {
 
   val tests: Tests = Tests {
     given registry: Registry = Registry()
+    given indexedDb: IIndexedDB = IndexedDB()
     given repositories: Repositories = Repositories()
 
     test("test projects repository") {

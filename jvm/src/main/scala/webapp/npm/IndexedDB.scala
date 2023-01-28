@@ -21,7 +21,7 @@ import scala.scalajs.js.JSConverters.*
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 
-object IndexedDB extends IIndexedDB {
+class IndexedDB extends IIndexedDB {
 
   private val data: mutable.Map[String, Any] = mutable.Map()
 

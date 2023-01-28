@@ -28,9 +28,11 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
 import loci.registry.Registry
+import webapp.npm.IIndexedDB
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
+    indexedDb: IIndexedDB,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],

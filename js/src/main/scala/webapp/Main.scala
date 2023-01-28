@@ -24,6 +24,8 @@ import scala.scalajs.js
 import js.annotation.*
 import webapp.services.RoutingService
 import loci.registry.Registry
+import webapp.npm.IIndexedDB
+import webapp.npm.IndexedDB
 
 // object JavaScriptHot {
 //   @js.native
@@ -60,6 +62,7 @@ object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
     given routing: RoutingService = RoutingService()
+    given indexedDb: IIndexedDB = IndexedDB()
     given repositories: Repositories = Repositories()
     given registry: Registry = Registry()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
