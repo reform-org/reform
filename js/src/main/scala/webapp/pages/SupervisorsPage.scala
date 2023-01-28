@@ -48,5 +48,5 @@ private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
   isRequired = true,
 )
 
-case class SupervisorsPage()
-    extends EntityPage[Supervisor](Repositories.supervisor, Seq(sfirstName, slastName, seMail)) {}
+case class SupervisorsPage()(using repositories: Repositories)
+    extends EntityPage[Supervisor](repositories.supervisor, Seq(sfirstName, slastName, seMail)) {}

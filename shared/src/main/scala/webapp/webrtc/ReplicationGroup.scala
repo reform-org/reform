@@ -19,7 +19,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import kofre.base.Lattice.*
-import webapp.webrtc.WebRTCService.*
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.default.*
@@ -30,6 +29,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
 import rescala.core.Disconnectable
+import loci.registry.Registry
 
 /** @param name
   *   The name/type of the thing to sync
@@ -45,7 +45,7 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
-class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
+class ReplicationGroup[A](name: String)(using registry: Registry, dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 

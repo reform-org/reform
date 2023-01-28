@@ -22,9 +22,11 @@ import rescala.default.*
 import webapp.*
 import webapp.components.navigationHeader
 import webapp.services.Page
+import webapp.services.RoutingService
+import loci.registry.Registry
 
 case class LoginPage() extends Page {
-  def render(using services: Services): VNode =
+  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): VNode =
     div(
       navigationHeader,
       div(

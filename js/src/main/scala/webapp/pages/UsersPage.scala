@@ -48,4 +48,4 @@ private val comment: UIAttribute[User, Option[String]] = UIAttribute(
   isRequired = false, // TODO FIXME this probably still has the not initialized issue
 )
 
-case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}
+case class UsersPage()(using repositories: Repositories) extends EntityPage[User](repositories.users, Seq(username, role, comment)) {}

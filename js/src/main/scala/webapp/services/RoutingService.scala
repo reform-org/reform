@@ -27,9 +27,10 @@ import scala.reflect.Selectable.*
 import scala.scalajs.js
 import webapp.*
 import webapp.pages.*
+import loci.registry.Registry
 
 trait Page {
-  def render(using services: Services): VNode
+  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): VNode
 }
 
 class RoutingState(
@@ -41,7 +42,7 @@ class RoutingState(
 class RoutingService() {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
-  def render(using services: Services): Signal[VNode] =
+  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): Signal[VNode] =
     page.map(_.render)
 
   def to(newPage: Page, preventReturn: Boolean = false) = {

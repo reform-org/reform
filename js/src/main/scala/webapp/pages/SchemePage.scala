@@ -28,4 +28,4 @@ private val scname: UIAttribute[ContractSchema, String] = UIAttribute(
   isRequired = true,
 )
 
-case class ContractSchemasPage() extends EntityPage[ContractSchema](Repositories.contractSchemas, Seq(scname)) {}
+case class ContractSchemasPage()(using repositories: Repositories) extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(scname)) {}

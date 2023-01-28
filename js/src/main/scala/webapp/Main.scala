@@ -22,6 +22,8 @@ import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
 import js.annotation.*
+import webapp.services.RoutingService
+import loci.registry.Registry
 
 // object JavaScriptHot {
 //   @js.native
@@ -57,12 +59,14 @@ import js.annotation.*
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
-    implicit val services = ServicesDefault
+    given routing: RoutingService = RoutingService()
+    given repositories: Repositories = Repositories()
+    given registry: Registry = Registry()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using services: Services) = body(
-    services.routing.render,
+  def app(using routing: RoutingService, repositories: Repositories, registry: Registry) = body(
+    routing.render,
   )
 }
 

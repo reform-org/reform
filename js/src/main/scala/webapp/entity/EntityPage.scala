@@ -24,17 +24,17 @@ import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.Repositories.users
 import webapp.components.navigationHeader
 import webapp.repo.{Repository, Synced}
 import webapp.services.Page
-import webapp.webrtc.WebRTCService
 import webapp.{*, given}
 
 import java.util.UUID
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import loci.registry.Registry
+import webapp.services.RoutingService
 
 private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
@@ -186,7 +186,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
-  def render(using services: Services): VNode = {
+  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): VNode = {
     div(
       navigationHeader,
       div(
