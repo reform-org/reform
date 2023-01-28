@@ -48,4 +48,5 @@ private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
   isRequired = false, // TODO FIXME this probably still has the not initialized error
 )
 
-case class ProjectsPage()(using repositories: Repositories) extends EntityPage[Project](repositories.projects, Seq(name, maxHours, accountName)) {}
+case class ProjectsPage()(using repositories: Repositories)
+    extends EntityPage[Project](repositories.projects, Seq(name, maxHours, accountName)) {}

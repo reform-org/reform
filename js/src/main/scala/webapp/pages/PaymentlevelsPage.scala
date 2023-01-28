@@ -28,4 +28,5 @@ private val title: UIAttribute[PaymentLevel, String] = UIAttribute(
   isRequired = true,
 )
 
-case class PaymentLevelsPage()(using repositories: Repositories) extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
+case class PaymentLevelsPage()(using repositories: Repositories)
+    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}

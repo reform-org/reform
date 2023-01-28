@@ -58,4 +58,5 @@ private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
   isRequired = true,
 )
 
-case class HiwisPage()(using repositories: Repositories) extends EntityPage[Hiwi](repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}
+case class HiwisPage()(using repositories: Repositories)
+    extends EntityPage[Hiwi](repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}

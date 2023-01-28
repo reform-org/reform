@@ -45,7 +45,12 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
-class ReplicationGroup[A](name: String)(using registry: Registry, dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
+class ReplicationGroup[A](name: String)(using
+    registry: Registry,
+    dcl: DecomposeLattice[A],
+    bottom: Bottom[A],
+    codec: JsonValueCodec[A],
+) {
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 

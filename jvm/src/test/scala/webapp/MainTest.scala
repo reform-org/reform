@@ -34,15 +34,17 @@ object MainTest extends TestSuite {
   }
 
   def testRepository[T <: Entity[T]](repository: Repository[T]) = {
-      assert(repository.all.now.length == 0)
-      repository.create().map(value => {
+    assert(repository.all.now.length == 0)
+    repository
+      .create()
+      .map(value => {
         value.signal.now.exists
         value.signal.now.identifier
         value.signal.now.withExists(false).exists
         value.signal.now.default
       })
-      eventually(repository.all.now.length == 1)
-      continually(repository.all.now.length == 1)
+    eventually(repository.all.now.length == 1)
+    continually(repository.all.now.length == 1)
   }
 
   val tests: Tests = Tests {
