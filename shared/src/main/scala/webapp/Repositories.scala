@@ -2,8 +2,9 @@ package webapp
 
 import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User}
 import webapp.repo.Repository
+import loci.registry.Registry
 
-class Repositories {
+class Repositories(using registry: Registry) {
 
   val projects: Repository[Project] = Repository("project", Project.empty)
   val users: Repository[User] = Repository("user", User.empty)

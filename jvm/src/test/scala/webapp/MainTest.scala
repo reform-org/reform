@@ -20,65 +20,71 @@ import utest.*
 import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*
 import webapp.repo.Repository
-import webapp.Repositories.*
 import webapp.entity.*
 import webapp.{*, given}
-import webapp.webrtc.WebRTCService
 import loci.communicator.tcp.TCP
+import loci.registry.Registry
+import webapp.repo.Synced
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
+  
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
     () // Return unit to prevent warning due to discarding value
+  }
+
+  def testE[T <: Entity[T]](value: Synced[T]) = {
+    value.signal.now.exists
+    value.signal.now.identifier
+    value.signal.now.withExists(false).exists
+    value.signal.now.default
   }
 
   def testRepository[T <: Entity[T]](repository: Repository[T]) = {
     assert(repository.all.now.length == 0)
     repository
       .create()
-      .map(value => {
-        value.signal.now.exists
-        value.signal.now.identifier
-        value.signal.now.withExists(false).exists
-        value.signal.now.default
-      })
+      .map(value => testE(value))
     eventually(repository.all.now.length == 1)
     continually(repository.all.now.length == 1)
   }
 
   val tests: Tests = Tests {
-    test("syncing") {
-      WebRTCService.registry.listen(TCP(1337))
-      WebRTCService.registry.connect(TCP("localhost", 1337))
-    }
+    given registry: Registry = Registry()
+    given repositories: Repositories = Repositories()
 
     test("test projects repository") {
-      testRepository(projects)
+      testRepository(repositories.projects)
+    }
+
+    test("syncing") {
+      registry.listen(TCP(1337))
+      registry.connect(TCP("localhost", 1337))
     }
 
     test("test users repository") {
-      testRepository(users)
+      testRepository(repositories.users)
     }
 
     test("test hiwis repository") {
-      testRepository(hiwis)
+      testRepository(repositories.hiwis)
     }
 
     test("test supervisor repository") {
-      testRepository(supervisor)
+      testRepository(repositories.supervisor)
     }
 
     test("test contractSchemas repository") {
-      testRepository(contractSchemas)
+      testRepository(repositories.contractSchemas)
     }
 
     test("test paymentLevels repository") {
-      testRepository(paymentLevels)
+      testRepository(repositories.paymentLevels)
     }
 
     test("test salaryChanges repository") {
-      testRepository(salaryChanges)
+      testRepository(repositories.salaryChanges)
     }
   }
 

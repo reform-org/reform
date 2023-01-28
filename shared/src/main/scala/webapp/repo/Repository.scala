@@ -27,8 +27,10 @@ import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.Success
+import loci.registry.Registry
 
 case class Repository[A](name: String, defaultValue: A)(using
+    registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],

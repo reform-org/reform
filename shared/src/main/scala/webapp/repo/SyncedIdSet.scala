@@ -7,8 +7,9 @@ import concurrent.ExecutionContext.Implicits.global
 import webapp.*
 import rescala.default.*
 import webapp.webrtc.DeltaFor
+import loci.registry.Registry
 
-case class SyncedIdSet(name: String) {
+case class SyncedIdSet(name: String)(using registry: Registry) {
 
   implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
 

@@ -8,8 +8,10 @@ import rescala.default.*
 import webapp.Codecs.*
 import loci.serializer.jsoniterScala.given
 import webapp.webrtc.*
+import loci.registry.Registry
 
 case class Syncer[A](name: String)(using
+    registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
