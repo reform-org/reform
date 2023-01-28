@@ -17,6 +17,7 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.utils.Date
 
 private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
   _._firstName,
@@ -58,4 +59,15 @@ private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
   isRequired = true,
 )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}
+private val hbirthdate: UIDateAttribute[Hiwi, Long] = UIDateAttribute(
+  _._birthdate,
+  (p, a) => p.copy(_birthdate = a),
+  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
+  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
+  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
+  label = "Birthdate",
+  isRequired = true,
+)
+
+case class HiwisPage()
+    extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail, hbirthdate)) {}
