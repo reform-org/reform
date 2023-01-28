@@ -37,8 +37,10 @@ case class HomePage() extends Page {
       p("Homepage"),
       button(
         cls := "btn",
+        idAttr := "loadPDF",
         "Fill PDF",
-        onClick.foreach(_ =>
+        onClick.foreach(_ => {
+          document.getElementById("loadPDF").classList.add("loading")
           PDF
             .fill(
               "contract_unlocked.pdf",
@@ -54,9 +56,11 @@ case class HomePage() extends Page {
                 PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
               ),
             )
-            .andThen(s => console.log(s)), // remove loading spinner here
-        ),
+            .andThen(s => {
+              console.log(s)
+              document.getElementById("loadPDF").classList.remove("loading")
+            })
+        }),
       ),
     )
-
 }
