@@ -299,7 +299,6 @@ export class Peer {
 				"bstack:options": {
 					local: "true",
 					debug: "true",
-					networkLogs: "true",
 					consoleLogs: "info",
 					os: "Windows",
 					osVersion: "11",
@@ -313,7 +312,6 @@ export class Peer {
 				"bstack:options": {
 					local: "true",
 					debug: "true",
-					networkLogs: "true",
 					consoleLogs: "info",
 					os: "Windows",
 					osVersion: "10",
@@ -327,7 +325,6 @@ export class Peer {
 				"bstack:options": {
 					local: "true",
 					debug: "true",
-					networkLogs: "true",
 					consoleLogs: "info",
 					os: "OS X",
 					osVersion: "Big Sur",
@@ -349,12 +346,7 @@ export class Peer {
 		await driver
 			.manage()
 			.window()
-			.setRect({ x: 0, y: 0, width: 1200, height: 750 });
-
-		await driver.manage().setTimeouts({
-			script: 10000,
-			implicit: 10000,
-		});
+			.setRect({ width: 1200, height: 750 });
 
 		let id = (await driver.getSession()).getId();
 
