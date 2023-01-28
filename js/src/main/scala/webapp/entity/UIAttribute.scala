@@ -34,7 +34,7 @@ abstract class UICommonAttribute[EntityType, AttributeType](
 
   def render(entity: EntityType) = {
     val attr = getter(entity)
-    td(duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+    td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
   def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[outwatch.VNode]]
@@ -62,8 +62,9 @@ case class UIAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
+          cls := "px-6 py-0",
           input(
-            cls := "input valid:input-success",
+            cls := "input valid:input-success bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700  dark:placeholder-gray-400 dark:text-white",
             `type` := fieldType,
             formId := formAttr, // TODO FIXME check browser support
             required := isRequired,
@@ -114,6 +115,7 @@ case class UIDateAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
+          cls := "px-6 py-0",
           input(
             cls := "input valid:input-success",
             `type` := "date",
@@ -162,7 +164,10 @@ case class UISelectAttribute[EntityType, AttributeType](
 
   override def render(entity: EntityType) = {
     val attr = getter(entity)
-    td(duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
+    td(
+      cls := "px-6 py-0",
+      duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
+    )
   }
 
   def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
@@ -170,6 +175,7 @@ case class UISelectAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
+          cls := "px-6 py-0",
           select(
             cls := "input valid:input-success",
             formId := formAttr, // TODO FIXME check browser support
