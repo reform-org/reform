@@ -5,6 +5,9 @@ module.exports = {
     "./js/target/scala-*/webapp-fastopt/**/*.js",
   ],
   theme: {
+    minHeight: {
+      "10": "2.5rem"
+    },
     extend: {},
   },
   plugins: [require("daisyui")],

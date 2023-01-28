@@ -20,17 +20,20 @@ import loci.registry.*
 import webapp.*
 import webapp.Codecs.*
 import rescala.default.*
+import org.scalajs.dom.window
+import org.scalajs.dom
 import loci.transmitter.RemoteRef
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.Connector
 import scala.concurrent.Future
 import scala.concurrent.ExecutionContext.Implicits.global
 
-class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String) {}
-
+class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
+class StoredConnectionInformation(val alias: String, val source: String = "manual") {}
 object WebRTCService {
   val registry: Registry = new Registry
-  private val aliases = scala.collection.mutable.Map[RemoteRef, String]()
+
+  private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
@@ -39,23 +42,34 @@ object WebRTCService {
 
   val connections = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
 
-  def registerConnection(connector: Connector[Connections.Protocol], alias: Future[String]): Future[RemoteRef] = {
+  private val setOnlineStatus = Evt[Boolean]()
+  private val setOnlineStatusB = setOnlineStatus.act(identity)
+
+  val online = Fold(window.navigator.onLine: Boolean)(setOnlineStatusB)
+
+  def registerConnection(
+      connector: Connector[Connections.Protocol],
+      alias: Future[String],
+      source: String,
+  ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
-        alias.onComplete(a => aliases += (r.get -> a.get))
+        alias.onComplete(alias => {
+          connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source))
+        })
+      })
+      .andThen(r => {
+        addConnection.fire(r.get)
       })
   }
 
-  def getAlias(ref: RemoteRef): String = {
-    aliases.get(ref).getOrElse("Anonymous")
+  def getInformation(ref: RemoteRef): StoredConnectionInformation = {
+    connectionInfo.get(ref).getOrElse(StoredConnectionInformation("Anonymous", "manual"))
   }
 
-  def getIP(ref: RemoteRef): String = {
-    ""
-  }
-
-  registry.remoteJoined.monitor(addConnection.fire)
+  // registry.remoteJoined.monitor(addConnection.fire)
   registry.remoteLeft.monitor(removeConnection.fire)
-
+  window.addEventListener("online", { (e: dom.Event) => setOnlineStatus.fire(true) })
+  window.addEventListener("offline", { (e: dom.Event) => setOnlineStatus.fire(false) })
 }

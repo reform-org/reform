@@ -108,42 +108,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         }),
       ),
     ),
-    li(
-      a(
-        "WebRTC",
-        href := "/webrtc",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(WebRTCHandling(), true)
-        }),
-      ),
-    ),
   )
-}
-
-val hamburgerIcon = {
-  import svg.*
-  svg(
-    xmlns := "http://www.w3.org/2000/svg",
-    cls := "h-5 w-5",
-    fill := "none",
-    viewBox := "0 0 24 24",
-    stroke := "currentColor",
-    path(
-      VModifier.attr("stroke-linecap") := "round",
-      VModifier.attr("stroke-linejoin") := "round",
-      VModifier.attr("stroke-width") := "2",
-      d := "M4 6h16M4 12h8m-8 6h16",
-    ),
-  )
-}
-
-val reformLogo = {
-span(
-  cls := "font-bold font-roboto-slab ",
-  "REForm"
-)
 }
 
 def navigationHeader(using services: Services) = {
@@ -157,7 +122,7 @@ def navigationHeader(using services: Services) = {
           tabIndex := 0,
           idAttr := "dropdown-button",
           cls := "btn btn-ghost lg:hidden",
-          hamburgerIcon,
+          Icons.hamburger("h-5 w-5"),
         ),
         navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
       ),
@@ -165,7 +130,7 @@ def navigationHeader(using services: Services) = {
     div(
       cls := "flex-1",
       a(
-        reformLogo,
+        Icons.reform(),
         cls := "btn btn-ghost normal-case text-xl",
         href := "/",
         onClick.foreach(e => {
@@ -179,33 +144,6 @@ def navigationHeader(using services: Services) = {
       cls := "navbar-center hidden lg:flex",
       navigationMenu("menu menu-horizontal p-0"),
     ),
-    div(
-      cls := "flex-none gap-2",
-      div(
-        cls := "dropdown dropdown-end",
-        label(
-          tabIndex := 0,
-          cls := "btn btn-ghost btn-circle avatar",
-          div(cls := "w-10 rounded-full", img(src := "https://placeimg.com/80/80/people")),
-        ),
-        ul(
-          tabIndex := 0,
-          cls := "mt-3 p-2 shadow-xl menu menu-compact dropdown-content bg-base-100 rounded-box w-52",
-          li(
-            a(cls := "justify-between", "Profile", span(cls := "badge", "New")),
-          ),
-          li(
-            a("Settings"),
-          ),
-          li(
-            a("Logout"),
-          ),
-          li(
-            services.webrtc.connections.map(_.size),
-            " Connections",
-          ),
-        ),
-      ),
-    ),
+    ConnectionModal().render
   )
 }
