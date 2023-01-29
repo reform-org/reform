@@ -41,5 +41,10 @@ jobs:
       run: npm run preview &
     - name: Workflow tests
       run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run test
+    - uses: actions/upload-artifact@v3
+      if: always()
+      with:
+        name: screenshot
+        path: screenshot.png
     - name: Selenium
       run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run selenium

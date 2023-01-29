@@ -1,7 +1,7 @@
 import { Peer } from "./lib.js";
-import { afterAll, assert, beforeAll, describe, expect, it, test } from "vitest";
+import { afterAll, beforeAll, describe, it } from "vitest";
 import browserstack from "browserstack-local";
-import { promisify } from 'util'
+import { writeFile } from "fs/promises";
 
 let headless = true;
 
@@ -74,6 +74,8 @@ describe.concurrent("safari-compatible", () => {
 	});
 
 	afterAll(async () => {
+		const screenshot = await peer.driver.takeScreenshot();
+		await writeFile("screenshot.png", screenshot, "base64");
 		await quitPeers([peer]);
 	})
 });

@@ -145,11 +145,15 @@ export class Peer {
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		await this.driver.wait(until.elementLocated(
+		if (process.env.SELENIUM_BROWSER === "safari") {
+			await this.driver.wait(until.elementLocated(
+				By.css(".navbar-center a[href='/projects']"),
+			), 10000);
+			await this.driver.sleep(500)
+		}
+		await (await this.driver.findElement(
 			By.css(".navbar-center a[href='/projects']"),
-		));
-		// ensure its not stale
-		await this.driver.executeScript(`document.querySelector(".navbar-center a[href='/projects']")?.click()`) 
+		)).click();
 
 		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
@@ -379,10 +383,15 @@ export async function check(peers: Peer[]) {
 			console.log("condition");
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
-					let projectsButton = await peer.driver.findElement(
+					if (process.env.SELENIUM_BROWSER === "safari") {
+						await peer.driver.wait(until.elementLocated(
+							By.css(".navbar-center a[href='/projects']"),
+						), 10000);
+						await peer.driver.sleep(500)
+					}
+					await (await peer.driver.findElement(
 						By.css(".navbar-center a[href='/projects']"),
-					);
-					await projectsButton.click();
+					)).click();
 
 					let projects = await peer.driver.findElements(
 						By.css("tbody tr[data-id]"),
