@@ -1,8 +1,8 @@
 package webapp
 
-import kofre.base.*
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import kofre.base.*
 
 case class GrowOnlySet[A](set: Set[A]) {
 

@@ -15,12 +15,9 @@ limitations under the License.
  */
 package webapp.webrtc
 
-import kofre.datatypes.PosNegCounter
 import loci.registry.*
 import webapp.*
-import webapp.Codecs.*
-import rescala.default.*
 
-object WebRTCService {
+class WebRTCService {
   val registry: Registry = new Registry
 }

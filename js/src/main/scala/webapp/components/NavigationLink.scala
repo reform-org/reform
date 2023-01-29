@@ -1,5 +1,5 @@
 /*
-Copyright 2022 https://github.com/phisn/ratable, The reform-org/reform contributors
+Copyright 2022 The reform-org/reform contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,17 +13,24 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp
+package webapp.components
 
+import org.scalajs.dom
+import outwatch.*
+import outwatch.dsl.*
+import webapp.*
+import org.scalajs.dom.HTMLElement
+import webapp.services.Page
 import webapp.services.RoutingService
-import webapp.webrtc.WebRTCService
 
-trait Services {
-  lazy val routing: RoutingService
-  lazy val webrtc: WebRTCService.type
-}
-
-object ServicesDefault extends Services {
-  lazy val routing = RoutingService()
-  lazy val webrtc = WebRTCService
+def navigationLink(using routing: RoutingService)(page: Page, label: String): VNode = {
+  a(
+    label,
+    onClick.foreach(e => {
+      e.preventDefault()
+      e.target.asInstanceOf[HTMLElement].blur()
+      routing.to(page, true)
+    }),
+    href := routing.linkPath(page),
+  )
 }

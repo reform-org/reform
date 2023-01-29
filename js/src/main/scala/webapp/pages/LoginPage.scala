@@ -15,16 +15,16 @@ limitations under the License.
  */
 package webapp.pages
 
-import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
 import webapp.components.navigationHeader
 import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
 case class LoginPage() extends Page {
-  def render(using services: Services): VNode =
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode =
     div(
       navigationHeader,
       div(

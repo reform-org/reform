@@ -3,12 +3,8 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import kofre.datatypes.*
-import kofre.datatypes.LastWriterWins.TimedVal
-import kofre.datatypes.alternatives.MultiValueRegister
-import kofre.syntax.*
-import kofre.time.VectorClock
 import webapp.Codecs.*
+import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class Supervisor(
@@ -19,6 +15,9 @@ case class Supervisor(
 ) extends Entity[Supervisor]
     derives DecomposeLattice,
       Bottom {
+
+  // empty for required fields, default for optional fields
+  def default = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

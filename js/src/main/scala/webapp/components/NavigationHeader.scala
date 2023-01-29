@@ -15,142 +15,58 @@ limitations under the License.
  */
 package webapp.components
 
-import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
 import webapp.pages.*
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLElement
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
-def navigationMenu(using services: Services)(classes: String) = {
+def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
+    classes: String,
+) = {
   ul(
     tabIndex := 0,
     cls := classes,
     li(
-      a(
-        "Home",
-        href := "/",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HomePage(), true)
-        }),
-      ),
+      navigationLink(HomePage(), "Home"),
     ),
     li(
-      a(
-        "Login",
-        href := "/login",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(LoginPage(), true)
-        }),
-      ),
+      navigationLink(LoginPage(), "Login"),
     ),
     li(
-      a(
-        "Projekte",
-        href := "/projects",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ProjectsPage(), true)
-        }),
-      ),
+      navigationLink(ProjectsPage(), "Projekte"),
     ),
     li(
-      a(
-        "Users",
-        href := "/users",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(UsersPage(), true)
-        }),
-      ),
+      navigationLink(UsersPage(), "Users"),
     ),
     li(
-      a(
-        "Paymentlevels",
-        href := "/paymentlevels",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(PaymentLevelsPage(), true)
-        }),
-      ),
+      navigationLink(PaymentLevelsPage(), "Paymentlevels"),
     ),
     li(
-      a(
-        "SalaryChanges",
-        href := "/salarychanges",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SalaryChangesPage(), true)
-        }),
-      ),
+      navigationLink(SalaryChangesPage(), "SalaryChanges"),
     ),
     li(
-      a(
-        "Hiwis",
-        href := "/hiwis",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HiwisPage(), true)
-        }),
-      ),
+      navigationLink(HiwisPage(), "Hiwis"),
     ),
     li(
-      a(
-        "Supervisors",
-        href := "/supervisors",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
-        }),
-      ),
+      navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      a(
-        "ContractSchemas",
-        href := "/contractSchemas",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
-        }),
-      ),
+      navigationLink(ContractSchemasPage(), "ContractSchemas"),
     ),
     li(
-      a(
-        "WebRTC",
-        href := "/webrtc",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(WebRTCHandling(), true)
-        }),
-      ),
+      navigationLink(WebRTCHandling(), "WebRTC"),
     ),
     li(
       i(
-        s"${services.webrtc.registry.remotes.size} Connections",
+        s"${webrtc.registry.remotes.size} Connections",
       ),
     ),
   )
 }
 
-def navigationHeader(using services: Services) = {
-  import svg.*
+def navigationHeader(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = {
   div(
     cls := "navbar bg-base-300",
     div(
@@ -160,20 +76,22 @@ def navigationHeader(using services: Services) = {
         label(
           tabIndex := 0,
           idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden",
-          svg(
-            xmlns := "http://www.w3.org/2000/svg",
-            cls := "h-5 w-5",
-            fill := "none",
-            viewBox := "0 0 24 24",
-            stroke := "currentColor",
-            path(
-              VModifier.attr("stroke-linecap") := "round",
-              VModifier.attr("stroke-linejoin") := "round",
-              VModifier.attr("stroke-width") := "2",
-              d := "M4 6h16M4 12h8m-8 6h16",
-            ),
-          ),
+          cls := "btn btn-ghost lg:hidden", {
+            import svg.*
+            svg(
+              xmlns := "http://www.w3.org/2000/svg",
+              cls := "h-5 w-5",
+              fill := "none",
+              viewBox := "0 0 24 24",
+              stroke := "currentColor",
+              path(
+                VModifier.attr("stroke-linecap") := "round",
+                VModifier.attr("stroke-linejoin") := "round",
+                VModifier.attr("stroke-width") := "2",
+                d := "M4 6h16M4 12h8m-8 6h16",
+              ),
+            )
+          },
         ),
         navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
       ),

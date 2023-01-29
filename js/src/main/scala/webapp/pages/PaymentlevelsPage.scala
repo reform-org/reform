@@ -25,4 +25,5 @@ private val title = UIAttributeBuilder.string
     (p, a) => p.copy(title = a),
   )
 
-case class PaymentLevelsPage() extends EntityPage[PaymentLevel](Repositories.paymentLevels, Seq(title)) {}
+case class PaymentLevelsPage()(using repositories: Repositories)
+    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}

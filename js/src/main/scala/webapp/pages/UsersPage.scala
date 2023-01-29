@@ -40,4 +40,5 @@ private val comment = UIAttributeBuilder.string
     (p, a) => p.copy(comment = a),
   )
 
-case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}
+case class UsersPage()(using repositories: Repositories)
+    extends EntityPage[User](repositories.users, Seq(username, role, comment)) {}

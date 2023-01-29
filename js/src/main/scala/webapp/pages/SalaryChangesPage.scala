@@ -15,9 +15,9 @@ limitations under the License.
  */
 package webapp.pages
 
+import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
-import rescala.default.*
 import webapp.utils.Date
 
 private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
@@ -25,21 +25,24 @@ private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   (p, a) => p.copy(_value = a),
   readConverter = number => (number / 100.0).toString,
   writeConverter = number => Math.round(number.toFloat * 100),
-  placeholder = "Value",
+  label = "Value",
   fieldType = "number",
+  isRequired = true,
 )
 
-private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = UISelectAttribute(
-  _._paymentLevel,
-  (p, a) => p.copy(_paymentLevel = a),
-  // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "PaymentLevel",
-  options = Repositories.paymentLevels.all.map(list =>
-    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
-  ),
-)
+private def salaryChangePaymentLevel(using repositories: Repositories): UISelectAttribute[SalaryChange, String] =
+  UISelectAttribute(
+    _._paymentLevel,
+    (p, a) => p.copy(_paymentLevel = a),
+    // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
+    readConverter = identity,
+    writeConverter = identity,
+    label = "PaymentLevel",
+    options = repositories.paymentLevels.all.map(list =>
+      list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
+    ),
+    isRequired = true,
+  )
 
 private val salaryChangeFromDate = UIAttributeBuilder.date
   .withPlaceholder("From")
@@ -48,8 +51,8 @@ private val salaryChangeFromDate = UIAttributeBuilder.date
     (p, a) => p.copy(_fromDate = a),
   )
 
-case class SalaryChangesPage()
+case class SalaryChangesPage()(using repositories: Repositories)
     extends EntityPage[SalaryChange](
-      Repositories.salaryChanges,
+      repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
     ) {}

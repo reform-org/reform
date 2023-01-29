@@ -17,19 +17,18 @@ package webapp.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import kofre.base.*
 import kofre.base.Lattice.*
-import webapp.webrtc.WebRTCService.*
+import kofre.base.*
+import loci.registry.Binding
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
+import rescala.core.Disconnectable
 import rescala.default.*
-import rescala.interface.*
 import webapp.Codecs.*
-import loci.registry.Binding
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
-import rescala.core.Disconnectable
 
 /** @param name
   *   The name/type of the thing to sync
@@ -45,7 +44,12 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
-class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
+class ReplicationGroup[A](name: String)(using
+    webrtc: WebRTCService,
+    dcl: DecomposeLattice[A],
+    bottom: Bottom[A],
+    codec: JsonValueCodec[A],
+) {
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 
@@ -59,7 +63,7 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
     */
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
-  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
+  webrtc.registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
     localListeners.get(payload.name) match {
       case Some(handler) => handler.fire(payload.delta)
       case None =>
@@ -91,7 +95,7 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
       // Lookup method to send data to remote
-      val remoteUpdate: DeltaFor[A] => Future[Unit] = registry.lookup(binding, remoteRef)
+      val remoteUpdate: DeltaFor[A] => Future[Unit] = webrtc.registry.lookup(binding, remoteRef)
 
       def sendUpdate(delta: A): Unit = {
         // the contents of the resend buffer and the delta need to be sent
@@ -143,11 +147,11 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
     }
 
     // if a remote joins register it to handle updates to it
-    registry.remoteJoined.monitor(registerRemote)
+    webrtc.registry.remoteJoined.monitor(registerRemote)
     // also register all existing remotes
-    registry.remotes.foreach(registerRemote)
+    webrtc.registry.remotes.foreach(registerRemote)
     // remove remotes that disconnect
-    registry.remoteLeft.monitor { remoteRef =>
+    webrtc.registry.remoteLeft.monitor { remoteRef =>
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
     }

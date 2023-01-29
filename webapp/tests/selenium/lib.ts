@@ -1,4 +1,12 @@
-import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
+import "./fast-selenium.js";
+import {
+	Builder,
+	By,
+	Capabilities,
+	Condition,
+	until,
+	WebDriver,
+} from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
 import safari from "selenium-webdriver/safari.js";
@@ -137,10 +145,15 @@ export class Peer {
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		let projectsButton = await this.driver.findElement(
+		if (process.env.SELENIUM_BROWSER === "safari") {
+			await this.driver.wait(until.elementLocated(
+				By.css(".navbar-center a[href='/projects']"),
+			), 10000);
+			await this.driver.sleep(500)
+		}
+		await (await this.driver.findElement(
 			By.css(".navbar-center a[href='/projects']"),
-		);
-		await projectsButton.click();
+		)).click();
 
 		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
@@ -286,18 +299,59 @@ export class Peer {
 			firefoxOptions = firefoxOptions.headless();
 		}
 
+		const capabilities: Record<string, {}> = {
+			chrome: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Chrome",
+				},
+				browserName: "Chrome",
+			},
+			firefox: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Firefox",
+				},
+				browserName: "Firefox",
+			},
+			safari: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "16",
+					buildName: `${new Date()}`,
+					sessionName: "Safari",
+				},
+				browserName: "Safari",
+			},
+		};
+
 		let driver = new Builder()
-			.forBrowser("chrome")
+			.withCapabilities(capabilities[process.env.SELENIUM_BROWSER!])
 			.setChromeOptions(chromeOptions)
 			.setFirefoxOptions(firefoxOptions)
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		//await driver.manage().window().setRect({x: 0, y: 0, width: 2000, height: 750})
-
-		await driver.manage().setTimeouts({
-			script: 10000,
-		});
+		await driver
+			.manage()
+			.window()
+			.setRect({ width: 1200, height: 750 });
 
 		let id = (await driver.getSession()).getId();
 
@@ -329,10 +383,15 @@ export async function check(peers: Peer[]) {
 			console.log("condition");
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
-					let projectsButton = await peer.driver.findElement(
+					if (process.env.SELENIUM_BROWSER === "safari") {
+						await peer.driver.wait(until.elementLocated(
+							By.css(".navbar-center a[href='/projects']"),
+						), 10000);
+						await peer.driver.sleep(500)
+					}
+					await (await peer.driver.findElement(
 						By.css(".navbar-center a[href='/projects']"),
-					);
-					await projectsButton.click();
+					)).click();
 
 					let projects = await peer.driver.findElements(
 						By.css("tbody tr[data-id]"),
@@ -387,7 +446,7 @@ export async function check(peers: Peer[]) {
 
 	let result = await peers[0].driver.wait(
 		condition,
-		10000,
+		20000,
 		"waiting for peers synced timed out",
 	);
 	assert.strictEqual(result, true);
