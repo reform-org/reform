@@ -3,12 +3,6 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.{CodecMakerConfig, JsonCodecMaker}
 import kofre.base.*
-import kofre.datatypes.*
-import kofre.datatypes.LastWriterWins.TimedVal
-import kofre.datatypes.alternatives.MultiValueRegister
-import kofre.time.VectorClock
-import loci.serializer.jsoniterScala.given
-import rescala.default.*
 import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 import webapp.entity.Attribute.given

@@ -17,7 +17,6 @@ package webapp.npm
 
 import scala.collection.mutable
 import scala.concurrent.Future
-import scala.scalajs.js.JSConverters.*
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 

@@ -16,17 +16,14 @@ limitations under the License.
 package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import rescala.default.*
 import webapp.*
-import webapp.repo.*
 
 import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Success
 import loci.registry.Registry
 import webapp.npm.IIndexedDB
 

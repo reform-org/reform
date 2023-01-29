@@ -3,7 +3,6 @@ package webapp.repo
 import webapp.npm.*
 
 import scala.concurrent.Future
-import scala.scalajs.js
 import scala.concurrent.ExecutionContext.Implicits.global
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
