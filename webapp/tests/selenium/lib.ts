@@ -145,17 +145,17 @@ export class Peer {
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		await this.driver.sleep(10000)
 		await this.driver.wait(until.elementLocated(
 			By.css(".navbar-center a[href='/projects']"),
 		), 10000);
+		await this.driver.sleep(500)
 		await (await this.driver.findElement(
 			By.css(".navbar-center a[href='/projects']"),
 		)).click();
 
-		let projectNameInput = await this.driver.wait(until.elementLocated(
+		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
-		), 10000);
+		);
 		let maxHoursInput = await this.driver.findElement(
 			By.css("input[placeholder='Max Hours']"),
 		);
