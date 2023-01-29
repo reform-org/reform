@@ -145,9 +145,12 @@ export class Peer {
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		await (await this.driver.wait(until.elementLocated(
+		await this.driver.wait(until.elementLocated(
 			By.css(".navbar-center a[href='/projects']"),
-		), 10000)).click();
+		), 10000);
+		await (await this.driver.findElement(
+			By.css(".navbar-center a[href='/projects']"),
+		)).click();
 
 		let projectNameInput = await this.driver.wait(until.elementLocated(
 			By.css("input[placeholder='Name']"),
