@@ -47,7 +47,7 @@ private val eMail = UIAttributeBuilder.string
   )
 
 case class HiwisPage()(using repositories: Repositories)
-  extends EntityPage[Hiwi](
-    repositories.hiwis,
-    Seq(firstName, lastName, hours, eMail)
-  ) {}
+    extends EntityPage[Hiwi](
+      repositories.hiwis,
+      Seq(firstName, lastName, hours, eMail),
+    ) {}

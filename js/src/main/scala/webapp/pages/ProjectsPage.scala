@@ -41,7 +41,7 @@ private val accountName = UIAttributeBuilder.string
   )
 
 case class ProjectsPage()(using repositories: Repositories)
-  extends EntityPage[Project](
-    repositories.projects,
-    Seq(name, maxHours, accountName)
-  ) {}
+    extends EntityPage[Project](
+      repositories.projects,
+      Seq(name, maxHours, accountName),
+    ) {}
