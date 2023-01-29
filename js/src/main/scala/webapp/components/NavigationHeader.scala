@@ -15,8 +15,6 @@ limitations under the License.
  */
 package webapp.components
 
-import org.scalajs.dom
-import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
 import webapp.*
@@ -31,114 +29,34 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
     tabIndex := 0,
     cls := classes,
     li(
-      a(
-        "Home",
-        href := "/",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(HomePage(), true)
-        }),
-      ),
+      navigationLink(HomePage(), "Home"),
     ),
     li(
-      a(
-        "Login",
-        href := "/login",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(LoginPage(), true)
-        }),
-      ),
+      navigationLink(LoginPage(), "Login"),
     ),
     li(
-      a(
-        "Projekte",
-        href := "/projects",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(ProjectsPage(), true)
-        }),
-      ),
+      navigationLink(ProjectsPage(), "Projekte"),
     ),
     li(
-      a(
-        "Users",
-        href := "/users",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(UsersPage(), true)
-        }),
-      ),
+      navigationLink(UsersPage(), "Users"),
     ),
     li(
-      a(
-        "Paymentlevels",
-        href := "/paymentlevels",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(PaymentLevelsPage(), true)
-        }),
-      ),
+      navigationLink(PaymentLevelsPage(), "Paymentlevels"),
     ),
     li(
-      a(
-        "SalaryChanges",
-        href := "/salarychanges",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(SalaryChangesPage(), true)
-        }),
-      ),
+      navigationLink(SalaryChangesPage(), "SalaryChanges"),
     ),
     li(
-      a(
-        "Hiwis",
-        href := "/hiwis",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(HiwisPage(), true)
-        }),
-      ),
+      navigationLink(HiwisPage(), "Hiwis"),
     ),
     li(
-      a(
-        "Supervisors",
-        href := "/supervisors",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(SupervisorsPage(), true)
-        }),
-      ),
+      navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      a(
-        "ContractSchemas",
-        href := "/contractSchemas",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(SupervisorsPage(), true)
-        }),
-      ),
+      navigationLink(ContractSchemasPage(), "ContractSchemas"),
     ),
     li(
-      a(
-        "WebRTC",
-        href := "/webrtc",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          routing.to(WebRTCHandling(), true)
-        }),
-      ),
+      navigationLink(WebRTCHandling(), "WebRTC"),
     ),
     li(
       i(

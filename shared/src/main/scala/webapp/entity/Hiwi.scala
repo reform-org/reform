@@ -12,13 +12,15 @@ case class Hiwi(
     _lastName: Attribute[String] = Attribute.empty,
     _hours: Attribute[Int] = Attribute.empty,
     _eMail: Attribute[String] = Attribute.empty,
+    _birthdate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Hiwi]
     derives DecomposeLattice,
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
+  def default =
+    Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 
