@@ -381,10 +381,13 @@ export async function check(peers: Peer[]) {
 			console.log("condition");
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
-					let projectsButton = await peer.driver.findElement(
+					await peer.driver.wait(until.elementLocated(
 						By.css(".navbar-center a[href='/projects']"),
-					);
-					await projectsButton.click();
+					), 10000);
+					await peer.driver.sleep(500) // safari
+					await (await peer.driver.findElement(
+						By.css(".navbar-center a[href='/projects']"),
+					)).click();
 
 					let projects = await peer.driver.findElements(
 						By.css("tbody tr[data-id]"),
