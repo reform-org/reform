@@ -37,6 +37,8 @@ interface Mergeable {
 	merge(other: ThisType<this>): ThisType<this>;
 }
 
+// TODO FIXME implement conflict handling
+
 class LastWriterWins<T> implements Mergeable {
 	value: T;
 	time: Date;
@@ -76,12 +78,12 @@ class PosNegCounter implements Mergeable {
 
 class Project implements Mergeable {
 	name: LastWriterWins<string>;
-	maxHours: PosNegCounter;
+	maxHours: LastWriterWins<number>;
 	account: LastWriterWins<string>;
 
 	constructor(
 		name: LastWriterWins<string>,
-		maxHours: PosNegCounter,
+		maxHours: LastWriterWins<number>,
 		account: LastWriterWins<string>,
 	) {
 		this.name = name;
@@ -97,7 +99,7 @@ class Project implements Mergeable {
 	) {
 		return new Project(
 			new LastWriterWins(name, new Date()),
-			new PosNegCounter(new Map([[replicaId, maxHours]])),
+			new LastWriterWins(maxHours, new Date()),
 			new LastWriterWins(account, new Date()),
 		);
 	}
@@ -176,11 +178,11 @@ export class Peer {
 		await accountInput.clear()
 		await accountInput.sendKeys(account);
 
-		await (await row.findElement(By.css("#add-entity-button"))).click()
+		await (await row.findElement(By.xpath('//button[text()="Save edit"]'))).click()
 
 		this.projects.value.set(
 			projectId,
-			Project.create(this.id, projectName, maxHours, account),
+			this.projects.value.get(projectId)!.merge(Project.create(this.id, projectName, maxHours, account)),
 		);
 	}
 
@@ -424,7 +426,6 @@ export async function check(peers: Peer[]) {
 	let condition = new Condition<boolean>(
 		"all peers are fully synced",
 		async () => {
-			console.log("condition");
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
 					if (process.env.SELENIUM_BROWSER === "safari") {
@@ -446,10 +447,7 @@ export async function check(peers: Peer[]) {
 							return [
 								k,
 								v.name.value,
-								[...v.maxHours.value.values()].reduce(
-									(partialSum, a) => partialSum + a,
-									0,
-								),
+								v.maxHours.value,
 								v.account.value,
 							];
 						})
