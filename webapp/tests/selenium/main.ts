@@ -32,11 +32,13 @@ export async function run() {
 		peers = [];
 	}
 
+	actions = [Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.EDIT_PROJECT];
+
 	try {
 		for (let action of actions) {
 			switch (action) {
 				case Actions.CREATE_PEER: {
-					let peer = await Peer.create(true);
+					let peer = await Peer.create(false);
 					await peer.driver.get("http://localhost:5173/");
 					peers.push(peer);
 					console.log(`[${peer.id}] peer created`);
@@ -48,6 +50,18 @@ export async function run() {
 					}
 					let random_peer: Peer = chance.pickone(peers);
 					await random_peer.createProject();
+					break;
+				}
+				case Actions.EDIT_PROJECT: {
+					if (peers.length === 0) {
+						continue;
+					}
+					let random_peer: Peer = chance.pickone(peers);
+					if (random_peer.projects.value.size == 0) {
+						continue;
+					}					
+					let randomProject = chance.pickone([...random_peer.projects.value.keys()]);
+					await random_peer.editProject(randomProject);
 					break;
 				}
 				case Actions.CONNECT_TO_PEER: {

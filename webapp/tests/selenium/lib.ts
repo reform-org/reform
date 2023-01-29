@@ -26,7 +26,10 @@ export const Actions = Object.freeze({
 	CREATE_PEER: Symbol("CREATE_PEER"),
 	DELETE_PEER: Symbol("DELETE_PEER"),
 	CREATE_PROJECT: Symbol("CREATE PROJECT"),
+	EDIT_PROJECT: Symbol("EDIT_PROJECT"),
 	CONNECT_TO_PEER: Symbol("CONNECT_TO_PEER"),
+	BAD_NETWORK: Symbol("BAD_NETWORK"),
+	GOOD_NETWORK: Symbol("GOOD_NETWORK"),
 	RELOAD: Symbol("RELOAD"),
 });
 
@@ -138,6 +141,47 @@ export class Peer {
 		this.driver = driver;
 		this.projects = projects;
 		this.connectedTo = [];
+	}
+
+	async editProject(projectId: string) {
+		console.log(`[${this.id}] edit project ${projectId}`);
+
+		let row = await this.driver.findElement(By.css(`tr[data-id='${projectId}']`))
+
+		let editProjectButton = await row.findElement(
+			By.xpath(`//button[text()="Edit"]`),
+		);
+		await editProjectButton.click()
+
+		let projectNameInput = await this.driver.findElement(
+			By.css("input[placeholder='Name']"),
+		);
+		let maxHoursInput = await this.driver.findElement(
+			By.css("input[placeholder='Max Hours']"),
+		);
+		let accountInput = await this.driver.findElement(
+			By.css("input[placeholder='Account']"),
+		);
+
+		let projectName = chance.animal();
+		let maxHours = chance.integer({ min: 1, max: 10 });
+		let account = chance.name();
+
+		await projectNameInput.clear();
+		await projectNameInput.sendKeys(projectName);
+
+		await maxHoursInput.clear();
+		await maxHoursInput.sendKeys(maxHours);
+
+		await accountInput.clear()
+		await accountInput.sendKeys(account);
+
+		await (await row.findElement(By.css("#add-entity-button"))).click()
+
+		this.projects.value.set(
+			projectId,
+			Project.create(this.id, projectName, maxHours, account),
+		);
 	}
 
 	async createProject() {
