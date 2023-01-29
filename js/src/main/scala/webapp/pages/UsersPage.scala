@@ -19,21 +19,21 @@ import webapp.Repositories
 import webapp.entity.*
 
 private val username = UIAttributeBuilder.string
-  .withPlaceholder("Username")
+  .withLabel("Username")
   .bind[User](
     _.username,
     (p, a) => p.copy(username = a),
   )
 
 private val role = UIAttributeBuilder.string
-  .withPlaceholder("Role")
+  .withLabel("Role")
   .bind[User](
-    _._role,
-    (p, a) => p.copy(_role = a),
+    _.role,
+    (p, a) => p.copy(role = a),
   )
 
 private val comment = UIAttributeBuilder.string
-  .withPlaceholder("Comment")
+  .withLabel("Comment")
   .withDefaultValue("no comment")
   .bind[User](
     _.comment,

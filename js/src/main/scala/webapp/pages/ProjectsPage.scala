@@ -19,25 +19,29 @@ import webapp.Repositories
 import webapp.entity.*
 
 private val name = UIAttributeBuilder.string
-  .withPlaceholder("Name")
+  .withLabel("Name")
   .bind[Project](
     _.name,
     (p, a) => p.copy(name = a),
   )
 
 private val maxHours = UIAttributeBuilder.int
-  .withPlaceholder("Max Hours")
+  .withLabel("Max Hours")
   .bind[Project](
     _.maxHours,
     (p, a) => p.copy(maxHours = a),
   )
 
 private val accountName = UIAttributeBuilder.string
-  .withPlaceholder("Account")
+  .withLabel("Account")
   .withDefaultValue("no account")
   .bind[Project](
     _.accountName,
     (p, a) => p.copy(accountName = a),
   )
 
-case class ProjectsPage() extends EntityPage[Project](Repositories.projects, Seq(name, maxHours, accountName)) {}
+case class ProjectsPage()(using repositories: Repositories)
+  extends EntityPage[Project](
+    repositories.projects,
+    Seq(name, maxHours, accountName)
+  ) {}

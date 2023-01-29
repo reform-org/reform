@@ -19,31 +19,35 @@ import webapp.Repositories
 import webapp.entity.*
 
 private val firstName = UIAttributeBuilder.string
-  .withPlaceholder("First Name")
+  .withLabel("First Name")
   .bind[Hiwi](
     _.firstName,
     (p, a) => p.copy(firstName = a),
   )
 
 private val lastName = UIAttributeBuilder.string
-  .withPlaceholder("Last Name")
+  .withLabel("Last Name")
   .bind[Hiwi](
     _.lastName,
     (p, a) => p.copy(lastName = a),
   )
 
 private val hours = UIAttributeBuilder.int
-  .withPlaceholder("Hours")
+  .withLabel("Hours")
   .bind[Hiwi](
     _.hours,
     (p, a) => p.copy(hours = a),
   )
 
 private val eMail = UIAttributeBuilder.string
-  .withPlaceholder("Email")
+  .withLabel("Email")
   .bind[Hiwi](
     _.eMail,
     (p, a) => p.copy(eMail = a),
   )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(firstName, lastName, hours, eMail)) {}
+case class HiwisPage()(using repositories: Repositories)
+  extends EntityPage[Hiwi](
+    repositories.hiwis,
+    Seq(firstName, lastName, hours, eMail)
+  ) {}

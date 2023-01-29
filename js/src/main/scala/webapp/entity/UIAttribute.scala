@@ -3,11 +3,9 @@ package webapp.entity
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.*
-import webapp.entity.Attribute
-import webapp.Repositories
 import webapp.given
 import webapp.duplicateValuesHandler
+import webapp.utils.Date
 
 class UIOption[NameType](
     val id: String,
@@ -92,15 +90,15 @@ case class UIAttribute[EntityType, AttributeType](
   }
 }
 
-case class UIDateAttribute[EntityType, AttributeType](
-    override val getter: EntityType => Attribute[AttributeType],
-    override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    override val readConverter: AttributeType => String,
-    override val writeConverter: String => AttributeType,
+case class UIDateAttribute[EntityType](
+    override val getter: EntityType => Attribute[Long],
+    override val setter: (EntityType, Attribute[Long]) => EntityType,
+    override val readConverter: Long => String,
+    override val writeConverter: String => Long,
     override val label: String,
     override val isRequired: Boolean,
     min: String = "",
-) extends UICommonAttribute[EntityType, AttributeType](
+) extends UICommonAttribute[EntityType, Long](
       getter,
       setter,
       readConverter,
@@ -111,7 +109,7 @@ case class UIDateAttribute[EntityType, AttributeType](
 
   private val editConverter = Date.epochDayToDate(_, "yyyy-MM-dd")
 
-  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): default.Signal[Option[VNode]] = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -171,7 +169,7 @@ case class UISelectAttribute[EntityType, AttributeType](
     )
   }
 
-  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): default.Signal[Option[VNode]] = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -188,7 +186,7 @@ case class UISelectAttribute[EntityType, AttributeType](
             },
             option(value := "", "Bitte wählen..."),
             options.map(o =>
-              o.map(v => option(value := v.id, selected := Some(v.id) == attr.get.map(x => readConverter(x)), v.name)),
+              o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
             ),
           ),
           if (attr.getAll.size > 1) {

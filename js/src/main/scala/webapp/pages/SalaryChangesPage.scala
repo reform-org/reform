@@ -18,7 +18,6 @@ package webapp.pages
 import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
-import webapp.utils.Date
 
 private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   _._value,
@@ -45,7 +44,7 @@ private def salaryChangePaymentLevel(using repositories: Repositories): UISelect
   )
 
 private val salaryChangeFromDate = UIAttributeBuilder.date
-  .withPlaceholder("From")
+  .withLabel("From")
   .bind[SalaryChange](
     _._fromDate,
     (p, a) => p.copy(_fromDate = a),

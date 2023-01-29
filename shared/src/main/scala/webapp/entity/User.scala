@@ -10,7 +10,7 @@ import webapp.webrtc.DeltaFor
 
 case class User(
     var username: Attribute[String] = Attribute.empty,
-    var _role: Attribute[String] = Attribute.empty,
+    var role: Attribute[String] = Attribute.empty,
     var comment: Attribute[Option[String]] = Attribute.empty,
     var _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[User]
@@ -18,7 +18,7 @@ case class User(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = User(Attribute.empty, Attribute.empty, Attribute.default, Attribute.default)
+  def default: User = User(Attribute.empty, Attribute.empty, Attribute.default, Attribute.default)
 
   def exists: Attribute[Boolean] = _exists
 

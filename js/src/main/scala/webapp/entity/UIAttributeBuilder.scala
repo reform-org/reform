@@ -5,12 +5,13 @@ import webapp.utils.Date
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
     writeConverter: String => AttributeType,
-    placeholder: String = "Placeholder value",
     fieldType: String = "text",
+    label: String = "",
+    isRequired: Boolean = false,
     min: String = "",
 ) {
 
-  def withPlaceholder(placeholder: String): UIAttributeBuilder[AttributeType] = copy(placeholder = placeholder)
+  def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
 
   def withFieldType(fieldType: String): UIAttributeBuilder[AttributeType] = copy(fieldType = fieldType)
 
@@ -25,7 +26,15 @@ case class UIAttributeBuilder[AttributeType](
       getter: EntityType => Attribute[AttributeType],
       setter: (EntityType, Attribute[AttributeType]) => EntityType,
   ): UICommonAttribute[EntityType, AttributeType] =
-    UIAttribute(getter, setter, readConverter, writeConverter, placeholder, fieldType)
+    UIAttribute(
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = fieldType,
+    )
 
 }
 
@@ -39,7 +48,15 @@ class UIDateAttributeBuilder(
       getter: EntityType => Attribute[Long],
       setter: (EntityType, Attribute[Long]) => EntityType,
   ): UICommonAttribute[EntityType, Long] =
-    UIDateAttribute(getter, setter, readConverter, writeConverter, placeholder, min)
+    UIDateAttribute(
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      min = min,
+      isRequired = isRequired,
+    )
 }
 
 object UIAttributeBuilder {

@@ -19,7 +19,7 @@ import webapp.Repositories
 import webapp.entity.*
 
 private val title = UIAttributeBuilder.string
-  .withPlaceholder("Title")
+  .withLabel("Title")
   .bind[PaymentLevel](
     _.title,
     (p, a) => p.copy(title = a),
