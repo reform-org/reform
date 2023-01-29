@@ -4,7 +4,6 @@ import kofre.base.*
 import kofre.datatypes.alternatives.MultiValueRegister
 import kofre.time.VectorClock
 import webapp.Codecs.myReplicaID
-import org.w3c.dom.Attr
 
 trait Default[T] {
   def default: T

@@ -2,13 +2,14 @@ package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import rescala.default.*
+import webapp.*
+import webapp.webrtc.DeltaFor
+import webapp.webrtc.WebRTCService
 
 import concurrent.ExecutionContext.Implicits.global
-import webapp.*
-import rescala.default.*
-import webapp.webrtc.DeltaFor
 
-case class SyncedIdSet(name: String) {
+case class SyncedIdSet(name: String)(using webrtc: WebRTCService) {
 
   implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
 

@@ -18,24 +18,19 @@ package webapp.components
 import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
-import webapp.pages.*
-import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
 import webapp.services.Page
+import webapp.services.RoutingService
 
-def navigationLink(using services: Services)(page: Page, label: String): VNode = {
+def navigationLink(using routing: RoutingService)(page: Page, label: String): VNode = {
   a(
     label,
     onClick.foreach(e => {
       e.preventDefault()
       e.target.asInstanceOf[HTMLElement].blur()
-      services.routing.to(page, true)
+      routing.to(page, true)
     }),
-    href := services.routing.linkPath(page),
+    href := routing.linkPath(page),
   )
 }

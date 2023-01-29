@@ -69,5 +69,5 @@ private val hbirthdate: UIDateAttribute[Hiwi, Long] = UIDateAttribute(
   isRequired = true,
 )
 
-case class HiwisPage()
-    extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail, hbirthdate)) {}
+case class HiwisPage()(using repositories: Repositories)
+    extends EntityPage[Hiwi](repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail, hbirthdate)) {}

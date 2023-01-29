@@ -15,20 +15,16 @@ limitations under the License.
  */
 package webapp.components
 
-import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
 import webapp.pages.*
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLElement
-import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
-def navigationMenu(using services: Services)(classes: String) = {
+def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
+    classes: String,
+) = {
   ul(
     tabIndex := 0,
     cls := classes,
@@ -64,14 +60,13 @@ def navigationMenu(using services: Services)(classes: String) = {
     ),
     li(
       i(
-        s"${services.webrtc.registry.remotes.size} Connections",
+        s"${webrtc.registry.remotes.size} Connections",
       ),
     ),
   )
 }
 
-def navigationHeader(using services: Services) = {
-  import svg.*
+def navigationHeader(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = {
   div(
     cls := "navbar bg-base-300",
     div(
@@ -81,20 +76,22 @@ def navigationHeader(using services: Services) = {
         label(
           tabIndex := 0,
           idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden",
-          svg(
-            xmlns := "http://www.w3.org/2000/svg",
-            cls := "h-5 w-5",
-            fill := "none",
-            viewBox := "0 0 24 24",
-            stroke := "currentColor",
-            path(
-              VModifier.attr("stroke-linecap") := "round",
-              VModifier.attr("stroke-linejoin") := "round",
-              VModifier.attr("stroke-width") := "2",
-              d := "M4 6h16M4 12h8m-8 6h16",
-            ),
-          ),
+          cls := "btn btn-ghost lg:hidden", {
+            import svg.*
+            svg(
+              xmlns := "http://www.w3.org/2000/svg",
+              cls := "h-5 w-5",
+              fill := "none",
+              viewBox := "0 0 24 24",
+              stroke := "currentColor",
+              path(
+                VModifier.attr("stroke-linecap") := "round",
+                VModifier.attr("stroke-linejoin") := "round",
+                VModifier.attr("stroke-width") := "2",
+                d := "M4 6h16M4 12h8m-8 6h16",
+              ),
+            )
+          },
         ),
         navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
       ),

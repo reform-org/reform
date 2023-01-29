@@ -2,14 +2,12 @@ package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import kofre.base.*
-import loci.registry.Binding
-import webapp.*
 import rescala.default.*
-import webapp.Codecs.*
-import loci.serializer.jsoniterScala.given
+import webapp.*
 import webapp.webrtc.*
 
 case class Syncer[A](name: String)(using
+    webrtc: WebRTCService,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],

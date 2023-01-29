@@ -18,20 +18,18 @@ package webapp.pages
 import org.scalajs.dom.*
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
 import webapp.components.navigationHeader
+import webapp.npm.*
 import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
 import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.*
 
 case class HomePage() extends Page {
 
-  def render(using services: Services): VNode =
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode =
     div(
       navigationHeader,
       p("Homepage"),

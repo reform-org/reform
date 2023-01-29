@@ -16,7 +16,7 @@ async function startPeers(count: number) {
 
 async function loadPage(peers: Peer[]) {
 	await Promise.all(
-		peers.map(async (peer) => peer.driver.get("http://localhost:5173/")),
+		peers.map(async (peer) => peer.driver.get("http://127.0.0.1:5173/")),
 	);
 }
 
@@ -24,6 +24,7 @@ async function quitPeers(peers: Peer[]) {
 	await Promise.allSettled(peers.map((peer) => peer.driver.quit()));
 }
 
+// pkill BrowserStack
 const bs_local = new browserstack.Local();
 const start = () => {
 	console.log("start")
@@ -57,22 +58,28 @@ afterAll(async () => {
 
 // tests that can also run on mac:
 describe.concurrent("safari-compatible", () => {
+	let peer: Peer;
+
+	beforeAll(async () => {
+		[peer] = await startPeers(1);
+	})
+
 	it("creates project", async () => {
-		let [peer] = await startPeers(1);
 		await loadPage([peer]);
 		await peer.createProject();
-		await quitPeers([peer]);
 	});
 
 	it("loads page", async () => {
-		let [peer] = await startPeers(1);
 		await loadPage([peer]);
-		await quitPeers([peer]);
 	});
+
+	afterAll(async () => {
+		await quitPeers([peer]);
+	})
 });
 
 describe
-	.skipIf(process.env.SELENIUM_BROWSER === "safari")
+	.skipIf(process.env.SELENIUM_BROWSER === "safari" || process.env.BROWSERSTACK_ACCESS_KEY)
 	.concurrent("safari-incompatible", () => {
 		it("connects", async () => {
 			let peers = await startPeers(2);

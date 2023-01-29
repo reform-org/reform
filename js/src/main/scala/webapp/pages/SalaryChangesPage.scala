@@ -15,9 +15,9 @@ limitations under the License.
  */
 package webapp.pages
 
+import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
-import rescala.default.*
 import webapp.utils.Date
 
 private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
@@ -30,18 +30,19 @@ private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   isRequired = true,
 )
 
-private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = UISelectAttribute(
-  _._paymentLevel,
-  (p, a) => p.copy(_paymentLevel = a),
-  // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
-  readConverter = _.toString,
-  writeConverter = _.toString,
-  label = "PaymentLevel",
-  options = Repositories.paymentLevels.all.map(list =>
-    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
-  ),
-  isRequired = true,
-)
+private def salaryChangePaymentLevel(using repositories: Repositories): UISelectAttribute[SalaryChange, String] =
+  UISelectAttribute(
+    _._paymentLevel,
+    (p, a) => p.copy(_paymentLevel = a),
+    // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
+    readConverter = _.toString,
+    writeConverter = _.toString,
+    label = "PaymentLevel",
+    options = repositories.paymentLevels.all.map(list =>
+      list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
+    ),
+    isRequired = true,
+  )
 
 private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
   _._fromDate,
@@ -54,8 +55,8 @@ private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAt
   // min = "2023-01-24",
 )
 
-case class SalaryChangesPage()
+case class SalaryChangesPage()(using repositories: Repositories)
     extends EntityPage[SalaryChange](
-      Repositories.salaryChanges,
+      repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
     ) {}

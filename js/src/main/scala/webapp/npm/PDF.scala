@@ -2,9 +2,9 @@ package webapp.npm
 
 import scala.concurrent.Future
 import scala.scalajs.js
-import scala.scalajs.js.{JSON, Promise}
+import scala.scalajs.js.Promise
 import scala.scalajs.js.annotation.JSImport
-import concurrent.ExecutionContext.Implicits.global
+
 import js.JSConverters.*
 
 abstract class PDFField(

@@ -3,11 +3,8 @@ package webapp.entity
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.*
-import webapp.entity.Attribute
-import webapp.Repositories
-import webapp.given
 import webapp.duplicateValuesHandler
+import webapp.given
 
 class UIOption[NameType](
     val id: String,
