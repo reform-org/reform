@@ -15,19 +15,18 @@ limitations under the License.
  */
 package webapp
 
+import loci.communicator.tcp.TCP
 import utest.*
+import webapp.entity.*
+import webapp.npm.IIndexedDB
+import webapp.npm.IndexedDB
+import webapp.repo.Repository
+import webapp.repo.Synced
+import webapp.webrtc.WebRTCService
+
+import scala.scalajs.js.annotation.*
 
 import concurrent.ExecutionContext.Implicits.global
-import scala.scalajs.js.annotation.*
-import webapp.repo.Repository
-import webapp.entity.*
-import webapp.{*, given}
-import loci.communicator.tcp.TCP
-import loci.registry.Registry
-import webapp.repo.Synced
-import webapp.npm.IndexedDB
-import webapp.npm.IIndexedDB
-import webapp.webrtc.WebRTCService
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {

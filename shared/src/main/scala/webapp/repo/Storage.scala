@@ -1,12 +1,10 @@
 package webapp.repo
 
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import webapp.npm.*
 
-import scala.concurrent.Future
-import scala.scalajs.js
 import scala.concurrent.ExecutionContext.Implicits.global
-
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import scala.concurrent.Future
 
 case class Storage[T](private val name: String, private val defaultValue: T)(using
     codec: JsonValueCodec[T],

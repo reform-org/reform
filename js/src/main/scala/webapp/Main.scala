@@ -15,18 +15,15 @@ limitations under the License.
  */
 package webapp
 
+import cats.effect.SyncIO
 import outwatch.*
 import outwatch.dsl.*
-import cats.effect.SyncIO
-import rescala.default.{Event, Signal, Var}
-import colibri.{Cancelable, Observer, Source, Subject}
-import scala.scalajs.js
-import js.annotation.*
-import webapp.services.RoutingService
-import loci.registry.Registry
 import webapp.npm.IIndexedDB
 import webapp.npm.IndexedDB
+import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+
+import scala.scalajs.js
 
 // object JavaScriptHot {
 //   @js.native

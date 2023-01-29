@@ -17,19 +17,18 @@ package webapp.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import kofre.base.*
 import kofre.base.Lattice.*
+import kofre.base.*
+import loci.registry.Binding
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
+import rescala.core.Disconnectable
 import rescala.default.*
-import rescala.interface.*
 import webapp.Codecs.*
-import loci.registry.Binding
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
-import rescala.core.Disconnectable
-import loci.registry.Registry
 
 /** @param name
   *   The name/type of the thing to sync

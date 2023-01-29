@@ -17,9 +17,6 @@ package webapp
 
 import colibri.*
 import colibri.router.*
-import colibri.router.Router
-import org.scalajs.dom.window
-import outwatch.*
 import rescala.default.*
 import webapp.pages.*
 import webapp.services.Page

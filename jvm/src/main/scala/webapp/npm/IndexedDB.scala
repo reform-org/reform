@@ -15,11 +15,10 @@ limitations under the License.
  */
 package webapp.npm
 
+import com.github.plokhotnyuk.jsoniter_scala.core.*
+
 import scala.collection.mutable
 import scala.concurrent.Future
-import scala.scalajs.js.JSConverters.*
-
-import com.github.plokhotnyuk.jsoniter_scala.core.*
 
 class IndexedDB extends IIndexedDB {
 
