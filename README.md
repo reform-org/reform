@@ -38,7 +38,13 @@ In another window start the web dev server with:
 npm run dev
 ```
 
-Then open `http://localhost:5173/` in your browser.
+Then open linked instances in your browser:
+
+```
+npm run spawn-test-instances -- --count 2 --url http://localhost:5173/
+```
+
+Or connect them manually, but use a temp dir:
 
 ```
 setsid -f chromium --user-data-dir=$(mktemp -d) http://localhost:5173/
