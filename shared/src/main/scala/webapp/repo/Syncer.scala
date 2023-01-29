@@ -11,7 +11,7 @@ import webapp.webrtc.*
 import loci.registry.Registry
 
 case class Syncer[A](name: String)(using
-    registry: Registry,
+    webrtc: WebRTCService,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],

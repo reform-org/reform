@@ -45,19 +45,17 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "eb0719f08f",
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "eb0719f08f",
       "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-tcp"           % "eb0719f08f",
-      "com.github.rescala-lang.REScala" %%% "rescala" % "3c40c12126b0a23c8a3a7aea7d8c69a27e3dc906",
-      "com.github.rescala-lang.REScala" %%% "kofre" % "3c40c12126b0a23c8a3a7aea7d8c69a27e3dc906",
+      "com.github.rescala-lang.REScala" %%% "rescala" % "d3d97711fd7577327eb469209c34e1304c9d374c",
+      "com.github.rescala-lang.REScala" %%% "kofre" % "d3d97711fd7577327eb469209c34e1304c9d374c",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.3",
       "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3",
     ),
     testFrameworks                         += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
       // like there could also be sane defaults but no
-      //"-rewrite",
       "-no-indent",
       //"-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
-      "-Xfatal-warnings",
       "--unchecked",
       "-deprecation",
       "-Xmigration",

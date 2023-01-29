@@ -35,6 +35,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import loci.registry.Registry
 import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
 private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
@@ -186,7 +187,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
-  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): VNode = {
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode = {
     div(
       navigationHeader,
       div(

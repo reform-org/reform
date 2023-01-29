@@ -28,8 +28,11 @@ import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
 import webapp.services.RoutingService
 import loci.registry.Registry
+import webapp.webrtc.WebRTCService
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories, registry: Registry)(classes: String) = {
+def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
+    classes: String,
+) = {
   ul(
     tabIndex := 0,
     cls := classes,
@@ -145,13 +148,13 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, re
     ),
     li(
       i(
-        s"${registry.remotes.size} Connections",
+        s"${webrtc.registry.remotes.size} Connections",
       ),
     ),
   )
 }
 
-def navigationHeader(using routing: RoutingService, repositories: Repositories, registry: Registry) = {
+def navigationHeader(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = {
   div(
     cls := "navbar bg-base-300",
     div(

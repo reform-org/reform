@@ -27,6 +27,7 @@ import loci.registry.Registry
 import webapp.repo.Synced
 import webapp.npm.IndexedDB
 import webapp.npm.IIndexedDB
+import webapp.webrtc.WebRTCService
 
 @JSExportTopLevel("MainTest")
 object MainTest extends TestSuite {
@@ -53,7 +54,7 @@ object MainTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
-    given registry: Registry = Registry()
+    given webrtc: WebRTCService = WebRTCService()
     given indexedDb: IIndexedDB = IndexedDB()
     given repositories: Repositories = Repositories()
 
@@ -62,17 +63,17 @@ object MainTest extends TestSuite {
     }
 
     test("syncing") {
-      val registry0 = Registry()
-      val registry1 = Registry()
+      val webrtc0 = WebRTCService()
+      val webrtc1 = WebRTCService()
       val indexedDb0: IIndexedDB = IndexedDB()
       val indexedDb1: IIndexedDB = IndexedDB()
-      val repositories0 = Repositories(using registry0, indexedDb0)
-      val repositories1 = Repositories(using registry1, indexedDb1)
+      val repositories0 = Repositories(using webrtc0, indexedDb0)
+      val repositories1 = Repositories(using webrtc1, indexedDb1)
       testRepository(repositories0.projects)
       eventually(repositories0.projects.all.now.length == 1)
       continually(repositories1.projects.all.now.length == 0)
-      registry0.listen(TCP(1337))
-      registry1.connect(TCP("localhost", 1337))
+      webrtc0.registry.listen(TCP(1337))
+      webrtc1.registry.connect(TCP("localhost", 1337))
       eventually(repositories1.projects.all.now.length == 1)
       continually(repositories1.projects.all.now.length == 1)
     }

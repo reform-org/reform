@@ -26,6 +26,7 @@ import webapp.services.RoutingService
 import loci.registry.Registry
 import webapp.npm.IIndexedDB
 import webapp.npm.IndexedDB
+import webapp.webrtc.WebRTCService
 
 // object JavaScriptHot {
 //   @js.native
@@ -64,11 +65,11 @@ object Main {
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given repositories: Repositories = Repositories()
-    given registry: Registry = Registry()
+    given webrtc: WebRTCService = WebRTCService()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using routing: RoutingService, repositories: Repositories, registry: Registry) = body(
+  def app(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = body(
     routing.render,
   )
 }

@@ -22,10 +22,11 @@ import webapp.services.Page
 import webapp.utils.Base64
 import loci.registry.Registry
 import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
 case class WebRTCHandling(private val state: Var[State] = Var(Init)) extends Page {
 
-  override def render(using routing: RoutingService, repositories: Repositories, registry: Registry): VNode = div(
+  override def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode = div(
     navigationHeader,
     state.map(_.render(using state)),
   )
@@ -46,11 +47,11 @@ private def sessionAsToken(s: WebRTC.CompleteSession) = Base64.encode(writeToStr
 private def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
 
 private sealed trait State {
-  def render(using state: Var[State], registry: Registry): VNode
+  def render(using state: Var[State], webrtc: WebRTCService): VNode
 }
 
 private case object Init extends State {
-  override def render(using state: Var[State], registry: Registry): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     h2(cls := "text-2xl text-center", "Are you host or client?"),
     div(
       cls := "p-1 grid gap-2 grid-cols-2 grid-rows-1",
@@ -71,7 +72,7 @@ private case object Init extends State {
     state.set(ClientAskingForHostSessionToken())
   }
 
-  private def hostSession(using state: Var[State], registry: Registry): Unit = {
+  private def hostSession(using state: Var[State], webrtc: WebRTCService): Unit = {
     val pendingConnection = webrtcIntermediate(WebRTC.offer())
     state.set(HostPending(pendingConnection))
   }
@@ -80,7 +81,7 @@ private case object Init extends State {
 private case class ClientAskingForHostSessionToken() extends State {
   private val sessionToken = Var("")
 
-  override def render(using state: Var[State], registry: Registry): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     cls := "p-1 grid gap-2 grid-cols-1 grid-rows-3",
     h2(cls := "text-2xl text-center", "Ask the host for their session token an insert it here"),
     textArea(
@@ -95,7 +96,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     ),
   )
 
-  private def connectToHost(using state: Var[State], registry: Registry): Unit = {
+  private def connectToHost(using state: Var[State], webrtc: WebRTCService): Unit = {
     val connection = webrtcIntermediate(WebRTC.answer())
     connection.connector.set(tokenAsSession(sessionToken.now))
     state.set(ClientWaitingForHostConfirmation(connection))
@@ -104,11 +105,11 @@ private case class ClientAskingForHostSessionToken() extends State {
 
 private case class ClientWaitingForHostConfirmation(connection: PendingConnection)(using
     state: Var[State],
-    registry: Registry,
+    webrtc: WebRTCService,
 ) extends State {
-  registry.connect(connection.connector).foreach(_ => onConnected())
+  webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
 
-  override def render(using state: Var[State], registry: Registry): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     h2(
       cls := "w-full text-2xl text-center",
       "Give the host your confirmation token and wait for them to confirm the connection",
@@ -121,12 +122,12 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
   }
 }
 
-private case class HostPending(connection: PendingConnection)(using state: Var[State], registry: Registry)
+private case class HostPending(connection: PendingConnection)(using state: Var[State], webrtc: WebRTCService)
     extends State {
   private val sessionTokenFromClient = Var("")
-  registry.connect(connection.connector).foreach(_ => onConnected())
+  webrtc.registry.connect(connection.connector).foreach(_ => onConnected())
 
-  override def render(using state: Var[State], registry: Registry): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     cls := "p-1",
     h2(
       cls := "w-full text-2xl text-center",
@@ -158,5 +159,6 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
 }
 
 private case object Connected extends State {
-  def render(using state: Var[State], registry: Registry): VNode = h2(cls := "w-full text-2xl text-center", "Connected")
+  def render(using state: Var[State], webrtc: WebRTCService): VNode =
+    h2(cls := "w-full text-2xl text-center", "Connected")
 }

@@ -28,9 +28,10 @@ import scala.scalajs.js
 import webapp.*
 import webapp.pages.*
 import loci.registry.Registry
+import webapp.webrtc.WebRTCService
 
 trait Page {
-  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): VNode
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode
 }
 
 class RoutingState(
@@ -42,7 +43,7 @@ class RoutingState(
 class RoutingService(using repositories: Repositories) {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
-  def render(using routing: RoutingService, repositories: Repositories, registry: Registry): Signal[VNode] =
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): Signal[VNode] =
     page.map(_.render)
 
   def to(newPage: Page, preventReturn: Boolean = false) = {

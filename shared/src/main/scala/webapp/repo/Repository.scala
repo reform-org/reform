@@ -29,9 +29,10 @@ import scala.concurrent.Future
 import scala.util.Success
 import loci.registry.Registry
 import webapp.npm.IIndexedDB
+import webapp.webrtc.WebRTCService
 
 case class Repository[A](name: String, defaultValue: A)(using
-    registry: Registry,
+    webrtc: WebRTCService,
     indexedDb: IIndexedDB,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
