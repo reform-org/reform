@@ -17,13 +17,16 @@ package webapp
 
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 
 trait Services {
   lazy val routing: RoutingService
   lazy val webrtc: WebRTCService.type
+  lazy val discovery: DiscoveryService.type
 }
 
 object ServicesDefault extends Services {
   lazy val routing = RoutingService()
   lazy val webrtc = WebRTCService
+  lazy val discovery = DiscoveryService
 }

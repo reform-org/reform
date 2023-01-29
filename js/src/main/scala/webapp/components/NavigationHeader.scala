@@ -144,6 +144,6 @@ def navigationHeader(using services: Services) = {
       cls := "navbar-center hidden lg:flex",
       navigationMenu("menu menu-horizontal p-0"),
     ),
-    ConnectionModal().render
+    ConnectionModal(using services).render,
   )
 }

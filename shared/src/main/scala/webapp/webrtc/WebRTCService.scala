@@ -25,11 +25,30 @@ import org.scalajs.dom
 import loci.transmitter.RemoteRef
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.Connector
-import scala.concurrent.Future
+import scala.concurrent.{Future, Promise}
 import scala.concurrent.ExecutionContext.Implicits.global
+import loci.communicator.webrtc.WebRTC.ConnectorFactory
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import webapp.utils.Base64
+import com.github.plokhotnyuk.jsoniter_scala.core.*
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(val alias: String, val source: String = "manual") {}
+
+case class PendingConnection(connector: WebRTC.Connector, session: Future[ConnectionInformation])
+object PendingConnection {
+  def webrtcIntermediate(cf: ConnectorFactory, alias: String) = {
+    val p = Promise[ConnectionInformation]()
+    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
+    PendingConnection(answer, p.future)
+  }
+  private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
+  def sessionAsToken(s: ConnectionInformation) = Base64.encode(writeToString(s)(codec))
+
+  def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
+}
+
 object WebRTCService {
   val registry: Registry = new Registry
 
