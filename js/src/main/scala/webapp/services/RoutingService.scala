@@ -17,18 +17,15 @@ package webapp.services
 
 import colibri.*
 import colibri.router.*
-import colibri.router.Router
-import org.scalajs.dom.*
 import org.scalajs.dom
+import org.scalajs.dom.*
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import scala.reflect.Selectable.*
-import scala.scalajs.js
 import webapp.*
-import webapp.pages.*
-import loci.registry.Registry
 import webapp.webrtc.WebRTCService
+
+import scala.scalajs.js
 
 trait Page {
   def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode

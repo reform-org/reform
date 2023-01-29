@@ -1,28 +1,25 @@
 package webapp.pages
 
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.core.*
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.communicator.webrtc
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import webapp.*
+import webapp.components.navigationHeader
 import webapp.given
-import cats.effect.SyncIO
+import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.utils.Base64
+import webapp.webrtc.WebRTCService
 
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
-import org.scalajs.dom.{console, UIEvent}
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import webapp.components.navigationHeader
-import webapp.services.Page
-import webapp.utils.Base64
-import loci.registry.Registry
-import webapp.services.RoutingService
-import webapp.webrtc.WebRTCService
+import scala.concurrent.Future
+import scala.concurrent.Promise
 
 case class WebRTCHandling(private val state: Var[State] = Var(Init)) extends Page {
 

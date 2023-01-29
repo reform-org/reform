@@ -4,8 +4,10 @@ import com.github.plokhotnyuk.jsoniter_scala.core.*
 
 import scala.concurrent.Future
 import scala.scalajs.js
-import scala.scalajs.js.{JSON, Promise}
+import scala.scalajs.js.JSON
+import scala.scalajs.js.Promise
 import scala.scalajs.js.annotation.JSImport
+
 import concurrent.ExecutionContext.Implicits.global
 
 class IndexedDB extends IIndexedDB {

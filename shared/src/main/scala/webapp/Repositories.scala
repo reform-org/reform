@@ -1,9 +1,14 @@
 package webapp
 
-import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User}
-import webapp.repo.Repository
-import loci.registry.Registry
+import webapp.entity.ContractSchema
+import webapp.entity.Hiwi
+import webapp.entity.PaymentLevel
+import webapp.entity.Project
+import webapp.entity.SalaryChange
+import webapp.entity.Supervisor
+import webapp.entity.User
 import webapp.npm.IIndexedDB
+import webapp.repo.Repository
 import webapp.webrtc.WebRTCService
 
 class Repositories(using webrtc: WebRTCService, indexedDb: IIndexedDB) {

@@ -1,9 +1,9 @@
 package webapp.repo
 
 import webapp.GrowOnlySet
+import webapp.npm.IIndexedDB
 
 import scala.concurrent.Future
-import webapp.npm.IIndexedDB
 
 // TODO: Might use normal sets
 case class IdSetStorage(name: String)(using indexedDb: IIndexedDB) {

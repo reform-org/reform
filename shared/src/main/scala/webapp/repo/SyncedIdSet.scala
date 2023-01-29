@@ -2,13 +2,12 @@ package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import rescala.default.*
+import webapp.*
+import webapp.webrtc.DeltaFor
+import webapp.webrtc.WebRTCService
 
 import concurrent.ExecutionContext.Implicits.global
-import webapp.*
-import rescala.default.*
-import webapp.webrtc.DeltaFor
-import loci.registry.Registry
-import webapp.webrtc.WebRTCService
 
 case class SyncedIdSet(name: String)(using webrtc: WebRTCService) {
 

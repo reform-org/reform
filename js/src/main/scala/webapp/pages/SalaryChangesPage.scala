@@ -15,9 +15,9 @@ limitations under the License.
  */
 package webapp.pages
 
+import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
-import rescala.default.*
 import webapp.utils.Date
 
 private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(

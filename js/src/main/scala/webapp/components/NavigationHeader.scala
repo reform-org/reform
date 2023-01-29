@@ -16,18 +16,12 @@ limitations under the License.
 package webapp.components
 
 import org.scalajs.dom
+import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
 import webapp.pages.*
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLElement
 import webapp.services.RoutingService
-import loci.registry.Registry
 import webapp.webrtc.WebRTCService
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
