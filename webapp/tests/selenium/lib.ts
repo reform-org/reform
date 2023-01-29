@@ -147,13 +147,13 @@ export class Peer {
 		// await dropdown.click()
 		await this.driver.wait(until.elementLocated(
 			By.css(".navbar-center a[href='/projects']"),
-		));
+		), 10000);
 		// ensure its not stale
 		await this.driver.executeScript(`document.querySelector(".navbar-center a[href='/projects']")?.click()`) 
 
 		let projectNameInput = await this.driver.wait(until.elementLocated(
 			By.css("input[placeholder='Name']"),
-		));
+		), 10000);
 		let maxHoursInput = await this.driver.findElement(
 			By.css("input[placeholder='Max Hours']"),
 		);
