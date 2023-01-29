@@ -21,17 +21,17 @@ import scala.scalajs.js.JSConverters.*
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 
-object IndexedDB extends IIndexedDB {
+class IndexedDB extends IIndexedDB {
 
-  private val data: mutable.Map[String, Any] = mutable.Map()
+  private val data: mutable.Map[String, String] = mutable.Map()
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
-    val o = data.get(key).map(_.asInstanceOf)
+    val o = data.get(key).map(readFromString(_))
     Future.successful(o)
   }
 
   override def set[T](key: String, value: T)(using codec: JsonValueCodec[T]): Future[Unit] = {
-    data.put(key, value)
+    data.put(key, writeToString(value))
     Future.successful(())
   }
 }

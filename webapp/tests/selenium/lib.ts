@@ -145,10 +145,11 @@ export class Peer {
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		let projectsButton = await this.driver.findElement(
+		await this.driver.wait(until.elementLocated(
 			By.css(".navbar-center a[href='/projects']"),
-		);
-		await projectsButton.click();
+		));
+		// ensure its not stale
+		await this.driver.executeScript(`document.querySelector(".navbar-center a[href='/projects']")?.click()`) 
 
 		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
@@ -300,11 +301,11 @@ export class Peer {
 					local: "true",
 					debug: "true",
 					consoleLogs: "info",
-					os: "Windows",
-					osVersion: "11",
-					browserVersion: "103.0",
-					buildName: "browserstack-build-1",
-					sessionName: "Parallel test 1",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Chrome",
 				},
 				browserName: "Chrome",
 			},
@@ -313,11 +314,11 @@ export class Peer {
 					local: "true",
 					debug: "true",
 					consoleLogs: "info",
-					os: "Windows",
-					osVersion: "10",
-					browserVersion: "102.0",
-					buildName: "browserstack-build-1",
-					sessionName: "Parallel test 2",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Firefox",
 				},
 				browserName: "Firefox",
 			},
@@ -327,10 +328,10 @@ export class Peer {
 					debug: "true",
 					consoleLogs: "info",
 					os: "OS X",
-					osVersion: "Big Sur",
-					browserVersion: "14.1",
-					buildName: "browserstack-build-1",
-					sessionName: "Parallel test 3",
+					osVersion: "Ventura",
+					browserVersion: "16",
+					buildName: `${new Date()}`,
+					sessionName: "Safari",
 				},
 				browserName: "Safari",
 			},

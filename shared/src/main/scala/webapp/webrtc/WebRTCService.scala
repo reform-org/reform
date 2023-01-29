@@ -21,6 +21,6 @@ import webapp.*
 import webapp.Codecs.*
 import rescala.default.*
 
-object WebRTCService {
+class WebRTCService {
   val registry: Registry = new Registry
 }

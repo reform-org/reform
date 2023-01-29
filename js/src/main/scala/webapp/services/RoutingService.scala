@@ -27,9 +27,11 @@ import scala.reflect.Selectable.*
 import scala.scalajs.js
 import webapp.*
 import webapp.pages.*
+import loci.registry.Registry
+import webapp.webrtc.WebRTCService
 
 trait Page {
-  def render(using services: Services): VNode
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode
 }
 
 class RoutingState(
@@ -38,10 +40,10 @@ class RoutingState(
     val canReturn: Boolean,
 ) extends js.Object
 
-class RoutingService() {
+class RoutingService(using repositories: Repositories) {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
-  def render(using services: Services): Signal[VNode] =
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): Signal[VNode] =
     page.map(_.render)
 
   def to(newPage: Page, preventReturn: Boolean = false) = {

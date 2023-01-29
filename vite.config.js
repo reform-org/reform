@@ -3,6 +3,7 @@ export default {
 	test: {
 		environment: "jsdom",
 		testTimeout: 300000,
+		hookTimeout: 300000,
 	},
 	preview: {
 		port: 5173,

@@ -8,7 +8,7 @@ import scala.scalajs.js.{JSON, Promise}
 import scala.scalajs.js.annotation.JSImport
 import concurrent.ExecutionContext.Implicits.global
 
-object IndexedDB extends IIndexedDB {
+class IndexedDB extends IIndexedDB {
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     val promise: js.Promise[js.UndefOr[js.Dynamic]] = NativeImpl.get(key)
@@ -30,14 +30,14 @@ object IndexedDB extends IIndexedDB {
 
   private def castFromJsDynamic[T](dynamic: js.Dynamic)(using codec: JsonValueCodec[T]) =
     readFromString(JSON.stringify(dynamic))
+}
 
-  // https://github.com/jakearchibald/idb-keyval/blob/main/src/index.ts#L44
-  @js.native
-  @JSImport("idb-keyval", JSImport.Namespace)
-  private object NativeImpl extends js.Object {
+// https://github.com/jakearchibald/idb-keyval/blob/main/src/index.ts#L44
+@js.native
+@JSImport("idb-keyval", JSImport.Namespace)
+private object NativeImpl extends js.Object {
 
-    def get(key: String): js.Promise[js.UndefOr[js.Dynamic]] = js.native
+  def get(key: String): js.Promise[js.UndefOr[js.Dynamic]] = js.native
 
-    def set(key: String, value: js.Dynamic): js.Promise[Unit] = js.native
-  }
+  def set(key: String, value: js.Dynamic): js.Promise[Unit] = js.native
 }

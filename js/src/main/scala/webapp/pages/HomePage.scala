@@ -28,10 +28,13 @@ import webapp.services.Page
 
 import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.*
+import webapp.services.RoutingService
+import loci.registry.Registry
+import webapp.webrtc.WebRTCService
 
 case class HomePage() extends Page {
 
-  def render(using services: Services): VNode =
+  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode =
     div(
       navigationHeader,
       p("Homepage"),

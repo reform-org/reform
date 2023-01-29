@@ -2,8 +2,11 @@ package webapp
 
 import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User}
 import webapp.repo.Repository
+import loci.registry.Registry
+import webapp.npm.IIndexedDB
+import webapp.webrtc.WebRTCService
 
-object Repositories {
+class Repositories(using webrtc: WebRTCService, indexedDb: IIndexedDB) {
 
   val projects: Repository[Project] = Repository("project", Project.empty)
   val users: Repository[User] = Repository("user", User.empty)

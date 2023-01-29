@@ -22,6 +22,11 @@ import rescala.default.{Event, Signal, Var}
 import colibri.{Cancelable, Observer, Source, Subject}
 import scala.scalajs.js
 import js.annotation.*
+import webapp.services.RoutingService
+import loci.registry.Registry
+import webapp.npm.IIndexedDB
+import webapp.npm.IndexedDB
+import webapp.webrtc.WebRTCService
 
 // object JavaScriptHot {
 //   @js.native
@@ -57,12 +62,15 @@ import js.annotation.*
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
-    implicit val services = ServicesDefault
+    given routing: RoutingService = RoutingService()
+    given indexedDb: IIndexedDB = IndexedDB()
+    given repositories: Repositories = Repositories()
+    given webrtc: WebRTCService = WebRTCService()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using services: Services) = body(
-    services.routing.render,
+  def app(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = body(
+    routing.render,
   )
 }
 

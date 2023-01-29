@@ -26,8 +26,13 @@ import webapp.given
 import webapp.pages.*
 import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
+import webapp.services.RoutingService
+import loci.registry.Registry
+import webapp.webrtc.WebRTCService
 
-def navigationMenu(using services: Services)(classes: String) = {
+def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
+    classes: String,
+) = {
   ul(
     tabIndex := 0,
     cls := classes,
@@ -38,7 +43,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HomePage(), true)
+          routing.to(HomePage(), true)
         }),
       ),
     ),
@@ -49,7 +54,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(LoginPage(), true)
+          routing.to(LoginPage(), true)
         }),
       ),
     ),
@@ -60,7 +65,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ProjectsPage(), true)
+          routing.to(ProjectsPage(), true)
         }),
       ),
     ),
@@ -71,7 +76,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(UsersPage(), true)
+          routing.to(UsersPage(), true)
         }),
       ),
     ),
@@ -82,7 +87,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(PaymentLevelsPage(), true)
+          routing.to(PaymentLevelsPage(), true)
         }),
       ),
     ),
@@ -93,7 +98,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SalaryChangesPage(), true)
+          routing.to(SalaryChangesPage(), true)
         }),
       ),
     ),
@@ -104,7 +109,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HiwisPage(), true)
+          routing.to(HiwisPage(), true)
         }),
       ),
     ),
@@ -115,7 +120,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
+          routing.to(SupervisorsPage(), true)
         }),
       ),
     ),
@@ -126,7 +131,7 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
+          routing.to(SupervisorsPage(), true)
         }),
       ),
     ),
@@ -137,20 +142,19 @@ def navigationMenu(using services: Services)(classes: String) = {
         onClick.foreach(e => {
           e.preventDefault()
           e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(WebRTCHandling(), true)
+          routing.to(WebRTCHandling(), true)
         }),
       ),
     ),
     li(
       i(
-        s"${services.webrtc.registry.remotes.size} Connections",
+        s"${webrtc.registry.remotes.size} Connections",
       ),
     ),
   )
 }
 
-def navigationHeader(using services: Services) = {
-  import svg.*
+def navigationHeader(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = {
   div(
     cls := "navbar bg-base-300",
     div(
@@ -160,20 +164,22 @@ def navigationHeader(using services: Services) = {
         label(
           tabIndex := 0,
           idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden",
-          svg(
-            xmlns := "http://www.w3.org/2000/svg",
-            cls := "h-5 w-5",
-            fill := "none",
-            viewBox := "0 0 24 24",
-            stroke := "currentColor",
-            path(
-              VModifier.attr("stroke-linecap") := "round",
-              VModifier.attr("stroke-linejoin") := "round",
-              VModifier.attr("stroke-width") := "2",
-              d := "M4 6h16M4 12h8m-8 6h16",
-            ),
-          ),
+          cls := "btn btn-ghost lg:hidden", {
+            import svg.*
+            svg(
+              xmlns := "http://www.w3.org/2000/svg",
+              cls := "h-5 w-5",
+              fill := "none",
+              viewBox := "0 0 24 24",
+              stroke := "currentColor",
+              path(
+                VModifier.attr("stroke-linecap") := "round",
+                VModifier.attr("stroke-linejoin") := "round",
+                VModifier.attr("stroke-width") := "2",
+                d := "M4 6h16M4 12h8m-8 6h16",
+              ),
+            )
+          },
         ),
         navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
       ),
