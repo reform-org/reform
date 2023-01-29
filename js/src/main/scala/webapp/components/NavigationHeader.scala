@@ -33,64 +33,34 @@ def navigationMenu(using services: Services)(classes: String) = {
     tabIndex := 0,
     cls := classes,
     li(
-      a(
-        "Home",
-        href := navigationLink(HomePage()),
-      ),
+      navigationLink(HomePage(), "Home"),
     ),
     li(
-      a(
-        "Login",
-        href := navigationLink(LoginPage()),
-      ),
+      navigationLink(LoginPage(), "Login"),
     ),
     li(
-      a(
-        "Projekte",
-        href := navigationLink(ProjectsPage()),
-      ),
+      navigationLink(ProjectsPage(), "Projekte"),
     ),
     li(
-      a(
-        "Users",
-        href := navigationLink(UsersPage()),
-      ),
+      navigationLink(UsersPage(), "Users"),
     ),
     li(
-      a(
-        "Paymentlevels",
-        href := navigationLink(PaymentLevelsPage()),
-      ),
+      navigationLink(PaymentLevelsPage(), "Paymentlevels"),
     ),
     li(
-      a(
-        "SalaryChanges",
-        href := navigationLink(SalaryChangesPage()),
-      ),
+      navigationLink(SalaryChangesPage(), "SalaryChanges"),
     ),
     li(
-      a(
-        "Hiwis",
-        href := navigationLink(HiwisPage()),
-      ),
+      navigationLink(HiwisPage(), "Hiwis"),
     ),
     li(
-      a(
-        "Supervisors",
-        href := navigationLink(SupervisorsPage()),
-      ),
+      navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      a(
-        "ContractSchemas",
-        href := navigationLink(ContractSchemasPage()),
-      ),
+      navigationLink(ContractSchemasPage(), "ContractSchemas"),
     ),
     li(
-      a(
-        "WebRTC",
-        href := navigationLink(WebRTCHandling()),
-      ),
+      navigationLink(WebRTCHandling(), "WebRTC"),
     ),
     li(
       i(
@@ -135,13 +105,4 @@ def navigationHeader(using services: Services) = {
       navigationMenu("menu menu-horizontal p-0"),
     ),
   )
-}
-
-def navigationLink(using services: Services)(page: Page): String = {
-  onClick.foreach(e => {
-    e.preventDefault()
-    e.target.asInstanceOf[HTMLElement].blur()
-    services.routing.to(page, true)
-  })
-  services.routing.linkPath(page)
 }
