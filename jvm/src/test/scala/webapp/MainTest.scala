@@ -52,6 +52,24 @@ object MainTest extends TestSuite {
     continually(repository.all.now.length == 1)
   }
 
+  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T]) = {
+    val webrtc0 = WebRTCService()
+    val webrtc1 = WebRTCService()
+    val indexedDb0: IIndexedDB = IndexedDB()
+    val indexedDb1: IIndexedDB = IndexedDB()
+    val repositories0 = Repositories(using webrtc0, indexedDb0)
+    val repositories1 = Repositories(using webrtc1, indexedDb1)
+    testRepository(fun(repositories0))
+    eventually(fun(repositories0).all.now.length == 1)
+    continually(fun(repositories1).all.now.length == 0)
+    webrtc0.registry.listen(TCP(1337))
+    webrtc1.registry.connect(TCP("localhost", 1337))
+    eventually(fun(repositories1).all.now.length == 1)
+    continually(fun(repositories1).all.now.length == 1)
+    webrtc0.registry.terminate()
+    webrtc1.registry.terminate()
+  }
+
   val tests: Tests = Tests {
     given webrtc: WebRTCService = WebRTCService()
     given indexedDb: IIndexedDB = IndexedDB()
@@ -61,44 +79,56 @@ object MainTest extends TestSuite {
       testRepository(repositories.projects)
     }
 
-    test("syncing") {
-      val webrtc0 = WebRTCService()
-      val webrtc1 = WebRTCService()
-      val indexedDb0: IIndexedDB = IndexedDB()
-      val indexedDb1: IIndexedDB = IndexedDB()
-      val repositories0 = Repositories(using webrtc0, indexedDb0)
-      val repositories1 = Repositories(using webrtc1, indexedDb1)
-      testRepository(repositories0.projects)
-      eventually(repositories0.projects.all.now.length == 1)
-      continually(repositories1.projects.all.now.length == 0)
-      webrtc0.registry.listen(TCP(1337))
-      webrtc1.registry.connect(TCP("localhost", 1337))
-      eventually(repositories1.projects.all.now.length == 1)
-      continually(repositories1.projects.all.now.length == 1)
+    test("test syncing projects") {
+      testSyncing(r => r.projects)
     }
 
     test("test users repository") {
       testRepository(repositories.users)
     }
 
+    test("test syncing users") {
+      testSyncing(r => r.users)
+    }
+
     test("test hiwis repository") {
       testRepository(repositories.hiwis)
+    }
+
+    test("test syncing hiwis") {
+      testSyncing(r => r.hiwis)
     }
 
     test("test supervisor repository") {
       testRepository(repositories.supervisor)
     }
 
+    test("test syncing supervisor") {
+      testSyncing(r => r.supervisor)
+    }
+
     test("test contractSchemas repository") {
       testRepository(repositories.contractSchemas)
+    }
+
+    test("test syncing contractSchemas") {
+      testSyncing(r => r.contractSchemas)
     }
 
     test("test paymentLevels repository") {
       testRepository(repositories.paymentLevels)
     }
 
+    test("test syncing paymentLevels") {
+      testSyncing(r => r.paymentLevels)
+    }
+
     test("test salaryChanges repository") {
       testRepository(repositories.salaryChanges)
+    }
+
+    test("test salaryChanges projects") {
+      testSyncing(r => r.salaryChanges)
     }
   }
 
