@@ -3,6 +3,7 @@ package webapp.npm
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 
 import scala.concurrent.Future
+import scala.scalajs.js
 
 trait IIndexedDB {
 

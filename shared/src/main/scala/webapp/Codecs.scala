@@ -5,7 +5,8 @@ import kofre.datatypes.PosNegCounter
 import loci.transmitter.IdenticallyTransmittable
 import webapp.webrtc.DeltaFor
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import java.util.UUID
+import com.github.plokhotnyuk.jsoniter_scala.core.{JsonKeyCodec, JsonReader, JsonValueCodec, JsonWriter}
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 
 // Supporting code to serialize and deserialize objects

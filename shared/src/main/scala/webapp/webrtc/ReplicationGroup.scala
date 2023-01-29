@@ -22,6 +22,7 @@ import kofre.base.Lattice.*
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.default.*
+import rescala.interface.*
 import webapp.Codecs.*
 import loci.registry.Binding
 import scala.concurrent.ExecutionContext.Implicits.global

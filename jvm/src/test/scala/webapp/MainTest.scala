@@ -21,6 +21,7 @@ import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*
 import webapp.repo.Repository
 import webapp.entity.*
+import webapp.{*, given}
 import loci.communicator.tcp.TCP
 import loci.registry.Registry
 import webapp.repo.Synced
