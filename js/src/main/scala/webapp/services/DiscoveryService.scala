@@ -12,9 +12,11 @@ import scala.scalajs.js.Date
 import webapp.webrtc.PendingConnection
 import loci.communicator.webrtc.WebRTC
 import webapp.Services
+import rescala.default.*
 
 object DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
+  private val ws: WebSocket = new WebSocket("ws://localhost:7071/")
 
   class LoginInfo(var username: String, var password: String)
   object LoginInfo {
@@ -27,6 +29,19 @@ object DiscoveryService {
   }
 
   class TokenPayload(var exp: Int, var iat: Int, var username: String, var uuid: String)
+
+  class AvailableConnection(
+      var name: String,
+      var uuid: String,
+      var online: Boolean,
+      var trusted: Boolean,
+      var mutualTrust: Boolean,
+  )
+
+  private val setAvailableConnections = Evt[Seq[AvailableConnection]]()
+  private val setAvailableConnectionsB = setAvailableConnections.act(identity)
+
+  val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
 
   def decodeToken(token: String): TokenPayload = {
     val decodedToken = JSON.parse(window.atob(token.split('.')(1))).asInstanceOf[js.Dynamic]
@@ -42,10 +57,14 @@ object DiscoveryService {
     window.localStorage.getItem("discovery-token")
   }
 
+  private def tokenIsValid(token: String): Boolean = {
+    return token != null && Date.now() > decodeToken(token).exp
+  }
+
   def login(loginInfo: LoginInfo): Unit = {
     val savedToken = getToken()
 
-    if (savedToken == null || Date.now() <= decodeToken(savedToken).exp) {
+    if (!tokenIsValid(savedToken)) {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
@@ -114,7 +133,21 @@ object DiscoveryService {
             emit(ws, "client_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
           })
       }
-      case "available_clients" => console.log(payload.clients)
+      case "available_clients" => {
+        val clients = payload.clients
+          .asInstanceOf[js.Array[js.Dynamic]]
+          .map(client =>
+            new AvailableConnection(
+              client.name.asInstanceOf[String],
+              client.uuid.asInstanceOf[String],
+              client.online.asInstanceOf[Int] != 0,
+              client.trusted.asInstanceOf[Int] != 0,
+              client.mutualTrust.asInstanceOf[Int] != 0,
+            ),
+          )
+        var clientsSeq: Seq[AvailableConnection] = clients.toSeq
+        setAvailableConnections.fire(clientsSeq)
+      }
       case "request_client_finish_connection" => {
         pendingConnections -= payload.id.asInstanceOf[String]
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
@@ -129,7 +162,7 @@ object DiscoveryService {
   }
 
   def connect(using services: Services): Unit = {
-    val ws = new WebSocket("ws://localhost:7071/")
+    if (!tokenIsValid(getToken())) return;
     ws.onopen = (event) => {
       console.log("opened websocket")
       emit(ws, "authenticate", js.Dynamic.literal("token" -> getToken()))
