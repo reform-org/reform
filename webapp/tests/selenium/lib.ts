@@ -13,8 +13,8 @@ import safari from "selenium-webdriver/safari.js";
 import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
-export let seed = new Chance().integer();
-//let seed = 5475712614006784;
+//export let seed = new Chance().integer();
+export let seed = -1773669877547008;
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
