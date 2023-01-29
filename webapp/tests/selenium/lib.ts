@@ -151,9 +151,9 @@ export class Peer {
 		// ensure its not stale
 		await this.driver.executeScript(`document.querySelector(".navbar-center a[href='/projects']")?.click()`) 
 
-		let projectNameInput = await this.driver.findElement(
+		let projectNameInput = await this.driver.wait(until.elementLocated(
 			By.css("input[placeholder='Name']"),
-		);
+		));
 		let maxHoursInput = await this.driver.findElement(
 			By.css("input[placeholder='Max Hours']"),
 		);
