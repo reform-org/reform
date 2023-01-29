@@ -210,14 +210,16 @@ export class Peer {
 				By.css("div.dropdown")
 			);
 			await dropDown.click();
+			let webrtcButton = await this.driver.findElement(
+				By.css(".navbar-start a[href='/webrtc']"),
+			);
+			await webrtcButton.click();
 		} catch (ignoreNotMobile) {
+			let webrtcButton = await this.driver.findElement(
+				By.css(".navbar-center a[href='/webrtc']"),
+			);
+			await webrtcButton.click();
 		}
-		await this.driver.sleep(100);
-
-		let webrtcButton = await this.driver.findElement(
-			By.css("a[href='/webrtc']"),
-		);
-		await webrtcButton.click();
 	}
 
 	async connectTo(other: Peer) {
