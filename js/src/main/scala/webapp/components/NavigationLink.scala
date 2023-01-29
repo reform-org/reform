@@ -28,7 +28,7 @@ import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
 import webapp.services.Page
 
-def navigationLink(using services: Services)(page: Page, label: String): VNode = { 
+def navigationLink(using services: Services)(page: Page, label: String): VNode = {
   a(
     label,
     onClick.foreach(e => {
