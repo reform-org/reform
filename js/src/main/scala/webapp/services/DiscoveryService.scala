@@ -98,11 +98,11 @@ object DiscoveryService {
       case "request_host_token" => {
         var iceServers = js.Array[RTCIceServer]()
         iceServers += RTCIceServer(
-          "turn:lukasschreiber.com:41720",
+          "turn:lukasschreiber.de:41720",
           payload.host.turn.username.asInstanceOf[String],
           payload.host.turn.credential.asInstanceOf[String],
         )
-        iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
+        iceServers += RTCIceServer("stun:lukasschreiber.de:41720")
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
@@ -124,11 +124,11 @@ object DiscoveryService {
       case "request_client_token" => {
         var iceServers = js.Array[RTCIceServer]()
         iceServers += RTCIceServer(
-          "turn:lukasschreiber.com:41720",
+          "turn:lukasschreiber.de:41720",
           payload.client.turn.username.asInstanceOf[String],
           payload.client.turn.credential.asInstanceOf[String],
         )
-        iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
+        iceServers += RTCIceServer("stun:lukasschreiber.de:41720")
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(config),
