@@ -17,57 +17,37 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-import webapp.utils.Date
 
-private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._firstName,
-  (p, a) => p.copy(_firstName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "First Name",
-  fieldType = "text",
-  isRequired = true,
-)
+private val firstName = UIAttributeBuilder.string
+  .withLabel("First Name")
+  .bind[Hiwi](
+    _.firstName,
+    (p, a) => p.copy(firstName = a),
+  )
 
-private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._lastName,
-  (p, a) => p.copy(_lastName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Last Name",
-  fieldType = "text",
-  isRequired = true,
-)
+private val lastName = UIAttributeBuilder.string
+  .withLabel("Last Name")
+  .bind[Hiwi](
+    _.lastName,
+    (p, a) => p.copy(lastName = a),
+  )
 
-private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
-  _._hours,
-  (p, a) => p.copy(_hours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  label = "Hours",
-  fieldType = "number",
-  isRequired = true,
-)
+private val hours = UIAttributeBuilder.int
+  .withLabel("Hours")
+  .bind[Hiwi](
+    _.hours,
+    (p, a) => p.copy(hours = a),
+  )
 
-private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
-  _._eMail,
-  (p, a) => p.copy(_eMail = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Email",
-  fieldType = "text",
-  isRequired = true,
-)
-
-private val hbirthdate: UIDateAttribute[Hiwi, Long] = UIDateAttribute(
-  _._birthdate,
-  (p, a) => p.copy(_birthdate = a),
-  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  label = "Birthdate",
-  isRequired = true,
-)
+private val eMail = UIAttributeBuilder.string
+  .withLabel("Email")
+  .bind[Hiwi](
+    _.eMail,
+    (p, a) => p.copy(eMail = a),
+  )
 
 case class HiwisPage()(using repositories: Repositories)
-    extends EntityPage[Hiwi](repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail, hbirthdate)) {}
+    extends EntityPage[Hiwi](
+      repositories.hiwis,
+      Seq(firstName, lastName, hours, eMail),
+    ) {}

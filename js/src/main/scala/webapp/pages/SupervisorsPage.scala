@@ -49,4 +49,4 @@ private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
 )
 
 case class SupervisorsPage()(using repositories: Repositories)
-    extends EntityPage[Supervisor](repositories.supervisor, Seq(sfirstName, slastName, seMail)) {}
+    extends EntityPage[Supervisor](repositories.supervisors, Seq(sfirstName, slastName, seMail)) {}

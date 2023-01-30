@@ -18,35 +18,27 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val username: UIAttribute[User, String] = UIAttribute(
-  _._username,
-  (p, a) => p.copy(_username = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Username",
-  fieldType = "text",
-  isRequired = true,
-)
+private val username = UIAttributeBuilder.string
+  .withLabel("Username")
+  .bind[User](
+    _.username,
+    (p, a) => p.copy(username = a),
+  )
 
-private val role: UIAttribute[User, String] = UIAttribute(
-  _._role,
-  (p, a) => p.copy(_role = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Role",
-  fieldType = "text",
-  isRequired = true,
-)
+private val role = UIAttributeBuilder.string
+  .withLabel("Role")
+  .bind[User](
+    _.role,
+    (p, a) => p.copy(role = a),
+  )
 
-private val comment: UIAttribute[User, Option[String]] = UIAttribute(
-  _._comment,
-  (p, a) => p.copy(_comment = a),
-  readConverter = _.getOrElse(""),
-  writeConverter = Some(_),
-  label = "Comment",
-  fieldType = "text",
-  isRequired = false, // TODO FIXME this probably still has the not initialized issue
-)
+private val comment = UIAttributeBuilder.string
+  .withLabel("Comment")
+  .withDefaultValue("")
+  .bind[User](
+    _.comment,
+    (p, a) => p.copy(comment = a),
+  )
 
 case class UsersPage()(using repositories: Repositories)
     extends EntityPage[User](repositories.users, Seq(username, role, comment)) {}

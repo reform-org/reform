@@ -18,12 +18,11 @@ package webapp.pages
 import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
-import webapp.utils.Date
 
 private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
   _._value,
   (p, a) => p.copy(_value = a),
-  readConverter = number => (number / 100.0).toString(),
+  readConverter = number => (number / 100.0).toString,
   writeConverter = number => Math.round(number.toFloat * 100),
   label = "Value",
   fieldType = "number",
@@ -35,25 +34,21 @@ private def salaryChangePaymentLevel(using repositories: Repositories): UISelect
     _._paymentLevel,
     (p, a) => p.copy(_paymentLevel = a),
     // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
-    readConverter = _.toString,
-    writeConverter = _.toString,
+    readConverter = identity,
+    writeConverter = identity,
     label = "PaymentLevel",
     options = repositories.paymentLevels.all.map(list =>
-      list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
+      list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
     ),
     isRequired = true,
   )
 
-private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
-  _._fromDate,
-  (p, a) => p.copy(_fromDate = a),
-  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  label = "From",
-  isRequired = true,
-  // min = "2023-01-24",
-)
+private val salaryChangeFromDate = UIAttributeBuilder.date
+  .withLabel("From")
+  .bind[SalaryChange](
+    _._fromDate,
+    (p, a) => p.copy(_fromDate = a),
+  )
 
 case class SalaryChangesPage()(using repositories: Repositories)
     extends EntityPage[SalaryChange](

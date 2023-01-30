@@ -18,35 +18,30 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val name: UIAttribute[Project, String] = UIAttribute(
-  _._name,
-  (p, a) => p.copy(_name = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Name",
-  fieldType = "text",
-  isRequired = true,
-)
+private val name = UIAttributeBuilder.string
+  .withLabel("Name")
+  .bind[Project](
+    _.name,
+    (p, a) => p.copy(name = a),
+  )
 
-private val maxHours: UIAttribute[Project, Int] = UIAttribute(
-  _._maxHours,
-  (p, a) => p.copy(_maxHours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  label = "Max Hours",
-  fieldType = "number",
-  isRequired = true,
-)
+private val maxHours = UIAttributeBuilder.int
+  .withLabel("Max Hours")
+  .bind[Project](
+    _.maxHours,
+    (p, a) => p.copy(maxHours = a),
+  )
 
-private val accountName: UIAttribute[Project, Option[String]] = UIAttribute(
-  _._accountName,
-  (p, a) => p.copy(_accountName = a),
-  readConverter = _.getOrElse(""),
-  writeConverter = Some(_),
-  label = "Account",
-  fieldType = "text",
-  isRequired = false, // TODO FIXME this probably still has the not initialized error
-)
+private val accountName = UIAttributeBuilder.string
+  .withLabel("Account")
+  .withDefaultValue("")
+  .bind[Project](
+    _.accountName,
+    (p, a) => p.copy(accountName = a),
+  )
 
 case class ProjectsPage()(using repositories: Repositories)
-    extends EntityPage[Project](repositories.projects, Seq(name, maxHours, accountName)) {}
+    extends EntityPage[Project](
+      repositories.projects,
+      Seq(name, maxHours, accountName),
+    ) {}
