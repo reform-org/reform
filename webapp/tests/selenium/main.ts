@@ -39,7 +39,7 @@ export async function run() {
 		for (let action of actions) {
 			switch (action) {
 				case Actions.CREATE_PEER: {
-					let peer = await Peer.create(false);
+					let peer = await Peer.create(true);
 					await peer.driver.get("http://localhost:5173/");
 					peers.push(peer);
 					console.log(`[${peer.id}] peer created`);
