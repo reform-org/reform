@@ -108,14 +108,14 @@ object MainJSTest extends TestSuite {
   }
 
   @JSExport
-  def main(): Int = {
+  def main(): Unit = {
     val results = TestRunner.runAndPrint(
       tests,
-      "MyTestSuiteA",
+      "MyTestSuiteC",
     )
     val (summary, successes, failures) = TestRunner.renderResults(
       Seq(
-        "MyTestSuiteA" -> results,
+        "MyTestSuiteC" -> results,
       ),
     )
     failures
