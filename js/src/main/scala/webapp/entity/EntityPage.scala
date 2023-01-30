@@ -46,6 +46,7 @@ private class EntityRow[T <: Entity[T]](
           val res = Some(
             tr(
               cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
+              data.id := existingValue.map(v => v.id),
               uiAttributes.map(ui => {
                 ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
               }),

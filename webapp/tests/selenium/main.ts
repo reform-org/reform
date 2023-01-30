@@ -22,15 +22,18 @@ export async function run() {
 						Actions.CREATE_PEER,
 						Actions.DELETE_PEER,
 						Actions.CREATE_PROJECT,
+						Actions.EDIT_PROJECT,
 						Actions.CONNECT_TO_PEER,
 						Actions.RELOAD,
 					],
-					[10, 10, 20, 20, 10],
+					[10, 10, 20, 20, 20, 10],
 				),
 			200,
 		);
 		peers = [];
 	}
+
+	//actions = [Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.CREATE_PROJECT, Actions.EDIT_PROJECT];
 
 	try {
 		for (let action of actions) {
@@ -48,6 +51,18 @@ export async function run() {
 					}
 					let random_peer: Peer = chance.pickone(peers);
 					await random_peer.createProject();
+					break;
+				}
+				case Actions.EDIT_PROJECT: {
+					if (peers.length === 0) {
+						continue;
+					}
+					let random_peer: Peer = chance.pickone(peers);
+					if (random_peer.projects.value.size == 0) {
+						continue;
+					}					
+					let randomProject = chance.pickone([...random_peer.projects.value.keys()]);
+					await random_peer.editProject(randomProject);
 					break;
 				}
 				case Actions.CONNECT_TO_PEER: {
@@ -131,7 +146,7 @@ export async function run() {
 			);
 		}
 
-		await Promise.allSettled(peers.map((peer) => peer.driver.close()));
+		//await Promise.allSettled(peers.map((peer) => peer.driver.close()));
 
 		throw error;
 	}
