@@ -100,11 +100,11 @@ object MainTest extends TestSuite {
     }
 
     test("test supervisor repository") {
-      testRepository(repositories.supervisor)
+      testRepository(repositories.supervisors)
     }
 
     test("test syncing supervisor") {
-      testSyncing(r => r.supervisor)
+      testSyncing(r => r.supervisors)
     }
 
     test("test contractSchemas repository") {

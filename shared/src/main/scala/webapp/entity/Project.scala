@@ -8,9 +8,9 @@ import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class Project(
-    _name: Attribute[String] = Attribute.empty,
-    _maxHours: Attribute[Int] = Attribute.empty,
-    _accountName: Attribute[Option[String]] = Attribute.empty,
+    name: Attribute[String] = Attribute.empty,
+    maxHours: Attribute[Int] = Attribute.empty,
+    accountName: Attribute[Option[String]] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Project]
     derives DecomposeLattice,
@@ -21,7 +21,7 @@ case class Project(
 
   def exists: Attribute[Boolean] = _exists
 
-  def identifier: Attribute[String] = _name
+  def identifier: Attribute[String] = name
 
   def withExists(exists: Boolean): Project = {
     this.copy(_exists = _exists.set(exists))

@@ -3,8 +3,9 @@ package webapp.entity
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.duplicateValuesHandler
 import webapp.given
+import webapp.duplicateValuesHandler
+import webapp.utils.Date
 
 class UIOption[NameType](
     val id: String,
@@ -29,7 +30,7 @@ abstract class UICommonAttribute[EntityType, AttributeType](
     )
   }
 
-  def render(entity: EntityType) = {
+  def render(entity: EntityType): VNode = {
     val attr = getter(entity)
     td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
@@ -54,7 +55,7 @@ case class UIAttribute[EntityType, AttributeType](
       isRequired,
     ) {
 
-  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -89,16 +90,15 @@ case class UIAttribute[EntityType, AttributeType](
   }
 }
 
-case class UIDateAttribute[EntityType, AttributeType](
-    override val getter: EntityType => Attribute[AttributeType],
-    override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    override val readConverter: AttributeType => String,
-    override val writeConverter: String => AttributeType,
+case class UIDateAttribute[EntityType](
+    override val getter: EntityType => Attribute[Long],
+    override val setter: (EntityType, Attribute[Long]) => EntityType,
+    override val readConverter: Long => String,
+    override val writeConverter: String => Long,
     override val label: String,
     override val isRequired: Boolean,
-    editConverter: AttributeType => String,
     min: String = "",
-) extends UICommonAttribute[EntityType, AttributeType](
+) extends UICommonAttribute[EntityType, Long](
       getter,
       setter,
       readConverter,
@@ -107,7 +107,9 @@ case class UIDateAttribute[EntityType, AttributeType](
       isRequired,
     ) {
 
-  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
+  private val editConverter = Date.epochDayToDate(_, "yyyy-MM-dd")
+
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -159,7 +161,7 @@ case class UISelectAttribute[EntityType, AttributeType](
       isRequired,
     ) {
 
-  override def render(entity: EntityType) = {
+  override def render(entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
       cls := "px-6 py-0",
@@ -167,7 +169,7 @@ case class UISelectAttribute[EntityType, AttributeType](
     )
   }
 
-  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(formAttr: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -184,7 +186,7 @@ case class UISelectAttribute[EntityType, AttributeType](
             },
             option(value := "", "Bitte wählen..."),
             options.map(o =>
-              o.map(v => option(value := v.id, selected := Some(v.id) == attr.get.map(x => readConverter(x)), v.name)),
+              o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
             ),
           ),
           if (attr.getAll.size > 1) {
@@ -205,20 +207,4 @@ case class UISelectAttribute[EntityType, AttributeType](
       })
     }
   }
-}
-
-object UIAttribute {
-
-  /* def string[EntityType](setter: (EntityType, String) => EntityType): AttributeHandler[EntityType, String]
-  = AttributeHandler(identity, identity, setter)
-
-  def int[EntityType](setter: (EntityType, Int) => EntityType): AttributeHandler[EntityType, Int]
-  = AttributeHandler(_.toString, _.toInt, setter)
-
-  def optionWithDefault[EntityType, AttributeType](default: AttributeType, attr: AttributeHandler[EntityType, AttributeType]): AttributeHandler[EntityType, Option[AttributeType]]
-  = AttributeHandler(
-    v => attr.readConverter(v.getOrElse(default)),
-    s => Some(attr.writeConverter(s)),
-    (e, v) => attr.setter(e, v.getOrElse(default))
-  ) */
 }
