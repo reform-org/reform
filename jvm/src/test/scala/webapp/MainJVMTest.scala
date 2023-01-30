@@ -25,51 +25,17 @@ import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js.annotation.*
 
-import concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
 import webapp.npm.MemoryIndexedDB
+import webapp.MainSharedTest.testRepository
+import webapp.MainSharedTest.eventually
+import webapp.MainSharedTest.continually
 
 @JSExportTopLevel("MainJVMTest")
 object MainJVMTest extends TestSuite {
 
-  def eventually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()) flatMap { canceled =>
-      if (canceled)
-        Future.unit
-      else
-        eventually(fun)
-    }
-  }
-
-  // TODO FIXME implement properly
-  def continually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()) flatMap { canceled =>
-      if (canceled)
-        Future.unit
-      else
-        continually(fun)
-    }
-  }
-
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
     () // Return unit to prevent warning due to discarding value
-  }
-
-  def testE[T <: Entity[T]](value: Synced[T]) = {
-    value.signal.now.exists
-    value.signal.now.identifier
-    value.signal.now.withExists(false).exists
-    value.signal.now.default
-  }
-
-  def testRepository[T <: Entity[T]](repository: Repository[T]) = {
-    assert(repository.all.now.length == 0)
-    repository
-      .create()
-      .map(value => testE(value))
-    eventually(() => repository.all.now.length == 1)
-    continually(() => repository.all.now.length == 1)
   }
 
   def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T]) = {
@@ -95,56 +61,28 @@ object MainJVMTest extends TestSuite {
     given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
 
-    test("test projects repository") {
-      testRepository(repositories.projects)
-    }
-
     test("test syncing projects") {
       testSyncing(r => r.projects)
-    }
-
-    test("test users repository") {
-      testRepository(repositories.users)
     }
 
     test("test syncing users") {
       testSyncing(r => r.users)
     }
 
-    test("test hiwis repository") {
-      testRepository(repositories.hiwis)
-    }
-
     test("test syncing hiwis") {
       testSyncing(r => r.hiwis)
-    }
-
-    test("test supervisor repository") {
-      testRepository(repositories.supervisor)
     }
 
     test("test syncing supervisor") {
       testSyncing(r => r.supervisor)
     }
 
-    test("test contractSchemas repository") {
-      testRepository(repositories.contractSchemas)
-    }
-
     test("test syncing contractSchemas") {
       testSyncing(r => r.contractSchemas)
     }
 
-    test("test paymentLevels repository") {
-      testRepository(repositories.paymentLevels)
-    }
-
     test("test syncing paymentLevels") {
       testSyncing(r => r.paymentLevels)
-    }
-
-    test("test salaryChanges repository") {
-      testRepository(repositories.salaryChanges)
     }
 
     test("test salaryChanges projects") {

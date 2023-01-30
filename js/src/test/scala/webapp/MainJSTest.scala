@@ -31,46 +31,9 @@ import scala.concurrent.Future
 @JSExportTopLevel("MainJSTest")
 object MainJSTest extends TestSuite {
 
-  def eventually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()) flatMap { canceled =>
-      if (canceled)
-        Future.unit
-      else
-        eventually(fun)
-    }
-  }
-
-  // TODO FIXME implement properly
-  def continually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()) flatMap { canceled =>
-      if (canceled)
-        Future.unit
-      else
-        continually(fun)
-    }
-  }
-
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
     () // Return unit to prevent warning due to discarding value
-  }
-
-  def testE[T <: Entity[T]](value: Synced[T]) = {
-    value.signal.now.exists
-    value.signal.now.identifier
-    value.signal.now.withExists(false).exists
-    value.signal.now.default
-  }
-
-  def testRepository[T <: Entity[T]](repository: Repository[T]) = {
-    assert(repository.all.now.length == 0)
-    repository
-      .create()
-      .map(value => testE(value))
-    for
-      _ <- eventually(() => repository.all.now.length == 1)
-      _ <- continually(() => repository.all.now.length == 1)
-    do ()
   }
 
   val tests: Tests = Tests {
@@ -78,33 +41,6 @@ object MainJSTest extends TestSuite {
     given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
 
-    test("test projects repository") {
-      testRepository(repositories.projects)
-    }
-
-    test("test users repository") {
-      testRepository(repositories.users)
-    }
-
-    test("test hiwis repository") {
-      testRepository(repositories.hiwis)
-    }
-
-    test("test supervisor repository") {
-      testRepository(repositories.supervisor)
-    }
-
-    test("test contractSchemas repository") {
-      testRepository(repositories.contractSchemas)
-    }
-
-    test("test paymentLevels repository") {
-      testRepository(repositories.paymentLevels)
-    }
-
-    test("test salaryChanges repository") {
-      testRepository(repositories.salaryChanges)
-    }
   }
 
   @JSExport

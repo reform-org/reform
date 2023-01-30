@@ -67,9 +67,7 @@ npm run test
 ```
 
 ```bash
-# The coverage results currently seem to be relatively useless
-sbt webappJS / Test / compile
-NODE_V8_COVERAGE=coverage npx c8 -r html node js/target/scala-3.3.0-RC2/webapp-test-fastopt/main.js
+sbt webappJS/test
 ```
 
 ## Deployment
