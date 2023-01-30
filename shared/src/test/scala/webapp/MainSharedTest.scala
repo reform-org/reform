@@ -33,7 +33,7 @@ import scala.concurrent.Future
 object MainSharedTest extends TestSuite {
 
   def eventually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()) flatMap { canceled =>
+    Future(fun()).flatMap { canceled =>
       if (canceled)
         Future.unit
       else
@@ -43,7 +43,7 @@ object MainSharedTest extends TestSuite {
 
   // TODO FIXME implement properly
   def continually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()) flatMap { canceled =>
+    Future(fun()).flatMap { canceled =>
       if (canceled)
         Future.unit
       else
@@ -68,9 +68,8 @@ object MainSharedTest extends TestSuite {
     repository
       .create()
       .map(value => testE(value))
-    for
-      _ <- eventually(() => repository.all.now.length == 1)
-      _ <- continually(() => repository.all.now.length == 1)
+    for _ <- eventually(() => repository.all.now.length == 1)
+    _ <- continually(() => repository.all.now.length == 1)
     do ()
   }
 
