@@ -102,7 +102,7 @@ object DiscoveryService {
           payload.host.turn.username.asInstanceOf[String],
           payload.host.turn.credential.asInstanceOf[String],
         )
-        iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
+        // iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
@@ -128,7 +128,7 @@ object DiscoveryService {
           payload.client.turn.username.asInstanceOf[String],
           payload.client.turn.credential.asInstanceOf[String],
         )
-        iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
+        // iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(config),
