@@ -17,13 +17,16 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
-private val title = UIAttributeBuilder.string
-  .withLabel("Title")
-  .bind[PaymentLevel](
-    _.title,
-    (p, a) => p.copy(title = a),
-  )
+import PaymentLevelsPage.*
 
 case class PaymentLevelsPage()(using repositories: Repositories)
     extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
+
+object PaymentLevelsPage {
+  private val title = UIAttributeBuilder.string
+    .withLabel("Title")
+    .bind[PaymentLevel](
+      _.title,
+      (p, a) => p.copy(title = a),
+    )
+}
