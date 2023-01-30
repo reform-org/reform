@@ -1,6 +1,7 @@
 package webapp.services
 
 import org.scalajs.dom.*
+import org.scalajs.dom
 import scala.scalajs.js
 import scala.concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
@@ -16,7 +17,7 @@ import rescala.default.*
 
 object DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
-  private val ws: WebSocket = new WebSocket("ws://localhost:7071/")
+  private val ws: WebSocket = new WebSocket("wss://wss.discovery.lukasschreiber.com/")
 
   class LoginInfo(var username: String, var password: String)
   object LoginInfo {
@@ -68,7 +69,7 @@ object DiscoveryService {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
-        "http://localhost:3000/api/login",
+        "https://discovery.lukasschreiber.com/api/login",
         new RequestInit {
           method = HttpMethod.POST
           body = writeToString(loginInfo)(LoginInfo.codec)
@@ -95,8 +96,16 @@ object DiscoveryService {
     console.log(name, payload)
     name match {
       case "request_host_token" => {
+        var iceServers = js.Array[RTCIceServer]()
+        iceServers += RTCIceServer(
+          "turn:lukasschreiber.com:41720",
+          payload.host.turn.username.asInstanceOf[String],
+          payload.host.turn.credential.asInstanceOf[String],
+        )
+        iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
+        val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
-          WebRTC.offer(),
+          WebRTC.offer(config),
           payload.host.user.name.asInstanceOf[String],
         ))
 
@@ -113,8 +122,16 @@ object DiscoveryService {
           })
       }
       case "request_client_token" => {
+        var iceServers = js.Array[RTCIceServer]()
+        iceServers += RTCIceServer(
+          "turn:lukasschreiber.com:41720",
+          payload.client.turn.username.asInstanceOf[String],
+          payload.client.turn.credential.asInstanceOf[String],
+        )
+        iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
+        val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
-          WebRTC.answer(),
+          WebRTC.answer(config),
           payload.host.user.name.asInstanceOf[String],
         ))
 
@@ -157,6 +174,9 @@ object DiscoveryService {
           .set(PendingConnection.tokenAsSession(payload.client.token.asInstanceOf[String]).session)
         pendingConnections -= payload.id.asInstanceOf[String]
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
+      }
+      case "ping" => {
+        emit(ws, "pong", null)
       }
     }
   }
