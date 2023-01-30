@@ -19,9 +19,15 @@ case class UIAttributeBuilder[AttributeType](
 
   def require: UIAttributeBuilder[AttributeType] = copy(isRequired = true)
 
-  def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] = copy(
-    readConverter = a => readConverter(a.getOrElse(default)),
-    writeConverter = s => Some(writeConverter(s)),
+  def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] =
+    map(_.getOrElse(default), Some(_))
+
+  def map[NewAttributeType](
+      readMapper: NewAttributeType => AttributeType,
+      writeMapper: AttributeType => NewAttributeType,
+  ): UIAttributeBuilder[NewAttributeType] = copy(
+    readConverter = a => readConverter(readMapper(a)),
+    writeConverter = s => writeMapper(writeConverter(s)),
   )
 
   def bind[EntityType](
@@ -68,5 +74,8 @@ object UIAttributeBuilder {
   val date: UIAttributeBuilder[Long] = UIDateAttributeBuilder()
 
   val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
+    .withFieldType("number")
+
+  val float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
     .withFieldType("number")
 }
