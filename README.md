@@ -66,6 +66,10 @@ In a separate window:
 npm run test
 ```
 
+```bash
+sbt webappJS/test
+```
+
 ## Deployment
 
 ```bash

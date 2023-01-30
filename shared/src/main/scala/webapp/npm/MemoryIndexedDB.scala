@@ -20,7 +20,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.*
 import scala.collection.mutable
 import scala.concurrent.Future
 
-class IndexedDB extends IIndexedDB {
+class MemoryIndexedDB extends IIndexedDB {
 
   private val data: mutable.Map[String, String] = mutable.Map()
 
