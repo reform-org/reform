@@ -19,7 +19,7 @@ import loci.communicator.tcp.TCP
 import utest.*
 import webapp.entity.*
 import webapp.npm.IIndexedDB
-import webapp.npm.IndexedDB
+import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
 import webapp.webrtc.WebRTCService
@@ -68,13 +68,15 @@ object MainSharedTest extends TestSuite {
     repository
       .create()
       .map(value => testE(value))
-    eventually(() => repository.all.now.length == 1)
-    continually(() => repository.all.now.length == 1)
+    for
+      _ <- eventually(() => repository.all.now.length == 1)
+      _ <- continually(() => repository.all.now.length == 1)
+    do ()
   }
 
   val tests: Tests = Tests {
     given webrtc: WebRTCService = WebRTCService()
-    given indexedDb: IIndexedDB = IndexedDB()
+    given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
 
     test("test projects repository") {

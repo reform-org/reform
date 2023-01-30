@@ -19,7 +19,7 @@ import cats.effect.SyncIO
 import outwatch.*
 import outwatch.dsl.*
 import webapp.npm.IIndexedDB
-import webapp.npm.IndexedDB
+import webapp.npm.MemoryIndexedDB
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
@@ -60,7 +60,7 @@ object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
     given routing: RoutingService = RoutingService()
-    given indexedDb: IIndexedDB = IndexedDB()
+    given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
     given webrtc: WebRTCService = WebRTCService()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()

@@ -19,7 +19,6 @@ import loci.communicator.tcp.TCP
 import utest.*
 import webapp.entity.*
 import webapp.npm.IIndexedDB
-import webapp.npm.IndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
 import webapp.webrtc.WebRTCService
@@ -28,6 +27,7 @@ import scala.scalajs.js.annotation.*
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import webapp.npm.MemoryIndexedDB
 
 @JSExportTopLevel("MainJVMTest")
 object MainJVMTest extends TestSuite {
@@ -75,8 +75,8 @@ object MainJVMTest extends TestSuite {
   def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T]) = {
     val webrtc0 = WebRTCService()
     val webrtc1 = WebRTCService()
-    val indexedDb0: IIndexedDB = IndexedDB()
-    val indexedDb1: IIndexedDB = IndexedDB()
+    val indexedDb0: IIndexedDB = MemoryIndexedDB()
+    val indexedDb1: IIndexedDB = MemoryIndexedDB()
     val repositories0 = Repositories(using webrtc0, indexedDb0)
     val repositories1 = Repositories(using webrtc1, indexedDb1)
     testRepository(fun(repositories0))
@@ -92,7 +92,7 @@ object MainJVMTest extends TestSuite {
 
   val tests: Tests = Tests {
     given webrtc: WebRTCService = WebRTCService()
-    given indexedDb: IIndexedDB = IndexedDB()
+    given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
 
     test("test projects repository") {
