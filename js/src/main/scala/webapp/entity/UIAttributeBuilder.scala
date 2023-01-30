@@ -17,6 +17,8 @@ case class UIAttributeBuilder[AttributeType](
 
   def withMin(min: String): UIAttributeBuilder[AttributeType] = copy(min = min)
 
+  def require: UIAttributeBuilder[AttributeType] = copy(isRequired = true)
+
   def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] = copy(
     readConverter = a => readConverter(a.getOrElse(default)),
     writeConverter = s => Some(writeConverter(s)),
