@@ -90,8 +90,8 @@ object MainSharedTest extends TestSuite {
       testRepository(repositories.hiwis)
     }
 
-    test("test supervisor repository") {
-      testRepository(repositories.supervisor)
+    test("test supervisors repository") {
+      testRepository(repositories.supervisors)
     }
 
     test("test contractSchemas repository") {

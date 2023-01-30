@@ -73,8 +73,8 @@ object MainJVMTest extends TestSuite {
       testSyncing(r => r.hiwis)
     }
 
-    test("test syncing supervisor") {
-      testSyncing(r => r.supervisor)
+    test("test syncing supervisors") {
+      testSyncing(r => r.supervisors)
     }
 
     test("test syncing contractSchemas") {

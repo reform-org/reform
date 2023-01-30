@@ -18,15 +18,12 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val title: UIAttribute[PaymentLevel, String] = UIAttribute(
-  _._title,
-  (p, a) => p.copy(_title = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Title",
-  fieldType = "text",
-  isRequired = true,
-)
+private val title = UIAttributeBuilder.string
+  .withLabel("Title")
+  .bind[PaymentLevel](
+    _.title,
+    (p, a) => p.copy(title = a),
+  )
 
 case class PaymentLevelsPage()(using repositories: Repositories)
     extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
