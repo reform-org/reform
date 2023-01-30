@@ -34,7 +34,7 @@ private val maxHours = UIAttributeBuilder.int
 
 private val accountName = UIAttributeBuilder.string
   .withLabel("Account")
-  .withDefaultValue("no account")
+  .withDefaultValue("")
   .bind[Project](
     _.accountName,
     (p, a) => p.copy(accountName = a),

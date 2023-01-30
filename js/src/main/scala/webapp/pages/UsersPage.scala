@@ -34,7 +34,7 @@ private val role = UIAttributeBuilder.string
 
 private val comment = UIAttributeBuilder.string
   .withLabel("Comment")
-  .withDefaultValue("no comment")
+  .withDefaultValue("")
   .bind[User](
     _.comment,
     (p, a) => p.copy(comment = a),
