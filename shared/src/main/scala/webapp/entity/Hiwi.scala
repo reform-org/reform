@@ -8,10 +8,10 @@ import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class Hiwi(
-    _firstName: Attribute[String] = Attribute.empty,
-    _lastName: Attribute[String] = Attribute.empty,
-    _hours: Attribute[Int] = Attribute.empty,
-    _eMail: Attribute[String] = Attribute.empty,
+    firstName: Attribute[String] = Attribute.empty,
+    lastName: Attribute[String] = Attribute.empty,
+    hours: Attribute[Int] = Attribute.empty,
+    eMail: Attribute[String] = Attribute.empty,
     _birthdate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Hiwi]
@@ -24,7 +24,7 @@ case class Hiwi(
 
   def exists: Attribute[Boolean] = _exists
 
-  def identifier: Attribute[String] = _firstName
+  def identifier: Attribute[String] = firstName
 
   def withExists(exists: Boolean): Hiwi = {
     this.copy(_exists = _exists.set(exists))
