@@ -2,7 +2,6 @@ import "./fast-selenium.js";
 import {
 	Builder,
 	By,
-	Capabilities,
 	Condition,
 	until,
 	WebDriver,
@@ -205,6 +204,24 @@ export class Peer {
 		);
 	}
 
+	async goToWebRTCPage() {
+		try {
+			let dropDown = await this.driver.findElement(
+				By.css("div.dropdown")
+			);
+			await dropDown.click();
+			let webrtcButton = await this.driver.findElement(
+				By.css(".navbar-start a[href='/webrtc']"),
+			);
+			await webrtcButton.click();
+		} catch (ignoreNotMobile) {
+			let webrtcButton = await this.driver.findElement(
+				By.css(".navbar-center a[href='/webrtc']"),
+			);
+			await webrtcButton.click();
+		}
+	}
+
 	async connectTo(other: Peer) {
 		console.log(`[${this.id}, ${other.id}] connect`);
 		let [[offerInput, submitOffer], [offer, answerInput, answerSubmit]] =
@@ -212,10 +229,7 @@ export class Peer {
 				(async () => {
 					let driver = this.driver;
 
-					let webrtcButton = await driver.findElement(
-						By.css(".navbar-center a[href='/webrtc']"),
-					);
-					await webrtcButton.click();
+					await this.goToWebRTCPage();
 
 					let clientButton = await driver.findElement(
 						By.xpath(`//button[text()="Client"]`),
@@ -233,10 +247,7 @@ export class Peer {
 				(async () => {
 					let driver = other.driver;
 
-					let webrtcButton = await driver.findElement(
-						By.css(".navbar-center a[href='/webrtc']"),
-					);
-					await webrtcButton.click();
+					await other.goToWebRTCPage();
 
 					let hostButton = await driver.findElement(
 						By.xpath(`//button[text()="Host"]`),
