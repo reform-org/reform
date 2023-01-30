@@ -17,31 +17,36 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
-private val name = UIAttributeBuilder.string
-  .withLabel("Name")
-  .bind[Project](
-    _.name,
-    (p, a) => p.copy(name = a),
-  )
-
-private val maxHours = UIAttributeBuilder.int
-  .withLabel("Max Hours")
-  .bind[Project](
-    _.maxHours,
-    (p, a) => p.copy(maxHours = a),
-  )
-
-private val accountName = UIAttributeBuilder.string
-  .withLabel("Account")
-  .withDefaultValue("")
-  .bind[Project](
-    _.accountName,
-    (p, a) => p.copy(accountName = a),
-  )
+import ProjectsPage.*
 
 case class ProjectsPage()(using repositories: Repositories)
     extends EntityPage[Project](
       repositories.projects,
       Seq(name, maxHours, accountName),
     ) {}
+
+object ProjectsPage {
+  private val name = UIAttributeBuilder.string
+    .withLabel("Name")
+    .require
+    .bind[Project](
+      _.name,
+      (p, a) => p.copy(name = a),
+    )
+
+  private val maxHours = UIAttributeBuilder.int
+    .withLabel("Max Hours")
+    .require
+    .bind[Project](
+      _.maxHours,
+      (p, a) => p.copy(maxHours = a),
+    )
+
+  private val accountName = UIAttributeBuilder.string
+    .withLabel("Account")
+    .withDefaultValue("")
+    .bind[Project](
+      _.accountName,
+      (p, a) => p.copy(accountName = a),
+    )
+}
