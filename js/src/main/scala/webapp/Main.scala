@@ -19,11 +19,12 @@ import cats.effect.SyncIO
 import outwatch.*
 import outwatch.dsl.*
 import webapp.npm.IIndexedDB
-import webapp.npm.IndexedDB
+import webapp.npm.MemoryIndexedDB
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js
+import webapp.npm.IndexedDB
 
 // object JavaScriptHot {
 //   @js.native
