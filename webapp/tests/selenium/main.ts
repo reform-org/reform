@@ -33,7 +33,7 @@ export async function run() {
 		peers = [];
 	}
 
-	actions = [Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.CREATE_PROJECT, Actions.EDIT_PROJECT];
+	//actions = [Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.CREATE_PROJECT, Actions.EDIT_PROJECT];
 
 	try {
 		for (let action of actions) {

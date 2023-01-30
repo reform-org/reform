@@ -13,8 +13,8 @@ import safari from "selenium-webdriver/safari.js";
 import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
-//export let seed = new Chance().integer();
-export let seed = -1773669877547008;
+export let seed = new Chance().integer();
+//export let seed = -1773669877547008;
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
@@ -151,17 +151,17 @@ export class Peer {
 		let row = await this.driver.findElement(By.css(`tr[data-id='${projectId}']`))
 
 		let editProjectButton = await row.findElement(
-			By.xpath(`//button[text()="Edit"]`),
+			By.xpath(`.//button[text()="Edit"]`),
 		);
 		await editProjectButton.click()
 
-		let projectNameInput = await this.driver.findElement(
+		let projectNameInput = await row.findElement(
 			By.css("input[placeholder='Name']"),
 		);
-		let maxHoursInput = await this.driver.findElement(
+		let maxHoursInput = await row.findElement(
 			By.css("input[placeholder='Max Hours']"),
 		);
-		let accountInput = await this.driver.findElement(
+		let accountInput = await row.findElement(
 			By.css("input[placeholder='Account']"),
 		);
 
@@ -211,7 +211,7 @@ export class Peer {
 			By.css("input[placeholder='Account']"),
 		);
 		let addProjectButton = await this.driver.findElement(
-			By.xpath(`//button[text()="Add Entity"]`),
+			By.xpath(`.//button[text()="Add Entity"]`),
 		);
 
 		let projectName = chance.animal();
@@ -264,14 +264,14 @@ export class Peer {
 					await webrtcButton.click();
 
 					let clientButton = await driver.findElement(
-						By.xpath(`//button[text()="Client"]`),
+						By.xpath(`.//button[text()="Client"]`),
 					);
 					await clientButton.click();
 
 					let textarea = await driver.findElement(By.css("textarea"));
 
 					let submitOffer = await driver.findElement(
-						By.xpath(`//button[text()="Connect to host using token"]`),
+						By.xpath(`.//button[text()="Connect to host using token"]`),
 					);
 
 					return [textarea, submitOffer];
@@ -285,7 +285,7 @@ export class Peer {
 					await webrtcButton.click();
 
 					let hostButton = await driver.findElement(
-						By.xpath(`//button[text()="Host"]`),
+						By.xpath(`.//button[text()="Host"]`),
 					);
 					await hostButton.click();
 
@@ -297,7 +297,7 @@ export class Peer {
 					let answerInput = await driver.findElement(By.css("textarea"));
 
 					let answerSubmit = await driver.findElement(
-						By.xpath(`//button[text()="Connect to client using token"]`),
+						By.xpath(`.//button[text()="Connect to client using token"]`),
 					);
 
 					return [value, answerInput, answerSubmit];
@@ -317,7 +317,7 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`//h2[text()="Connected"]`)),
+					until.elementLocated(By.xpath(`.//h2[text()="Connected"]`)),
 				);
 			}),
 		);
