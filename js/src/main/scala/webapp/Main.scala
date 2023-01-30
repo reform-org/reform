@@ -24,6 +24,7 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js
+import webapp.npm.IndexedDB
 
 // object JavaScriptHot {
 //   @js.native
@@ -60,7 +61,7 @@ object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
     given routing: RoutingService = RoutingService()
-    given indexedDb: IIndexedDB = MemoryIndexedDB()
+    given indexedDb: IIndexedDB = IndexedDB()
     given repositories: Repositories = Repositories()
     given webrtc: WebRTCService = WebRTCService()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
