@@ -46,13 +46,21 @@ case class UIAttributeBuilder[AttributeType](
 
 }
 
-class UIDateAttributeBuilder(
-) extends UIAttributeBuilder[Long](
-      readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-      writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-    ) {
+case class UIDateAttributeBuilder(
+    readConverter: Long => String = Date.epochDayToDate(_, "dd.MM.yyyy"),
+    writeConverter: String => Long = Date.dateToEpochDay(_, "yyyy-MM-dd"),
+    label: String = "",
+    isRequired: Boolean = false,
+    min: String = "",
+) {
 
-  override def bind[EntityType](
+  def withLabel(label: String): UIDateAttributeBuilder = copy(label = label)
+
+  def withMin(min: String): UIDateAttributeBuilder = copy(min = min)
+
+  def require: UIDateAttributeBuilder = copy(isRequired = true)
+
+  def bind[EntityType](
       getter: EntityType => Attribute[Long],
       setter: (EntityType, Attribute[Long]) => EntityType,
   ): UICommonAttribute[EntityType, Long] =
@@ -71,7 +79,7 @@ object UIAttributeBuilder {
 
   val string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
-  val date: UIAttributeBuilder[Long] = UIDateAttributeBuilder()
+  val date: UIDateAttributeBuilder = UIDateAttributeBuilder()
 
   val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
     .withFieldType("number")

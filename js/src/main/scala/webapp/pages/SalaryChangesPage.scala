@@ -52,6 +52,7 @@ object SalaryChangesPage {
 
   private val salaryChangeFromDate = UIAttributeBuilder.date
     .withLabel("From")
+    .require
     .bind[SalaryChange](
       _.fromDate,
       (s, a) => s.copy(fromDate = a),
