@@ -26,31 +26,32 @@ import webapp.webrtc.ConnectionInformation
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.utils.Base64
 import webapp.webrtc.StoredConnectionInformation
-
-val offlineBanner = {
-  div(
-    cls := "bg-amber-100 flex flex-col	items-center	",
-    Icons.reload("h-8 w-8 hover:animate-spin", "#D97706"),
-    span(
-      cls := "text-amber-600 font-semibold text-center",
-      "You are not connected to the internet!",
-    ),
-  )
-}
-
-val onlineBanner = {
-  div(
-    cls := "bg-green-100 flex flex-col	items-center",
-    span(
-      cls := "text-green-600 font-semibold text-center",
-      "You are connected to the discovery server!",
-    ),
-  )
-}
+import webapp.services.DiscoveryService.tokenIsValid
+import webapp.services.DiscoveryService.getToken
 
 class ConnectionModal(using services: Services) {
-  services.discovery.login(new services.discovery.LoginInfo("Lukas", "test"))
-  services.discovery.connect(using services)
+  if (services.discovery.tokenIsValid(services.discovery.getToken())) services.discovery.connect(using services)
+
+  val offlineBanner = {
+    div(
+      cls := "bg-amber-100 flex flex-col	items-center	",
+      Icons.reload("h-8 w-8 hover:animate-spin", "#D97706"),
+      span(
+        cls := "text-amber-600 font-semibold text-center",
+        "You are not connected to the internet!",
+      ),
+    )
+  }
+
+  val onlineBanner = {
+    div(
+      cls := "bg-green-100 flex flex-col	items-center",
+      span(
+        cls := "text-green-600 font-semibold text-center",
+        "You are connected to the discovery server!",
+      ),
+    )
+  }
 
   def render(using services: Services): VNode = {
     ul(
@@ -58,11 +59,11 @@ class ConnectionModal(using services: Services) {
       cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52",
       h2(
         "Connections",
-        cls := "font-bold text-lg p-2"
+        cls := "font-bold text-lg p-2",
       ),
       services.webrtc.connections.map(_.map(ref => {
         val info = services.webrtc.getInformation(ref)
-        connectionRow(info.alias, info.source, ref)
+        connectionRow(info.alias, info.source, info.uuid, ref)
       })),
       services.webrtc.connections.map(connections => {
         var emptyState: VNode = div()
@@ -82,6 +83,8 @@ class ConnectionModal(using services: Services) {
       li(
         onlineBanner,
       ),
+      Login(using services).render,
+      services.discovery.availableConnections.map(_.map(connection => availableConnectionRow(connection))),
       label(
         cls := "label cursor-pointer",
         span(cls := "label-text", "Autoconnect"),
@@ -98,5 +101,54 @@ class ConnectionModal(using services: Services) {
       ManualConnectionDialog().render,
     )
 
+  }
+}
+
+class Login(using services: Services) {
+  private val username = Var("")
+  private val password = Var("")
+
+  def render(using services: Services): VNode = {
+    div(
+      services.discovery
+        .getTokenSignal()
+        .map(token =>
+          if (tokenIsValid(token))
+            button(
+              cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+              "Logout",
+              onClick.foreach(_ => {
+                services.discovery.logout()
+              }),
+            )
+          else
+            div(
+              cls := "form-control w-full text-sm",
+              label(cls := "label", span(cls := "label-text text-slate-500", "Username")),
+              input(
+                tpe := "text",
+                placeholder := "Username",
+                cls := "input input-bordered w-full text-sm p-2 h-fit",
+                onInput.value --> username,
+                value := "",
+              ),
+              label(cls := "label", span(cls := "label-text text-slate-500", "Password")),
+              input(
+                tpe := "password",
+                placeholder := "Password",
+                cls := "input input-bordered w-full text-sm p-2 h-fit",
+                onInput.value --> password,
+                value := "",
+              ),
+              button(
+                cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+                "Login",
+                disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
+                onClick
+                  .foreach(_ => services.discovery.login(new services.discovery.LoginInfo(username.now, password.now))),
+              ),
+            ),
+        ),
+    )
   }
 }
