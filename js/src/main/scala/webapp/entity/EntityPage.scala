@@ -90,7 +90,12 @@ private class EntityRow[T <: Entity[T]](
                   }
                 },
                 existingValue.map(p => {
-                  button(cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0", data.tip := "Delete", "X", onClick.foreach(_ => removeEntity(p)))
+                  button(
+                    cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                    data.tip := "Delete",
+                    "X",
+                    onClick.foreach(_ => removeEntity(p)),
+                  )
                 }),
               ),
             ),
@@ -116,7 +121,12 @@ private class EntityRow[T <: Entity[T]](
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        button(cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0", data.tip := "Delete", "X", onClick.foreach(_ => removeEntity(syncedEntity))),
+                        button(
+                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                          data.tip := "Delete",
+                          "X",
+                          onClick.foreach(_ => removeEntity(syncedEntity)),
+                        ),
                       ),
                     ),
                   )

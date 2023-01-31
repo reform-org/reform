@@ -58,12 +58,13 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         cls := "flex flex-row gap-1",
         div(
           Icons.forbidden("fill-red-600 w-3 h-3"),
-          cls := "hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
+          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
+          data.tip := "Remove from Whitelist",
           onClick.foreach(_ => discovery.deleteFromWhitelist(uuid)),
         ),
         div(
           Icons.close("fill-red-600 w-4 h-4"),
-          cls := "tooltip hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
           data.tip := "Close Connection",
           onClick.foreach(_ => {
             ref.disconnect()
@@ -99,7 +100,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
       ),
       div(
         Icons.close("fill-red-600 w-4 h-4"),
-        cls := "tooltip hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+        cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
         data.tip := "Close Connection",
         onClick.foreach(_ => ref.disconnect()),
       ),
@@ -136,8 +137,8 @@ def availableConnectionRow(
     ),
     div(
       Icons.check("w-4 h-4", "stroke-green-600"),
-      cls := "tooltip hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-      data.tip := "Close Connection",
+      cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+      data.tip := "Add to Whitelist",
       onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
     ),
   )
