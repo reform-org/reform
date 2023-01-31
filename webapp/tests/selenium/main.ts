@@ -1,12 +1,15 @@
 import { Actions, chance, check, Peer, seed } from "./lib.js";
 import { strict as assert } from "node:assert";
 import browserstack from "browserstack-local";
-import { promisify } from 'util'
+import { promisify } from "util";
 
 export async function run() {
 	let actions;
 	let peers: Peer[];
-	if (process.env.SELENIUM_BROWSER === "safari" || process.env.BROWSERSTACK_ACCESS_KEY) {
+	if (
+		process.env.SELENIUM_BROWSER === "safari" ||
+		process.env.BROWSERSTACK_ACCESS_KEY
+	) {
 		actions = chance.n(
 			() => chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10]),
 			200,
@@ -33,7 +36,17 @@ export async function run() {
 		peers = [];
 	}
 
-	actions = [Actions.CREATE_PEER, Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.CONNECT_TO_PEER, Actions.RELOAD, Actions.EDIT_PROJECT, Actions.EDIT_PROJECT, Actions.CONNECT_TO_PEER];
+	actions = [
+		Actions.CREATE_PEER,
+		Actions.CREATE_PEER,
+		Actions.CREATE_PROJECT,
+		Actions.CONNECT_TO_PEER,
+		Actions.RELOAD,
+		Actions.EDIT_PROJECT,
+		Actions.EDIT_PROJECT,
+		Actions.CONNECT_TO_PEER,
+		Actions.EDIT_PROJECT,
+	];
 
 	try {
 		for (let action of actions) {
@@ -60,8 +73,10 @@ export async function run() {
 					let random_peer: Peer = chance.pickone(peers);
 					if (random_peer.projects.value.size == 0) {
 						continue;
-					}					
-					let randomProject = chance.pickone([...random_peer.projects.value.keys()]);
+					}
+					let randomProject = chance.pickone([
+						...random_peer.projects.value.keys(),
+					]);
 					await random_peer.editProject(randomProject);
 					break;
 				}
@@ -154,29 +169,29 @@ export async function run() {
 
 const bs_local = new browserstack.Local();
 const start = () => {
-	console.log("start")
+	console.log("start");
 	return new Promise<void>((resolve, reject) => {
 		bs_local.start({}, (error) => {
-			console.log(error)
-			resolve()
-		})
-	})
-}
+			console.log(error);
+			resolve();
+		});
+	});
+};
 const stop = () => {
-	console.log("stop")
+	console.log("stop");
 	return new Promise<void>((resolve, reject) => {
 		bs_local.stop(() => {
-			resolve()
-		})
-	})
-}
+			resolve();
+		});
+	});
+};
 
 if (process.env.BROWSERSTACK_ACCESS_KEY) {
-	await start()
+	await start();
 }
 
-await run()
+await run();
 
 if (process.env.BROWSERSTACK_ACCESS_KEY) {
-	await stop()
+	await stop();
 }

@@ -1,11 +1,5 @@
 import "./fast-selenium.js";
-import {
-	Builder,
-	By,
-	Condition,
-	until,
-	WebDriver,
-} from "selenium-webdriver";
+import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
 import safari from "selenium-webdriver/safari.js";
@@ -36,16 +30,19 @@ interface Mergeable {
 	merge(other: ThisType<this>): ThisType<this>;
 }
 
-type ReplicaId = string
-type LogicalClock = number
+type ReplicaId = string;
+type LogicalClock = number;
 
-function compare(left: Map<ReplicaId, LogicalClock>, right: Map<ReplicaId, LogicalClock>): number {
-	let allReplicaIds = [...left.keys(), ...right.keys()]
-	let smaller = false
-	let greater = false
+function compare(
+	left: Map<ReplicaId, LogicalClock>,
+	right: Map<ReplicaId, LogicalClock>,
+): number {
+	let allReplicaIds = [...left.keys(), ...right.keys()];
+	let smaller = false;
+	let greater = false;
 	for (let replicaId of allReplicaIds) {
-		let l = left.get(replicaId) || 0
-		let r = right.get(replicaId) || 0
+		let l = left.get(replicaId) || 0;
+		let r = right.get(replicaId) || 0;
 		if (l < r) {
 			smaller = true;
 		}
@@ -53,66 +50,65 @@ function compare(left: Map<ReplicaId, LogicalClock>, right: Map<ReplicaId, Logic
 			greater = true;
 		}
 	}
-	return (smaller && !greater) ? 1 : ((greater && !smaller) ? -1 : 0)
+	return smaller && !greater ? 1 : greater && !smaller ? -1 : 0;
 }
 
 class MultiValueRegister<T> implements Mergeable {
-	values: Map<Map<ReplicaId, LogicalClock>, T>
+	values: Map<Map<ReplicaId, LogicalClock>, T>;
 
 	constructor(values: Map<Map<ReplicaId, LogicalClock>, T>) {
-		this.values = values
+		this.values = values;
 	}
 
 	value(): T | null {
 		if (this.values.size != 1) {
-			console.log("multiple values")
-			return null
+			console.log("multiple values");
+			return null;
 		}
-		return this.values.values().next().value
+		return this.values.values().next().value;
 	}
 
 	set(replicaId: string, value: T): MultiValueRegister<T> {
-		let allReplicaIds = [...this.values.keys()].flatMap(v => [...v.keys(), replicaId])
-		let clock = allReplicaIds.map(r => {
-			let max = [...this.values.keys()].flatMap(z => {
-				let v = z.get(r)
-				return v ? [v] : [] 
-			}).reduce((a, b) => {
-				return Math.max(a, b)
-			}, 0)
+		let allReplicaIds = [...this.values.keys()].flatMap((v) => [
+			...v.keys(),
+			replicaId,
+		]);
+		let clock = allReplicaIds.map((r) => {
+			let max = [...this.values.keys()]
+				.flatMap((z) => {
+					let v = z.get(r);
+					return v ? [v] : [];
+				})
+				.reduce((a, b) => {
+					return Math.max(a, b);
+				}, 0);
 			if (r == replicaId) {
-				return [r, max+1] as const
+				return [r, max + 1] as const;
 			} else {
-				return [r, max] as const
+				return [r, max] as const;
 			}
-		})
-		return new MultiValueRegister(new Map([[new Map(clock), value]]))
+		});
+		return new MultiValueRegister(new Map([[new Map(clock), value]]));
 	}
 
 	merge(other: MultiValueRegister<T>): MultiValueRegister<T> {
-		console.log("this", this)
-		console.log("other", other)
-		let all = [
-			...this.values.entries(),
-			...other.values.entries(),
-		];
-		let result: [Map<string, number>, T][] = []
+		let all = [...this.values.entries(), ...other.values.entries()];
+		let result: [Map<string, number>, T][] = [];
 		for (let i = 0; i < all.length; i++) {
 			let greatest = true;
 			for (let j = 0; j < all.length; j++) {
 				if (i == j) continue;
 				if (compare(all[i][0], all[j][0]) > 0) {
-					greatest = false
+					greatest = false;
 				}
 			}
 			if (greatest) {
 				if (!result.includes(all[i])) {
-					result.push(all[i])
+					result.push(all[i]);
 				}
 			}
 		}
-		console.log("merged", result)
-		return new MultiValueRegister(new Map(result))
+		return new MultiValueRegister(new Map(result));
 	}
 }
 
@@ -225,12 +221,14 @@ export class Peer {
 	async editProject(projectId: string) {
 		console.log(`[${this.id}] edit project ${projectId}`);
 
-		let row = await this.driver.findElement(By.css(`tr[data-id='${projectId}']`))
+		let row = await this.driver.findElement(
+			By.css(`tr[data-id='${projectId}']`),
+		);
 
 		let editProjectButton = await row.findElement(
 			By.xpath(`.//button[text()="Edit"]`),
 		);
-		await editProjectButton.click()
+		await editProjectButton.click();
 
 		let projectNameInput = await row.findElement(
 			By.css("input[placeholder='Name']"),
@@ -252,21 +250,21 @@ export class Peer {
 		await maxHoursInput.clear();
 		await maxHoursInput.sendKeys(maxHours);
 
-		await accountInput.clear()
+		await accountInput.clear();
 		await accountInput.sendKeys(account);
 
-		await (await row.findElement(By.xpath('//button[text()="Save edit"]'))).click()
+		await (
+			await row.findElement(By.xpath('//button[text()="Save edit"]'))
+		).click();
 
 		let oldProject = this.projects.value.get(projectId)!;
 		let newProject = new Project(
 			oldProject.name.set(this.id, projectName),
 			oldProject.maxHours.set(this.id, maxHours),
-			oldProject.account.set(this.id, account))
-
-		this.projects.value.set(
-			projectId,
-			newProject,
+			oldProject.account.set(this.id, account),
 		);
+
+		this.projects.value.set(projectId, newProject);
 	}
 
 	async createProject() {
@@ -275,14 +273,17 @@ export class Peer {
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
 		if (process.env.SELENIUM_BROWSER === "safari") {
-			await this.driver.wait(until.elementLocated(
-				By.css(".navbar-center a[href='/projects']"),
-			), 10000);
-			await this.driver.sleep(500)
+			await this.driver.wait(
+				until.elementLocated(By.css(".navbar-center a[href='/projects']")),
+				10000,
+			);
+			await this.driver.sleep(500);
 		}
-		await (await this.driver.findElement(
-			By.css(".navbar-center a[href='/projects']"),
-		)).click();
+		await (
+			await this.driver.findElement(
+				By.css(".navbar-center a[href='/projects']"),
+			)
+		).click();
 
 		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
@@ -336,9 +337,7 @@ export class Peer {
 
 	async goToWebRTCPage() {
 		try {
-			let dropDown = await this.driver.findElement(
-				By.css("div.dropdown")
-			);
+			let dropDown = await this.driver.findElement(By.css("div.dropdown"));
 			await dropDown.click();
 			let webrtcButton = await this.driver.findElement(
 				By.css(".navbar-start a[href='/webrtc']"),
@@ -489,10 +488,7 @@ export class Peer {
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		await driver
-			.manage()
-			.window()
-			.setRect({ width: 1200, height: 750 });
+		await driver.manage().window().setRect({ width: 1200, height: 750 });
 
 		let id = (await driver.getSession()).getId();
 
@@ -524,14 +520,19 @@ export async function check(peers: Peer[]) {
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
 					if (process.env.SELENIUM_BROWSER === "safari") {
-						await peer.driver.wait(until.elementLocated(
-							By.css(".navbar-center a[href='/projects']"),
-						), 10000);
-						await peer.driver.sleep(500)
+						await peer.driver.wait(
+							until.elementLocated(
+								By.css(".navbar-center a[href='/projects']"),
+							),
+							10000,
+						);
+						await peer.driver.sleep(500);
 					}
-					await (await peer.driver.findElement(
-						By.css(".navbar-center a[href='/projects']"),
-					)).click();
+					await (
+						await peer.driver.findElement(
+							By.css(".navbar-center a[href='/projects']"),
+						)
+					).click();
 
 					let projects = await peer.driver.findElements(
 						By.css("tbody tr[data-id]"),
@@ -539,14 +540,12 @@ export async function check(peers: Peer[]) {
 
 					let expectedProjects = [...peer.projects.value.entries()]
 						.map(([k, v]) => {
-							return [
-								k,
-								v.name.value(),
-								v.maxHours.value(),
-								v.account.value(),
-							];
+							return [k, v.name.value(), v.maxHours.value(), v.account.value()];
 						})
-						.sort((a, b) => a[0]?.toString().localeCompare(b[0]?.toString()||"") || -1);
+						.sort(
+							(a, b) =>
+								a[0]?.toString().localeCompare(b[0]?.toString() || "") || -1,
+						);
 
 					let actualProjects = (
 						await Promise.all(
@@ -554,20 +553,31 @@ export async function check(peers: Peer[]) {
 								let id = await project.getAttribute("data-id");
 								let tds = await project.findElements(By.css("td"));
 
-
-								let nameConflicted = (await tds[0].findElements(By.css(".tooltip-error"))).length == 1
+								let nameConflicted =
+									(await tds[0].findElements(By.css(".tooltip-error")))
+										.length == 1;
 								let name = await tds[0].getText();
-								let maxHoursConflicted = (await tds[1].findElements(By.css(".tooltip-error"))).length == 1
+								let maxHoursConflicted =
+									(await tds[1].findElements(By.css(".tooltip-error")))
+										.length == 1;
 								let maxHours = Number.parseInt(await tds[1].getText());
-								let accountConflicted = (await tds[2].findElements(By.css(".tooltip-error"))).length == 1
+								let accountConflicted =
+									(await tds[2].findElements(By.css(".tooltip-error")))
+										.length == 1;
 								let account = await tds[2].getText();
 
-
-
-								return [id, nameConflicted ? null : name, maxHoursConflicted ? null : maxHours, accountConflicted ? null : account];
+								return [
+									id,
+									nameConflicted ? null : name,
+									maxHoursConflicted ? null : maxHours,
+									accountConflicted ? null : account,
+								];
 							}),
 						)
-					).sort((a, b) => a[0]?.toString().localeCompare(b[0]?.toString()||"") || -1);
+					).sort(
+						(a, b) =>
+							a[0]?.toString().localeCompare(b[0]?.toString() || "") || -1,
+					);
 
 					try {
 						assert.deepEqual(actualProjects, expectedProjects);

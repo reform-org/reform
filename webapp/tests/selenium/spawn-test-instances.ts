@@ -1,5 +1,5 @@
-import {parseArgs} from "node:util";
-import {Peer} from "./lib.js";
+import { parseArgs } from "node:util";
+import { Peer } from "./lib.js";
 import readline from "readline";
 
 const rl = readline.createInterface({
@@ -40,7 +40,7 @@ let {
 });
 
 if (process.env.SELENIUM_BROWSER === undefined) {
-	throw new Error("Please run `export SELENIUM_BROWSER=chrome` or so")
+	throw new Error("Please run `export SELENIUM_BROWSER=chrome` or so");
 }
 
 console.log(`Starting ${count} instances on ${url}`);
