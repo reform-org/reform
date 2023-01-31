@@ -39,15 +39,49 @@ interface Mergeable {
 type ReplicaId = string
 type LogicalClock = number
 
+function compare(left: Map<ReplicaId, LogicalClock>, right: Map<ReplicaId, LogicalClock>): number {
+	let allReplicaIds = [...left.keys(), ...right.keys()]
+	let smaller = false
+	let greater = false
+	for (let replicaId of allReplicaIds) {
+		let l = left.get(replicaId) || 0
+		let r = right.get(replicaId) || 0
+		if (l < r) {
+			smaller = true;
+		}
+		if (r < l) {
+			greater = true;
+		}
+	}
+	return (smaller && !greater) ? 1 : ((greater && !smaller) ? -1 : 0)
+}
+
 class MultiValueRegister<T> implements Mergeable {
 	values: Map<Map<ReplicaId, LogicalClock>, T>
 
-	constructor() {
+	constructor(values: Map<Map<ReplicaId, LogicalClock>, T>) {
 		this.values = new Map()
 	}
 
-	merge(other: ThisType<this>): ThisType<this> {
-		throw new Error("Method not implemented.");
+	merge(other: MultiValueRegister<T>): MultiValueRegister<T> {
+		let all = [
+			...this.values.entries(),
+			...other.values.entries(),
+		];
+		let result = []
+		for (let i = 0; i < all.length; i++) {
+			let greatest = true;
+			for (let j = 0; j < all.length; j++) {
+				if (i == j) continue;
+				if (compare(all[i][0], all[j][0]) < 0) {
+					greatest = false
+				}
+			}
+			if (greatest) {
+				result.push(all[i])
+			}
+		}
+		return new MultiValueRegister(new Map(result))
 	}
 }
 
