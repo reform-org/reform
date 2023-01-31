@@ -42,7 +42,6 @@ object UsersPage {
   private val comment = UIAttributeBuilder.string
     .withLabel("Comment")
     .withDefaultValue("")
-    .require
     .bind[User](
       _.comment,
       (u, a) => u.copy(comment = a),
