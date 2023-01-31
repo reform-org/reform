@@ -17,36 +17,33 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
-private val sfirstName: UIAttribute[Supervisor, String] = UIAttribute(
-  _._firstName,
-  (p, a) => p.copy(_firstName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "First Name",
-  fieldType = "text",
-  isRequired = true,
-)
-
-private val slastName: UIAttribute[Supervisor, String] = UIAttribute(
-  _._lastName,
-  (p, a) => p.copy(_lastName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Last Name",
-  fieldType = "text",
-  isRequired = true,
-)
-
-private val seMail: UIAttribute[Supervisor, String] = UIAttribute(
-  _._eMail,
-  (p, a) => p.copy(_eMail = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Email",
-  fieldType = "text",
-  isRequired = true,
-)
+import SupervisorsPage.*
 
 case class SupervisorsPage()(using repositories: Repositories)
-    extends EntityPage[Supervisor](repositories.supervisors, Seq(sfirstName, slastName, seMail)) {}
+    extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail)) {}
+
+object SupervisorsPage {
+  private val firstName = UIAttributeBuilder.string
+    .withLabel("First Name")
+    .require
+    .bind[Supervisor](
+      _.firstName,
+      (s, a) => s.copy(firstName = a),
+    )
+
+  private val lastName = UIAttributeBuilder.string
+    .withLabel("Last Name")
+    .require
+    .bind[Supervisor](
+      _.lastName,
+      (s, a) => s.copy(lastName = a),
+    )
+
+  private val eMail = UIAttributeBuilder.string
+    .withLabel("Email")
+    .require
+    .bind[Supervisor](
+      _.eMail,
+      (s, a) => s.copy(eMail = a),
+    )
+}

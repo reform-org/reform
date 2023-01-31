@@ -8,9 +8,9 @@ import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class Supervisor(
-    _firstName: Attribute[String] = Attribute.empty,
-    _lastName: Attribute[String] = Attribute.empty,
-    _eMail: Attribute[String] = Attribute.empty,
+    firstName: Attribute[String] = Attribute.empty,
+    lastName: Attribute[String] = Attribute.empty,
+    eMail: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Supervisor]
     derives DecomposeLattice,
@@ -21,7 +21,7 @@ case class Supervisor(
 
   def exists: Attribute[Boolean] = _exists
 
-  def identifier: Attribute[String] = _firstName
+  def identifier: Attribute[String] = firstName
 
   def withExists(exists: Boolean): Supervisor = {
     this.copy(_exists = _exists.set(exists))
