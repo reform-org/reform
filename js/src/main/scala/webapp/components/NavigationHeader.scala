@@ -38,10 +38,19 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
       navigationLink(UsersPage(), "Users"),
     ),
     li(
-      navigationLink(PaymentLevelsPage(), "Paymentlevels"),
-    ),
-    li(
-      navigationLink(SalaryChangesPage(), "SalaryChanges"),
+      a(
+        cls:= "focus:bg-slate-200",
+        s"Settings ${0x25bc.toChar}",
+      ),
+      ul(
+        cls := "p-2 bg-base-100 focus:bg-slate-200 z-10",
+        li(
+          navigationLink(PaymentLevelsPage(), "Paymentlevels"),
+        ),
+        li(
+          navigationLink(SalaryChangesPage(), "SalaryChanges"),
+        ),
+      ),
     ),
     li(
       navigationLink(HiwisPage(), "Hiwis"),
