@@ -13,17 +13,26 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp.pages
+package webapp.components
 
-import webapp.Repositories
-import webapp.entity.*
+import org.scalajs.dom
+import outwatch.*
+import outwatch.dsl.*
+import webapp.*
+import org.scalajs.dom.HTMLElement
+import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 
-private val scname: UIAttribute[ContractSchema, String] = UIAttribute(
-  _._name,
-  (p, a) => p.copy(_name = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Name",
-)
-
-case class ContractSchemasPage() extends EntityPage[ContractSchema](Repositories.contractSchemas, Seq(scname)) {}
+def navigationLink(using routing: RoutingService)(page: Page, label: String): VNode = {
+  a(
+    label,
+    onClick.foreach(e => {
+      e.preventDefault()
+      e.target.asInstanceOf[HTMLElement].blur()
+      routing.to(page, true)
+    }),
+    href := routing.linkPath(page),
+  )
+}

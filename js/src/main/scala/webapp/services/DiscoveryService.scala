@@ -12,12 +12,12 @@ import scala.scalajs.js.JSON
 import scala.scalajs.js.Date
 import webapp.webrtc.PendingConnection
 import loci.communicator.webrtc.WebRTC
-import webapp.Services
 import rescala.default.*
 import webapp.Globals
 import webapp.Settings
+import webapp.webrtc.WebRTCService
 
-object DiscoveryService {
+class DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
 
@@ -46,11 +46,11 @@ object DiscoveryService {
 
   val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
 
-  def setAutoconnect(value: Boolean)(using services: Services): Unit = {
+  def setAutoconnect(value: Boolean)(using discovery: DiscoveryService, webrtc: WebRTCService): Unit = {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
       console.log("should connect")
-      services.discovery.connect(using services)
+      discovery.connect()
     }
   }
 
@@ -102,7 +102,7 @@ object DiscoveryService {
     ws.send(JSON.stringify(event))
   }
 
-  private def handle(ws: WebSocket, name: String, payload: js.Dynamic)(using services: Services) = {
+  private def handle(ws: WebSocket, name: String, payload: js.Dynamic)(using webrtc: WebRTCService) = {
     console.log(name, payload)
     name match {
       case "request_host_token" => {
@@ -119,7 +119,7 @@ object DiscoveryService {
           payload.host.user.name.asInstanceOf[String],
         ))
 
-        services.webrtc.registerConnection(
+        webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
           "discovery",
@@ -149,7 +149,7 @@ object DiscoveryService {
         pendingConnections(payload.id.asInstanceOf[String]).connector
           .set(PendingConnection.tokenAsSession(payload.host.token.asInstanceOf[String]).session)
 
-        services.webrtc.registerConnection(
+        webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
           "discovery",
@@ -193,7 +193,7 @@ object DiscoveryService {
     }
   }
 
-  def connect(using services: Services): Unit = {
+  def connect()(using webrtc: WebRTCService): Unit = {
     if (!tokenIsValid(getToken())) return;
     if (!Settings.get[Boolean]("autoconnect").getOrElse(false)) return;
 
@@ -209,7 +209,7 @@ object DiscoveryService {
 
     ws.get.onmessage = (event) => {
       val json = JSON.parse(event.data.asInstanceOf[String])
-      handle(ws.get, json.`type`.asInstanceOf[String], json.payload)(using services)
+      handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
     }
 
     ws.get.onclose = (event) => {

@@ -15,44 +15,45 @@ limitations under the License.
  */
 package webapp.pages
 
+import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
-import rescala.default.*
-import webapp.utils.Date
+import SalaryChangesPage.*
 
-private val salaryChangeValue: UIAttribute[SalaryChange, Int] = UIAttribute(
-  _._value,
-  (p, a) => p.copy(_value = a),
-  readConverter = number => (number / 100.0).toString(),
-  writeConverter = number => Math.round(number.toFloat * 100),
-  placeholder = "Value",
-  fieldType = "number",
-)
-
-private val salaryChangePaymentLevel: UISelectAttribute[SalaryChange, String] = UISelectAttribute(
-  _._paymentLevel,
-  (p, a) => p.copy(_paymentLevel = a),
-  // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
-  readConverter = _.toString,
-  writeConverter = _.toString,
-  placeholder = "PaymentLevel",
-  options = Repositories.paymentLevels.all.map(list =>
-    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._title.get.getOrElse("")))),
-  ),
-)
-
-private val salaryChangeFromDate: UIDateAttribute[SalaryChange, Long] = UIDateAttribute(
-  _._fromDate,
-  (p, a) => p.copy(_fromDate = a),
-  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  placeholder = "From",
-  // min = "2023-01-24",
-)
-
-case class SalaryChangesPage()
+case class SalaryChangesPage()(using repositories: Repositories)
     extends EntityPage[SalaryChange](
-      Repositories.salaryChanges,
+      repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
     ) {}
+
+object SalaryChangesPage {
+  private val salaryChangeValue = UIAttributeBuilder.float
+    .withLabel("Value")
+    .require
+    .map[Int](_ / 100.0f, f => Math.round(f * 100.0f))
+    .bind[SalaryChange](
+      _.value,
+      (s, a) => s.copy(value = a),
+    )
+
+  private def salaryChangePaymentLevel(using repositories: Repositories): UISelectAttribute[SalaryChange, String] =
+    UISelectAttribute(
+      _.paymentLevel,
+      (p, a) => p.copy(paymentLevel = a),
+      // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
+      readConverter = identity,
+      writeConverter = identity,
+      label = "PaymentLevel",
+      options = repositories.paymentLevels.all.map(list =>
+        list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
+      ),
+      isRequired = true,
+    )
+
+  private val salaryChangeFromDate = UIAttributeBuilder.date
+    .withLabel("From")
+    .bind[SalaryChange](
+      _.fromDate,
+      (s, a) => s.copy(fromDate = a),
+    )
+}

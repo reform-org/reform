@@ -7,7 +7,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 name := "Reform"
 ThisBuild / version := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.2.1"
+ThisBuild / scalaVersion := "3.3.0-RC2"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -25,10 +25,10 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
     }),
-    Test / scalaJSUseTestModuleInitializer := false, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
-    Test / scalaJSModuleInitializers := Seq(
-      // {ModuleInitializer.mainMethod("webapp.MainTest", "main").withModuleID("main")}
-    ),
+    Test / scalaJSUseTestModuleInitializer := true, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
+    /*Test / scalaJSModuleInitializers := Seq(
+      {ModuleInitializer.mainMethod("webapp.MainJSTest", "main").withModuleID("main")}
+    ),*/
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
@@ -42,21 +42,20 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     resolvers += "jitpack".at("https://jitpack.io"),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "eb0719f08f",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "91ac2c3",
       "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-webrtc" % "91ac2c3",
-      "com.github.rescala-lang.REScala" %%% "rescala" % "a7c8b55a5985d95ba27e00d3ffc7bdfb514da65d",
-      "com.github.rescala-lang.REScala" %%% "kofre" % "a7c8b55a5985d95ba27e00d3ffc7bdfb514da65d",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-tcp" % "91ac2c3",
+      "com.github.rescala-lang.REScala" %%% "rescala" % "d3d97711fd7577327eb469209c34e1304c9d374c",
+      "com.github.rescala-lang.REScala" %%% "kofre" % "d3d97711fd7577327eb469209c34e1304c9d374c",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.20.3",
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.20.3",
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
       // like there could also be sane defaults but no
-      // "-rewrite",
       "-no-indent",
       // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
-      // "-Xfatal-warnings",
       "--unchecked",
       "-deprecation",
       "-Xmigration",

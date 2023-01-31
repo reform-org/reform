@@ -17,37 +17,52 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import HiwisPage.*
 
-private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._firstName,
-  (p, a) => p.copy(_firstName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "First Name",
-)
+case class HiwisPage()(using repositories: Repositories)
+    extends EntityPage[Hiwi](
+      repositories.hiwis,
+      Seq(firstName, lastName, hours, eMail),
+    ) {}
 
-private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._lastName,
-  (p, a) => p.copy(_lastName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Last Name",
-)
+object HiwisPage {
+  private val firstName = UIAttributeBuilder.string
+    .withLabel("First Name")
+    .require
+    .bind[Hiwi](
+      _.firstName,
+      (h, a) => h.copy(firstName = a),
+    )
 
-private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
-  _._hours,
-  (p, a) => p.copy(_hours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  placeholder = "Hours",
-)
+  private val lastName = UIAttributeBuilder.string
+    .withLabel("Last Name")
+    .require
+    .bind[Hiwi](
+      _.lastName,
+      (h, a) => h.copy(lastName = a),
+    )
 
-private val heMail: UIAttribute[Hiwi, String] = UIAttribute(
-  _._eMail,
-  (p, a) => p.copy(_eMail = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Email",
-)
+  private val hours = UIAttributeBuilder.int
+    .withLabel("Hours")
+    .require
+    .bind[Hiwi](
+      _.hours,
+      (h, a) => h.copy(hours = a),
+    )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, heMail)) {}
+  private val eMail = UIAttributeBuilder.string
+    .withLabel("Email")
+    .require
+    .bind[Hiwi](
+      _.eMail,
+      (h, a) => h.copy(eMail = a),
+    )
+
+  private val birthdate = UIAttributeBuilder.date
+    .withLabel("Birthdate")
+    .require
+    .bind[Hiwi](
+      _.birthdate,
+      (h, a) => h.copy(birthdate = a),
+    )
+}

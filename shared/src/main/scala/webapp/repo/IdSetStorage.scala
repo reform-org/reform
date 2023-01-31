@@ -1,11 +1,12 @@
 package webapp.repo
 
 import webapp.GrowOnlySet
+import webapp.npm.IIndexedDB
 
 import scala.concurrent.Future
 
 // TODO: Might use normal sets
-case class IdSetStorage(name: String) {
+case class IdSetStorage(name: String)(using indexedDb: IIndexedDB) {
 
   private val storage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 

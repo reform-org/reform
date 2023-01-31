@@ -1,6 +1,8 @@
 package webapp.entity
 
 trait Entity[T <: Entity[T]] {
+  def default: T
+
   def exists: Attribute[Boolean]
 
   def identifier: Attribute[String]

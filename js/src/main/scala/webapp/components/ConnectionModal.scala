@@ -26,6 +26,8 @@ import webapp.webrtc.ConnectionInformation
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.utils.Base64
 import webapp.webrtc.StoredConnectionInformation
+import webapp.services.DiscoveryService
+import webapp.webrtc.WebRTCService
 
 val offlineBanner = {
   div(
@@ -48,11 +50,11 @@ val onlineBanner = {
   )
 }
 
-class ConnectionModal(using services: Services) {
-  services.discovery.login(new services.discovery.LoginInfo("Lukas", "test"))
-  services.discovery.connect(using services)
+class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
+  discovery.login(new discovery.LoginInfo("Lukas", "test"))
+  discovery.connect()
 
-  def render(using services: Services): VNode = {
+  def render: VNode = {
     ul(
       tabIndex := 0,
       cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52",
@@ -60,11 +62,11 @@ class ConnectionModal(using services: Services) {
         "Connections",
         cls := "font-bold text-lg p-2"
       ),
-      services.webrtc.connections.map(_.map(ref => {
-        val info = services.webrtc.getInformation(ref)
+      webrtc.connections.map(_.map(ref => {
+        val info = webrtc.getInformation(ref)
         connectionRow(info.alias, info.source, ref)
       })),
-      services.webrtc.connections.map(connections => {
+      webrtc.connections.map(connections => {
         var emptyState: VNode = div()
         if (connections.size == 0) {
           emptyState = div(
@@ -90,12 +92,12 @@ class ConnectionModal(using services: Services) {
           cls := "toggle",
           checked := Settings.get[Boolean]("autoconnect").getOrElse(false),
           onClick.foreach(e =>
-            services.discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)(using services),
+            discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked),
           ),
         ),
       ),
       div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-0", "Manual"),
-      ManualConnectionDialog().render,
+      ManualConnectionDialog().render(),
     )
 
   }

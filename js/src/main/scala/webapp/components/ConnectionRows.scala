@@ -10,11 +10,11 @@ import webapp.given
 import webapp.pages.*
 import org.scalajs.dom.{console, document, window, HTMLElement}
 import loci.transmitter.RemoteRef
-import webapp.webrtc.WebRTCService.getConnectionMode
 import org.scalajs.dom.RTCStatsReport
 import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.webrtc.WebRTCService
 
-def connectionRow(name: String, source: String, ref: RemoteRef) = {
+def connectionRow(name: String, source: String, ref: RemoteRef)(using webrtc: WebRTCService) = {
   div(
     cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
     div(
@@ -30,7 +30,7 @@ def connectionRow(name: String, source: String, ref: RemoteRef) = {
       ),
       i(
         "Connection: ",
-        Signals.fromFuture(getConnectionMode(ref)),
+        Signals.fromFuture(webrtc.getConnectionMode(ref)),
         cls := "text-slate-500 text-xs",
       ),
     ),
