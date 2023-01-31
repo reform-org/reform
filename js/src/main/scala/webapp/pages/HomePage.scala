@@ -33,7 +33,12 @@ import loci.transmitter.RemoteRef
 
 case class HomePage() extends Page {
 
-  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService): VNode =
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode =
     navigationHeader(
       div(
         p("Homepage"),
@@ -65,7 +70,7 @@ case class HomePage() extends Page {
           }),
         ),
         // services.webrtc.connections.map(_.map(ref => services.webrtc.getInformation(ref).alias).mkString("; ")),
-        discovery.availableConnections.map(_.map(connection => connection.name).mkString("; "))
-      )
+        discovery.availableConnections.map(_.map(connection => connection.name).mkString("; ")),
+      ),
     )
 }

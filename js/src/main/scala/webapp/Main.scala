@@ -69,7 +69,12 @@ object Main {
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService) = body(
+  def app(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ) = body(
     routing.render,
   )
 }

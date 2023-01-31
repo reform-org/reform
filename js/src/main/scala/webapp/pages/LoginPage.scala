@@ -25,13 +25,18 @@ import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
 
 case class LoginPage() extends Page {
-  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService): VNode =
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode =
     navigationHeader(
       div(
         div(
           cls := "p-1",
           h1(cls := "text-4xl text-center", "Login page"),
         ),
-      )
+      ),
     )
 }

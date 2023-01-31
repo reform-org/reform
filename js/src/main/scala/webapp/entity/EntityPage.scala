@@ -184,7 +184,12 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
-  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService): VNode = {
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode = {
     navigationHeader(
       div(
         cls := "relative overflow-x-auto shadow-md sm:rounded-lg pt-4 ", // " px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",

@@ -55,7 +55,9 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
   )
 }
 
-def navigationHeader(content: VNode)(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService) = {
+def navigationHeader(
+    content: VNode,
+)(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService) = {
   div(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
