@@ -48,7 +48,7 @@ object DiscoveryService {
 
   def setAutoconnect(value: Boolean)(using services: Services): Unit = {
     Settings.set[Boolean]("autoconnect", value)
-    if(value == true){
+    if (value == true) {
       console.log("should connect")
       services.discovery.connect(using services)
     }
@@ -199,7 +199,7 @@ object DiscoveryService {
 
     ws match {
       case Some(socket) => {}
-      case None => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
+      case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
     }
 
     ws.get.onopen = (event) => {

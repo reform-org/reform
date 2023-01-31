@@ -59,7 +59,7 @@ case class HomePage() extends Page {
         ),
       ),
       // services.webrtc.connections.map(_.map(ref => services.webrtc.getInformation(ref).alias).mkString("; ")),
-      services.discovery.availableConnections.map(_.map(connection => connection.name).mkString("; "))
+      services.discovery.availableConnections.map(_.map(connection => connection.name).mkString("; ")),
     )
 
 }

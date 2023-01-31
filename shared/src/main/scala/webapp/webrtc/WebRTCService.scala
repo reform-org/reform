@@ -38,7 +38,11 @@ import webapp.npm.Utils
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(val alias: String, val source: String = "manual") {}
 
-case class PendingConnection(connector: WebRTC.Connector, session: Future[ConnectionInformation], connection: dom.RTCPeerConnection)
+case class PendingConnection(
+    connector: WebRTC.Connector,
+    session: Future[ConnectionInformation],
+    connection: dom.RTCPeerConnection,
+)
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String) = {
     val p = Promise[ConnectionInformation]()
@@ -73,7 +77,7 @@ object WebRTCService {
       connector: Connector[Connections.Protocol],
       alias: Future[String],
       source: String,
-      connection: dom.RTCPeerConnection
+      connection: dom.RTCPeerConnection,
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
@@ -96,7 +100,7 @@ object WebRTCService {
     val connection = webRTCConnections.get(ref).getOrElse(null)
     val promise = Promise[dom.RTCStatsReport]()
 
-    Utils.usesTurn(connection).map(usesTurn => if(usesTurn) "relay" else "direct")
+    Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
 
   // registry.remoteJoined.monitor(addConnection.fire)

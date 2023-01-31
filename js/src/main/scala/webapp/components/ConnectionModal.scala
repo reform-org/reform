@@ -102,13 +102,15 @@ class ConnectionModal(using services: Services) {
               tpe := "checkbox",
               cls := "toggle",
               checked := Settings.get[Boolean]("autoconnect").getOrElse(false),
-              onClick.foreach(e => services.discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)(using services)),
+              onClick.foreach(e =>
+                services.discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)(using services),
+              ),
             ),
           ),
           div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-0", "Manual"),
           ManualConnectionDialog().render,
         ),
-      )
+      ),
     )
   }
 }
