@@ -33,13 +33,13 @@ export async function run() {
 		peers = [];
 	}
 
-	//actions = [Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.CREATE_PROJECT, Actions.EDIT_PROJECT];
+	actions = [Actions.CREATE_PEER, Actions.CREATE_PEER, Actions.CREATE_PROJECT, Actions.CONNECT_TO_PEER, Actions.RELOAD, Actions.EDIT_PROJECT, Actions.EDIT_PROJECT, Actions.CONNECT_TO_PEER];
 
 	try {
 		for (let action of actions) {
 			switch (action) {
 				case Actions.CREATE_PEER: {
-					let peer = await Peer.create(true);
+					let peer = await Peer.create(false);
 					await peer.driver.get("http://localhost:5173/");
 					peers.push(peer);
 					console.log(`[${peer.id}] peer created`);
@@ -133,7 +133,7 @@ export async function run() {
 			);
 		}
 
-		await Promise.all(peers.map((peer) => peer.driver.close()));
+		await Promise.all(peers.map((peer) => peer.driver.quit()));
 
 		console.log("DONE");
 	} catch (error) {
@@ -146,7 +146,7 @@ export async function run() {
 			);
 		}
 
-		//await Promise.allSettled(peers.map((peer) => peer.driver.close()));
+		await Promise.allSettled(peers.map((peer) => peer.driver.quit()));
 
 		throw error;
 	}
