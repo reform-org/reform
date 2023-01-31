@@ -33,49 +33,59 @@ case class UIAttributeBuilder[AttributeType](
   def bind[EntityType](
       getter: EntityType => Attribute[AttributeType],
       setter: (EntityType, Attribute[AttributeType]) => EntityType,
-  ): UICommonAttribute[EntityType, AttributeType] =
-    UIAttribute(
-      getter = getter,
-      setter = setter,
-      readConverter = readConverter,
-      writeConverter = writeConverter,
-      label = label,
-      isRequired = isRequired,
-      fieldType = fieldType,
-    )
+  ): UIAttribute[EntityType, AttributeType] = UIAttribute(
+    getter = getter,
+    setter = setter,
+    readConverter = readConverter,
+    writeConverter = writeConverter,
+    label = label,
+    isRequired = isRequired,
+    fieldType = fieldType,
+  )
 
-}
-
-class UIDateAttributeBuilder(
-) extends UIAttributeBuilder[Long](
-      readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-      writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-    ) {
-
-  override def bind[EntityType](
-      getter: EntityType => Attribute[Long],
-      setter: (EntityType, Attribute[Long]) => EntityType,
-  ): UICommonAttribute[EntityType, Long] =
-    UIDateAttribute(
-      getter = getter,
-      setter = setter,
-      readConverter = readConverter,
-      writeConverter = writeConverter,
-      label = label,
-      min = min,
-      isRequired = isRequired,
-    )
 }
 
 object UIAttributeBuilder {
 
   val string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
-  val date: UIAttributeBuilder[Long] = UIDateAttributeBuilder()
+  val date: UIAttributeBuilder[Long] = UIAttributeBuilder(
+    Date.epochDayToDate(_, "dd.MM.yyyy"),
+    writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
+  )
 
   val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
     .withFieldType("number")
 
   val float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
     .withFieldType("number")
+
+  val boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
+
+  implicit class BindToDate(self: UIAttributeBuilder[Long]) {
+    def bindAsDatePicker[EntityType](
+        getter: EntityType => Attribute[Long],
+        setter: (EntityType, Attribute[Long]) => EntityType,
+    ): UIAttribute[EntityType, Long] = UIDateAttribute(
+      getter = getter,
+      setter = setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      min = self.min,
+      isRequired = self.isRequired,
+    )
+  }
+
+  implicit class BindToBoolean(self: UIAttributeBuilder[Boolean]) {
+    def bindAsCheckbox[EntityType](
+        getter: EntityType => Attribute[Boolean],
+        setter: (EntityType, Attribute[Boolean]) => EntityType,
+    ): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
+      getter = getter,
+      setter = setter,
+      label = self.label,
+      isRequired = self.isRequired,
+    )
+  }
 }
