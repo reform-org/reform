@@ -28,7 +28,7 @@ object UsersPage {
     .require
     .bind[User](
       _.username,
-      (p, a) => p.copy(username = a),
+      (u, a) => u.copy(username = a),
     )
 
   private val role = UIAttributeBuilder.string
@@ -36,7 +36,7 @@ object UsersPage {
     .require
     .bind[User](
       _.role,
-      (p, a) => p.copy(role = a),
+      (u, a) => u.copy(role = a),
     )
 
   private val comment = UIAttributeBuilder.string
@@ -45,6 +45,6 @@ object UsersPage {
     .require
     .bind[User](
       _.comment,
-      (p, a) => p.copy(comment = a),
+      (u, a) => u.copy(comment = a),
     )
 }

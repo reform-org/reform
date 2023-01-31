@@ -17,16 +17,17 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
-private val scname: UIAttribute[ContractSchema, String] = UIAttribute(
-  _._name,
-  (p, a) => p.copy(_name = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "Name",
-  fieldType = "text",
-  isRequired = true,
-)
+import ContractSchemasPage.*
 
 case class ContractSchemasPage()(using repositories: Repositories)
     extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(scname)) {}
+
+object ContractSchemasPage {
+  private val scname = UIAttributeBuilder.string
+    .withLabel("Name")
+    .require
+    .bind[ContractSchema](
+      _.name,
+      (s, a) => s.copy(name = a),
+    )
+}
