@@ -62,6 +62,9 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
     li(
       navigationLink(ContractSchemasPage(), "ContractSchemas"),
     ),
+    li(
+      navigationLink(RequiredDocumentsPage(), "RequiredDocuments"),
+    ),
   )
 }
 

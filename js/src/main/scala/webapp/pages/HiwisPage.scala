@@ -22,7 +22,7 @@ import HiwisPage.*
 case class HiwisPage()(using repositories: Repositories)
     extends EntityPage[Hiwi](
       repositories.hiwis,
-      Seq(firstName, lastName, hours, eMail),
+      Seq(firstName, lastName, hours, eMail, birthdate),
     ) {}
 
 object HiwisPage {
@@ -61,7 +61,7 @@ object HiwisPage {
   private val birthdate = UIAttributeBuilder.date
     .withLabel("Birthdate")
     .require
-    .bind[Hiwi](
+    .bindAsDatePicker[Hiwi](
       _.birthdate,
       (h, a) => h.copy(birthdate = a),
     )

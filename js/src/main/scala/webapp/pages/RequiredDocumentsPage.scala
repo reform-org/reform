@@ -17,17 +17,32 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-import ContractSchemasPage.*
+import RequiredDocumentsPage.*
 
-case class ContractSchemasPage()(using repositories: Repositories)
-    extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name)) {}
+case class RequiredDocumentsPage()(using repositories: Repositories)
+    extends EntityPage[RequiredDocument](repositories.requiredDocuments, Seq(name, fileName, isActuallyRequired)) {}
 
-object ContractSchemasPage {
+object RequiredDocumentsPage {
   private val name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bind[ContractSchema](
+    .bind[RequiredDocument](
       _.name,
-      (s, a) => s.copy(name = a),
+      (d, a) => d.copy(name = a),
+    )
+
+  private val fileName = UIAttributeBuilder.string
+    .withLabel("File Name")
+    .require
+    .bind[RequiredDocument](
+      _.fileName,
+      (d, a) => d.copy(fileName = a),
+    )
+
+  private val isActuallyRequired = UIAttributeBuilder.boolean
+    .withLabel("Required?")
+    .bindAsCheckbox[RequiredDocument](
+      _.isActuallyRequired,
+      (d, a) => d.copy(isActuallyRequired = a),
     )
 }

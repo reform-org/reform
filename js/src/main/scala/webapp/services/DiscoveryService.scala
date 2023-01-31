@@ -269,7 +269,7 @@ class DiscoveryService {
   def connect(resetWebsocket: Boolean = false)(using webrtc: WebRTCService): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
-    if(resetWebsocket) ws = None
+    if (resetWebsocket) ws = None
 
     if (tokenIsValid(getToken()) && Settings.get[Boolean]("autoconnect").getOrElse(false)) {
       ws match {
@@ -297,7 +297,7 @@ class DiscoveryService {
       ws.get.onerror = (event) => {
         promise.failure(new Exception("Connection failed"))
       }
-    }else {
+    } else {
       promise.failure(new Exception("Something went wrong"))
     }
 

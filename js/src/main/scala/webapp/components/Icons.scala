@@ -7,7 +7,11 @@ import com.raquo.domtypes.jsdom.defs.events.TypedTargetMouseEvent
 import org.scalajs.dom.Element
 
 object Icons {
-  def reload(_cls: String = "", _color: String = "#000000", _clickHandler: TypedTargetMouseEvent[Element] => Unit): VNode = {
+  def reload(
+      _cls: String = "",
+      _color: String = "#000000",
+      _clickHandler: TypedTargetMouseEvent[Element] => Unit,
+  ): VNode = {
     import svg.*
     svg(
       xmlns := "http://www.w3.org/2000/svg",

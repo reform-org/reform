@@ -14,4 +14,5 @@ class Repositories(using webrtc: WebRTCService, indexedDb: IIndexedDB) {
   val contractSchemas: Repository[ContractSchema] = Repository("contract-schema", ContractSchema.empty)
   val paymentLevels: Repository[PaymentLevel] = Repository("payment-level", PaymentLevel.empty)
   val salaryChanges: Repository[SalaryChange] = Repository("salary-change", SalaryChange.empty)
+  val requiredDocuments: Repository[RequiredDocument] = Repository("required-document", RequiredDocument.empty)
 }
