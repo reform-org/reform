@@ -25,8 +25,7 @@ import webapp.services.Page
 
 case class LoginPage() extends Page {
   def render(using services: Services): VNode =
-    div(
-      navigationHeader,
+    navigationHeader(
       div(
         cls := "p-1",
         h1(cls := "text-4xl text-center", "Login page"),

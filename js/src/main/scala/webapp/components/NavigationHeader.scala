@@ -111,39 +111,66 @@ def navigationMenu(using services: Services)(classes: String) = {
   )
 }
 
-def navigationHeader(using services: Services) = {
+def navigationHeader(content: VNode)(using services: Services) = {
   div(
-    cls := "navbar bg-base-100 shadow",
+    cls := "drawer drawer-end",
+    input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "flex-none",
+      cls := "drawer-content flex flex-col",
       div(
-        cls := "dropdown",
-        label(
-          tabIndex := 0,
-          idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden",
-          Icons.hamburger("h-5 w-5"),
+        cls := "navbar bg-base-100 shadow",
+        div(
+          cls := "flex-none",
+          div(
+            cls := "dropdown",
+            label(
+              tabIndex := 0,
+              idAttr := "dropdown-button",
+              cls := "btn btn-ghost lg:hidden",
+              Icons.hamburger("h-5 w-5"),
+            ),
+            navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+          ),
         ),
-        navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+        div(
+          cls := "flex-1",
+          a(
+            Icons.reform(),
+            cls := "btn btn-ghost normal-case text-xl",
+            href := "/",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              services.routing.to(HomePage(), true)
+            }),
+          ),
+        ),
+        div(
+          cls := "navbar-center hidden lg:flex",
+          navigationMenu("menu menu-horizontal p-0"),
+        ),
+        div(
+          cls := "flex-none",
+          label(
+            forId := "connection-drawer",
+            cls := "btn btn-ghost",
+            div(
+              cls := "indicator",
+              Icons.connections("h-6 w-6", "#000"),
+              span(
+                cls := "badge badge-sm indicator-item",
+                services.webrtc.connections.map(_.size),
+              ),
+            ),
+          ),
+        ),
       ),
+      content,
     ),
     div(
-      cls := "flex-1",
-      a(
-        Icons.reform(),
-        cls := "btn btn-ghost normal-case text-xl",
-        href := "/",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HomePage(), true)
-        }),
-      ),
+      cls := "drawer-side",
+      label(forId := "connection-drawer", cls := "drawer-overlay"),
+      ConnectionModal(using services).render,
     ),
-    div(
-      cls := "navbar-center hidden lg:flex",
-      navigationMenu("menu menu-horizontal p-0"),
-    ),
-    ConnectionModal(using services).render,
   )
 }

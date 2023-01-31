@@ -33,33 +33,33 @@ import loci.transmitter.RemoteRef
 case class HomePage() extends Page {
 
   def render(using services: Services): VNode =
-    div(
-      navigationHeader,
-      p("Homepage"),
-      button(
-        cls := "btn",
-        "Fill PDF",
-        onClick.foreach(_ =>
-          PDF
-            .fill(
-              "contract_unlocked.pdf",
-              "arbeitsvertrag2.pdf",
-              Seq(
-                PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
-                PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
-                PDFTextField("Vertragsbeginn", "25.01.2023"),
-                PDFTextField("Vertragsende", "25.01.2024"),
-                PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
-                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
-                PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
-              ),
-            )
-            .andThen(s => console.log(s)), // remove loading spinner here
+    navigationHeader(
+      div(
+        p("Homepage"),
+        button(
+          cls := "btn",
+          "Fill PDF",
+          onClick.foreach(_ =>
+            PDF
+              .fill(
+                "contract_unlocked.pdf",
+                "arbeitsvertrag2.pdf",
+                Seq(
+                  PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
+                  PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
+                  PDFTextField("Vertragsbeginn", "25.01.2023"),
+                  PDFTextField("Vertragsende", "25.01.2024"),
+                  PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
+                  PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                  PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
+                  PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
+                ),
+              )
+              .andThen(s => console.log(s)), // remove loading spinner here
+          ),
         ),
+        // services.webrtc.connections.map(_.map(ref => services.webrtc.getInformation(ref).alias).mkString("; ")),
+        services.discovery.availableConnections.map(_.map(connection => connection.name).mkString("; ")),
       ),
-      // services.webrtc.connections.map(_.map(ref => services.webrtc.getInformation(ref).alias).mkString("; ")),
-      services.discovery.availableConnections.map(_.map(connection => connection.name).mkString("; ")),
     )
-
 }

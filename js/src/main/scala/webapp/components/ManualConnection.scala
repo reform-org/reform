@@ -35,7 +35,6 @@ private case object Init extends State {
   private def initializeHostSession(using state: Var[State], services: Services): Unit = {
     val pendingConnection =
       PendingConnection.webrtcIntermediate(WebRTC.offer(), alias.now)
-    document.querySelector("#connection-modal-content").classList.add("dropdown-open")
     state.set(HostPending(pendingConnection))
   }
 
@@ -93,7 +92,6 @@ private case class ClientAskingForHostSessionToken() extends State {
   private def connectToHost(using state: Var[State], services: Services): Unit = {
     val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(), alias.now)
     connection.connector.set(PendingConnection.tokenAsSession(sessionToken.now).session)
-    document.querySelector("#connection-modal-content").classList.add("dropdown-open")
     state.set(ClientWaitingForHostConfirmation(connection, alias.now))
   }
 }
@@ -142,7 +140,6 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
 
   private def onConnected()(using state: Var[State]): Unit = {
     state.set(ClientAskingForHostSessionToken())
-    document.querySelector("#connection-modal-content").classList.remove("dropdown-open")
 
   }
 }
@@ -209,7 +206,6 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
 
   private def onConnected()(using state: Var[State]): Unit = {
     state.set(Init)
-    document.querySelector("#connection-modal-content").classList.remove("dropdown-open")
   }
 }
 
