@@ -27,7 +27,7 @@ import webapp.services.DiscoveryService
 
 def navigationLink(using routing: RoutingService)(page: Page, label: String): VNode = {
   a(
-    cls := "focus:bg-slate-200",
+    cls := "btn btn-ghost normal-case	font-normal rounded-md	",
     label,
     onClick.foreach(e => {
       e.preventDefault()

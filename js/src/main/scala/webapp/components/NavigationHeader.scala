@@ -39,12 +39,12 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
     ),
     li(
       a(
-        cls := "focus:bg-slate-200",
-        s"Settings ${0x25bc.toChar}",
-        href := "javascript:;",
+        cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+        "Settings",
+        Icons.expand("w-4 h-4"),
       ),
       ul(
-        cls := "p-2 bg-base-100 focus:bg-slate-200 z-10",
+        cls := "p-2 bg-base-100 focus:bg-slate-200 z-10 shadow-lg rounded-md",
         li(
           navigationLink(PaymentLevelsPage(), "Paymentlevels"),
         ),
