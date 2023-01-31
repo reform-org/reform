@@ -12,7 +12,7 @@ case class Hiwi(
     lastName: Attribute[String] = Attribute.empty,
     hours: Attribute[Int] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
-    _birthdate: Attribute[Long] = Attribute.empty,
+    birthdate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Hiwi]
     derives DecomposeLattice,

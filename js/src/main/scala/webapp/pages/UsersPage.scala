@@ -17,28 +17,34 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
-private val username = UIAttributeBuilder.string
-  .withLabel("Username")
-  .bind[User](
-    _.username,
-    (p, a) => p.copy(username = a),
-  )
-
-private val role = UIAttributeBuilder.string
-  .withLabel("Role")
-  .bind[User](
-    _.role,
-    (p, a) => p.copy(role = a),
-  )
-
-private val comment = UIAttributeBuilder.string
-  .withLabel("Comment")
-  .withDefaultValue("")
-  .bind[User](
-    _.comment,
-    (p, a) => p.copy(comment = a),
-  )
+import UsersPage.*
 
 case class UsersPage()(using repositories: Repositories)
     extends EntityPage[User](repositories.users, Seq(username, role, comment)) {}
+
+object UsersPage {
+  private val username = UIAttributeBuilder.string
+    .withLabel("Username")
+    .require
+    .bind[User](
+      _.username,
+      (u, a) => u.copy(username = a),
+    )
+
+  private val role = UIAttributeBuilder.string
+    .withLabel("Role")
+    .require
+    .bind[User](
+      _.role,
+      (u, a) => u.copy(role = a),
+    )
+
+  private val comment = UIAttributeBuilder.string
+    .withLabel("Comment")
+    .withDefaultValue("")
+    .require
+    .bind[User](
+      _.comment,
+      (u, a) => u.copy(comment = a),
+    )
+}

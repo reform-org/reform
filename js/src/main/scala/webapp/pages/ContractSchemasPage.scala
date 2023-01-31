@@ -17,13 +17,17 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import ContractSchemasPage.*
 
-private val title = UIAttributeBuilder.string
-  .withLabel("Title")
-  .bind[PaymentLevel](
-    _.title,
-    (p, a) => p.copy(title = a),
-  )
+case class ContractSchemasPage()(using repositories: Repositories)
+    extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(scname)) {}
 
-case class PaymentLevelsPage()(using repositories: Repositories)
-    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
+object ContractSchemasPage {
+  private val scname = UIAttributeBuilder.string
+    .withLabel("Name")
+    .require
+    .bind[ContractSchema](
+      _.name,
+      (s, a) => s.copy(name = a),
+    )
+}

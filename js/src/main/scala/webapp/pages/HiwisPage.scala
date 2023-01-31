@@ -17,37 +17,52 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
-private val firstName = UIAttributeBuilder.string
-  .withLabel("First Name")
-  .bind[Hiwi](
-    _.firstName,
-    (p, a) => p.copy(firstName = a),
-  )
-
-private val lastName = UIAttributeBuilder.string
-  .withLabel("Last Name")
-  .bind[Hiwi](
-    _.lastName,
-    (p, a) => p.copy(lastName = a),
-  )
-
-private val hours = UIAttributeBuilder.int
-  .withLabel("Hours")
-  .bind[Hiwi](
-    _.hours,
-    (p, a) => p.copy(hours = a),
-  )
-
-private val eMail = UIAttributeBuilder.string
-  .withLabel("Email")
-  .bind[Hiwi](
-    _.eMail,
-    (p, a) => p.copy(eMail = a),
-  )
+import HiwisPage.*
 
 case class HiwisPage()(using repositories: Repositories)
     extends EntityPage[Hiwi](
       repositories.hiwis,
       Seq(firstName, lastName, hours, eMail),
     ) {}
+
+object HiwisPage {
+  private val firstName = UIAttributeBuilder.string
+    .withLabel("First Name")
+    .require
+    .bind[Hiwi](
+      _.firstName,
+      (h, a) => h.copy(firstName = a),
+    )
+
+  private val lastName = UIAttributeBuilder.string
+    .withLabel("Last Name")
+    .require
+    .bind[Hiwi](
+      _.lastName,
+      (h, a) => h.copy(lastName = a),
+    )
+
+  private val hours = UIAttributeBuilder.int
+    .withLabel("Hours")
+    .require
+    .bind[Hiwi](
+      _.hours,
+      (h, a) => h.copy(hours = a),
+    )
+
+  private val eMail = UIAttributeBuilder.string
+    .withLabel("Email")
+    .require
+    .bind[Hiwi](
+      _.eMail,
+      (h, a) => h.copy(eMail = a),
+    )
+
+  private val birthdate = UIAttributeBuilder.date
+    .withLabel("Birthdate")
+    .require
+    .bind[Hiwi](
+      _.birthdate,
+      (h, a) => h.copy(birthdate = a),
+    )
+}
