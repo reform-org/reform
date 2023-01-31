@@ -43,7 +43,7 @@ case class HomePage() extends Page {
       div(
         p("Homepage"),
         button(
-          cls := "btn",
+          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           idAttr := "loadPDF",
           "Fill PDF",
           onClick.foreach(_ => {
