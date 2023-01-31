@@ -60,11 +60,19 @@ class MultiValueRegister<T> implements Mergeable {
 	values: Map<Map<ReplicaId, LogicalClock>, T>
 
 	constructor(values: Map<Map<ReplicaId, LogicalClock>, T>) {
-		this.values = new Map()
+		this.values = values
+	}
+
+	value(): T | null {
+		if (this.values.size != 1) {
+			console.log("multiple values")
+			return null
+		}
+		return this.values.values().next().value
 	}
 
 	set(replicaId: string, value: T): MultiValueRegister<T> {
-		let allReplicaIds = [...this.values.keys()].flatMap(v => [...v.keys()])
+		let allReplicaIds = [...this.values.keys()].flatMap(v => [...v.keys(), replicaId])
 		let clock = allReplicaIds.map(r => {
 			let max = [...this.values.keys()].flatMap(z => {
 				let v = z.get(r)
@@ -82,23 +90,28 @@ class MultiValueRegister<T> implements Mergeable {
 	}
 
 	merge(other: MultiValueRegister<T>): MultiValueRegister<T> {
+		console.log("this", this)
+		console.log("other", other)
 		let all = [
 			...this.values.entries(),
 			...other.values.entries(),
 		];
-		let result = []
+		let result: [Map<string, number>, T][] = []
 		for (let i = 0; i < all.length; i++) {
 			let greatest = true;
 			for (let j = 0; j < all.length; j++) {
 				if (i == j) continue;
-				if (compare(all[i][0], all[j][0]) < 0) {
+				if (compare(all[i][0], all[j][0]) > 0) {
 					greatest = false
 				}
 			}
 			if (greatest) {
-				result.push(all[i])
+				if (!result.includes(all[i])) {
+					result.push(all[i])
+				}
 			}
 		}
+		console.log("merged", result)
 		return new MultiValueRegister(new Map(result))
 	}
 }
@@ -244,9 +257,15 @@ export class Peer {
 
 		await (await row.findElement(By.xpath('//button[text()="Save edit"]'))).click()
 
+		let oldProject = this.projects.value.get(projectId)!;
+		let newProject = new Project(
+			oldProject.name.set(this.id, projectName),
+			oldProject.maxHours.set(this.id, maxHours),
+			oldProject.account.set(this.id, account))
+
 		this.projects.value.set(
 			projectId,
-			this.projects.value.get(projectId)!.merge(Project.create(this.id, projectName, maxHours, account)),
+			newProject,
 		);
 	}
 
@@ -523,25 +542,32 @@ export async function check(peers: Peer[]) {
 							return [
 								k,
 								v.name.value(),
-								v.maxHours.values.value(),
-								v.account.values.value(),
+								v.maxHours.value(),
+								v.account.value(),
 							];
 						})
-						.sort((a, b) => a[0].toString().localeCompare(b[0].toString()));
+						.sort((a, b) => a[0]?.toString().localeCompare(b[0]?.toString()||"") || -1);
 
 					let actualProjects = (
 						await Promise.all(
 							projects.map(async (project) => {
 								let id = await project.getAttribute("data-id");
 								let tds = await project.findElements(By.css("td"));
+
+
+								let nameConflicted = (await tds[0].findElements(By.css(".tooltip-error"))).length == 1
 								let name = await tds[0].getText();
+								let maxHoursConflicted = (await tds[1].findElements(By.css(".tooltip-error"))).length == 1
 								let maxHours = Number.parseInt(await tds[1].getText());
+								let accountConflicted = (await tds[2].findElements(By.css(".tooltip-error"))).length == 1
 								let account = await tds[2].getText();
 
-								return [id, name, maxHours, account];
+
+
+								return [id, nameConflicted ? null : name, maxHoursConflicted ? null : maxHours, accountConflicted ? null : account];
 							}),
 						)
-					).sort((a, b) => a[0].toString().localeCompare(b[0].toString()));
+					).sort((a, b) => a[0]?.toString().localeCompare(b[0]?.toString()||"") || -1);
 
 					try {
 						assert.deepEqual(actualProjects, expectedProjects);
