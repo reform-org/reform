@@ -63,7 +63,8 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         ),
         div(
           Icons.close("fill-red-600 w-4 h-4"),
-          cls := "hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+          cls := "tooltip hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+          data.tip := "Close Connection",
           onClick.foreach(_ => {
             ref.disconnect()
           }),
@@ -134,7 +135,8 @@ def availableConnectionRow(
     ),
     div(
       Icons.check("w-4 h-4", "stroke-green-600"),
-      cls := "hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+      cls := "tooltip hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+      data.tip := "Close Connection",
       onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
     ),
   )
