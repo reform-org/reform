@@ -63,6 +63,24 @@ class MultiValueRegister<T> implements Mergeable {
 		this.values = new Map()
 	}
 
+	set(replicaId: string, value: T): MultiValueRegister<T> {
+		let allReplicaIds = [...this.values.keys()].flatMap(v => [...v.keys()])
+		let clock = allReplicaIds.map(r => {
+			let max = [...this.values.keys()].flatMap(z => {
+				let v = z.get(r)
+				return v ? [v] : [] 
+			}).reduce((a, b) => {
+				return Math.max(a, b)
+			}, 0)
+			if (r == replicaId) {
+				return [r, max+1] as const
+			} else {
+				return [r, max] as const
+			}
+		})
+		return new MultiValueRegister(new Map([[new Map(clock), value]]))
+	}
+
 	merge(other: MultiValueRegister<T>): MultiValueRegister<T> {
 		let all = [
 			...this.values.entries(),
@@ -123,14 +141,14 @@ class PosNegCounter implements Mergeable {
 }
 
 class Project implements Mergeable {
-	name: LastWriterWins<string>;
-	maxHours: LastWriterWins<number>;
-	account: LastWriterWins<string>;
+	name: MultiValueRegister<string>;
+	maxHours: MultiValueRegister<number>;
+	account: MultiValueRegister<string>;
 
 	constructor(
-		name: LastWriterWins<string>,
-		maxHours: LastWriterWins<number>,
-		account: LastWriterWins<string>,
+		name: MultiValueRegister<string>,
+		maxHours: MultiValueRegister<number>,
+		account: MultiValueRegister<string>,
 	) {
 		this.name = name;
 		this.maxHours = maxHours;
@@ -144,9 +162,9 @@ class Project implements Mergeable {
 		account: string,
 	) {
 		return new Project(
-			new LastWriterWins(name, new Date()),
-			new LastWriterWins(maxHours, new Date()),
-			new LastWriterWins(account, new Date()),
+			new MultiValueRegister(new Map([[new Map([[replicaId, 1]]), name]])),
+			new MultiValueRegister(new Map([[new Map([[replicaId, 1]]), maxHours]])),
+			new MultiValueRegister(new Map([[new Map([[replicaId, 1]]), account]])),
 		);
 	}
 
@@ -504,9 +522,9 @@ export async function check(peers: Peer[]) {
 						.map(([k, v]) => {
 							return [
 								k,
-								v.name.value,
-								v.maxHours.value,
-								v.account.value,
+								v.name.value(),
+								v.maxHours.values.value(),
+								v.account.values.value(),
 							];
 						})
 						.sort((a, b) => a[0].toString().localeCompare(b[0].toString()));
