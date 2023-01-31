@@ -20,6 +20,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
     webrtc: WebRTCService,
     discovery: DiscoveryService,
 ) = {
+  val own = discovery.decodeToken(discovery.getToken())
   if (source == "discovery")
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
@@ -56,12 +57,18 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
       ),
       div(
         cls := "flex flex-row gap-1",
-        div(
-          Icons.forbidden("fill-red-600 w-3 h-3"),
-          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
-          data.tip := "Remove from Whitelist",
-          onClick.foreach(_ => discovery.deleteFromWhitelist(uuid)),
-        ),
+        if (own.uuid != uuid)
+          Some(
+            div(
+              Icons.forbidden("fill-red-600 w-3 h-3"),
+              cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
+              data.tip := "Remove from Whitelist",
+              onClick.foreach(_ => {
+                discovery.deleteFromWhitelist(uuid)
+              }),
+            ),
+          )
+        else None,
         div(
           Icons.close("fill-red-600 w-4 h-4"),
           cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
