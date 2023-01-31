@@ -35,7 +35,12 @@ import scala.scalajs.js
 import webapp.npm.Utils
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
-class StoredConnectionInformation(val alias: String, val source: String = "manual", val uuid: String = "", val connectionId: String = "") {} // different object for discovery and manual
+class StoredConnectionInformation(
+    val alias: String,
+    val source: String = "manual",
+    val uuid: String = "",
+    val connectionId: String = "",
+) {} // different object for discovery and manual
 
 case class PendingConnection(
     connector: WebRTC.Connector,
@@ -58,7 +63,8 @@ class WebRTCService {
   val registry: Registry = new Registry
 
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
-  private val webRTCConnections = scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
+  private val webRTCConnections =
+    scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
   private val connectionRefs = scala.collection.mutable.Map[String, RemoteRef]()
 
   private val removeConnection = Evt[RemoteRef]()
@@ -74,7 +80,7 @@ class WebRTCService {
       source: String,
       connection: dom.RTCPeerConnection,
       uuid: String = "",
-      connectionId: String = ""
+      connectionId: String = "",
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
@@ -92,7 +98,7 @@ class WebRTCService {
 
   def closeConnectionById(id: String) = {
     connectionRefs.get(id) match {
-      case None => {}
+      case None      => {}
       case Some(ref) => ref.disconnect()
     }
   }

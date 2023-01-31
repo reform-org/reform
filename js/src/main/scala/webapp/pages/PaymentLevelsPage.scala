@@ -25,6 +25,7 @@ case class PaymentLevelsPage()(using repositories: Repositories)
 object PaymentLevelsPage {
   private val title = UIAttributeBuilder.string
     .withLabel("Title")
+    .require
     .bind[PaymentLevel](
       _.title,
       (p, a) => p.copy(title = a),
