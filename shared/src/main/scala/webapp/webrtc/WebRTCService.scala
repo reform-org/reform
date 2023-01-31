@@ -35,7 +35,7 @@ import scala.scalajs.js
 import webapp.npm.Utils
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
-class StoredConnectionInformation(val alias: String, val source: String = "manual") {}
+class StoredConnectionInformation(val alias: String, val source: String = "manual", val uuid: String = "") {}
 
 case class PendingConnection(
     connector: WebRTC.Connector,
@@ -77,12 +77,13 @@ class WebRTCService {
       alias: Future[String],
       source: String,
       connection: dom.RTCPeerConnection,
+      uuid: String = ""
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
         alias.onComplete(alias => {
-          connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source))
+          connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source, uuid))
           webRTCConnections += (r.get -> connection)
         })
       })

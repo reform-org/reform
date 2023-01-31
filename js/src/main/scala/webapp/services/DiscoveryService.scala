@@ -16,6 +16,7 @@ import rescala.default.*
 import webapp.Globals
 import webapp.Settings
 import webapp.webrtc.WebRTCService
+import scala.concurrent.{Future, Promise}
 
 class DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
@@ -46,11 +47,17 @@ class DiscoveryService {
 
   val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
 
-  def setAutoconnect(value: Boolean)(using discovery: DiscoveryService, webrtc: WebRTCService): Unit = {
+
+  private val setToken = Evt[String]()
+  private val setTokenB = setToken.act(identity)
+
+  private val token = Fold(null: String)(setTokenB)
+
+  def setAutoconnect(value: Boolean)(using services: Services): Unit = {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
       console.log("should connect")
-      discovery.connect()
+      connect(using services)
     }
   }
 
@@ -64,16 +71,33 @@ class DiscoveryService {
     )
   }
 
+  def getTokenSignal(): Signal[String] = {
+    getToken()
+    token
+  }
+
   def getToken(): String = {
-    window.localStorage.getItem("discovery-token")
+    val storedToken = window.localStorage.getItem("discovery-token")
+    setToken.fire(storedToken)
+    storedToken
   }
 
   def tokenIsValid(token: String): Boolean = {
-    return token != null && Date.now() > decodeToken(token).exp
+    return token != null && !token.isBlank() && Date.now() > decodeToken(token).exp
   }
 
-  def login(loginInfo: LoginInfo): Unit = {
+  def logout(): Unit = {
+    ws match {
+      case None         => {}
+      case Some(socket) => ws.get.close()
+    }
+    window.localStorage.removeItem("discovery-token")
+    setToken.fire(null)
+  }
+
+  def login(loginInfo: LoginInfo)(using services: Services): Future[String] = {
     val savedToken = getToken()
+    val promise = Promise[String]()
 
     if (!tokenIsValid(savedToken)) {
       val requestHeaders = new Headers();
@@ -85,15 +109,45 @@ class DiscoveryService {
           body = writeToString(loginInfo)(LoginInfo.codec)
           headers = requestHeaders
         },
-      ).`then`(s =>
+      ).`then`(s => {
         s.json()
           .toFuture
           .onComplete(json => {
-            val token = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
-            window.localStorage.setItem("discovery-token", token)
-            console.log("Fetched a new token.")
-          }),
-      )
+            if (s.status > 400 && s.status < 500) {
+              promise.failure((json.get.asInstanceOf[js.Dynamic]).error.asInstanceOf[Throwable])
+            } else {
+              val token = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
+              window.localStorage.setItem("discovery-token", token)
+              setToken.fire(token)
+              console.log("Fetched a new token.")
+              connect(using services)
+              promise.success(token)
+            }
+          })
+      })
+    }
+
+    promise.future
+  }
+
+  def addToWhitelist(uuid: String): Unit = {
+    ws match {
+      case None         => {}
+      case Some(socket) => emit(socket, "whitelist_add", js.Dynamic.literal("uuid" -> uuid))
+    }
+  }
+
+  def deleteFromWhitelist(uuid: String): Unit = {
+    ws match {
+      case None         => {}
+      case Some(socket) => emit(socket, "whitelist_del", js.Dynamic.literal("uuid" -> uuid))
+    }
+  }
+
+  def refetchAvailableClients(): Unit = {
+    ws match {
+      case None         => {}
+      case Some(socket) => emit(socket, "request_available_clients", null)
     }
   }
 
@@ -116,7 +170,7 @@ class DiscoveryService {
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
-          payload.host.user.name.asInstanceOf[String],
+          payload.client.user.name.asInstanceOf[String],
         ))
 
         webrtc.registerConnection(
@@ -124,6 +178,7 @@ class DiscoveryService {
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
+          payload.client.user.uuid.asInstanceOf[String],
         )
 
         pendingConnections(payload.id.asInstanceOf[String]).session
@@ -154,6 +209,7 @@ class DiscoveryService {
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
+          payload.host.user.uuid.asInstanceOf[String],
         )
 
         pendingConnections(payload.id.asInstanceOf[String]).session

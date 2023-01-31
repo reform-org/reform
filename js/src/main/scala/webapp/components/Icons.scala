@@ -193,4 +193,34 @@ object Icons {
       ),
     )
   }
+
+  def check(_cls: String = "", _cls2: String = "") = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24.00 24.00",
+      fill := "none",
+      cls := _cls,
+      path(
+        d := "M20 7.00018L10 17.0002L5 12.0002",
+        cls := _cls2,
+        VModifier.attr("stroke-width") := "2.5",
+        VModifier.attr("stroke-linecap") := "round",
+        VModifier.attr("stroke-linejoin") := "round",
+      ),
+    )
+  }
+
+  def forbidden(_cls: String = "", _color: String = "") = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      fill := _color,
+      cls := _cls,
+      viewBox := "0 0 512 512",
+      path(
+        d := "M256,0C114.84,0,0,114.842,0,256s114.84,256,256,256s256-114.842,256-256S397.16,0,256,0z M49.548,256    c0-113.837,92.614-206.452,206.452-206.452c48.011,0,92.246,16.473,127.351,44.065L93.613,383.351    C66.022,348.246,49.548,304.011,49.548,256z M256,462.452c-48.011,0-92.246-16.473-127.351-44.065l289.738-289.738    c27.592,35.105,44.065,79.34,44.065,127.351C462.452,369.837,369.837,462.452,256,462.452z",
+      )
+    )
+  }
 }
