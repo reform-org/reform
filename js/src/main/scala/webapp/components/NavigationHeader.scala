@@ -114,7 +114,7 @@ def navigationMenu(using services: Services)(classes: String) = {
 def navigationHeader(content: VNode)(using services: Services) = {
   div(
     cls := "drawer drawer-end",
-    input(idAttr := "my-drawer-3", tpe := "checkbox", cls := "drawer-toggle"),
+    input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
       cls := "drawer-content flex flex-col",
       div(
@@ -150,9 +150,9 @@ def navigationHeader(content: VNode)(using services: Services) = {
           navigationMenu("menu menu-horizontal p-0"),
         ),
         div(
-          cls := "flex-none lg:hidden",
+          cls := "flex-none",
           label(
-            forId := "my-drawer-3",
+            forId := "connection-drawer",
             cls := "btn btn-ghost",
             div(
               cls := "indicator",
@@ -169,7 +169,7 @@ def navigationHeader(content: VNode)(using services: Services) = {
     ),
     div(
       cls := "drawer-side",
-      label(forId := "my-drawer-3", cls := "drawer-overlay"),
+      label(forId := "connection-drawer", cls := "drawer-overlay"),
       ConnectionModal(using services).render,
     ),
   )

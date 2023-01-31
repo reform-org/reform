@@ -55,7 +55,11 @@ class ConnectionModal(using services: Services) {
   def render(using services: Services): VNode = {
     ul(
       tabIndex := 0,
-      cls := " p-2 shadow-xl menu menu-compact dropdown-content bg-base-100 w-52",
+      cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52",
+      h2(
+        "Connections",
+        cls := "font-bold text-lg p-2"
+      ),
       services.webrtc.connections.map(_.map(ref => {
         val info = services.webrtc.getInformation(ref)
         connectionRow(info.alias, info.source, ref)
