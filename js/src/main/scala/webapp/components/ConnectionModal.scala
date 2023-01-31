@@ -53,52 +53,34 @@ class ConnectionModal(using services: Services) {
   services.discovery.connect(using services)
 
   def render(using services: Services): VNode = {
-    div(
-      cls := "flex-none gap-2",
-      div(
-        cls := "dropdown dropdown-end h-full",
-        idAttr := "connection-modal-content",
-        label(
-          tabIndex := 0,
-          cls := "btn btn-ghost",
-          div(
-            cls := "indicator",
-            Icons.connections("h-6 w-6", "#000"),
-            span(
-              cls := "badge badge-sm indicator-item",
-              services.webrtc.connections.map(_.size),
-            ),
-          ),
-        ),
-        ul(
-          tabIndex := 0,
-          cls := "mt-3 p-2 shadow-xl menu menu-compact dropdown-content bg-base-100 rounded-box w-52",
-          services.webrtc.connections.map(_.map(ref => {
-            val info = services.webrtc.getInformation(ref)
-            connectionRow(info.alias, info.source, ref)
-          })),
-          services.webrtc.connections.map(connections => {
-            var emptyState: VNode = div()
-            if (connections.size == 0) {
-              emptyState = div(
-                cls := "flex flex-col items-center mt-4 mb-4",
-                Icons.ghost("w-14 h-14 mb-2"),
-                i("It's quiet for now..."),
-              )
-            }
-            emptyState
-          }),
-          div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-2", "Auto"),
-          // li(
-          //   offlineBanner,
-          // ),
-          li(
-            onlineBanner,
-          ),
-          div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-0", "Manual"),
-          ManualConnectionDialog().render,
-        ),
+    ul(
+      tabIndex := 0,
+      cls := " p-2 shadow-xl menu menu-compact dropdown-content bg-base-100 w-52",
+      services.webrtc.connections.map(_.map(ref => {
+        val info = services.webrtc.getInformation(ref)
+        connectionRow(info.alias, info.source, ref)
+      })),
+      services.webrtc.connections.map(connections => {
+        var emptyState: VNode = div()
+        if (connections.size == 0) {
+          emptyState = div(
+            cls := "flex flex-col items-center mt-4 mb-4",
+            Icons.ghost("w-14 h-14 mb-2"),
+            i("It's quiet for now..."),
+          )
+        }
+        emptyState
+      }),
+      div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-2", "Auto"),
+      // li(
+      //   offlineBanner,
+      // ),
+      li(
+        onlineBanner,
       ),
+      div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-0", "Manual"),
+      ManualConnectionDialog().render,
     )
+
   }
 }

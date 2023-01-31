@@ -177,8 +177,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
     EntityRow[T](repository, None, Var(Some(bottom.empty)), uiAttributes)
 
   def render(using services: Services): VNode = {
-    div(
-      navigationHeader,
+    navigationHeader(
       div(
         cls := "items-center w-full px-4 py-4 mx-auto my-5 bg-white rounded-lg shadow-md",
         table(

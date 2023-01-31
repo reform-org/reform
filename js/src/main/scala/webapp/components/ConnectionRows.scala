@@ -8,7 +8,7 @@ import cats.effect.SyncIO
 import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.pages.*
-import org.scalajs.dom.{document, console, window, HTMLElement}
+import org.scalajs.dom.{console, document, window, HTMLElement}
 import loci.transmitter.RemoteRef
 import webapp.webrtc.WebRTCService.getConnectionMode
 import org.scalajs.dom.RTCStatsReport
