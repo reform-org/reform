@@ -41,6 +41,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
       a(
         cls:= "focus:bg-slate-200",
         s"Settings ${0x25bc.toChar}",
+        href:= "javascript:;"
       ),
       ul(
         cls := "p-2 bg-base-100 focus:bg-slate-200 z-10",

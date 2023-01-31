@@ -64,14 +64,14 @@ private class EntityRow[T <: Entity[T]](
                     case Some(p) => {
                       List(
                         button(
-                          cls := "btn",
+                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                           formId := s"form-${existingValue.map(_.id)}",
                           `type` := "submit",
                           idAttr := "add-entity-button",
                           "Save edit",
                         ),
                         button(
-                          cls := "btn",
+                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                           idAttr := "add-entity-button",
                           "Cancel",
                           onClick.foreach(_ => cancelEdit()),
@@ -80,7 +80,7 @@ private class EntityRow[T <: Entity[T]](
                     }
                     case None => {
                       button(
-                        cls := "btn",
+                        cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                         formId := s"form-${existingValue.map(_.id)}",
                         `type` := "submit",
                         idAttr := "add-entity-button",
@@ -90,7 +90,7 @@ private class EntityRow[T <: Entity[T]](
                   }
                 },
                 existingValue.map(p => {
-                  button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(p)))
+                  button(cls := "btn btn-error btn-square p-2 h-fit min-h-10 border-0", "X", onClick.foreach(_ => removeEntity(p)))
                 }),
               ),
             ),
@@ -112,11 +112,11 @@ private class EntityRow[T <: Entity[T]](
                       td(
                         cls := "py-1 space-x-1 w-1/6",
                         button(
-                          cls := "btn",
+                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(syncedEntity))),
+                        button(cls := "btn btn-error btn-square p-2 h-fit min-h-10 border-0", "X", onClick.foreach(_ => removeEntity(syncedEntity))),
                       ),
                     ),
                   )
