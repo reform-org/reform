@@ -36,8 +36,11 @@ interface Mergeable {
 	merge(other: ThisType<this>): ThisType<this>;
 }
 
+type ReplicaId = string
+type LogicalClock = number
+
 class MultiValueRegister<T> implements Mergeable {
-	values: Map<Map<string, number>, T>
+	values: Map<Map<ReplicaId, LogicalClock>, T>
 
 	constructor() {
 		this.values = new Map()
