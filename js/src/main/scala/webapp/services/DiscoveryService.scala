@@ -14,10 +14,12 @@ import webapp.webrtc.PendingConnection
 import loci.communicator.webrtc.WebRTC
 import webapp.Services
 import rescala.default.*
+import webapp.Globals
+import webapp.Settings
 
 object DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
-  private val ws: WebSocket = new WebSocket("wss://wss.discovery.lukasschreiber.com/")
+  private var ws: Option[WebSocket] = None
 
   class LoginInfo(var username: String, var password: String)
   object LoginInfo {
@@ -44,6 +46,14 @@ object DiscoveryService {
 
   val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
 
+  def setAutoconnect(value: Boolean)(using services: Services): Unit = {
+    Settings.set[Boolean]("autoconnect", value)
+    if (value == true) {
+      console.log("should connect")
+      services.discovery.connect(using services)
+    }
+  }
+
   def decodeToken(token: String): TokenPayload = {
     val decodedToken = JSON.parse(window.atob(token.split('.')(1))).asInstanceOf[js.Dynamic]
     TokenPayload(
@@ -69,7 +79,7 @@ object DiscoveryService {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
-        "https://discovery.lukasschreiber.com/api/login",
+        s"${Globals.discoveryServerURL}/api/login",
         new RequestInit {
           method = HttpMethod.POST
           body = writeToString(loginInfo)(LoginInfo.codec)
@@ -98,7 +108,7 @@ object DiscoveryService {
       case "request_host_token" => {
         var iceServers = js.Array[RTCIceServer]()
         iceServers += RTCIceServer(
-          "turn:lukasschreiber.com:41720",
+          Globals.turnServerURL,
           payload.host.turn.username.asInstanceOf[String],
           payload.host.turn.credential.asInstanceOf[String],
         )
@@ -125,7 +135,7 @@ object DiscoveryService {
       case "request_client_token" => {
         var iceServers = js.Array[RTCIceServer]()
         iceServers += RTCIceServer(
-          "turn:lukasschreiber.com:41720",
+          Globals.turnServerURL,
           payload.client.turn.username.asInstanceOf[String],
           payload.client.turn.credential.asInstanceOf[String],
         )
@@ -185,17 +195,24 @@ object DiscoveryService {
 
   def connect(using services: Services): Unit = {
     if (!tokenIsValid(getToken())) return;
-    ws.onopen = (event) => {
+    if (!Settings.get[Boolean]("autoconnect").getOrElse(false)) return;
+
+    ws match {
+      case Some(socket) => {}
+      case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
+    }
+
+    ws.get.onopen = (event) => {
       console.log("opened websocket")
-      emit(ws, "authenticate", js.Dynamic.literal("token" -> getToken()))
+      emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken()))
     }
 
-    ws.onmessage = (event) => {
+    ws.get.onmessage = (event) => {
       val json = JSON.parse(event.data.asInstanceOf[String])
-      handle(ws, json.`type`.asInstanceOf[String], json.payload)(using services)
+      handle(ws.get, json.`type`.asInstanceOf[String], json.payload)(using services)
     }
 
-    ws.onclose = (event) => {
+    ws.get.onclose = (event) => {
       console.log("closed websocket")
     }
   }

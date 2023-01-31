@@ -15,10 +15,6 @@ import org.scalajs.dom.RTCStatsReport
 import scala.concurrent.ExecutionContext.Implicits.global
 
 def connectionRow(name: String, source: String, ref: RemoteRef) = {
-
-  console.log("Name:", name)
-  getConnectionMode(ref).onComplete(mode => console.log(mode));
-
   div(
     cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
     div(
@@ -30,6 +26,11 @@ def connectionRow(name: String, source: String, ref: RemoteRef) = {
       i(
         "Source: ",
         source,
+        cls := "text-slate-500 text-xs",
+      ),
+      i(
+        "Connection: ",
+        Signals.fromFuture(getConnectionMode(ref)),
         cls := "text-slate-500 text-xs",
       ),
     ),

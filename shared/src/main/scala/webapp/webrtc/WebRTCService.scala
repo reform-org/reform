@@ -100,7 +100,7 @@ object WebRTCService {
     val connection = webRTCConnections.get(ref).getOrElse(null)
     val promise = Promise[dom.RTCStatsReport]()
 
-    Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "local")
+    Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
 
   // registry.remoteJoined.monitor(addConnection.fire)
