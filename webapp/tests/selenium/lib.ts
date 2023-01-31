@@ -36,7 +36,17 @@ interface Mergeable {
 	merge(other: ThisType<this>): ThisType<this>;
 }
 
-// TODO FIXME implement conflict handling
+class MultiValueRegister<T> implements Mergeable {
+	values: Map<Map<string, number>, T>
+
+	constructor() {
+		this.values = new Map()
+	}
+
+	merge(other: ThisType<this>): ThisType<this> {
+		throw new Error("Method not implemented.");
+	}
+}
 
 class LastWriterWins<T> implements Mergeable {
 	value: T;
