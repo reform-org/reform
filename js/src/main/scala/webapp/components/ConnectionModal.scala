@@ -30,7 +30,7 @@ import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
 import scala.util.Failure
 import scala.util.Success
-import org.scalajs.dom.{HTMLInputElement, window}
+import org.scalajs.dom.{window, HTMLInputElement}
 
 class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
   if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
@@ -38,12 +38,18 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
   val offlineBanner = {
     div(
       cls := "bg-amber-100 flex flex-col	items-center	",
-      Icons.reload("h-8 w-8 animate-reload", "#D97706", e => {
-        e.target.classList.add("animate-spin")
-        discovery.connect(true).onComplete(event => {
-          window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
-        })
-      }),
+      Icons.reload(
+        "h-8 w-8 animate-reload",
+        "#D97706",
+        e => {
+          e.target.classList.add("animate-spin")
+          discovery
+            .connect(true)
+            .onComplete(event => {
+              window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
+            })
+        },
+      ),
       span(
         cls := "text-amber-600 font-semibold text-center",
         "You are not connected to the discovery server!",
@@ -104,7 +110,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
         span(cls := "label-text", "Autoconnect"),
         input(
           tpe := "checkbox",
-          cls := "toggle",
+          cls := "toggle toggle-sm bg-purple-600 border-purple-600",
           checked := Settings.get[Boolean]("autoconnect").getOrElse(false),
           onClick.foreach(e => discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)),
         ),

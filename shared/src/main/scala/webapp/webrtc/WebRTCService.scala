@@ -91,7 +91,10 @@ class WebRTCService {
   }
 
   def closeConnectionById(id: String) = {
-    connectionRefs.get(id).get.disconnect()
+    connectionRefs.get(id) match {
+      case None => {}
+      case Some(ref) => ref.disconnect()
+    }
   }
 
   def getInformation(ref: RemoteRef): StoredConnectionInformation = {
