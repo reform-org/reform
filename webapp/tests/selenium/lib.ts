@@ -1,4 +1,11 @@
-import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
+import "./fast-selenium.js";
+import {
+	Builder,
+	By,
+	Condition,
+	until,
+	WebDriver,
+} from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
 import safari from "selenium-webdriver/safari.js";
@@ -6,7 +13,7 @@ import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
 export let seed = new Chance().integer();
-//let seed = 5475712614006784;
+//export let seed = -1773669877547008;
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
@@ -18,13 +25,18 @@ export const Actions = Object.freeze({
 	CREATE_PEER: Symbol("CREATE_PEER"),
 	DELETE_PEER: Symbol("DELETE_PEER"),
 	CREATE_PROJECT: Symbol("CREATE PROJECT"),
+	EDIT_PROJECT: Symbol("EDIT_PROJECT"),
 	CONNECT_TO_PEER: Symbol("CONNECT_TO_PEER"),
+	BAD_NETWORK: Symbol("BAD_NETWORK"),
+	GOOD_NETWORK: Symbol("GOOD_NETWORK"),
 	RELOAD: Symbol("RELOAD"),
 });
 
 interface Mergeable {
 	merge(other: ThisType<this>): ThisType<this>;
 }
+
+// TODO FIXME implement conflict handling
 
 class LastWriterWins<T> implements Mergeable {
 	value: T;
@@ -65,12 +77,12 @@ class PosNegCounter implements Mergeable {
 
 class Project implements Mergeable {
 	name: LastWriterWins<string>;
-	maxHours: PosNegCounter;
+	maxHours: LastWriterWins<number>;
 	account: LastWriterWins<string>;
 
 	constructor(
 		name: LastWriterWins<string>,
-		maxHours: PosNegCounter,
+		maxHours: LastWriterWins<number>,
 		account: LastWriterWins<string>,
 	) {
 		this.name = name;
@@ -86,7 +98,7 @@ class Project implements Mergeable {
 	) {
 		return new Project(
 			new LastWriterWins(name, new Date()),
-			new PosNegCounter(new Map([[replicaId, maxHours]])),
+			new LastWriterWins(maxHours, new Date()),
 			new LastWriterWins(account, new Date()),
 		);
 	}
@@ -132,15 +144,61 @@ export class Peer {
 		this.connectedTo = [];
 	}
 
+	async editProject(projectId: string) {
+		console.log(`[${this.id}] edit project ${projectId}`);
+
+		let row = await this.driver.findElement(By.css(`tr[data-id='${projectId}']`))
+
+		let editProjectButton = await row.findElement(
+			By.xpath(`.//button[text()="Edit"]`),
+		);
+		await editProjectButton.click()
+
+		let projectNameInput = await row.findElement(
+			By.css("input[placeholder='Name']"),
+		);
+		let maxHoursInput = await row.findElement(
+			By.css("input[placeholder='Max Hours']"),
+		);
+		let accountInput = await row.findElement(
+			By.css("input[placeholder='Account']"),
+		);
+
+		let projectName = chance.animal();
+		let maxHours = chance.integer({ min: 1, max: 10 });
+		let account = chance.name();
+
+		await projectNameInput.clear();
+		await projectNameInput.sendKeys(projectName);
+
+		await maxHoursInput.clear();
+		await maxHoursInput.sendKeys(maxHours);
+
+		await accountInput.clear()
+		await accountInput.sendKeys(account);
+
+		await (await row.findElement(By.xpath('//button[text()="Save edit"]'))).click()
+
+		this.projects.value.set(
+			projectId,
+			this.projects.value.get(projectId)!.merge(Project.create(this.id, projectName, maxHours, account)),
+		);
+	}
+
 	async createProject() {
 		console.log(`[${this.id}] create project`);
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		let projectsButton = await this.driver.findElement(
+		if (process.env.SELENIUM_BROWSER === "safari") {
+			await this.driver.wait(until.elementLocated(
+				By.css(".navbar-center a[href='/projects']"),
+			), 10000);
+			await this.driver.sleep(500)
+		}
+		await (await this.driver.findElement(
 			By.css(".navbar-center a[href='/projects']"),
-		);
-		await projectsButton.click();
+		)).click();
 
 		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
@@ -152,7 +210,7 @@ export class Peer {
 			By.css("input[placeholder='Account']"),
 		);
 		let addProjectButton = await this.driver.findElement(
-			By.xpath(`//button[text()="Add Entity"]`),
+			By.xpath(`.//button[text()="Add Entity"]`),
 		);
 
 		let projectName = chance.animal();
@@ -192,6 +250,24 @@ export class Peer {
 		);
 	}
 
+	async goToWebRTCPage() {
+		try {
+			let dropDown = await this.driver.findElement(
+				By.css("div.dropdown")
+			);
+			await dropDown.click();
+			let webrtcButton = await this.driver.findElement(
+				By.css(".navbar-start a[href='/webrtc']"),
+			);
+			await webrtcButton.click();
+		} catch (ignoreNotMobile) {
+			let webrtcButton = await this.driver.findElement(
+				By.css(".navbar-center a[href='/webrtc']"),
+			);
+			await webrtcButton.click();
+		}
+	}
+
 	async connectTo(other: Peer) {
 		console.log(`[${this.id}, ${other.id}] connect`);
 		let [[offerInput, submitOffer], [offer, answerInput, answerSubmit]] =
@@ -199,20 +275,17 @@ export class Peer {
 				(async () => {
 					let driver = this.driver;
 
-					let webrtcButton = await driver.findElement(
-						By.css(".navbar-center a[href='/webrtc']"),
-					);
-					await webrtcButton.click();
+					await this.goToWebRTCPage();
 
 					let clientButton = await driver.findElement(
-						By.xpath(`//button[text()="Client"]`),
+						By.xpath(`.//button[text()="Client"]`),
 					);
 					await clientButton.click();
 
 					let textarea = await driver.findElement(By.css("textarea"));
 
 					let submitOffer = await driver.findElement(
-						By.xpath(`//button[text()="Connect to host using token"]`),
+						By.xpath(`.//button[text()="Connect to host using token"]`),
 					);
 
 					return [textarea, submitOffer];
@@ -220,13 +293,10 @@ export class Peer {
 				(async () => {
 					let driver = other.driver;
 
-					let webrtcButton = await driver.findElement(
-						By.css(".navbar-center a[href='/webrtc']"),
-					);
-					await webrtcButton.click();
+					await other.goToWebRTCPage();
 
 					let hostButton = await driver.findElement(
-						By.xpath(`//button[text()="Host"]`),
+						By.xpath(`.//button[text()="Host"]`),
 					);
 					await hostButton.click();
 
@@ -238,7 +308,7 @@ export class Peer {
 					let answerInput = await driver.findElement(By.css("textarea"));
 
 					let answerSubmit = await driver.findElement(
-						By.xpath(`//button[text()="Connect to client using token"]`),
+						By.xpath(`.//button[text()="Connect to client using token"]`),
 					);
 
 					return [value, answerInput, answerSubmit];
@@ -258,7 +328,7 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`//h2[text()="Connected"]`)),
+					until.elementLocated(By.xpath(`.//h2[text()="Connected"]`)),
 				);
 			}),
 		);
@@ -286,18 +356,59 @@ export class Peer {
 			firefoxOptions = firefoxOptions.headless();
 		}
 
+		const capabilities: Record<string, {}> = {
+			chrome: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Chrome",
+				},
+				browserName: "Chrome",
+			},
+			firefox: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Firefox",
+				},
+				browserName: "Firefox",
+			},
+			safari: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "16",
+					buildName: `${new Date()}`,
+					sessionName: "Safari",
+				},
+				browserName: "Safari",
+			},
+		};
+
 		let driver = new Builder()
-			.forBrowser("chrome")
+			.withCapabilities(capabilities[process.env.SELENIUM_BROWSER!])
 			.setChromeOptions(chromeOptions)
 			.setFirefoxOptions(firefoxOptions)
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		//await driver.manage().window().setRect({x: 0, y: 0, width: 2000, height: 750})
-
-		await driver.manage().setTimeouts({
-			script: 10000,
-		});
+		await driver
+			.manage()
+			.window()
+			.setRect({ width: 1200, height: 750 });
 
 		let id = (await driver.getSession()).getId();
 
@@ -326,13 +437,17 @@ export async function check(peers: Peer[]) {
 	let condition = new Condition<boolean>(
 		"all peers are fully synced",
 		async () => {
-			console.log("condition");
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
-					let projectsButton = await peer.driver.findElement(
+					if (process.env.SELENIUM_BROWSER === "safari") {
+						await peer.driver.wait(until.elementLocated(
+							By.css(".navbar-center a[href='/projects']"),
+						), 10000);
+						await peer.driver.sleep(500)
+					}
+					await (await peer.driver.findElement(
 						By.css(".navbar-center a[href='/projects']"),
-					);
-					await projectsButton.click();
+					)).click();
 
 					let projects = await peer.driver.findElements(
 						By.css("tbody tr[data-id]"),
@@ -343,10 +458,7 @@ export async function check(peers: Peer[]) {
 							return [
 								k,
 								v.name.value,
-								[...v.maxHours.value.values()].reduce(
-									(partialSum, a) => partialSum + a,
-									0,
-								),
+								v.maxHours.value,
 								v.account.value,
 							];
 						})
@@ -387,7 +499,7 @@ export async function check(peers: Peer[]) {
 
 	let result = await peers[0].driver.wait(
 		condition,
-		10000,
+		20000,
 		"waiting for peers synced timed out",
 	);
 	assert.strictEqual(result, true);

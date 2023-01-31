@@ -26,11 +26,11 @@ import webapp.webrtc.ConnectionInformation
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.utils.Base64
 import webapp.webrtc.StoredConnectionInformation
-import webapp.services.DiscoveryService.tokenIsValid
-import webapp.services.DiscoveryService.getToken
+import webapp.services.DiscoveryService
+import webapp.webrtc.WebRTCService
 
-class ConnectionModal(using services: Services) {
-  if (services.discovery.tokenIsValid(services.discovery.getToken())) services.discovery.connect(using services)
+class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
+  if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
 
   val offlineBanner = {
     div(
@@ -53,7 +53,7 @@ class ConnectionModal(using services: Services) {
     )
   }
 
-  def render(using services: Services): VNode = {
+  def render: VNode = {
     ul(
       tabIndex := 0,
       cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52",
@@ -61,11 +61,11 @@ class ConnectionModal(using services: Services) {
         "Connections",
         cls := "font-bold text-lg p-2",
       ),
-      services.webrtc.connections.map(_.map(ref => {
-        val info = services.webrtc.getInformation(ref)
+      webrtc.connections.map(_.map(ref => {
+        val info = webrtc.getInformation(ref)
         connectionRow(info.alias, info.source, info.uuid, ref)
       })),
-      services.webrtc.connections.map(connections => {
+      webrtc.connections.map(connections => {
         var emptyState: VNode = div()
         if (connections.size == 0) {
           emptyState = div(
@@ -83,8 +83,8 @@ class ConnectionModal(using services: Services) {
       li(
         onlineBanner,
       ),
-      Login(using services).render,
-      services.discovery.availableConnections.map(_.map(connection => availableConnectionRow(connection))),
+      Login().render,
+      discovery.availableConnections.map(_.map(connection => availableConnectionRow(connection))),
       label(
         cls := "label cursor-pointer",
         span(cls := "label-text", "Autoconnect"),
@@ -92,33 +92,31 @@ class ConnectionModal(using services: Services) {
           tpe := "checkbox",
           cls := "toggle",
           checked := Settings.get[Boolean]("autoconnect").getOrElse(false),
-          onClick.foreach(e =>
-            services.discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)(using services),
-          ),
+          onClick.foreach(e => discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)),
         ),
       ),
       div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-0", "Manual"),
-      ManualConnectionDialog().render,
+      ManualConnectionDialog().render(),
     )
 
   }
 }
 
-class Login(using services: Services) {
+class Login() {
   private val username = Var("")
   private val password = Var("")
 
-  def render(using services: Services): VNode = {
+  def render(using discovery: DiscoveryService, webrtc: WebRTCService): VNode = {
     div(
-      services.discovery
+      discovery
         .getTokenSignal()
         .map(token =>
-          if (tokenIsValid(token))
+          if (discovery.tokenIsValid(token))
             button(
               cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
               "Logout",
               onClick.foreach(_ => {
-                services.discovery.logout()
+                discovery.logout()
               }),
             )
           else
@@ -145,7 +143,7 @@ class Login(using services: Services) {
                 "Login",
                 disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
                 onClick
-                  .foreach(_ => services.discovery.login(new services.discovery.LoginInfo(username.now, password.now))),
+                  .foreach(_ => discovery.login(new discovery.LoginInfo(username.now, password.now))),
               ),
             ),
         ),

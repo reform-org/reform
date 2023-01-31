@@ -17,19 +17,23 @@ package webapp.services
 
 import colibri.*
 import colibri.router.*
-import colibri.router.Router
-import org.scalajs.dom.*
 import org.scalajs.dom
+import org.scalajs.dom.*
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import scala.reflect.Selectable.*
-import scala.scalajs.js
 import webapp.*
-import webapp.pages.*
+import webapp.webrtc.WebRTCService
+
+import scala.scalajs.js
 
 trait Page {
-  def render(using services: Services): VNode
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode
 }
 
 class RoutingState(
@@ -38,10 +42,15 @@ class RoutingState(
     val canReturn: Boolean,
 ) extends js.Object
 
-class RoutingService() {
+class RoutingService(using repositories: Repositories) {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
-  def render(using services: Services): Signal[VNode] =
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): Signal[VNode] =
     page.map(_.render)
 
   def to(newPage: Page, preventReturn: Boolean = false) = {

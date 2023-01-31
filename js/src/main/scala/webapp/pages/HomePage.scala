@@ -18,13 +18,14 @@ package webapp.pages
 import org.scalajs.dom.*
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
-import webapp.given
 import webapp.components.navigationHeader
+import webapp.npm.*
 import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.given
 
 import concurrent.ExecutionContext.Implicits.global
 import webapp.npm.*
@@ -32,14 +33,21 @@ import loci.transmitter.RemoteRef
 
 case class HomePage() extends Page {
 
-  def render(using services: Services): VNode =
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode =
     navigationHeader(
       div(
         p("Homepage"),
         button(
           cls := "btn",
+          idAttr := "loadPDF",
           "Fill PDF",
-          onClick.foreach(_ =>
+          onClick.foreach(_ => {
+            document.getElementById("loadPDF").classList.add("loading")
             PDF
               .fill(
                 "contract_unlocked.pdf",
@@ -55,11 +63,14 @@ case class HomePage() extends Page {
                   PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
                 ),
               )
-              .andThen(s => console.log(s)), // remove loading spinner here
-          ),
+              .andThen(s => {
+                console.log(s)
+                document.getElementById("loadPDF").classList.remove("loading")
+              })
+          }),
         ),
         // services.webrtc.connections.map(_.map(ref => services.webrtc.getInformation(ref).alias).mkString("; ")),
-        services.discovery.availableConnections.map(_.map(connection => connection.name).mkString("; ")),
+        discovery.availableConnections.map(_.map(connection => connection.name).mkString("; ")),
       ),
     )
 }

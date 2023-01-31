@@ -16,36 +16,42 @@ limitations under the License.
 package webapp
 
 import utest.*
-import webapp.Repositories.projects
+import webapp.entity.*
+import webapp.npm.IIndexedDB
+import webapp.npm.MemoryIndexedDB
+import webapp.repo.Repository
+import webapp.repo.Synced
+import webapp.webrtc.WebRTCService
 
-import concurrent.ExecutionContext.Implicits.global
 import scala.scalajs.js.annotation.*
 
-@JSExportTopLevel("MainTest")
-object MainTest extends TestSuite {
+import concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+
+@JSExportTopLevel("MainJSTest")
+object MainJSTest extends TestSuite {
+
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
     () // Return unit to prevent warning due to discarding value
   }
 
   val tests: Tests = Tests {
-    test("test that creating a project works") {
-      assert(projects.all.now.length == 0)
-      projects.create()
-      Thread.sleep(1000) // TODO FIXME
-      assert(projects.all.now.length == 1)
-    }
+    given webrtc: WebRTCService = WebRTCService()
+    given indexedDb: IIndexedDB = MemoryIndexedDB()
+    given repositories: Repositories = Repositories()
+
   }
 
   @JSExport
-  def main(): Int = {
+  def main(): Unit = {
     val results = TestRunner.runAndPrint(
       tests,
-      "MyTestSuiteA",
+      "MyTestSuiteC",
     )
     val (summary, successes, failures) = TestRunner.renderResults(
       Seq(
-        "MyTestSuiteA" -> results,
+        "MyTestSuiteC" -> results,
       ),
     )
     failures

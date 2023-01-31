@@ -26,20 +26,21 @@ import webapp.webrtc.ConnectionInformation
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import webapp.webrtc.StoredConnectionInformation
 import webapp.webrtc.PendingConnection
+import webapp.webrtc.WebRTCService
 
 private sealed trait State {
-  def render(using state: Var[State], services: Services): VNode
+  def render(using state: Var[State], webrtc: WebRTCService): VNode
 }
 
 private case object Init extends State {
-  private def initializeHostSession(using state: Var[State], services: Services): Unit = {
+  private def initializeHostSession(using state: Var[State], webrtc: WebRTCService): Unit = {
     val pendingConnection =
       PendingConnection.webrtcIntermediate(WebRTC.offer(), alias.now)
     state.set(HostPending(pendingConnection))
   }
 
   private val alias = Var("")
-  override def render(using state: Var[State], services: Services): VNode = {
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = {
     div(
       cls := "form-control w-full text-sm",
       label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
@@ -63,7 +64,7 @@ private case object Init extends State {
 private case class ClientAskingForHostSessionToken() extends State {
   private val sessionToken = Var("")
   private val alias = Var("")
-  override def render(using state: Var[State], services: Services): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     cls := "p1",
     label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
     input(
@@ -89,7 +90,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     ),
   )
 
-  private def connectToHost(using state: Var[State], services: Services): Unit = {
+  private def connectToHost(using state: Var[State])(using webrtc: WebRTCService): Unit = {
     val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(), alias.now)
     connection.connector.set(PendingConnection.tokenAsSession(sessionToken.now).session)
     state.set(ClientWaitingForHostConfirmation(connection, alias.now))
@@ -98,13 +99,13 @@ private case class ClientAskingForHostSessionToken() extends State {
 
 private case class ClientWaitingForHostConfirmation(connection: PendingConnection, alias: String)(using
     state: Var[State],
-    services: Services,
+    webrtc: WebRTCService,
 ) extends State {
-  services.webrtc
+  webrtc
     .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
     .foreach(_ => onConnected())
 
-  override def render(using state: Var[State], services: Services): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     cls := "p-1",
     span(
       cls := "label-text text-slate-500",
@@ -144,15 +145,15 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
   }
 }
 
-private case class HostPending(connection: PendingConnection)(using state: Var[State], services: Services)
+private case class HostPending(connection: PendingConnection)(using state: Var[State], webrtc: WebRTCService)
     extends State {
   private val sessionTokenFromClient = Var("")
 
-  services.webrtc
+  webrtc
     .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
     .foreach(_ => onConnected())
 
-  override def render(using state: Var[State], services: Services): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
     cls := "p-1",
     span(
       cls := "label-text text-slate-500",
@@ -220,7 +221,7 @@ class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
     }
   })
 
-  def render(using services: Services): VNode = {
+  def render(using webrtc: WebRTCService): VNode = {
     div(
       div(
         cls := "flex rounded-xl mt-2 gap-1 text-center",
@@ -252,7 +253,7 @@ class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
           "Client",
         ),
       ),
-      state.map(_.render(using state)),
+      state.map(_.render(using state, webrtc)),
     )
   }
 }

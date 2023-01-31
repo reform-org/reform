@@ -10,12 +10,16 @@ import webapp.given
 import webapp.pages.*
 import org.scalajs.dom.{console, document, window, HTMLElement}
 import loci.transmitter.RemoteRef
-import webapp.webrtc.WebRTCService.getConnectionMode
 import org.scalajs.dom.RTCStatsReport
 import scala.concurrent.ExecutionContext.Implicits.global
-import webapp.services.DiscoveryService.AvailableConnection
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.services.AvailableConnection
 
-def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(using services: Services) = {
+def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(using
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+) = {
   if (source == "discovery")
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
@@ -46,7 +50,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
             "Connection: ",
             cls := "text-slate-400",
           ),
-          Signals.fromFuture(getConnectionMode(ref)),
+          Signals.fromFuture(webrtc.getConnectionMode(ref)),
           cls := "text-slate-500 text-xs",
         ),
       ),
@@ -55,7 +59,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         div(
           Icons.forbidden("fill-red-600 w-3 h-3"),
           cls := "hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
-          onClick.foreach(_ => services.discovery.deleteFromWhitelist(uuid)),
+          onClick.foreach(_ => discovery.deleteFromWhitelist(uuid)),
         ),
         div(
           Icons.close("fill-red-600 w-4 h-4"),
@@ -88,7 +92,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
             "Connection: ",
             cls := "text-slate-400",
           ),
-          Signals.fromFuture(getConnectionMode(ref)),
+          Signals.fromFuture(webrtc.getConnectionMode(ref)),
           cls := "text-slate-500 text-xs",
         ),
       ),
@@ -100,7 +104,9 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
     )
 }
 
-def availableConnectionRow(connection: AvailableConnection)(using services: Services) = {
+def availableConnectionRow(
+    connection: AvailableConnection,
+)(using discovery: DiscoveryService, webrtc: WebRTCService) = {
   div(
     cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
     div(
@@ -129,7 +135,7 @@ def availableConnectionRow(connection: AvailableConnection)(using services: Serv
     div(
       Icons.check("w-4 h-4", "stroke-green-600"),
       cls := "hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-      onClick.foreach(_ => services.discovery.addToWhitelist(connection.uuid)),
+      onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
     ),
   )
 }

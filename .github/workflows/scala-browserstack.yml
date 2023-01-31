@@ -1,10 +1,6 @@
 name: Scala Selenium
 
-on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+on: workflow_dispatch  
 
 permissions:
   contents: read
@@ -40,11 +36,6 @@ jobs:
     - name: Preview
       run: npm run preview &
     - name: Workflow tests
-      run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run test
-    - uses: actions/upload-artifact@v3
-      if: always()
-      with:
-        name: screenshot
-        path: screenshot.png
+      run: SELENIUM_BROWSER=${{ matrix.map.browser }} SELENIUM_REMOTE_URL=${{ secrets.SELENIUM_REMOTE_URL }} BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_ACCESS_KEY }} npm run test
     - name: Selenium
-      run: SELENIUM_BROWSER=${{ matrix.map.browser }} npm run selenium
+      run: SELENIUM_BROWSER=${{ matrix.map.browser }} SELENIUM_REMOTE_URL=${{ secrets.SELENIUM_REMOTE_URL }} BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_ACCESS_KEY }} npm run selenium

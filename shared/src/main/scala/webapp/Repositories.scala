@@ -1,15 +1,17 @@
 package webapp
 
-import webapp.entity.{ContractSchema, Hiwi, PaymentLevel, Project, SalaryChange, Supervisor, User}
+import webapp.entity.*
 import webapp.repo.Repository
+import webapp.webrtc.WebRTCService
+import webapp.npm.IIndexedDB
 
-object Repositories {
+class Repositories(using webrtc: WebRTCService, indexedDb: IIndexedDB) {
 
   val projects: Repository[Project] = Repository("project", Project.empty)
   val users: Repository[User] = Repository("user", User.empty)
   val hiwis: Repository[Hiwi] = Repository("hiwi", Hiwi.empty)
-  val supervisor: Repository[Supervisor] = Repository("supervisor", Supervisor.empty)
-  val contractSchemas: Repository[ContractSchema] = Repository("contractSchema", ContractSchema.empty)
-  val paymentLevels: Repository[PaymentLevel] = Repository("paymentLevels", PaymentLevel.empty)
-  val salaryChanges: Repository[SalaryChange] = Repository("salaryChanges", SalaryChange.empty)
+  val supervisors: Repository[Supervisor] = Repository("supervisor", Supervisor.empty)
+  val contractSchemas: Repository[ContractSchema] = Repository("contract-schema", ContractSchema.empty)
+  val paymentLevels: Repository[PaymentLevel] = Repository("payment-level", PaymentLevel.empty)
+  val salaryChanges: Repository[SalaryChange] = Repository("salary-change", SalaryChange.empty)
 }

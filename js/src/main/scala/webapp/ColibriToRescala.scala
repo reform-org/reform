@@ -15,10 +15,12 @@ limitations under the License.
  */
 package webapp
 
-import colibri.{Cancelable, Observer, Sink}
+import colibri.Cancelable
+import colibri.Observer
+import colibri.Sink
+import rescala.core.Scheduler
 import rescala.default.*
 import rescala.operator.Pulse
-import rescala.core.Scheduler
 
 given (using scheduler: Scheduler[State]): Sink[Evt] with {
   def unsafeOnNext[A](sink: Evt[A])(value: A): Unit = sink.fire(value)

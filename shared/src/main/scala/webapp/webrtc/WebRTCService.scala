@@ -15,7 +15,6 @@ limitations under the License.
  */
 package webapp.webrtc
 
-import kofre.datatypes.PosNegCounter
 import loci.registry.*
 import webapp.*
 import webapp.Codecs.*
@@ -55,7 +54,7 @@ object PendingConnection {
   def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
 }
 
-object WebRTCService {
+class WebRTCService {
   val registry: Registry = new Registry
 
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
@@ -78,7 +77,7 @@ object WebRTCService {
       alias: Future[String],
       source: String,
       connection: dom.RTCPeerConnection,
-      uuid: String = ""
+      uuid: String = "",
   ): Future[RemoteRef] = {
     registry
       .connect(connector)

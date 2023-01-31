@@ -25,7 +25,7 @@ jobs:
         distribution: 'temurin'
         cache: 'sbt'
     - name: Test
-      run: sbt coverage webappJVM/test webappJVM/coverageReport
+      run: sbt clean coverage webappJVM/test webappJVM/coverageReport
     - uses: actions/upload-artifact@v3
       with:
         name: coverage
