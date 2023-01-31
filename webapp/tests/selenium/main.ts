@@ -36,23 +36,11 @@ export async function run() {
 		peers = [];
 	}
 
-	actions = [
-		Actions.CREATE_PEER,
-		Actions.CREATE_PEER,
-		Actions.CREATE_PROJECT,
-		Actions.CONNECT_TO_PEER,
-		Actions.RELOAD,
-		Actions.EDIT_PROJECT,
-		Actions.EDIT_PROJECT,
-		Actions.CONNECT_TO_PEER,
-		Actions.EDIT_PROJECT,
-	];
-
 	try {
 		for (let action of actions) {
 			switch (action) {
 				case Actions.CREATE_PEER: {
-					let peer = await Peer.create(false);
+					let peer = await Peer.create(true);
 					await peer.driver.get("http://localhost:5173/");
 					peers.push(peer);
 					console.log(`[${peer.id}] peer created`);
