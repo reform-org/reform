@@ -54,6 +54,6 @@ object SalaryChangesPage {
     .withLabel("From")
     .bind[SalaryChange](
       _.fromDate,
-      (p, a) => p.copy(fromDate = a),
+      (s, a) => s.copy(fromDate = a),
     )
 }

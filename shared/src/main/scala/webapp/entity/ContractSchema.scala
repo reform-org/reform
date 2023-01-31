@@ -8,7 +8,7 @@ import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class ContractSchema(
-    _name: Attribute[String] = Attribute.empty,
+    name: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[ContractSchema]
     derives DecomposeLattice,
@@ -19,7 +19,7 @@ case class ContractSchema(
 
   def exists: Attribute[Boolean] = _exists
 
-  def identifier: Attribute[String] = _name
+  def identifier: Attribute[String] = name
 
   def withExists(exists: Boolean): ContractSchema = {
     this.copy(_exists = _exists.set(exists))
