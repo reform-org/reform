@@ -1,7 +1,5 @@
 # reform
 
-[![Coverage Status](https://coveralls.io/repos/github/reform-org/reform/badge.svg?branch=test-coverage)](https://coveralls.io/github/reform-org/reform?branch=test-coverage)
-
 ## Prerequisites
 
 You should make sure that the following components are pre-installed on your machine:
