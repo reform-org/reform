@@ -35,7 +35,7 @@ import scala.scalajs.js
 import webapp.npm.Utils
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
-class StoredConnectionInformation(val alias: String, val source: String = "manual", val uuid: String = "") {}
+class StoredConnectionInformation(val alias: String, val source: String = "manual", val uuid: String = "", val connectionId: String = "") {} // different object for discovery and manual
 
 case class PendingConnection(
     connector: WebRTC.Connector,
@@ -58,7 +58,8 @@ class WebRTCService {
   val registry: Registry = new Registry
 
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
-  private val webRTCConnections = scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]()
+  private val webRTCConnections = scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
+  private val connectionRefs = scala.collection.mutable.Map[String, RemoteRef]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
@@ -67,29 +68,30 @@ class WebRTCService {
 
   val connections = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
 
-  private val setOnlineStatus = Evt[Boolean]()
-  private val setOnlineStatusB = setOnlineStatus.act(identity)
-
-  val online = Fold(window.navigator.onLine: Boolean)(setOnlineStatusB)
-
   def registerConnection(
       connector: Connector[Connections.Protocol],
       alias: Future[String],
       source: String,
       connection: dom.RTCPeerConnection,
       uuid: String = "",
+      connectionId: String = ""
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
         alias.onComplete(alias => {
-          connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source, uuid))
+          connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source, uuid, connectionId))
+          connectionRefs += (connectionId -> r.get)
           webRTCConnections += (r.get -> connection)
         })
       })
       .andThen(r => {
         addConnection.fire(r.get)
       })
+  }
+
+  def closeConnectionById(id: String) = {
+    connectionRefs.get(id).get.disconnect()
   }
 
   def getInformation(ref: RemoteRef): StoredConnectionInformation = {
@@ -105,6 +107,4 @@ class WebRTCService {
 
   // registry.remoteJoined.monitor(addConnection.fire)
   registry.remoteLeft.monitor(removeConnection.fire)
-  window.addEventListener("online", { (e: dom.Event) => setOnlineStatus.fire(true) })
-  window.addEventListener("offline", { (e: dom.Event) => setOnlineStatus.fire(false) })
 }

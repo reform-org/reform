@@ -3,13 +3,16 @@ package webapp.components
 import outwatch.VNode
 import outwatch.dsl.*
 import outwatch.*
+import com.raquo.domtypes.jsdom.defs.events.TypedTargetMouseEvent
+import org.scalajs.dom.Element
 
 object Icons {
-  def reload(_cls: String = "", _color: String = "#000000"): VNode = {
+  def reload(_cls: String = "", _color: String = "#000000", _clickHandler: TypedTargetMouseEvent[Element] => Unit): VNode = {
     import svg.*
     svg(
       xmlns := "http://www.w3.org/2000/svg",
       fill := _color,
+      onClick.foreach(_clickHandler),
       viewBox := "0 0 24 24",
       cls := _cls,
       path(

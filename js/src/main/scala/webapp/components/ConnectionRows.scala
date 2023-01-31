@@ -59,7 +59,9 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         div(
           Icons.forbidden("fill-red-600 w-3 h-3"),
           cls := "hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
-          onClick.foreach(_ => discovery.deleteFromWhitelist(uuid)),
+          onClick.foreach(_ => {
+            discovery.deleteFromWhitelist(uuid)
+          }),
         ),
         div(
           Icons.close("fill-red-600 w-4 h-4"),

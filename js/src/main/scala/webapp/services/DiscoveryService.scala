@@ -40,6 +40,8 @@ class DiscoveryService {
     val codec: JsonValueCodec[LoginRepsonse] = JsonCodecMaker.make
   }
 
+  class LoginException(var message: String, var fields: Seq[String]) extends Throwable(message)
+
   class TokenPayload(var exp: Int, var iat: Int, var username: String, var uuid: String)
 
   private val setAvailableConnections = Evt[Seq[AvailableConnection]]()
@@ -51,6 +53,11 @@ class DiscoveryService {
   private val setTokenB = setToken.act(identity)
 
   private val token = Fold(null: String)(setTokenB)
+
+  private val setOnlineStatus = Evt[Boolean]()
+  private val setOnlineStatusB = setOnlineStatus.act(identity)
+
+  val online = Fold(false: Boolean)(setOnlineStatusB)
 
   def setAutoconnect(value: Boolean)(using discovery: DiscoveryService, webrtc: WebRTCService): Unit = {
     Settings.set[Boolean]("autoconnect", value)
@@ -113,7 +120,13 @@ class DiscoveryService {
           .toFuture
           .onComplete(json => {
             if (s.status > 400 && s.status < 500) {
-              promise.failure((json.get.asInstanceOf[js.Dynamic]).error.asInstanceOf[Throwable])
+              val error = (json.get.asInstanceOf[js.Dynamic]).error;
+              promise.failure(
+                new LoginException(
+                  error.message.asInstanceOf[String],
+                  error.fields.asInstanceOf[js.Array[String]].toSeq,
+                ),
+              )
             } else {
               val token = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
               window.localStorage.setItem("discovery-token", token)
@@ -178,6 +191,7 @@ class DiscoveryService {
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.client.user.uuid.asInstanceOf[String],
+          payload.id.asInstanceOf[String],
         )
 
         pendingConnections(payload.id.asInstanceOf[String]).session
@@ -209,6 +223,7 @@ class DiscoveryService {
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.host.user.uuid.asInstanceOf[String],
+          payload.id.asInstanceOf[String],
         )
 
         pendingConnections(payload.id.asInstanceOf[String]).session
@@ -245,30 +260,47 @@ class DiscoveryService {
       case "ping" => {
         emit(ws, "pong", null)
       }
+      case "connection_closed" => {
+        webrtc.closeConnectionById(payload.id.asInstanceOf[String])
+      }
     }
   }
 
-  def connect()(using webrtc: WebRTCService): Unit = {
-    if (!tokenIsValid(getToken())) return;
-    if (!Settings.get[Boolean]("autoconnect").getOrElse(false)) return;
+  def connect(resetWebsocket: Boolean = false)(using webrtc: WebRTCService): Future[Boolean] = {
+    val promise = Promise[Boolean]()
 
-    ws match {
-      case Some(socket) => {}
-      case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
+    if(resetWebsocket) ws = None
+
+    if (tokenIsValid(getToken()) && Settings.get[Boolean]("autoconnect").getOrElse(false)) {
+      ws match {
+        case Some(socket) => {}
+        case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
+      }
+
+      ws.get.onopen = (event) => {
+        console.log("opened websocket")
+        setOnlineStatus.fire(true)
+        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken()))
+        promise.success(true)
+      }
+
+      ws.get.onmessage = (event) => {
+        val json = JSON.parse(event.data.asInstanceOf[String])
+        handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
+      }
+
+      ws.get.onclose = (event) => {
+        setOnlineStatus.fire(false)
+        console.log("closed websocket")
+      }
+
+      ws.get.onerror = (event) => {
+        promise.failure(new Exception("Connection failed"))
+      }
+    }else {
+      promise.failure(new Exception("Something went wrong"))
     }
 
-    ws.get.onopen = (event) => {
-      console.log("opened websocket")
-      emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken()))
-    }
-
-    ws.get.onmessage = (event) => {
-      val json = JSON.parse(event.data.asInstanceOf[String])
-      handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
-    }
-
-    ws.get.onclose = (event) => {
-      console.log("closed websocket")
-    }
+    promise.future
   }
 }
