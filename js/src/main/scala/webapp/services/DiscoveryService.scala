@@ -58,7 +58,7 @@ object DiscoveryService {
     window.localStorage.getItem("discovery-token")
   }
 
-  private def tokenIsValid(token: String): Boolean = {
+  def tokenIsValid(token: String): Boolean = {
     return token != null && Date.now() > decodeToken(token).exp
   }
 
@@ -113,6 +113,7 @@ object DiscoveryService {
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
           "discovery",
+          pendingConnections(payload.id.asInstanceOf[String]).connection,
         )
 
         pendingConnections(payload.id.asInstanceOf[String]).session
@@ -142,6 +143,7 @@ object DiscoveryService {
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
           "discovery",
+          pendingConnections(payload.id.asInstanceOf[String]).connection,
         )
 
         pendingConnections(payload.id.asInstanceOf[String]).session

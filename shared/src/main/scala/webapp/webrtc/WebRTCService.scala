@@ -32,16 +32,18 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import webapp.utils.Base64
 import com.github.plokhotnyuk.jsoniter_scala.core.*
+import scala.scalajs.js
+import webapp.npm.Utils
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(val alias: String, val source: String = "manual") {}
 
-case class PendingConnection(connector: WebRTC.Connector, session: Future[ConnectionInformation])
+case class PendingConnection(connector: WebRTC.Connector, session: Future[ConnectionInformation], connection: dom.RTCPeerConnection)
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String) = {
     val p = Promise[ConnectionInformation]()
     val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
-    PendingConnection(answer, p.future)
+    PendingConnection(answer, p.future, answer.connection)
   }
   private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
   def sessionAsToken(s: ConnectionInformation) = Base64.encode(writeToString(s)(codec))
@@ -53,6 +55,7 @@ object WebRTCService {
   val registry: Registry = new Registry
 
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
+  private val webRTCConnections = scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
@@ -70,12 +73,14 @@ object WebRTCService {
       connector: Connector[Connections.Protocol],
       alias: Future[String],
       source: String,
+      connection: dom.RTCPeerConnection
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
         alias.onComplete(alias => {
           connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source))
+          webRTCConnections += (r.get -> connection)
         })
       })
       .andThen(r => {
@@ -84,7 +89,14 @@ object WebRTCService {
   }
 
   def getInformation(ref: RemoteRef): StoredConnectionInformation = {
-    connectionInfo.get(ref).getOrElse(StoredConnectionInformation("Anonymous", "manual"))
+    connectionInfo.get(ref).getOrElse(StoredConnectionInformation("Anonymous", "unknown"))
+  }
+
+  def getConnectionMode(ref: RemoteRef): Future[String] = {
+    val connection = webRTCConnections.get(ref).getOrElse(null)
+    val promise = Promise[dom.RTCStatsReport]()
+
+    Utils.usesTurn(connection).map(usesTurn => if(usesTurn) "relay" else "local")
   }
 
   // registry.remoteJoined.monitor(addConnection.fire)

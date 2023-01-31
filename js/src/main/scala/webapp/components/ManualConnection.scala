@@ -103,7 +103,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
     services: Services,
 ) extends State {
   services.webrtc
-    .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual")
+    .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
     .foreach(_ => onConnected())
 
   override def render(using state: Var[State], services: Services): VNode = div(
@@ -152,7 +152,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
   private val sessionTokenFromClient = Var("")
 
   services.webrtc
-    .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual")
+    .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
     .foreach(_ => onConnected())
 
   override def render(using state: Var[State], services: Services): VNode = div(
