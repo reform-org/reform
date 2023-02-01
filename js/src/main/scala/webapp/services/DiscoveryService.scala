@@ -143,24 +143,15 @@ class DiscoveryService {
   }
 
   def addToWhitelist(uuid: String): Unit = {
-    ws match {
-      case None         => {}
-      case Some(socket) => emit(socket, "whitelist_add", js.Dynamic.literal("uuid" -> uuid))
-    }
+    ws.map(emit(_, "whitelist_add", js.Dynamic.literal("uuid" -> uuid)))
   }
 
   def deleteFromWhitelist(uuid: String): Unit = {
-    ws match {
-      case None         => {}
-      case Some(socket) => emit(socket, "whitelist_del", js.Dynamic.literal("uuid" -> uuid))
-    }
+    ws.map(emit(_, "whitelist_del", js.Dynamic.literal("uuid" -> uuid)))
   }
 
   def refetchAvailableClients(): Unit = {
-    ws match {
-      case None         => {}
-      case Some(socket) => emit(socket, "request_available_clients", null)
-    }
+    ws.map(emit(_, "request_available_clients", null))
   }
 
   private def emit(ws: WebSocket, name: String, payload: js.Dynamic) = {
@@ -178,7 +169,6 @@ class DiscoveryService {
           payload.host.turn.username.asInstanceOf[String],
           payload.host.turn.credential.asInstanceOf[String],
         )
-        // iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
@@ -207,7 +197,6 @@ class DiscoveryService {
           payload.client.turn.username.asInstanceOf[String],
           payload.client.turn.credential.asInstanceOf[String],
         )
-        // iceServers += RTCIceServer("stun:lukasschreiber.com:41720")
         val config = RTCConfiguration(iceServers)
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(config),
@@ -298,7 +287,7 @@ class DiscoveryService {
         promise.failure(new Exception("Connection failed"))
       }
     } else {
-      promise.failure(new Exception("Something went wrong"))
+      promise.failure(new Exception("Either your token is wrong or autoconnect is disabled"))
     }
 
     promise.future

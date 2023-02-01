@@ -379,7 +379,7 @@ export class Peer {
 					await name.sendKeys("person a");
 
 					let textarea = await driver.findElement(
-						By.css(`input[placeholder="Your token"]`),
+						By.css(`input[placeholder="Token"]`),
 					);
 					let submitOffer = await driver.findElement(
 						By.xpath(`.//button[text()="Connect"]`),
@@ -398,8 +398,8 @@ export class Peer {
 					await hostMode.click();
 
 					let name = await driver.wait(
-						until.elementLocated(By.css(`input[placeholder="Type here"]`)),
-						3000
+						until.elementLocated(By.css(`input[placeholder="Your name"]`)),
+						3000,
 					);
 					await name.sendKeys("person a");
 
@@ -408,7 +408,6 @@ export class Peer {
 					);
 					await hostButton.click();
 
-					console.log("hi");
 					let offer = await driver.wait(
 						until.elementLocated(By.css(`button[data-token]`)),
 						3000,
@@ -417,7 +416,7 @@ export class Peer {
 					//console.log(`got offer: ${value}`);
 
 					let answerInput = await driver.findElement(
-						By.css(`input[placeholder="Type here"]`),
+						By.css(`input[placeholder="Token"]`),
 					);
 
 					let answerSubmit = await driver.findElement(
@@ -446,9 +445,11 @@ export class Peer {
 					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
 					3000,
 				);
-				let overlay = await peer.driver.findElement(By.css("label.drawer-overlay"))
-				await overlay.click()
-				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000)
+				let overlay = await peer.driver.findElement(
+					By.css("label.drawer-overlay"),
+				);
+				await overlay.click();
+				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000);
 			}),
 		);
 

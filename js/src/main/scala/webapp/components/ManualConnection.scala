@@ -32,6 +32,32 @@ private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService): VNode
 }
 
+private def showConnectionToken(connection: PendingConnection) = {
+  connection.session.map(session =>
+    div(
+      cls := "flex gap-1 mt-2",
+      button(
+        data.token := PendingConnection.sessionAsToken(session),
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
+        Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+        onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
+      ),
+      a(
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
+        Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+        href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
+            .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
+      ),
+      a(
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
+        Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
+        href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
+            .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
+      ),
+    ),
+  )
+}
+
 private case object Init extends State {
   private def initializeHostSession(using state: Var[State], webrtc: WebRTCService): Unit = {
     val pendingConnection =
@@ -46,7 +72,7 @@ private case object Init extends State {
       label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
       input(
         tpe := "text",
-        placeholder := "Type here",
+        placeholder := "Your name",
         cls := "input input-bordered w-full text-sm p-2 h-fit",
         onInput.value --> alias,
         value := "",
@@ -54,7 +80,7 @@ private case object Init extends State {
       button(
         cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
         "Create Invitation",
-        // disabled := alias.map(_.isBlank()),
+        disabled <-- alias.map(_.isBlank()),
         onClick.foreach(_ => initializeHostSession),
       ),
     )
@@ -77,7 +103,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     label(cls := "label", span(cls := "label-text text-slate-500", "Please enter the code your peer has provided:")),
     input(
       tpe := "text",
-      placeholder := "Your token",
+      placeholder := "Token",
       cls := "input input-bordered w-full text-sm p-2 h-fit",
       value := "",
       onInput.value --> sessionToken,
@@ -85,7 +111,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     button(
       cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
       "Connect",
-      // disabled := true,
+      disabled <-- alias.map(a => sessionToken.map(_.isBlank() || a.isBlank())).flatten,
       onClick.foreach(_ => connectToHost),
     ),
   )
@@ -111,29 +137,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
       cls := "label-text text-slate-500",
       "Please share the code with the peer that invited you to finish the connection.",
     ),
-    connection.session.map(session =>
-      div(
-        cls := "flex gap-1 mt-2",
-        button(
-          data.token := PendingConnection.sessionAsToken(session),
-          cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-          Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-          onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
-        ),
-        a(
-          cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-          Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-          href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
-              .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
-        ),
-        a(
-          cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-          Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
-          href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
-              .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
-        ),
-      ),
-    ),
+    showConnectionToken(connection),
   )
 
   private def onConnected()(using state: Var[State]): Unit = {
@@ -156,33 +160,11 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       cls := "label-text text-slate-500",
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
-    connection.session.map(session =>
-      div(
-        cls := "flex gap-1 mt-2",
-        button(
-          data.token := PendingConnection.sessionAsToken(session),
-          cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-          Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-          onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
-        ),
-        a(
-          cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-          Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-          href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
-              .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
-        ),
-        a(
-          cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-          Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
-          href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
-              .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
-        ),
-      ),
-    ),
+    showConnectionToken(connection),
     label(cls := "label", span(cls := "label-text text-slate-500", "Please enter the code your peer has provided:")),
     input(
       tpe := "text",
-      placeholder := "Type here",
+      placeholder := "Token",
       cls := "input input-bordered w-full text-sm p-2 h-fit",
       value := "",
       onInput.value --> sessionTokenFromClient,
@@ -190,7 +172,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     button(
       cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
       "Finish Connection",
-      // disabled := true,
+      disabled <-- sessionTokenFromClient.map(_.isBlank),
       onClick.foreach(_ => confirmConnectionToClient()),
     ),
   )

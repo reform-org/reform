@@ -32,7 +32,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
     tabIndex := 0,
     cls := classes,
     li(
-      navigationLink(ProjectsPage(), "Projekte"),
+      navigationLink(ProjectsPage(), "Projects"),
     ),
     li(
       navigationLink(UsersPage(), "Users"),
@@ -46,10 +46,10 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
       ul(
         cls := "p-2 bg-base-100 focus:bg-slate-200 z-10 shadow-lg rounded-md",
         li(
-          navigationLink(PaymentLevelsPage(), "Paymentlevels"),
+          navigationLink(PaymentLevelsPage(), "Payment levels"),
         ),
         li(
-          navigationLink(SalaryChangesPage(), "SalaryChanges"),
+          navigationLink(SalaryChangesPage(), "Salary changes"),
         ),
       ),
     ),
@@ -60,10 +60,10 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
       navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      navigationLink(ContractSchemasPage(), "ContractSchemas"),
+      navigationLink(ContractSchemasPage(), "Contract schemas"),
     ),
     li(
-      navigationLink(RequiredDocumentsPage(), "RequiredDocuments"),
+      navigationLink(RequiredDocumentsPage(), "Required documents"),
     ),
   )
 }
