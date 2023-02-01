@@ -403,8 +403,8 @@ export class Peer {
 					);
 					await name.sendKeys("person a");
 
-					let hostButton = await driver.findElement(
-						By.xpath(`.//button[text()="Create Invitation"]`),
+					let hostButton = await driver.wait(
+						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`))
 					);
 					await hostButton.click();
 
