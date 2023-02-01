@@ -399,7 +399,7 @@ export class Peer {
 
 					let name = await driver.wait(
 						until.elementLocated(By.css(`input[placeholder="Type here"]`)),
-						3000
+						3000,
 					);
 					await name.sendKeys("person a");
 
@@ -446,9 +446,11 @@ export class Peer {
 					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
 					3000,
 				);
-				let overlay = await peer.driver.findElement(By.css("label.drawer-overlay"))
-				await overlay.click()
-				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000)
+				let overlay = await peer.driver.findElement(
+					By.css("label.drawer-overlay"),
+				);
+				await overlay.click();
+				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000);
 			}),
 		);
 

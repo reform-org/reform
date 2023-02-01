@@ -10,8 +10,8 @@ export const usesTurn = async (connection) => {
 			selectedLocalCandidate = localCandidateId;
 			break;
 		}
-	const usesTurn =
+	return (
 		!!selectedLocalCandidate &&
-		stats.get(selectedLocalCandidate)?.candidateType === "relay";
-	return usesTurn;
+		stats.get(selectedLocalCandidate)?.candidateType === "relay"
+	);
 };
