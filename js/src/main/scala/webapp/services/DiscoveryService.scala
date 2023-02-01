@@ -287,7 +287,7 @@ class DiscoveryService {
         promise.failure(new Exception("Connection failed"))
       }
     } else {
-      promise.failure(new Exception("Something went wrong"))
+      promise.failure(new Exception("Either your token is wrong or autoconnect is disabled"))
     }
 
     promise.future
