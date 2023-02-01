@@ -28,11 +28,11 @@ object Routes {
     case Root / "projects"         => ProjectsPage()
     case Root / "users"            => UsersPage()
     case Root / "hiwis"            => HiwisPage()
-    case Root / "paymentlevels"    => PaymentLevelsPage();
-    case Root / "salarychanges"    => SalaryChangesPage();
-    case Root / "supervisor"       => SupervisorsPage();
-    case Root / "contractSchema"   => ContractSchemasPage();
-    case Root / "requiredDocument" => RequiredDocumentsPage();
+    case Root / "paymentlevels"    => PaymentLevelsPage()
+    case Root / "salarychanges"    => SalaryChangesPage()
+    case Root / "supervisor"       => SupervisorsPage()
+    case Root / "contractSchema"   => ContractSchemasPage()
+    case Root / "requiredDocument" => RequiredDocumentsPage()
   }
 
   def toPath: Page => Path = {
@@ -41,10 +41,10 @@ object Routes {
     case ProjectsPage()          => Root / "projects"
     case UsersPage()             => Root / "users"
     case HiwisPage()             => Root / "hiwis"
-    case PaymentLevelsPage()     => Root / "paymentlevels";
+    case PaymentLevelsPage()     => Root / "paymentlevels"
     case SalaryChangesPage()     => Root / "salarychanges"
     case SupervisorsPage()       => Root / "supervisor"
     case ContractSchemasPage()   => Root / "contractSchema"
-    case RequiredDocumentsPage() => Root / "requiredDocument";
+    case RequiredDocumentsPage() => Root / "requiredDocument"
   }
 }
