@@ -68,6 +68,7 @@ object Main {
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
+    if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 

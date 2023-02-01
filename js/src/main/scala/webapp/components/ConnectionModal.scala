@@ -33,8 +33,6 @@ import scala.util.Success
 import org.scalajs.dom.{window, HTMLInputElement}
 
 class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
-  if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
-
   val offlineBanner = {
     div(
       cls := "bg-amber-100 flex flex-col	items-center	",
