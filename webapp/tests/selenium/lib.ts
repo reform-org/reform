@@ -379,7 +379,7 @@ export class Peer {
 					await name.sendKeys("person a");
 
 					let textarea = await driver.findElement(
-						By.css(`input[placeholder="Your token"]`),
+						By.css(`input[placeholder="Token"]`),
 					);
 					let submitOffer = await driver.findElement(
 						By.xpath(`.//button[text()="Connect"]`),
@@ -398,7 +398,7 @@ export class Peer {
 					await hostMode.click();
 
 					let name = await driver.wait(
-						until.elementLocated(By.css(`input[placeholder="Type here"]`)),
+						until.elementLocated(By.css(`input[placeholder="Your name"]`)),
 						3000,
 					);
 					await name.sendKeys("person a");
@@ -408,7 +408,6 @@ export class Peer {
 					);
 					await hostButton.click();
 
-					console.log("hi");
 					let offer = await driver.wait(
 						until.elementLocated(By.css(`button[data-token]`)),
 						3000,
@@ -417,7 +416,7 @@ export class Peer {
 					//console.log(`got offer: ${value}`);
 
 					let answerInput = await driver.findElement(
-						By.css(`input[placeholder="Type here"]`),
+						By.css(`input[placeholder="Token"]`),
 					);
 
 					let answerSubmit = await driver.findElement(
