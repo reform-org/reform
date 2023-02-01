@@ -24,7 +24,6 @@ import webapp.services.Page
 object Routes {
   def fromPath(using repositories: Repositories): Path => Page = {
     case Root                      => HomePage()
-    case Root / "login"            => LoginPage()
     case Root / "projects"         => ProjectsPage()
     case Root / "users"            => UsersPage()
     case Root / "hiwis"            => HiwisPage()
@@ -37,7 +36,6 @@ object Routes {
 
   def toPath: Page => Path = {
     case HomePage()              => Root / ""
-    case LoginPage()             => Root / "login"
     case ProjectsPage()          => Root / "projects"
     case UsersPage()             => Root / "users"
     case HiwisPage()             => Root / "hiwis"
