@@ -5,8 +5,8 @@ import sbtcrossproject.CrossPlugin.autoImport.{crossProject, CrossType}
 
 Global / onChangedBuildSource := ReloadOnSourceChanges
 
-name                     := "Reform"
-ThisBuild / version      := "0.1.0-SNAPSHOT"
+name := "Reform"
+ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.0-RC2"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
@@ -18,11 +18,11 @@ lazy val kofreJS = ProjectRef(file("REScala"), "kofreJS")
 lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
 
 lazy val webapp = crossProject(JSPlatform, JVMPlatform)
-  //.jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
-  //.jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
+  // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
+  // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
   .jsSettings(
-    Compile / scalaJSModuleInitializers    := Seq({
+    Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
     }),
     Test / scalaJSUseTestModuleInitializer := true, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
@@ -32,34 +32,34 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     scalaJSLinkerConfig ~= { _.withOptimizer(false) },
-    libraryDependencies                   ++= Seq(
-      "io.github.outwatch" %%% "outwatch" % "1.0.0-RC13",
+    libraryDependencies ++= Seq(
+      "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
-    )
+    ),
   )
   .settings(
-    resolvers                              += "jitpack" at "https://jitpack.io",
-    libraryDependencies                   ++= Seq(
-      "com.lihaoyi"                           %%% "utest"                                 % "0.8.1" % Test,
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-serializer-jsoniter-scala"  % "eb0719f08f",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-webrtc"        % "eb0719f08f",
-      "com.github.scala-loci.scala-loci"      %%% "scala-loci-communicator-tcp"           % "eb0719f08f",
-      "com.github.rescala-lang.REScala" %%% "rescala" % "d3d97711fd7577327eb469209c34e1304c9d374c",
-      "com.github.rescala-lang.REScala" %%% "kofre" % "d3d97711fd7577327eb469209c34e1304c9d374c",
-      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core"                   % "2.20.3",
-      "com.github.plokhotnyuk.jsoniter-scala"  %% "jsoniter-scala-macros"                 % "2.20.3",
+    resolvers += "jitpack".at("https://jitpack.io"),
+    libraryDependencies ++= Seq(
+      "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "573435684c9c1a4a57ef4a2ab7c87f7e3387905d",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "573435684c9c1a4a57ef4a2ab7c87f7e3387905d",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-tcp" % "573435684c9c1a4a57ef4a2ab7c87f7e3387905d",
+      "com.github.rescala-lang.REScala" %%% "rescala" % "70dc2dde6cdc93abb9aaaa39fe8b6983f381b899",
+      "com.github.rescala-lang.REScala" %%% "kofre" % "70dc2dde6cdc93abb9aaaa39fe8b6983f381b899",
+      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.20.6",
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.20.6",
     ),
-    testFrameworks                         += new TestFramework("utest.runner.Framework"),
+    testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
       // like there could also be sane defaults but no
       "-no-indent",
-      //"-Yexplicit-nulls", // breaks json macro, probably also coverage
+      // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
       "--unchecked",
       "-deprecation",
       "-Xmigration",
       "-Wunused:all",
-      //"-Xcheck-macros" // breaks utest
-    )
+      // "-Xcheck-macros" // breaks utest
+    ),
   )

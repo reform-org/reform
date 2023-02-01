@@ -20,15 +20,15 @@ import kofre.base.*
 import rescala.default.*
 import webapp.*
 import webapp.npm.IIndexedDB
-import webapp.webrtc.WebRTCService
 
 import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import loci.registry.Registry
 
 case class Repository[A](name: String, defaultValue: A)(using
-    webrtc: WebRTCService,
+    registry: Registry,
     indexedDb: IIndexedDB,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],

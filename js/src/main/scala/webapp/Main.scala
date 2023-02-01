@@ -22,9 +22,11 @@ import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 
 import scala.scalajs.js
 import webapp.npm.IndexedDB
+import loci.registry.Registry
 
 // object JavaScriptHot {
 //   @js.native
@@ -62,12 +64,20 @@ object Main {
     js.`import`("../../../../index.css")
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
-    given repositories: Repositories = Repositories()
+    given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
+    given repositories: Repositories = Repositories()
+    given discovery: DiscoveryService = DiscoveryService()
+    if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = body(
+  def app(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ) = body(
     routing.render,
   )
 }

@@ -21,6 +21,9 @@ import webapp.*
 import webapp.pages.*
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import org.scalajs.dom.HTMLElement
+import webapp.services.DiscoveryService
+import webapp.given
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
     classes: String,
@@ -29,22 +32,26 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
     tabIndex := 0,
     cls := classes,
     li(
-      navigationLink(HomePage(), "Home"),
-    ),
-    li(
-      navigationLink(LoginPage(), "Login"),
-    ),
-    li(
-      navigationLink(ProjectsPage(), "Projekte"),
+      navigationLink(ProjectsPage(), "Projects"),
     ),
     li(
       navigationLink(UsersPage(), "Users"),
     ),
     li(
-      navigationLink(PaymentLevelsPage(), "Paymentlevels"),
-    ),
-    li(
-      navigationLink(SalaryChangesPage(), "SalaryChanges"),
+      a(
+        cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+        "Settings",
+        Icons.expand("w-4 h-4"),
+      ),
+      ul(
+        cls := "p-2 bg-base-100 focus:bg-slate-200 z-10 shadow-lg rounded-md",
+        li(
+          navigationLink(PaymentLevelsPage(), "Payment levels"),
+        ),
+        li(
+          navigationLink(SalaryChangesPage(), "Salary changes"),
+        ),
+      ),
     ),
     li(
       navigationLink(HiwisPage(), "Hiwis"),
@@ -53,56 +60,76 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, we
       navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      navigationLink(ContractSchemasPage(), "ContractSchemas"),
+      navigationLink(ContractSchemasPage(), "Contract schemas"),
     ),
     li(
-      navigationLink(RequiredDocumentsPage(), "RequiredDocuments"),
-    ),
-    li(
-      navigationLink(WebRTCHandling(), "WebRTC"),
-    ),
-    li(
-      i(
-        s"${webrtc.registry.remotes.size} Connections",
-      ),
+      navigationLink(RequiredDocumentsPage(), "Required documents"),
     ),
   )
 }
 
-def navigationHeader(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService) = {
+def navigationHeader(
+    content: VNode,
+)(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService) = {
   div(
-    cls := "navbar bg-base-300",
+    cls := "drawer drawer-end",
+    input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "navbar-start",
+      cls := "drawer-content flex flex-col",
       div(
-        cls := "dropdown",
-        label(
-          tabIndex := 0,
-          idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden", {
-            import svg.*
-            svg(
-              xmlns := "http://www.w3.org/2000/svg",
-              cls := "h-5 w-5",
-              fill := "none",
-              viewBox := "0 0 24 24",
-              stroke := "currentColor",
-              path(
-                VModifier.attr("stroke-linecap") := "round",
-                VModifier.attr("stroke-linejoin") := "round",
-                VModifier.attr("stroke-width") := "2",
-                d := "M4 6h16M4 12h8m-8 6h16",
-              ),
-            )
-          },
+        cls := "navbar bg-base-100 shadow",
+        div(
+          cls := "flex-none",
+          div(
+            cls := "dropdown",
+            label(
+              tabIndex := 0,
+              idAttr := "dropdown-button",
+              cls := "btn btn-ghost lg:hidden",
+              Icons.hamburger("h-5 w-5"),
+            ),
+            navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+          ),
         ),
-        navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+        div(
+          cls := "flex-1",
+          a(
+            Icons.reform(),
+            cls := "btn btn-ghost normal-case text-xl",
+            href := "/",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              routing.to(HomePage(), true)
+            }),
+          ),
+        ),
+        div(
+          cls := "navbar-center hidden lg:flex",
+          navigationMenu("menu menu-horizontal p-0"),
+        ),
+        div(
+          cls := "flex-none",
+          label(
+            forId := "connection-drawer",
+            cls := "btn btn-ghost",
+            div(
+              cls := "indicator",
+              Icons.connections("h-6 w-6", "#000"),
+              span(
+                cls := "badge badge-sm indicator-item",
+                webrtc.connections.map(_.size),
+              ),
+            ),
+          ),
+        ),
       ),
-      a(cls := "btn btn-ghost normal-case text-xl", "reform"),
+      content,
     ),
     div(
-      cls := "navbar-center hidden lg:flex",
-      navigationMenu("menu menu-horizontal p-0"),
+      cls := "drawer-side",
+      label(forId := "connection-drawer", cls := "drawer-overlay"),
+      ConnectionModal().render,
     ),
   )
 }

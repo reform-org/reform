@@ -335,20 +335,27 @@ export class Peer {
 		);
 	}
 
-	async goToWebRTCPage() {
+	async goToPage(page: string) {
 		try {
 			let dropDown = await this.driver.findElement(By.css("div.dropdown"));
 			await dropDown.click();
 			let webrtcButton = await this.driver.findElement(
-				By.css(".navbar-start a[href='/webrtc']"),
+				By.css(`.navbar-start a[href='${page}']`),
 			);
 			await webrtcButton.click();
 		} catch (ignoreNotMobile) {
 			let webrtcButton = await this.driver.findElement(
-				By.css(".navbar-center a[href='/webrtc']"),
+				By.css(`.navbar-center a[href='${page}']`),
 			);
 			await webrtcButton.click();
 		}
+	}
+
+	async goToWebRTCPage() {
+		let drawer = await this.driver.findElement(
+			By.css('label[for="connection-drawer"]'),
+		);
+		await drawer.click();
 	}
 
 	async connectTo(other: Peer) {
@@ -360,17 +367,23 @@ export class Peer {
 
 					await this.goToWebRTCPage();
 
-					let clientButton = await driver.findElement(
-						By.xpath(`.//button[text()="Client"]`),
+					let clientMode = await driver.findElement(
+						By.css(`label[for="clientMode"]`),
 					);
-					await clientButton.click();
+					await driver.wait(until.elementIsVisible(clientMode), 3000);
+					await clientMode.click();
 
-					let textarea = await driver.findElement(By.css("textarea"));
+					let name = await driver.findElement(
+						By.css(`input[placeholder="Your name"]`),
+					);
+					await name.sendKeys("person a");
 
+					let textarea = await driver.findElement(
+						By.css(`input[placeholder="Token"]`),
+					);
 					let submitOffer = await driver.findElement(
-						By.xpath(`.//button[text()="Connect to host using token"]`),
+						By.xpath(`.//button[text()="Connect"]`),
 					);
-
 					return [textarea, submitOffer];
 				})(),
 				(async () => {
@@ -378,20 +391,36 @@ export class Peer {
 
 					await other.goToWebRTCPage();
 
-					let hostButton = await driver.findElement(
-						By.xpath(`.//button[text()="Host"]`),
+					let hostMode = await driver.findElement(
+						By.css(`label[for="hostMode"]`),
+					);
+					await driver.wait(until.elementIsVisible(hostMode), 3000);
+					await hostMode.click();
+
+					let name = await driver.wait(
+						until.elementLocated(By.css(`input[placeholder="Your name"]`)),
+						3000,
+					);
+					await name.sendKeys("person a");
+
+					let hostButton = await driver.wait(
+						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`))
 					);
 					await hostButton.click();
 
-					let offer = await driver.findElement(By.css("div.overflow-x-auto"));
-					await driver.wait(until.elementTextMatches(offer, /.+/), 1000);
-					let value = await offer.getText();
-					//console.log(`got offer: ${value}`)
+					let offer = await driver.wait(
+						until.elementLocated(By.css(`button[data-token]`)),
+						3000,
+					);
+					let value = await offer.getAttribute("data-token");
+					//console.log(`got offer: ${value}`);
 
-					let answerInput = await driver.findElement(By.css("textarea"));
+					let answerInput = await driver.findElement(
+						By.css(`input[placeholder="Token"]`),
+					);
 
 					let answerSubmit = await driver.findElement(
-						By.xpath(`.//button[text()="Connect to client using token"]`),
+						By.xpath(`.//button[text()="Finish Connection"]`),
 					);
 
 					return [value, answerInput, answerSubmit];
@@ -400,10 +429,12 @@ export class Peer {
 		await offerInput.sendKeys(offer);
 		await submitOffer.click();
 
-		let answer = await this.driver.findElement(By.css("div.overflow-x-auto"));
-		await this.driver.wait(until.elementTextMatches(answer, /.+/), 1000);
-		let value = await answer.getText();
-		//console.log(`got answer: ${value}`)
+		let answer = await this.driver.wait(
+			until.elementLocated(By.css(`button[data-token]`)),
+			3000,
+		);
+		let value = await answer.getAttribute("data-token");
+		//console.log(`got answer: ${value}`);
 
 		await answerInput.sendKeys(value);
 		await answerSubmit.click();
@@ -411,8 +442,14 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`.//h2[text()="Connected"]`)),
+					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
+					3000,
 				);
+				let overlay = await peer.driver.findElement(
+					By.css("label.drawer-overlay"),
+				);
+				await overlay.click();
+				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000);
 			}),
 		);
 
@@ -423,7 +460,7 @@ export class Peer {
 	public static async create(headless: boolean) {
 		let chromeOptions = new chrome.Options().windowSize({
 			width: 1200,
-			height: 750,
+			height: 800,
 		});
 
 		if (headless) {
@@ -432,7 +469,7 @@ export class Peer {
 
 		let firefoxOptions = new firefox.Options().windowSize({
 			width: 1200,
-			height: 750,
+			height: 800,
 		});
 
 		if (headless) {
@@ -488,7 +525,7 @@ export class Peer {
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		await driver.manage().window().setRect({ width: 1200, height: 750 });
+		await driver.manage().window().setRect({ width: 1200, height: 800 });
 
 		let id = (await driver.getSession()).getId();
 
@@ -526,7 +563,7 @@ export async function check(peers: Peer[]) {
 							),
 							10000,
 						);
-						await peer.driver.sleep(500);
+						await peer.driver.sleep(1000);
 					}
 					await (
 						await peer.driver.findElement(

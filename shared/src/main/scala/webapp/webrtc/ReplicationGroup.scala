@@ -30,6 +30,8 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
 
+import loci.registry.Registry
+
 /** @param name
   *   The name/type of the thing to sync
   * @param delta
@@ -45,7 +47,7 @@ case class DeltaFor[A](name: String, delta: A)
   *   the neutral element of the thing to sync
   */
 class ReplicationGroup[A](name: String)(using
-    webrtc: WebRTCService,
+    registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
@@ -63,7 +65,7 @@ class ReplicationGroup[A](name: String)(using
     */
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
-  webrtc.registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
+  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
     localListeners.get(payload.name) match {
       case Some(handler) => handler.fire(payload.delta)
       case None =>
@@ -95,7 +97,7 @@ class ReplicationGroup[A](name: String)(using
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
       // Lookup method to send data to remote
-      val remoteUpdate: DeltaFor[A] => Future[Unit] = webrtc.registry.lookup(binding, remoteRef)
+      val remoteUpdate: DeltaFor[A] => Future[Unit] = registry.lookup(binding, remoteRef)
 
       def sendUpdate(delta: A): Unit = {
         // the contents of the resend buffer and the delta need to be sent
@@ -147,11 +149,11 @@ class ReplicationGroup[A](name: String)(using
     }
 
     // if a remote joins register it to handle updates to it
-    webrtc.registry.remoteJoined.monitor(registerRemote)
+    registry.remoteJoined.monitor(registerRemote)
     // also register all existing remotes
-    webrtc.registry.remotes.foreach(registerRemote)
+    registry.remotes.foreach(registerRemote)
     // remove remotes that disconnect
-    webrtc.registry.remoteLeft.monitor { remoteRef =>
+    registry.remoteLeft.monitor { remoteRef =>
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
     }

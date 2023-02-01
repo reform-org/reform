@@ -27,6 +27,7 @@ import scala.scalajs.js.annotation.*
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import loci.registry.Registry
 
 @JSExportTopLevel("MainJSTest")
 object MainJSTest extends TestSuite {
@@ -37,6 +38,7 @@ object MainJSTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
+    given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
     given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()

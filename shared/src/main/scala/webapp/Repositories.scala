@@ -2,10 +2,10 @@ package webapp
 
 import webapp.entity.*
 import webapp.repo.Repository
-import webapp.webrtc.WebRTCService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
-class Repositories(using webrtc: WebRTCService, indexedDb: IIndexedDB) {
+class Repositories(using registry: Registry, indexedDb: IIndexedDB) {
 
   val projects: Repository[Project] = Repository("project", Project.empty)
   val users: Repository[User] = Repository("user", User.empty)

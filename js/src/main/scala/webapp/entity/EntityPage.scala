@@ -28,6 +28,7 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
+import webapp.services.DiscoveryService
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -63,14 +64,14 @@ private class EntityRow[T <: Entity[T]](
                     case Some(p) => {
                       List(
                         button(
-                          cls := "btn",
+                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                           formId := s"form-${existingValue.map(_.id)}",
                           `type` := "submit",
                           idAttr := "add-entity-button",
                           "Save edit",
                         ),
                         button(
-                          cls := "btn",
+                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                           idAttr := "add-entity-button",
                           "Cancel",
                           onClick.foreach(_ => cancelEdit()),
@@ -79,7 +80,7 @@ private class EntityRow[T <: Entity[T]](
                     }
                     case None => {
                       button(
-                        cls := "btn",
+                        cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                         formId := s"form-${existingValue.map(_.id)}",
                         `type` := "submit",
                         idAttr := "add-entity-button",
@@ -89,7 +90,12 @@ private class EntityRow[T <: Entity[T]](
                   }
                 },
                 existingValue.map(p => {
-                  button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(p)))
+                  button(
+                    cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                    data.tip := "Delete",
+                    "X",
+                    onClick.foreach(_ => removeEntity(p)),
+                  )
                 }),
               ),
             ),
@@ -111,11 +117,16 @@ private class EntityRow[T <: Entity[T]](
                       td(
                         cls := "py-1 space-x-1 w-1/6",
                         button(
-                          cls := "btn",
+                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        button(cls := "btn btn-error btn-square", "X", onClick.foreach(_ => removeEntity(syncedEntity))),
+                        button(
+                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                          data.tip := "Delete",
+                          "X",
+                          onClick.foreach(_ => removeEntity(syncedEntity)),
+                        ),
                       ),
                     ),
                   )
@@ -182,9 +193,13 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
-  def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode = {
-    div(
-      navigationHeader,
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode = {
+    navigationHeader(
       div(
         cls := "relative overflow-x-auto shadow-md sm:rounded-lg pt-4 ", // " px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",
         table(

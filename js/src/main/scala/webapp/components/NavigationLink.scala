@@ -22,9 +22,12 @@ import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.services.Page
 import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 
 def navigationLink(using routing: RoutingService)(page: Page, label: String): VNode = {
   a(
+    cls := "btn btn-ghost normal-case	font-normal rounded-md	",
     label,
     onClick.foreach(e => {
       e.preventDefault()

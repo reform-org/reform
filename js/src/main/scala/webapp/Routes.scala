@@ -24,29 +24,25 @@ import webapp.services.Page
 object Routes {
   def fromPath(using repositories: Repositories): Path => Page = {
     case Root                      => HomePage()
-    case Root / "login"            => LoginPage()
     case Root / "projects"         => ProjectsPage()
     case Root / "users"            => UsersPage()
     case Root / "hiwis"            => HiwisPage()
-    case Root / "webrtc"           => WebRTCHandling();
-    case Root / "paymentlevels"    => PaymentLevelsPage();
-    case Root / "salarychanges"    => SalaryChangesPage();
-    case Root / "supervisor"       => SupervisorsPage();
-    case Root / "contractSchema"   => ContractSchemasPage();
-    case Root / "requiredDocument" => RequiredDocumentsPage();
+    case Root / "paymentlevels"    => PaymentLevelsPage()
+    case Root / "salarychanges"    => SalaryChangesPage()
+    case Root / "supervisor"       => SupervisorsPage()
+    case Root / "contractSchema"   => ContractSchemasPage()
+    case Root / "requiredDocument" => RequiredDocumentsPage()
   }
 
   def toPath: Page => Path = {
     case HomePage()              => Root / ""
-    case LoginPage()             => Root / "login"
     case ProjectsPage()          => Root / "projects"
     case UsersPage()             => Root / "users"
     case HiwisPage()             => Root / "hiwis"
-    case WebRTCHandling(_)       => Root / "webrtc";
-    case PaymentLevelsPage()     => Root / "paymentlevels";
+    case PaymentLevelsPage()     => Root / "paymentlevels"
     case SalaryChangesPage()     => Root / "salarychanges"
     case SupervisorsPage()       => Root / "supervisor"
-    case ContractSchemasPage()   => Root / "contractSchema";
-    case RequiredDocumentsPage() => Root / "requiredDocument";
+    case ContractSchemasPage()   => Root / "contractSchema"
+    case RequiredDocumentsPage() => Root / "requiredDocument"
   }
 }
