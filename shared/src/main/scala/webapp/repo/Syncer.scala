@@ -6,8 +6,9 @@ import rescala.default.*
 import webapp.*
 import webapp.webrtc.*
 
+import loci.registry.Registry
 case class Syncer[A](name: String)(using
-    webrtc: WebRTCService,
+    registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],

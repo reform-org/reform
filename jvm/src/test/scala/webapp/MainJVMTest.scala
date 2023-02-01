@@ -21,7 +21,6 @@ import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
-import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js.annotation.*
 
@@ -29,6 +28,7 @@ import webapp.npm.MemoryIndexedDB
 import webapp.MainSharedTest.testRepository
 import webapp.MainSharedTest.eventually
 import webapp.MainSharedTest.continually
+import loci.registry.Registry
 
 @JSExportTopLevel("MainJVMTest")
 object MainJVMTest extends TestSuite {
@@ -39,25 +39,25 @@ object MainJVMTest extends TestSuite {
   }
 
   def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T]) = {
-    val webrtc0 = WebRTCService()
-    val webrtc1 = WebRTCService()
+    val registry0 = Registry()
+    val registry1 = Registry()
     val indexedDb0: IIndexedDB = MemoryIndexedDB()
     val indexedDb1: IIndexedDB = MemoryIndexedDB()
-    val repositories0 = Repositories(using webrtc0, indexedDb0)
-    val repositories1 = Repositories(using webrtc1, indexedDb1)
+    val repositories0 = Repositories(using registry0, indexedDb0)
+    val repositories1 = Repositories(using registry1, indexedDb1)
     testRepository(fun(repositories0))
     eventually(() => fun(repositories0).all.now.length == 1)
     continually(() => fun(repositories1).all.now.length == 0)
-    webrtc0.registry.listen(TCP(1337))
-    webrtc1.registry.connect(TCP("localhost", 1337))
+    registry0.listen(TCP(1337))
+    registry1.connect(TCP("localhost", 1337))
     eventually(() => fun(repositories1).all.now.length == 1)
     continually(() => fun(repositories1).all.now.length == 1)
-    webrtc0.registry.terminate()
-    webrtc1.registry.terminate()
+    registry0.terminate()
+    registry1.terminate()
   }
 
   val tests: Tests = Tests {
-    given webrtc: WebRTCService = WebRTCService()
+    given registry: Registry = Registry()
     given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
 

@@ -26,6 +26,7 @@ import webapp.services.DiscoveryService
 
 import scala.scalajs.js
 import webapp.npm.IndexedDB
+import loci.registry.Registry
 
 // object JavaScriptHot {
 //   @js.native
@@ -63,8 +64,9 @@ object Main {
     js.`import`("../../../../index.css")
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
-    given repositories: Repositories = Repositories()
+    given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
+    given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
