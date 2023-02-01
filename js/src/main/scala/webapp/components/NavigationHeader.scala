@@ -15,15 +15,15 @@ limitations under the License.
  */
 package webapp.components
 
+import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
 import webapp.*
+import webapp.given
 import webapp.pages.*
+import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import org.scalajs.dom.HTMLElement
-import webapp.services.DiscoveryService
-import webapp.given
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
     classes: String,

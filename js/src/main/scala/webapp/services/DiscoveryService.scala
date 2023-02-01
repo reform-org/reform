@@ -1,22 +1,23 @@
 package webapp.services
 
-import org.scalajs.dom.*
-import org.scalajs.dom
-import scala.scalajs.js
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.core.*
-import scala.util.Try
-import scala.scalajs.js.JSON
-import scala.scalajs.js.Date
-import webapp.webrtc.PendingConnection
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.communicator.webrtc.WebRTC
+import org.scalajs.dom
+import org.scalajs.dom.*
 import rescala.default.*
 import webapp.Globals
 import webapp.Settings
-import scala.concurrent.{Future, Promise}
+import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.scalajs.js
+import scala.scalajs.js.Date
+import scala.scalajs.js.JSON
 
 class AvailableConnection(
     var name: String,

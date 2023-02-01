@@ -2,11 +2,11 @@ package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import kofre.base.*
+import loci.registry.Registry
 import rescala.default.*
 import webapp.*
 import webapp.webrtc.*
 
-import loci.registry.Registry
 case class Syncer[A](name: String)(using
     registry: Registry,
     dcl: DecomposeLattice[A],

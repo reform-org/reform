@@ -16,19 +16,17 @@ limitations under the License.
 package webapp
 
 import loci.communicator.tcp.TCP
+import loci.registry.Registry
 import utest.*
+import webapp.MainSharedTest.continually
+import webapp.MainSharedTest.eventually
+import webapp.MainSharedTest.testRepository
 import webapp.entity.*
 import webapp.npm.IIndexedDB
+import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
-import webapp.repo.Synced
 
 import scala.scalajs.js.annotation.*
-
-import webapp.npm.MemoryIndexedDB
-import webapp.MainSharedTest.testRepository
-import webapp.MainSharedTest.eventually
-import webapp.MainSharedTest.continually
-import loci.registry.Registry
 
 @JSExportTopLevel("MainJVMTest")
 object MainJVMTest extends TestSuite {

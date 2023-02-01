@@ -17,6 +17,7 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+
 import PaymentLevelsPage.*
 
 case class PaymentLevelsPage()(using repositories: Repositories)

@@ -15,24 +15,23 @@ limitations under the License.
  */
 package webapp.webrtc
 
-import loci.registry.*
-import webapp.*
-import webapp.Codecs.*
-import rescala.default.*
-import org.scalajs.dom.window
-import org.scalajs.dom
-import loci.transmitter.RemoteRef
-import loci.communicator.webrtc.WebRTC
-import loci.communicator.Connector
-import scala.concurrent.{Future, Promise}
-import scala.concurrent.ExecutionContext.Implicits.global
-import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import webapp.utils.Base64
 import com.github.plokhotnyuk.jsoniter_scala.core.*
-import scala.scalajs.js
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import loci.communicator.Connector
+import loci.communicator.webrtc.WebRTC
+import loci.communicator.webrtc.WebRTC.ConnectorFactory
+import loci.registry.*
+import loci.transmitter.RemoteRef
+import org.scalajs.dom
+import rescala.default.*
+import webapp.*
 import webapp.npm.Utils
+import webapp.utils.Base64
+
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.Promise
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(

@@ -24,11 +24,11 @@ import rescala.default.*
 import webapp.components.navigationHeader
 import webapp.repo.Repository
 import webapp.repo.Synced
+import webapp.services.DiscoveryService
 import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
-import webapp.services.DiscoveryService
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global

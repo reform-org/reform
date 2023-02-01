@@ -1,32 +1,18 @@
 package webapp.components
 
+import loci.communicator.webrtc
+import loci.communicator.webrtc.WebRTC
 import org.scalajs.dom
+import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
-import webapp.pages.*
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLElement
-import org.scalajs.dom.window
-
-import loci.communicator.webrtc
-import loci.communicator.webrtc.WebRTC
-import loci.communicator.webrtc.WebRTC.ConnectorFactory
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
-import org.scalajs.dom.{console, UIEvent}
-import scala.scalajs.js
-import webapp.webrtc.ConnectionInformation
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import webapp.webrtc.StoredConnectionInformation
 import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService): VNode

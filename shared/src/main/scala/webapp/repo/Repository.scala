@@ -17,6 +17,7 @@ package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import kofre.base.*
+import loci.registry.Registry
 import rescala.default.*
 import webapp.*
 import webapp.npm.IIndexedDB
@@ -25,7 +26,6 @@ import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import loci.registry.Registry
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,

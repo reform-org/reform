@@ -1,10 +1,10 @@
 package webapp.components
 
-import outwatch.VNode
-import outwatch.dsl.*
-import outwatch.*
 import com.raquo.domtypes.jsdom.defs.events.TypedTargetMouseEvent
 import org.scalajs.dom.Element
+import outwatch.VNode
+import outwatch.*
+import outwatch.dsl.*
 
 object Icons {
   def reload(

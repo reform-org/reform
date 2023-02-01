@@ -1,12 +1,13 @@
 package webapp.npm
 
+import org.scalajs.dom.RTCPeerConnection
+
 import scala.concurrent.Future
 import scala.scalajs.js
-import scala.scalajs.js.{JSON, Promise}
+import scala.scalajs.js.Promise
 import scala.scalajs.js.annotation.JSImport
-import concurrent.ExecutionContext.Implicits.global
+
 import js.JSConverters.*
-import org.scalajs.dom.RTCPeerConnection
 
 object Utils {
 

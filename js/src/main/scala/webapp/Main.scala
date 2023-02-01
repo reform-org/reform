@@ -16,17 +16,17 @@ limitations under the License.
 package webapp
 
 import cats.effect.SyncIO
+import loci.registry.Registry
 import outwatch.*
 import outwatch.dsl.*
 import webapp.npm.IIndexedDB
+import webapp.npm.IndexedDB
 import webapp.npm.MemoryIndexedDB
+import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.DiscoveryService
 
 import scala.scalajs.js
-import webapp.npm.IndexedDB
-import loci.registry.Registry
 
 // object JavaScriptHot {
 //   @js.native

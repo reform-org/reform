@@ -2,12 +2,12 @@ package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import loci.registry.Registry
 import rescala.default.*
 import webapp.*
 import webapp.webrtc.DeltaFor
 
 import concurrent.ExecutionContext.Implicits.global
-import loci.registry.Registry
 
 case class SyncedIdSet(name: String)(using registry: Registry) {
 

@@ -3,8 +3,8 @@ package webapp.entity
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.given
 import webapp.duplicateValuesHandler
+import webapp.given
 import webapp.utils.Date
 
 class UIOption[NameType](

@@ -17,6 +17,7 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+
 import HiwisPage.*
 
 case class HiwisPage()(using repositories: Repositories)

@@ -1,36 +1,21 @@
 package webapp.components
 
 import org.scalajs.dom
+import org.scalajs.dom.HTMLInputElement
+import org.scalajs.dom.console
+import org.scalajs.dom.document
+import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
-import webapp.pages.*
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLElement
-import org.scalajs.dom.window
-
-import loci.communicator.webrtc
-import loci.communicator.webrtc.WebRTC
-import loci.communicator.webrtc.WebRTC.ConnectorFactory
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import scala.concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.{Future, Promise}
-import org.scalajs.dom.{console, UIEvent}
-import scala.scalajs.js
-import webapp.webrtc.ConnectionInformation
-import com.github.plokhotnyuk.jsoniter_scala.core.*
-import webapp.utils.Base64
-import webapp.webrtc.StoredConnectionInformation
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
+
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.Failure
 import scala.util.Success
-import org.scalajs.dom.{window, HTMLInputElement}
 
 class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
   val offlineBanner = {
