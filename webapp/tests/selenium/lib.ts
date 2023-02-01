@@ -442,7 +442,7 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`.//h2[text()="Connected"]`)),
+					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
 					3000,
 				);
 			}),
