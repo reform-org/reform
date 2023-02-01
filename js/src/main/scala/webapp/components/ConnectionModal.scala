@@ -171,8 +171,6 @@ class Login() {
                       .onComplete(result => {
                         result match {
                           case Failure(exception: discovery.LoginException) => {
-                            console.log(exception.message)
-                            console.log(exception.fields)
                             exception.fields.foreach(field => {
                               val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
                               input.setCustomValidity(exception.message)
