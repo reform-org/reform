@@ -397,8 +397,9 @@ export class Peer {
 					await driver.wait(until.elementIsVisible(hostMode), 3000);
 					await hostMode.click();
 
-					let name = await driver.findElement(
-						By.css(`input[placeholder="Type here"]`),
+					let name = await driver.wait(
+						until.elementLocated(By.css(`input[placeholder="Type here"]`)),
+						3000
 					);
 					await name.sendKeys("person a");
 
@@ -561,7 +562,7 @@ export async function check(peers: Peer[]) {
 							),
 							10000,
 						);
-						await peer.driver.sleep(500);
+						await peer.driver.sleep(1000);
 					}
 					await (
 						await peer.driver.findElement(
