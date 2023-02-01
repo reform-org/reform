@@ -54,7 +54,7 @@ object Icons {
     )
   }
 
-  def hamburger(_cls: String = "", _color: String = ""): VNode = {
+  def hamburger(_cls: String = ""): VNode = {
     import svg.*
     svg(
       xmlns := "http://www.w3.org/2000/svg",

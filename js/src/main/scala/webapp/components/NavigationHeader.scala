@@ -25,7 +25,7 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService)(
+def navigationMenu(using routing: RoutingService, repositories: Repositories)(
     classes: String,
 ) = {
   ul(

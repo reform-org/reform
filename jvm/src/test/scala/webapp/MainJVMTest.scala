@@ -55,9 +55,6 @@ object MainJVMTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
-    given registry: Registry = Registry()
-    given indexedDb: IIndexedDB = MemoryIndexedDB()
-    given repositories: Repositories = Repositories()
 
     test("test syncing projects") {
       testSyncing(r => r.projects)
@@ -94,7 +91,7 @@ object MainJVMTest extends TestSuite {
       tests,
       "MyTestSuiteA",
     )
-    val (summary, successes, failures) = TestRunner.renderResults(
+    val (_, _, failures) = TestRunner.renderResults(
       Seq(
         "MyTestSuiteA" -> results,
       ),

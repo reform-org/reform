@@ -21,7 +21,6 @@ import outwatch.*
 import outwatch.dsl.*
 import webapp.npm.IIndexedDB
 import webapp.npm.IndexedDB
-import webapp.npm.MemoryIndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService

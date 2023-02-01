@@ -28,7 +28,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
           e.target.classList.add("animate-spin")
           discovery
             .connect(true)
-            .onComplete(event => {
+            .onComplete(_ => {
               window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
             })
         },

@@ -15,11 +15,7 @@ limitations under the License.
  */
 package webapp
 
-import loci.registry.Registry
 import utest.*
-import webapp.npm.IIndexedDB
-import webapp.npm.MemoryIndexedDB
-import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js.annotation.*
 
@@ -31,13 +27,7 @@ object MainJSTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
-  val tests: Tests = Tests {
-    given registry: Registry = Registry()
-    given webrtc: WebRTCService = WebRTCService()
-    given indexedDb: IIndexedDB = MemoryIndexedDB()
-    given repositories: Repositories = Repositories()
-
-  }
+  val tests: Tests = Tests {}
 
   @JSExport
   def main(): Unit = {
@@ -45,11 +35,10 @@ object MainJSTest extends TestSuite {
       tests,
       "MyTestSuiteC",
     )
-    val (summary, successes, failures) = TestRunner.renderResults(
+    TestRunner.renderResults(
       Seq(
         "MyTestSuiteC" -> results,
       ),
     )
-    failures
   }
 }

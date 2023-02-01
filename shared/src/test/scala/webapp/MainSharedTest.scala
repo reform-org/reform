@@ -112,7 +112,7 @@ object MainSharedTest extends TestSuite {
       tests,
       "MyTestSuiteA",
     )
-    val (summary, successes, failures) = TestRunner.renderResults(
+    val (_, _, failures) = TestRunner.renderResults(
       Seq(
         "MyTestSuiteA" -> results,
       ),

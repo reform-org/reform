@@ -112,7 +112,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
 
 def availableConnectionRow(
     connection: AvailableConnection,
-)(using discovery: DiscoveryService, webrtc: WebRTCService) = {
+)(using discovery: DiscoveryService) = {
   div(
     cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
     div(
