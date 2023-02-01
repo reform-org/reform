@@ -111,24 +111,21 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
       cls := "label-text text-slate-500",
       "Please share the code with the peer that invited you to finish the connection.",
     ),
-    div(
-      cls := "flex gap-1 mt-2",
-      button(
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-        onClick.foreach(_ =>
-          connection.session.map(PendingConnection.sessionAsToken).map(s => window.navigator.clipboard.writeText(s)),
+    connection.session.map(session =>
+      div(
+        cls := "flex gap-1 mt-2",
+        button(
+          data.token := PendingConnection.sessionAsToken(session),
+          cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
+          Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+          onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
         ),
-      ),
-      connection.session.map(session =>
         a(
           cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
           Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
           href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
               .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
         ),
-      ),
-      connection.session.map(session =>
         a(
           cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
           Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
@@ -159,24 +156,21 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       cls := "label-text text-slate-500",
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
-    div(
-      cls := "flex gap-1 mt-2",
-      button(
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-        onClick.foreach(_ =>
-          connection.session.map(PendingConnection.sessionAsToken).map(s => window.navigator.clipboard.writeText(s)),
+    connection.session.map(session =>
+      div(
+        cls := "flex gap-1 mt-2",
+        button(
+          data.token := PendingConnection.sessionAsToken(session),
+          cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
+          Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+          onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
         ),
-      ),
-      connection.session.map(session =>
         a(
           cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
           Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
           href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
               .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
         ),
-      ),
-      connection.session.map(session =>
         a(
           cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
           Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
