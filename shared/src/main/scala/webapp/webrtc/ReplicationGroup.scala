@@ -49,7 +49,7 @@ class ReplicationGroup[A](name: String)(using
     registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
-    codec: JsonValueCodec[A],
+    codec: JsonValueCodec[A], // this is not unused as it's used inside the macro
 ) {
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
@@ -91,7 +91,7 @@ class ReplicationGroup[A](name: String)(using
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.foreach((k, v) => deltaEvt.fire(v))
+        changes.foreach((_, v) => deltaEvt.fire(v))
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {

@@ -46,17 +46,17 @@ class DiscoveryService {
   class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
 
   private val setAvailableConnections = Evt[Seq[AvailableConnection]]()
-  private val setAvailableConnectionsB = setAvailableConnections.act(identity)
+  private val setAvailableConnectionsB = setAvailableConnections.act(identity) // dunno why this warns
 
   val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
 
   private val setToken = Evt[String]()
-  private val setTokenB = setToken.act(identity)
+  private val setTokenB = setToken.act(identity) // dunno why this warns
 
   private val token = Fold(null: String)(setTokenB)
 
   private val setOnlineStatus = Evt[Boolean]()
-  private val setOnlineStatusB = setOnlineStatus.act(identity)
+  private val setOnlineStatusB = setOnlineStatus.act(identity) // dunno why this warns
 
   val online = Fold(false: Boolean)(setOnlineStatusB)
 
@@ -164,13 +164,15 @@ class DiscoveryService {
     console.log(name, payload)
     name match {
       case "request_host_token" => {
-        var iceServers = js.Array[RTCIceServer]()
-        iceServers += RTCIceServer(
-          Globals.turnServerURL,
-          payload.host.turn.username.asInstanceOf[String],
-          payload.host.turn.credential.asInstanceOf[String],
-        )
-        val config = RTCConfiguration(iceServers)
+        var _iceServers = js.Array[RTCIceServer]()
+        _iceServers += new RTCIceServer {
+          urls = Globals.turnServerURL;
+          username = payload.host.turn.username.asInstanceOf[String];
+          credential = payload.host.turn.credential.asInstanceOf[String];
+        }
+        val config = new RTCConfiguration {
+          iceServers = _iceServers;
+        }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
           payload.client.user.name.asInstanceOf[String],
@@ -192,13 +194,15 @@ class DiscoveryService {
           })
       }
       case "request_client_token" => {
-        var iceServers = js.Array[RTCIceServer]()
-        iceServers += RTCIceServer(
-          Globals.turnServerURL,
-          payload.client.turn.username.asInstanceOf[String],
-          payload.client.turn.credential.asInstanceOf[String],
-        )
-        val config = RTCConfiguration(iceServers)
+        var _iceServers = js.Array[RTCIceServer]()
+        _iceServers += new RTCIceServer {
+          urls = Globals.turnServerURL;
+          username = payload.client.turn.username.asInstanceOf[String];
+          credential = payload.client.turn.credential.asInstanceOf[String];
+        }
+        val config = new RTCConfiguration {
+          iceServers = _iceServers;
+        }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(config),
           payload.host.user.name.asInstanceOf[String],
