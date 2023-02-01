@@ -9,7 +9,7 @@ import webapp.webrtc.DeltaFor
 
 case class ContractSchema(
     name: Attribute[String] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[ContractSchema]
     derives DecomposeLattice,
       Bottom {
@@ -17,12 +17,10 @@ case class ContractSchema(
   // empty for required fields, default for optional fields
   def default = ContractSchema(Attribute.empty, Attribute.default)
 
-  def exists: Attribute[Boolean] = _exists
-
   def identifier: Attribute[String] = name
 
-  def withExists(exists: Boolean): ContractSchema = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): ContractSchema = {
+    this.copy(exists = exists.set(_exists))
   }
 
 }
