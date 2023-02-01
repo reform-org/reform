@@ -20,8 +20,8 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
     webrtc: WebRTCService,
     discovery: DiscoveryService,
 ) = {
-  val own = discovery.decodeToken(discovery.getToken())
-  if (source == "discovery")
+  if (source == "discovery") {
+    val own = discovery.decodeToken(discovery.getToken())
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
       div(
@@ -79,7 +79,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         ),
       ),
     )
-  else
+  } else
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
       div(
