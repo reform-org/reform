@@ -22,12 +22,12 @@ import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
-import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js.annotation.*
 
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import loci.registry.Registry
 
 @JSExportTopLevel("MainSharedTest")
 object MainSharedTest extends TestSuite {
@@ -74,7 +74,7 @@ object MainSharedTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
-    given webrtc: WebRTCService = WebRTCService()
+    given registry: Registry = Registry()
     given indexedDb: IIndexedDB = MemoryIndexedDB()
     given repositories: Repositories = Repositories()
 

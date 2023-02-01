@@ -59,9 +59,7 @@ object PendingConnection {
   def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
 }
 
-class WebRTCService {
-  val registry: Registry = new Registry
-
+class WebRTCService(using registry: Registry) {
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
   private val webRTCConnections =
     scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
