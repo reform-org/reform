@@ -190,7 +190,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     button(
       cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
       "Finish Connection",
-      // disabled := true,
+      disabled <-- sessionTokenFromClient.map(_.isBlank),
       onClick.foreach(_ => confirmConnectionToClient()),
     ),
   )
