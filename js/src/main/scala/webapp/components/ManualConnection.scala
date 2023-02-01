@@ -46,7 +46,7 @@ private case object Init extends State {
       label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
       input(
         tpe := "text",
-        placeholder := "Type here",
+        placeholder := "Your name",
         cls := "input input-bordered w-full text-sm p-2 h-fit",
         onInput.value --> alias,
         value := "",
@@ -77,7 +77,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     label(cls := "label", span(cls := "label-text text-slate-500", "Please enter the code your peer has provided:")),
     input(
       tpe := "text",
-      placeholder := "Your token",
+      placeholder := "Token",
       cls := "input input-bordered w-full text-sm p-2 h-fit",
       value := "",
       onInput.value --> sessionToken,
@@ -182,7 +182,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     label(cls := "label", span(cls := "label-text text-slate-500", "Please enter the code your peer has provided:")),
     input(
       tpe := "text",
-      placeholder := "Type here",
+      placeholder := "Token",
       cls := "input input-bordered w-full text-sm p-2 h-fit",
       value := "",
       onInput.value --> sessionTokenFromClient,
