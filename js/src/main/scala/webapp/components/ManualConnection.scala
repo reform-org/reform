@@ -54,7 +54,7 @@ private case object Init extends State {
       button(
         cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
         "Create Invitation",
-        // disabled := alias.map(_.isBlank()),
+        disabled <-- alias.map(_.isBlank()),
         onClick.foreach(_ => initializeHostSession),
       ),
     )
@@ -85,7 +85,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     button(
       cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
       "Connect",
-      // disabled := true,
+      disabled <-- alias.map(_.isBlank()),
       onClick.foreach(_ => connectToHost),
     ),
   )
