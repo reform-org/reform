@@ -9,10 +9,10 @@ import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class User(
-    var username: Attribute[String] = Attribute.empty,
-    var role: Attribute[String] = Attribute.empty,
-    var comment: Attribute[Option[String]] = Attribute.empty,
-    var _exists: Attribute[Boolean] = Attribute.empty,
+    username: Attribute[String] = Attribute.empty,
+    role: Attribute[String] = Attribute.empty,
+    comment: Attribute[Option[String]] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[User]
     derives DecomposeLattice,
       Bottom {

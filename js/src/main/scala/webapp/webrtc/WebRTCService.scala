@@ -106,7 +106,6 @@ class WebRTCService(using registry: Registry) {
 
   def getConnectionMode(ref: RemoteRef): Future[String] = {
     val connection = webRTCConnections.get(ref).getOrElse(null)
-    val promise = Promise[dom.RTCStatsReport]()
 
     Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }

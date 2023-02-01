@@ -20,30 +20,30 @@ import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
 
 class AvailableConnection(
-    var name: String,
-    var uuid: String,
-    var online: Boolean,
-    var trusted: Boolean,
-    var mutualTrust: Boolean,
+    val name: String,
+    val uuid: String,
+    val online: Boolean,
+    val trusted: Boolean,
+    val mutualTrust: Boolean,
 )
 
 class DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
 
-  class LoginInfo(var username: String, var password: String)
+  class LoginInfo(val username: String, val password: String)
   object LoginInfo {
     val codec: JsonValueCodec[LoginInfo] = JsonCodecMaker.make
   }
 
-  class LoginRepsonse(var token: String, var username: String)
+  class LoginRepsonse(val token: String, val username: String)
   object LoginRepsonse {
     val codec: JsonValueCodec[LoginRepsonse] = JsonCodecMaker.make
   }
 
-  class LoginException(var message: String, var fields: Seq[String]) extends Throwable(message)
+  class LoginException(val message: String, val fields: Seq[String]) extends Throwable(message)
 
-  class TokenPayload(var exp: Int, var iat: Int, var username: String, var uuid: String)
+  class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
 
   private val setAvailableConnections = Evt[Seq[AvailableConnection]]()
   private val setAvailableConnectionsB = setAvailableConnections.act(identity)
@@ -267,7 +267,7 @@ class DiscoveryService {
         case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
       }
 
-      ws.get.onopen = (event) => {
+      ws.get.onopen = (_) => {
         console.log("opened websocket")
         setOnlineStatus.fire(true)
         emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken()))
@@ -279,12 +279,12 @@ class DiscoveryService {
         handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
       }
 
-      ws.get.onclose = (event) => {
+      ws.get.onclose = (_) => {
         setOnlineStatus.fire(false)
         console.log("closed websocket")
       }
 
-      ws.get.onerror = (event) => {
+      ws.get.onerror = (_) => {
         promise.failure(new Exception("Connection failed"))
       }
     } else {
