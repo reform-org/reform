@@ -413,7 +413,7 @@ export class Peer {
 						3000,
 					);
 					let value = await offer.getAttribute("data-token");
-					console.log(`got offer: ${value}`);
+					//console.log(`got offer: ${value}`);
 
 					let answerInput = await driver.findElement(
 						By.css(`input[placeholder="Type here"]`),
@@ -434,7 +434,7 @@ export class Peer {
 			3000,
 		);
 		let value = await answer.getAttribute("data-token");
-		console.log(`got answer: ${value}`);
+		//console.log(`got answer: ${value}`);
 
 		await answerInput.sendKeys(value);
 		await answerSubmit.click();
@@ -445,6 +445,7 @@ export class Peer {
 					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
 					3000,
 				);
+				await (await peer.driver.findElement(By.css("label.drawer-overlay"))).click()
 			}),
 		);
 
