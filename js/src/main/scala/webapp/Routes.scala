@@ -17,7 +17,6 @@ package webapp
 
 import colibri.*
 import colibri.router.*
-import rescala.default.*
 import webapp.pages.*
 import webapp.services.Page
 

@@ -21,15 +21,12 @@ import outwatch.dsl.*
 import webapp.*
 import webapp.components.navigationHeader
 import webapp.npm.*
+import webapp.services.DiscoveryService
 import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.DiscoveryService
-import webapp.given
 
 import concurrent.ExecutionContext.Implicits.global
-import webapp.npm.*
-import loci.transmitter.RemoteRef
 
 case class HomePage() extends Page {
 

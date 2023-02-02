@@ -1,61 +1,62 @@
 package webapp.services
 
-import org.scalajs.dom.*
-import org.scalajs.dom
-import scala.scalajs.js
-import scala.concurrent.ExecutionContext.Implicits.global
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.core.*
-import scala.util.Try
-import scala.scalajs.js.JSON
-import scala.scalajs.js.Date
-import webapp.webrtc.PendingConnection
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import loci.communicator.webrtc.WebRTC
+import org.scalajs.dom
+import org.scalajs.dom.*
 import rescala.default.*
 import webapp.Globals
 import webapp.Settings
-import scala.concurrent.{Future, Promise}
+import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
 
+import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.scalajs.js
+import scala.scalajs.js.Date
+import scala.scalajs.js.JSON
+
 class AvailableConnection(
-    var name: String,
-    var uuid: String,
-    var online: Boolean,
-    var trusted: Boolean,
-    var mutualTrust: Boolean,
+    val name: String,
+    val uuid: String,
+    val online: Boolean,
+    val trusted: Boolean,
+    val mutualTrust: Boolean,
 )
 
 class DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
 
-  class LoginInfo(var username: String, var password: String)
+  class LoginInfo(val username: String, val password: String)
   object LoginInfo {
     val codec: JsonValueCodec[LoginInfo] = JsonCodecMaker.make
   }
 
-  class LoginRepsonse(var token: String, var username: String)
+  class LoginRepsonse(val token: String, val username: String)
   object LoginRepsonse {
     val codec: JsonValueCodec[LoginRepsonse] = JsonCodecMaker.make
   }
 
-  class LoginException(var message: String, var fields: Seq[String]) extends Throwable(message)
+  class LoginException(val message: String, val fields: Seq[String]) extends Throwable(message)
 
-  class TokenPayload(var exp: Int, var iat: Int, var username: String, var uuid: String)
+  class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
 
   private val setAvailableConnections = Evt[Seq[AvailableConnection]]()
-  private val setAvailableConnectionsB = setAvailableConnections.act(identity)
+  private val setAvailableConnectionsB = setAvailableConnections.act(identity) // dunno why this warns
 
   val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
 
   private val setToken = Evt[String]()
-  private val setTokenB = setToken.act(identity)
+  private val setTokenB = setToken.act(identity) // dunno why this warns
 
   private val token = Fold(null: String)(setTokenB)
 
   private val setOnlineStatus = Evt[Boolean]()
-  private val setOnlineStatusB = setOnlineStatus.act(identity)
+  private val setOnlineStatusB = setOnlineStatus.act(identity) // dunno why this warns
 
   val online = Fold(false: Boolean)(setOnlineStatusB)
 
@@ -163,13 +164,15 @@ class DiscoveryService {
     console.log(name, payload)
     name match {
       case "request_host_token" => {
-        var iceServers = js.Array[RTCIceServer]()
-        iceServers += RTCIceServer(
-          Globals.turnServerURL,
-          payload.host.turn.username.asInstanceOf[String],
-          payload.host.turn.credential.asInstanceOf[String],
-        )
-        val config = RTCConfiguration(iceServers)
+        var _iceServers = js.Array[RTCIceServer]()
+        _iceServers += new RTCIceServer {
+          urls = Globals.turnServerURL;
+          username = payload.host.turn.username.asInstanceOf[String];
+          credential = payload.host.turn.credential.asInstanceOf[String];
+        }
+        val config = new RTCConfiguration {
+          iceServers = _iceServers;
+        }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
           payload.client.user.name.asInstanceOf[String],
@@ -191,13 +194,15 @@ class DiscoveryService {
           })
       }
       case "request_client_token" => {
-        var iceServers = js.Array[RTCIceServer]()
-        iceServers += RTCIceServer(
-          Globals.turnServerURL,
-          payload.client.turn.username.asInstanceOf[String],
-          payload.client.turn.credential.asInstanceOf[String],
-        )
-        val config = RTCConfiguration(iceServers)
+        var _iceServers = js.Array[RTCIceServer]()
+        _iceServers += new RTCIceServer {
+          urls = Globals.turnServerURL;
+          username = payload.client.turn.username.asInstanceOf[String];
+          credential = payload.client.turn.credential.asInstanceOf[String];
+        }
+        val config = new RTCConfiguration {
+          iceServers = _iceServers;
+        }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(config),
           payload.host.user.name.asInstanceOf[String],
@@ -266,7 +271,7 @@ class DiscoveryService {
         case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
       }
 
-      ws.get.onopen = (event) => {
+      ws.get.onopen = (_) => {
         console.log("opened websocket")
         setOnlineStatus.fire(true)
         emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken()))
@@ -278,12 +283,12 @@ class DiscoveryService {
         handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
       }
 
-      ws.get.onclose = (event) => {
+      ws.get.onclose = (_) => {
         setOnlineStatus.fire(false)
         console.log("closed websocket")
       }
 
-      ws.get.onerror = (event) => {
+      ws.get.onerror = (_) => {
         promise.failure(new Exception("Connection failed"))
       }
     } else {

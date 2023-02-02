@@ -9,7 +9,7 @@ import webapp.webrtc.DeltaFor
 
 case class PaymentLevel(
     title: Attribute[String] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[PaymentLevel]
     derives DecomposeLattice,
       Bottom {
@@ -17,12 +17,10 @@ case class PaymentLevel(
   // empty for required fields, default for optional fields
   def default = PaymentLevel(Attribute.empty, Attribute.default)
 
-  def exists: Attribute[Boolean] = _exists
-
   def identifier: Attribute[String] = title
 
-  def withExists(exists: Boolean): PaymentLevel = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): PaymentLevel = {
+    this.copy(exists = exists.set(_exists))
   }
 
 }

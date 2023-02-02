@@ -1,20 +1,16 @@
 package webapp.components
-import org.scalajs.dom
+
+import loci.transmitter.RemoteRef
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
-import webapp.pages.*
-import org.scalajs.dom.{console, document, window, HTMLElement}
-import loci.transmitter.RemoteRef
-import org.scalajs.dom.RTCStatsReport
-import scala.concurrent.ExecutionContext.Implicits.global
-import webapp.webrtc.WebRTCService
-import webapp.services.DiscoveryService
 import webapp.services.AvailableConnection
+import webapp.services.DiscoveryService
+import webapp.webrtc.WebRTCService
+
+import scala.concurrent.ExecutionContext.Implicits.global
 
 def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(using
     webrtc: WebRTCService,
@@ -116,7 +112,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
 
 def availableConnectionRow(
     connection: AvailableConnection,
-)(using discovery: DiscoveryService, webrtc: WebRTCService) = {
+)(using discovery: DiscoveryService) = {
   div(
     cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
     div(

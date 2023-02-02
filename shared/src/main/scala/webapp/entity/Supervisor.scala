@@ -11,7 +11,7 @@ case class Supervisor(
     firstName: Attribute[String] = Attribute.empty,
     lastName: Attribute[String] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Supervisor]
     derives DecomposeLattice,
       Bottom {
@@ -19,12 +19,10 @@ case class Supervisor(
   // empty for required fields, default for optional fields
   def default = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
-  def exists: Attribute[Boolean] = _exists
-
   def identifier: Attribute[String] = firstName
 
-  def withExists(exists: Boolean): Supervisor = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): Supervisor = {
+    this.copy(exists = exists.set(_exists))
   }
 
 }

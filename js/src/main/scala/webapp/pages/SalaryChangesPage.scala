@@ -18,6 +18,7 @@ package webapp.pages
 import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
+
 import SalaryChangesPage.*
 
 case class SalaryChangesPage()(using repositories: Repositories)

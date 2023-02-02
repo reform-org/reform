@@ -1,6 +1,7 @@
 package webapp
 
-import org.scalajs.dom.{console, window}
+import org.scalajs.dom.window
+
 import scala.scalajs.js
 
 object Settings {

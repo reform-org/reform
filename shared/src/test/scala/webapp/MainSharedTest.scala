@@ -15,7 +15,7 @@ limitations under the License.
  */
 package webapp
 
-import loci.communicator.tcp.TCP
+import loci.registry.Registry
 import utest.*
 import webapp.entity.*
 import webapp.npm.IIndexedDB
@@ -23,11 +23,10 @@ import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
 
+import scala.concurrent.Future
 import scala.scalajs.js.annotation.*
 
 import concurrent.ExecutionContext.Implicits.global
-import scala.concurrent.Future
-import loci.registry.Registry
 
 @JSExportTopLevel("MainSharedTest")
 object MainSharedTest extends TestSuite {
@@ -113,7 +112,7 @@ object MainSharedTest extends TestSuite {
       tests,
       "MyTestSuiteA",
     )
-    val (summary, successes, failures) = TestRunner.renderResults(
+    val (_, _, failures) = TestRunner.renderResults(
       Seq(
         "MyTestSuiteA" -> results,
       ),

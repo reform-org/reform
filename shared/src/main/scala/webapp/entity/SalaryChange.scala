@@ -9,10 +9,10 @@ import webapp.entity.Attribute.given
 import webapp.webrtc.DeltaFor
 
 case class SalaryChange(
-    var value: Attribute[Int] = Attribute.empty,
-    var paymentLevel: Attribute[String] = Attribute.empty,
-    var fromDate: Attribute[Long] = Attribute.empty,
-    var _exists: Attribute[Boolean] = Attribute.empty,
+    value: Attribute[Int] = Attribute.empty,
+    paymentLevel: Attribute[String] = Attribute.empty,
+    fromDate: Attribute[Long] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[SalaryChange]
     derives DecomposeLattice,
       Bottom {
@@ -20,12 +20,10 @@ case class SalaryChange(
   // empty for required fields, default for optional fields
   def default = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
-  def exists: Attribute[Boolean] = _exists
-
   def identifier: Attribute[String] = paymentLevel
 
-  def withExists(exists: Boolean): SalaryChange = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): SalaryChange = {
+    this.copy(exists = exists.set(_exists))
   }
 }
 

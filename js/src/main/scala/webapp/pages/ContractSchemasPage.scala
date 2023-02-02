@@ -17,6 +17,7 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+
 import ContractSchemasPage.*
 
 case class ContractSchemasPage()(using repositories: Repositories)

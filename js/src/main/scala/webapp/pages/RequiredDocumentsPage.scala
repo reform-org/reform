@@ -17,6 +17,7 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+
 import RequiredDocumentsPage.*
 
 case class RequiredDocumentsPage()(using repositories: Repositories)

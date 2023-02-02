@@ -11,7 +11,7 @@ case class RequiredDocument(
     name: Attribute[String] = Attribute.empty,
     fileName: Attribute[String] = Attribute.empty,
     isActuallyRequired: Attribute[Boolean] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[RequiredDocument]
     derives DecomposeLattice,
       Bottom {
@@ -20,12 +20,10 @@ case class RequiredDocument(
   def default: RequiredDocument =
     RequiredDocument(Attribute.default, Attribute.default, Attribute.default, Attribute.default)
 
-  def exists: Attribute[Boolean] = _exists
-
   def identifier: Attribute[String] = name
 
-  def withExists(exists: Boolean): RequiredDocument = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): RequiredDocument = {
+    this.copy(exists = exists.set(_exists))
   }
 
 }

@@ -13,7 +13,7 @@ case class Hiwi(
     hours: Attribute[Int] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
     birthdate: Attribute[Long] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Hiwi]
     derives DecomposeLattice,
       Bottom {
@@ -22,12 +22,10 @@ case class Hiwi(
   def default =
     Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
 
-  def exists: Attribute[Boolean] = _exists
-
   def identifier: Attribute[String] = firstName
 
-  def withExists(exists: Boolean): Hiwi = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): Hiwi = {
+    this.copy(exists = exists.set(_exists))
   }
 
 }

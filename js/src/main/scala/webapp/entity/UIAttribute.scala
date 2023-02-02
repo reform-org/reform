@@ -3,8 +3,8 @@ package webapp.entity
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.given
 import webapp.duplicateValuesHandler
+import webapp.given
 import webapp.utils.Date
 
 class UIOption[NameType](
@@ -187,7 +187,7 @@ class UISelectAttribute[EntityType, AttributeType](
         evt.observe(set.compose(writeConverter))
         evt
       },
-      option(VModifier.attr("value") := "", "Bitte wählen..."),
+      option(VMod.attr("value") := "", "Bitte wählen..."),
       options.map(o =>
         o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
       ),

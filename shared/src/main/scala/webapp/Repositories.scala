@@ -1,9 +1,9 @@
 package webapp
 
-import webapp.entity.*
-import webapp.repo.Repository
-import webapp.npm.IIndexedDB
 import loci.registry.Registry
+import webapp.entity.*
+import webapp.npm.IIndexedDB
+import webapp.repo.Repository
 
 class Repositories(using registry: Registry, indexedDb: IIndexedDB) {
 
