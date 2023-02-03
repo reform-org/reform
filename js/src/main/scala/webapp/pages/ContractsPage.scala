@@ -19,80 +19,25 @@ import webapp.Repositories
 import webapp.entity.*
 import rescala.default.*
 import webapp.utils.Date
+import HiwisPage.*
 
 
-private val contractAssociatedHiwi: UISelectAttribute[Contract, String] = UISelectAttribute(
-  _._contractAssociatedHiwi,
-  (p, a) => p.copy(_contractAssociatedHiwi = a),
+private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] = UISelectAttribute(
+  _.contractAssociatedHiwi,
+  (p, a) => p.copy(contractAssociatedHiwi = a),
   readConverter = identity,
   writeConverter = identity,
-  placeholder = "AssociatedHiwi",
-  options = Repositories.hiwis.all.map(list =>
-    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._firstName.get.getOrElse("")))),
+  label = "AssociatedHiwi",
+  options = repositories.hiwis.all.map(list =>
+    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
   ),
-
+  isRequired = true,
 )
 
-private val contractType: UIAttribute[Contract, String] = UIAttribute(
-  _._contractType,
-  (p, a) => p.copy(_contractType = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "ContractType",
-)
-
-private val contractAssociatedSupervisor: UIAttribute[Contract, String] = UIAttribute(
-  _._contractAssociatedSupervisor,
-  (p, a) => p.copy(_contractAssociatedSupervisor = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "AssociatedSupervisor",
-)
-
-private val contractStartDate: UIDateAttribute[Contract, Long] = UIDateAttribute(
-  _._contractStartDate,
-  (p, a) => p.copy(_contractStartDate = a),
-  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  placeholder = "StartDate",
-)
-private val contractEndDate: UIDateAttribute[Contract, Long] = UIDateAttribute(
-  _._contractEndDate,
-  (p, a) => p.copy(_contractEndDate = a),
-  readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-  editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-  writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-  placeholder = "EndDate",
-)
-
-private val contractHoursPerMonth: UIAttribute[Contract, Int] = UIAttribute(
-  _._contractHoursPerMonth,
-  (p, a) => p.copy(_contractHoursPerMonth = a),
-  readConverter = _.toString(),
-  writeConverter = _.toInt,
-  placeholder = "HoursPerMonth",
-  fieldType = "number",
-)
-
-private val contractAssociatedPaymentLevel: UIAttribute[Contract, String] = UIAttribute(
-  _._contractAssociatedPaymentLevel,
-  (p, a) => p.copy(_contractAssociatedPaymentLevel = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "AssociatedPaymentLevel",
-)
-
-case class ContractsPage()
+case class ContractsPage()(using repositories: Repositories)
     extends EntityPage[Contract](
-      Repositories.contracts,
+      repositories.contracts,
       Seq(
-        contractAssociatedHiwi,
-        contractType,
-        contractAssociatedSupervisor,
-        contractStartDate,
-        contractEndDate,
-        contractHoursPerMonth,
-        contractAssociatedPaymentLevel,
+        contractAssociatedHiwi
       ),
     ) {}

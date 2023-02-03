@@ -12,25 +12,23 @@ import webapp.Codecs.*
 import webapp.webrtc.DeltaFor
 
 case class Contract(
-    _contractAssociatedHiwi: Attribute[String] = Attribute.empty,
-    _contractAssociatedPaymentLevel: Attribute[String] = Attribute.empty,
-    _contractAssociatedSupervisor: Attribute[String] = Attribute.empty,
-    _contractStartDate: Attribute[Long] = Attribute.empty,
-    _contractEndDate: Attribute[Long] = Attribute.empty,
-    _contractType: Attribute[String] = Attribute.empty,
-    _contractHoursPerMonth: Attribute[Int] = Attribute.empty,
-    _isDraft: Attribute[Boolean] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    contractAssociatedHiwi: Attribute[String] = Attribute.empty,
+    contractAssociatedPaymentLevel: Attribute[String] = Attribute.empty,
+    contractAssociatedSupervisor: Attribute[String] = Attribute.empty,
+    contractStartDate: Attribute[Long] = Attribute.empty,
+    contractEndDate: Attribute[Long] = Attribute.empty,
+    contractType: Attribute[String] = Attribute.empty,
+    contractHoursPerMonth: Attribute[Int] = Attribute.empty,
+    isDraft: Attribute[Boolean] = Attribute.empty,
+    exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Contract]
     derives DecomposeLattice,
       Bottom {
 
-  def exists: Attribute[Boolean] = _exists
+  def identifier: Attribute[String] = contractAssociatedHiwi
 
-  def identifier: Attribute[String] = _contractAssociatedHiwi
-
-  def withExists(exists: Boolean): Contract = {
-    this.copy(_exists = _exists.set(exists))
+  def withExists(_exists: Boolean): Contract = {
+    this.copy(exists = exists.set(_exists))
   }
 
 }

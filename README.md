@@ -1,7 +1,5 @@
 # reform
 
-[![Coverage Status](https://coveralls.io/repos/github/reform-org/reform/badge.svg?branch=test-coverage)](https://coveralls.io/github/reform-org/reform?branch=test-coverage)
-
 ## Prerequisites
 
 You should make sure that the following components are pre-installed on your machine:
@@ -38,7 +36,13 @@ In another window start the web dev server with:
 npm run dev
 ```
 
-Then open `http://localhost:5173/` in your browser.
+Then open linked instances in your browser:
+
+```
+npm run spawn-test-instances -- --count 2 --url http://localhost:5173/
+```
+
+Or connect them manually, but use a temp dir:
 
 ```
 setsid -f chromium --user-data-dir=$(mktemp -d) http://localhost:5173/
@@ -58,6 +62,10 @@ sbt "~Test / fastLinkJS"
 In a separate window:
 ```
 npm run test
+```
+
+```bash
+sbt webappJS/test
 ```
 
 ## Deployment

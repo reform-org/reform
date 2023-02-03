@@ -17,41 +17,34 @@ package webapp
 
 import colibri.*
 import colibri.router.*
-import colibri.router.Router
-import org.scalajs.dom.window
-import outwatch.*
-import rescala.default.*
 import webapp.pages.*
 import webapp.services.Page
 
 object Routes {
-  val fromPath: Path => Page = {
-    case Root                    => HomePage()
-    case Root / "login"          => LoginPage()
-    case Root / "projects"       => ProjectsPage()
-    case Root / "users"          => UsersPage()
-    case Root / "hiwis"          => HiwisPage()
-    case Root / "webrtc"         => WebRTCHandling();
-    case Root / "paymentlevels"  => PaymentLevelsPage();
-    case Root / "salarychanges"  => SalaryChangesPage();
-    case Root / "supervisor"     => SupervisorsPage();
-    case Root / "contractSchema" => ContractSchemasPage();
-    case Root / "Contracts"      => ContractsPage();
-    case Root / "editContracts" => EditContractsPage();
+  def fromPath(using repositories: Repositories): Path => Page = {
+    case Root                      => HomePage()
+    case Root / "projects"         => ProjectsPage()
+    case Root / "users"            => UsersPage()
+    case Root / "hiwis"            => HiwisPage()
+    case Root / "paymentlevels"    => PaymentLevelsPage()
+    case Root / "salarychanges"    => SalaryChangesPage()
+    case Root / "supervisor"       => SupervisorsPage()
+    case Root / "contractSchema"   => ContractSchemasPage()
+    case Root / "contracts"        => ContractsPage()
+    case Root / "editContracts"    => EditContractsPage()
+    case Root / "requiredDocument" => RequiredDocumentsPage()
   }
 
   val toPath: Page => Path = {
     case HomePage()            => Root / ""
-    case LoginPage()           => Root / "login"
     case ProjectsPage()        => Root / "projects"
     case UsersPage()           => Root / "users"
     case HiwisPage()           => Root / "hiwis"
-    case WebRTCHandling(_)     => Root / "webrtc";
-    case PaymentLevelsPage()   => Root / "paymentlevels";
+    case PaymentLevelsPage()   => Root / "paymentlevels"
     case SalaryChangesPage()   => Root / "salarychanges"
     case SupervisorsPage()     => Root / "supervisor"
     case ContractSchemasPage() => Root / "contractSchema"
-    case ContractsPage()       => Root / "Contracts"
-    case EditContractsPage()   => Root / "editContracts"
+    case ContractsPage()       => Root / "contracts"
+    case EditContractsPage()     => Root / "editContracts"
   }
 }

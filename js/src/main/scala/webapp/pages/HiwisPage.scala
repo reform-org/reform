@@ -1,12 +1,9 @@
 /*
 Copyright 2022 The reform-org/reform contributors
-
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
-
     http://www.apache.org/licenses/LICENSE-2.0
-
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
@@ -18,36 +15,52 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val hfirstName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._firstName,
-  (p, a) => p.copy(_firstName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "First Name",
-)
+import HiwisPage.*
 
-private val hlastName: UIAttribute[Hiwi, String] = UIAttribute(
-  _._lastName,
-  (p, a) => p.copy(_lastName = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Last Name",
-)
+case class HiwisPage()(using repositories: Repositories)
+    extends EntityPage[Hiwi](
+      repositories.hiwis,
+      Seq(firstName, lastName, hours, eMail, birthdate),
+    ) {}
 
-private val hhours: UIAttribute[Hiwi, Int] = UIAttribute(
-  _._hours,
-  (p, a) => p.copy(_hours = a),
-  readConverter = _.toString,
-  writeConverter = _.toInt,
-  placeholder = "Hours",
-)
+object HiwisPage {
+  private val firstName = UIAttributeBuilder.string
+    .withLabel("First Name")
+    .require
+    .bind[Hiwi](
+      _.firstName,
+      (h, a) => h.copy(firstName = a),
+    )
 
-private val hiwiEMail: UIAttribute[Hiwi, String] = UIAttribute(
-  _._eMail,
-  (p, a) => p.copy(_eMail = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Email",
-)
+  private val lastName = UIAttributeBuilder.string
+    .withLabel("Last Name")
+    .require
+    .bind[Hiwi](
+      _.lastName,
+      (h, a) => h.copy(lastName = a),
+    )
 
-case class HiwisPage() extends EntityPage[Hiwi](Repositories.hiwis, Seq(hfirstName, hlastName, hhours, hiwiEMail)) {}
+  private val hours = UIAttributeBuilder.int
+    .withLabel("Hours")
+    .require
+    .bind[Hiwi](
+      _.hours,
+      (h, a) => h.copy(hours = a),
+    )
+
+  private val eMail = UIAttributeBuilder.string
+    .withLabel("Email")
+    .require
+    .bind[Hiwi](
+      _.eMail,
+      (h, a) => h.copy(eMail = a),
+    )
+
+  private val birthdate = UIAttributeBuilder.date
+    .withLabel("Birthdate")
+    .require
+    .bindAsDatePicker[Hiwi](
+      _.birthdate,
+      (h, a) => h.copy(birthdate = a),
+    )
+}

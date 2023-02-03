@@ -39,12 +39,15 @@ let {
 	},
 });
 
+if (process.env.SELENIUM_BROWSER === undefined) {
+	throw new Error("Please run `export SELENIUM_BROWSER=chrome` or so");
+}
+
 console.log(`Starting ${count} instances on ${url}`);
 
 let peers = await Promise.all(
 	[...Array(Number(count))].map(async () => {
-		let peer = await Peer.create(false);
-		return peer;
+		return await Peer.create(false);
 	}),
 );
 
@@ -63,7 +66,7 @@ try {
 			});
 		console.log("ALL CONNECTED");
 
-		const line = await it.next();
+		await it.next();
 	}
 } finally {
 	await Promise.allSettled(peers.map((peer) => peer.driver.quit()));

@@ -3,167 +3,193 @@ package webapp.entity
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.*
-import webapp.entity.Attribute
-import webapp.Repositories
-import webapp.given
 import webapp.duplicateValuesHandler
+import webapp.given
+import webapp.utils.Date
 
 class UIOption[NameType](
     val id: String,
     val name: NameType,
 ) {}
 
-// contains attributes and methods that are used by all UIAttributes
-abstract class UICommonAttribute[EntityType, AttributeType](
+class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
     val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     val readConverter: AttributeType => String,
     val writeConverter: String => AttributeType,
-    val placeholder: String,
+    val label: String,
+    val isRequired: Boolean,
+    val fieldType: String = "text",
 ) {
-  def setFromString(entityVar: Var[Option[EntityType]], x: String): Unit = {
+  private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
     entityVar.transform(
       _.map(e => {
         val attr = getter(e)
-        setter(e, attr.set(writeConverter(x)))
+        setter(e, attr.set(x))
       }),
     )
   }
 
-  def render(entity: EntityType) = {
+  def render(entity: EntityType): VNode = {
     val attr = getter(entity)
-    td(duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+    td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
-  def renderEdit(entityVar: Var[Option[EntityType]]): Signal[Option[outwatch.VNode]]
-}
-
-case class UIAttribute[EntityType, AttributeType](
-    override val getter: EntityType => Attribute[AttributeType],
-    override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    override val readConverter: AttributeType => String,
-    override val writeConverter: String => AttributeType,
-    override val placeholder: String,
-    fieldType: String = "text",
-) extends UICommonAttribute[EntityType, AttributeType](
-      getter,
-      setter,
-      readConverter,
-      writeConverter,
-      placeholder,
-    ) {
-
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
+  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
         td(
-          input(
-            tpe := fieldType,
-            value := attr.getAll.map(x => readConverter(x)).mkString("/"),
-            onInput.value --> {
-              val evt = Evt[String]()
-              evt.observe(x => setFromString(entityVar, x))
-              evt
-            },
-            VModifier.prop("placeholder") := placeholder,
-          ),
+          cls := "px-6 py-0",
+          renderEditInput(formId, attr, x => set(entityVar, x)),
+          if (attr.getAll.size > 1) {
+            Some(
+              p(
+                "Conflicting values: ",
+                renderConflicts(attr),
+              ),
+            )
+          } else {
+            None
+          },
         )
       })
     }
   }
+
+  protected def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
+    input(
+      cls := "input valid:input-success bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700  dark:placeholder-gray-400 dark:text-white",
+      `type` := fieldType,
+      formId := _formId,
+      required := isRequired,
+      value := attr.get.map(x => readConverter(x)).getOrElse(""),
+      onInput.value --> {
+        val evt = Evt[String]()
+        evt.observe(set.compose(writeConverter))
+        evt
+      },
+      placeholder := label,
+    )
+
+  private def renderConflicts(attr: Attribute[AttributeType]): String =
+    attr.getAll.map(x => readConverter(x)).mkString("/")
 }
 
-case class UIDateAttribute[EntityType, AttributeType](
-    override val getter: EntityType => Attribute[AttributeType],
-    override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    override val readConverter: AttributeType => String,
-    override val writeConverter: String => AttributeType,
-    override val placeholder: String,
-    editConverter: AttributeType => String,
+class UIDateAttribute[EntityType](
+    getter: EntityType => Attribute[Long],
+    setter: (EntityType, Attribute[Long]) => EntityType,
+    readConverter: Long => String,
+    writeConverter: String => Long,
+    label: String,
+    isRequired: Boolean,
     min: String = "",
-) extends UICommonAttribute[EntityType, AttributeType](
-      getter,
-      setter,
-      readConverter,
-      writeConverter,
-      placeholder,
+) extends UIAttribute[EntityType, Long](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "date",
     ) {
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
-    entityVar.map {
-      _.map(entity => {
-        val attr = getter(entity)
-        td(
-          input(
-            tpe := "date",
-            minAttr := min,
-            value := attr.getAll.map(x => editConverter(x)).mkString("/"),
-            onInput.value --> {
-              val evt = Evt[String]()
-              evt.observe(x => setFromString(entityVar, x))
-              evt
-            },
-          ),
-        )
-      })
-    }
-  }
+  private val editConverter = Date.epochDayToDate(_, "yyyy-MM-dd")
+
+  override def renderEditInput(_formId: String, attr: Attribute[Long], set: Long => Unit): VNode = input(
+    cls := "input valid:input-success",
+    `type` := "date",
+    formId := _formId,
+    required := isRequired,
+    minAttr := min,
+    value := attr.get.map(x => editConverter(x)).getOrElse(""),
+    onInput.value --> {
+      val evt = Evt[String]()
+      evt.observe(set.compose(writeConverter))
+      evt
+    },
+  )
 }
 
-case class UISelectAttribute[EntityType, AttributeType](
-    override val getter: EntityType => Attribute[AttributeType],
-    override val setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    override val readConverter: AttributeType => String,
-    override val writeConverter: String => AttributeType,
-    override val placeholder: String,
-    options: Signal[List[UIOption[Signal[String]]]],
-) extends UICommonAttribute[EntityType, AttributeType](
-      getter,
-      setter,
-      readConverter,
-      writeConverter,
-      placeholder,
+class UICheckboxAttribute[EntityType](
+    getter: EntityType => Attribute[Boolean],
+    setter: (EntityType, Attribute[Boolean]) => EntityType,
+    label: String,
+    isRequired: Boolean,
+) extends UIAttribute[EntityType, Boolean](
+      getter = getter,
+      setter = setter,
+      readConverter = _.toString,
+      writeConverter = _.toBoolean,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "checkbox",
     ) {
 
-  override def render(entity: EntityType) = {
+  override def render(entity: EntityType): VNode = {
     val attr = getter(entity)
-    td(duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))))
+    td(
+      cls := "px-6 py-0",
+      duplicateValuesHandler(attr.getAll.map(booleanToGerman)),
+    )
   }
 
-  def renderEdit(entityVar: Var[Option[EntityType]]) = {
-    entityVar.map {
-      _.map(entity => {
-        val attr = getter(entity)
-        td(
-          select(
-            onInput.value --> {
-              val evt = Evt[String]()
-              evt.observe(x => setFromString(entityVar, x))
-              evt
-            },
-            option(value := "", "Bitte wählen..."),
-            options.map(o => o.map(v => option(value := v.id, v.name))),
-          ),
-        )
-      })
+  private def booleanToGerman(b: Boolean) = {
+    if (b) {
+      "Ja"
+    } else {
+      "Nein"
     }
   }
+
+  override def renderEditInput(_formId: String, attr: Attribute[Boolean], set: Boolean => Unit): VNode = input(
+    cls := "input valid:input-success",
+    `type` := "checkbox",
+    formId := _formId,
+    checked := attr.get.getOrElse(false),
+    onClick.foreach(_ => set(!attr.get.getOrElse(false))),
+  )
 }
 
-object UIAttribute {
+class UISelectAttribute[EntityType, AttributeType](
+    getter: EntityType => Attribute[AttributeType],
+    setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    readConverter: AttributeType => String,
+    writeConverter: String => AttributeType,
+    label: String,
+    isRequired: Boolean,
+    options: Signal[List[UIOption[Signal[String]]]],
+) extends UIAttribute[EntityType, AttributeType](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "select",
+    ) {
 
-  /* def string[EntityType](setter: (EntityType, String) => EntityType): AttributeHandler[EntityType, String]
-  = AttributeHandler(identity, identity, setter)
+  override def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(
+      cls := "px-6 py-0",
+      duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
+    )
+  }
 
-  def int[EntityType](setter: (EntityType, Int) => EntityType): AttributeHandler[EntityType, Int]
-  = AttributeHandler(_.toString, _.toInt, setter)
-
-  def optionWithDefault[EntityType, AttributeType](default: AttributeType, attr: AttributeHandler[EntityType, AttributeType]): AttributeHandler[EntityType, Option[AttributeType]]
-  = AttributeHandler(
-    v => attr.readConverter(v.getOrElse(default)),
-    s => Some(attr.writeConverter(s)),
-    (e, v) => attr.setter(e, v.getOrElse(default))
-  ) */
+  override def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
+    select(
+      cls := "input valid:input-success",
+      formId := _formId,
+      required := isRequired,
+      onInput.value --> {
+        val evt = Evt[String]()
+        evt.observe(set.compose(writeConverter))
+        evt
+      },
+      option(VMod.attr("value") := "", "Bitte wählen..."),
+      options.map(o =>
+        o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
+      ),
+    )
 }

@@ -18,28 +18,33 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
-private val username: UIAttribute[User, String] = UIAttribute(
-  _._username,
-  (p, a) => p.copy(_username = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Username",
-)
+import UsersPage.*
 
-private val role: UIAttribute[User, String] = UIAttribute(
-  _._role,
-  (p, a) => p.copy(_role = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Role",
-)
+case class UsersPage()(using repositories: Repositories)
+    extends EntityPage[User](repositories.users, Seq(username, role, comment)) {}
 
-private val comment: UIAttribute[User, Option[String]] = UIAttribute(
-  _._comment,
-  (p, a) => p.copy(_comment = a),
-  readConverter = _.getOrElse("no comment"),
-  writeConverter = Some(_),
-  placeholder = "Comment",
-)
+object UsersPage {
+  private val username = UIAttributeBuilder.string
+    .withLabel("Username")
+    .require
+    .bind[User](
+      _.username,
+      (u, a) => u.copy(username = a),
+    )
 
-case class UsersPage() extends EntityPage[User](Repositories.users, Seq(username, role, comment)) {}
+  private val role = UIAttributeBuilder.string
+    .withLabel("Role")
+    .require
+    .bind[User](
+      _.role,
+      (u, a) => u.copy(role = a),
+    )
+
+  private val comment = UIAttributeBuilder.string
+    .withLabel("Comment")
+    .withDefaultValue("")
+    .bind[User](
+      _.comment,
+      (u, a) => u.copy(comment = a),
+    )
+}

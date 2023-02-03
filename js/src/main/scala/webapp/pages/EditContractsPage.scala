@@ -25,12 +25,15 @@ import webapp.services.Page
 import webapp.entity.*
 import webapp.utils.Date
 import webapp.{*, given}
-
+import webapp.services.DiscoveryService
+import webapp.services.Page
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 case class EditContractsPage() extends Page {
 
-  /**
-   * For now until implemented contract in URL Getter TODO!
-   */
+  /** For now until implemented contract in URL Getter TODO!
+    */
+  /*
   private val selectedContract: UISelectAttribute[Contract, String] = UISelectAttribute(
     null,
     null,
@@ -46,55 +49,62 @@ case class EditContractsPage() extends Page {
       ),
     ),
   )
+   */
 
-  private val contractAssociatedHiwi: UISelectAttribute[Contract, String] = UISelectAttribute(
-    _._contractAssociatedHiwi,
-    (p, a) => p.copy(_contractAssociatedHiwi = a),
-    readConverter = identity,
-    writeConverter = identity,
-    placeholder = "AssociatedHiwi",
-    options = Repositories.hiwis.all.map(list =>
-      list.map(value =>
-        new UIOption[Signal[String]](
-          value.id,
-          value.signal.map(v => v._firstName.get.getOrElse("") + " " + v._lastName.get.getOrElse("")),
+  private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
+    UISelectAttribute(
+      _.contractAssociatedHiwi,
+      (p, a) => p.copy(contractAssociatedHiwi = a),
+      readConverter = identity,
+      writeConverter = identity,
+      label = "AssociatedHiwi",
+      options = repositories.hiwis.all.map(list =>
+        list.map(value =>
+          new UIOption[Signal[String]](
+            value.id,
+            value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
+          ),
         ),
       ),
-    ),
-  )
+      isRequired = true,
+    )
 
-  private val contractAssociatedSupervisor: UISelectAttribute[Contract, String] = UISelectAttribute(
-    _._contractAssociatedSupervisor,
-    (p, a) => p.copy(_contractAssociatedSupervisor = a),
-    readConverter = identity,
-    writeConverter = identity,
-    placeholder = "AssociatedSupervisors",
-    options = Repositories.supervisor.all.map(list =>
-      list.map(value =>
-        new UIOption[Signal[String]](
-          value.id,
-          value.signal.map(v => v._firstName.get.getOrElse("") + " " + v._lastName.get.getOrElse("")),
+  private def contractAssociatedSupervisor(using repositories: Repositories): UISelectAttribute[Contract, String] =
+    UISelectAttribute(
+      _.contractAssociatedSupervisor,
+      (p, a) => p.copy(contractAssociatedSupervisor = a),
+      readConverter = identity,
+      writeConverter = identity,
+      label = "AssociatedSupervisors",
+      options = repositories.supervisors.all.map(list =>
+        list.map(value =>
+          new UIOption[Signal[String]](
+            value.id,
+            value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
+          ),
         ),
       ),
-    ),
-  )
+      isRequired = true,
+    )
 
-  private val contractAssociatedType: UISelectAttribute[Contract, String] = UISelectAttribute(
-    _._contractType,
-    (p, a) => p.copy(_contractType = a),
-    readConverter = identity,
-    writeConverter = identity,
-    placeholder = "ContractType",
-    options = Repositories.contractSchemas.all.map(list =>
-      list.map(value =>
-        new UIOption[Signal[String]](
-          value.id,
-          value.signal.map(v => v._name.get.getOrElse("")),
+  private def contractAssociatedType(using repositories: Repositories): UISelectAttribute[Contract, String] =
+    UISelectAttribute(
+      _.contractType,
+      (p, a) => p.copy(contractType = a),
+      readConverter = identity,
+      writeConverter = identity,
+      label = "ContractType",
+      options = repositories.contractSchemas.all.map(list =>
+        list.map(value =>
+          new UIOption[Signal[String]](
+            value.id,
+            value.signal.map(v => v.name.get.getOrElse("")),
+          ),
         ),
       ),
-    ),
-  )
-
+      isRequired = true,
+    )
+  /*
   private val contractStartDate: UIDateAttribute[Contract, Long] = UIDateAttribute(
     _._contractStartDate,
     (p, a) => p.copy(_contractStartDate = a),
@@ -145,10 +155,15 @@ case class EditContractsPage() extends Page {
       ),
     ),
   )
+   */
+  private val currentContract = Var(Option(Contract.empty.copy(contractAssociatedHiwi = Attribute.empty.set("1"))))
 
-  private val currentContract = Var(Option(Contract.empty.copy(_contractAssociatedHiwi = Attribute.empty.set("1"))))
-
-  def render(using services: Services): VNode =
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ): VNode =
     div(
       navigationHeader,
       div(
@@ -158,17 +173,18 @@ case class EditContractsPage() extends Page {
       div(
         // button(tpe := "button", cls := "btn btn-default", tabIndex := -1, "Button"),
         form(
-          //label("Contract:"),
-          //selectedContract.renderEdit(currentContract),
+          // label("Contract:"),
+          // selectedContract.renderEdit(currentContract),
           br,
           label("AssociatedHiwi:"),
-          contractAssociatedHiwi.renderEdit(currentContract),
+          contractAssociatedHiwi.renderEdit("",currentContract),
           br,
           label("AssociatedSupervisor:"),
-          contractAssociatedSupervisor.renderEdit(currentContract),
+          contractAssociatedSupervisor.renderEdit("",currentContract),
           br,
           label("ContractType:"),
-          contractAssociatedType.renderEdit(currentContract),
+          contractAssociatedType.renderEdit("",currentContract),
+          /*
           br,
           label("StartDate:"),
           contractStartDate.renderEdit(currentContract),
@@ -182,6 +198,7 @@ case class EditContractsPage() extends Page {
           label("AssociatedPaymentLevel:"),
           contractAssociatedPaymentLevel.renderEdit(currentContract),
           br,
+           */
           button(
             cls := "btn",
             idAttr := "confirmEdit",

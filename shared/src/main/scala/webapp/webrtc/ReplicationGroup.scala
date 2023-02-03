@@ -17,19 +17,19 @@ package webapp.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import kofre.base.*
 import kofre.base.Lattice.*
-import webapp.webrtc.WebRTCService.*
+import kofre.base.*
+import loci.registry.Binding
+import loci.registry.Registry
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
+import rescala.core.Disconnectable
 import rescala.default.*
-import rescala.interface.*
 import webapp.Codecs.*
-import loci.registry.Binding
+
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
-import rescala.core.Disconnectable
 
 /** @param name
   *   The name/type of the thing to sync
@@ -45,7 +45,12 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
-class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: Bottom[A], codec: JsonValueCodec[A]) {
+class ReplicationGroup[A](name: String)(using
+    registry: Registry,
+    dcl: DecomposeLattice[A],
+    bottom: Bottom[A],
+    codec: JsonValueCodec[A], // this is not unused as it's used inside the macro
+) {
 
   implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 
@@ -86,7 +91,7 @@ class ReplicationGroup[A](name: String)(using dcl: DecomposeLattice[A], bottom: 
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.foreach((k, v) => deltaEvt.fire(v))
+        changes.foreach((_, v) => deltaEvt.fire(v))
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {

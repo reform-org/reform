@@ -13,17 +13,25 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp.pages
+package webapp.components
 
-import webapp.Repositories
-import webapp.entity.*
+import org.scalajs.dom
+import org.scalajs.dom.HTMLElement
+import outwatch.*
+import outwatch.dsl.*
+import webapp.*
+import webapp.services.Page
+import webapp.services.RoutingService
 
-private val title: UIAttribute[PaymentLevel, String] = UIAttribute(
-  _._title,
-  (p, a) => p.copy(_title = a),
-  readConverter = identity,
-  writeConverter = identity,
-  placeholder = "Title",
-)
-
-case class PaymentLevelsPage() extends EntityPage[PaymentLevel](Repositories.paymentLevels, Seq(title)) {}
+def navigationLink(using routing: RoutingService)(page: Page, label: String): VNode = {
+  a(
+    cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+    label,
+    onClick.foreach(e => {
+      e.preventDefault()
+      e.target.asInstanceOf[HTMLElement].blur()
+      routing.to(page, true)
+    }),
+    href := routing.linkPath(page),
+  )
+}

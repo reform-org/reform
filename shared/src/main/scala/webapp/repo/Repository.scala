@@ -16,19 +16,20 @@ limitations under the License.
 package webapp.repo
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
+import loci.registry.Registry
 import rescala.default.*
 import webapp.*
-import webapp.repo.*
+import webapp.npm.IIndexedDB
 
 import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import scala.util.Success
 
 case class Repository[A](name: String, defaultValue: A)(using
+    registry: Registry,
+    indexedDb: IIndexedDB,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],

@@ -1,5 +1,5 @@
 /*
-Copyright 2022 https://github.com/phisn/ratable, The reform-org/reform contributors
+Copyright 2022 The reform-org/reform contributors
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -13,17 +13,22 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
  */
-package webapp
+package webapp.pages
 
-import webapp.services.RoutingService
-import webapp.webrtc.WebRTCService
+import webapp.Repositories
+import webapp.entity.*
 
-trait Services {
-  lazy val routing: RoutingService
-  lazy val webrtc: WebRTCService.type
-}
+import PaymentLevelsPage.*
 
-object ServicesDefault extends Services {
-  lazy val routing = RoutingService()
-  lazy val webrtc = WebRTCService
+case class PaymentLevelsPage()(using repositories: Repositories)
+    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
+
+object PaymentLevelsPage {
+  private val title = UIAttributeBuilder.string
+    .withLabel("Title")
+    .require
+    .bind[PaymentLevel](
+      _.title,
+      (p, a) => p.copy(title = a),
+    )
 }

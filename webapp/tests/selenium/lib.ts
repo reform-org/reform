@@ -1,3 +1,4 @@
+import "./fast-selenium.js";
 import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
@@ -5,8 +6,8 @@ import safari from "selenium-webdriver/safari.js";
 import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
-export let seed = new Chance().integer();
-//let seed = 5475712614006784;
+//export let seed = new Chance().integer();
+export let seed = 7196640142163968;
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
@@ -18,12 +19,97 @@ export const Actions = Object.freeze({
 	CREATE_PEER: Symbol("CREATE_PEER"),
 	DELETE_PEER: Symbol("DELETE_PEER"),
 	CREATE_PROJECT: Symbol("CREATE PROJECT"),
+	EDIT_PROJECT: Symbol("EDIT_PROJECT"),
 	CONNECT_TO_PEER: Symbol("CONNECT_TO_PEER"),
+	BAD_NETWORK: Symbol("BAD_NETWORK"),
+	GOOD_NETWORK: Symbol("GOOD_NETWORK"),
 	RELOAD: Symbol("RELOAD"),
 });
 
 interface Mergeable {
 	merge(other: ThisType<this>): ThisType<this>;
+}
+
+type ReplicaId = string;
+type LogicalClock = number;
+
+function compare(
+	left: Map<ReplicaId, LogicalClock>,
+	right: Map<ReplicaId, LogicalClock>,
+): number {
+	let allReplicaIds = [...left.keys(), ...right.keys()];
+	let smaller = false;
+	let greater = false;
+	for (let replicaId of allReplicaIds) {
+		let l = left.get(replicaId) || 0;
+		let r = right.get(replicaId) || 0;
+		if (l < r) {
+			smaller = true;
+		}
+		if (r < l) {
+			greater = true;
+		}
+	}
+	return smaller && !greater ? 1 : greater && !smaller ? -1 : 0;
+}
+
+class MultiValueRegister<T> implements Mergeable {
+	values: Map<Map<ReplicaId, LogicalClock>, T>;
+
+	constructor(values: Map<Map<ReplicaId, LogicalClock>, T>) {
+		this.values = values;
+	}
+
+	value(): T | null {
+		if (this.values.size != 1) {
+			console.log("multiple values");
+			return null;
+		}
+		return this.values.values().next().value;
+	}
+
+	set(replicaId: string, value: T): MultiValueRegister<T> {
+		let allReplicaIds = [...this.values.keys()].flatMap((v) => [
+			...v.keys(),
+			replicaId,
+		]);
+		let clock = allReplicaIds.map((r) => {
+			let max = [...this.values.keys()]
+				.flatMap((z) => {
+					let v = z.get(r);
+					return v ? [v] : [];
+				})
+				.reduce((a, b) => {
+					return Math.max(a, b);
+				}, 0);
+			if (r == replicaId) {
+				return [r, max + 1] as const;
+			} else {
+				return [r, max] as const;
+			}
+		});
+		return new MultiValueRegister(new Map([[new Map(clock), value]]));
+	}
+
+	merge(other: MultiValueRegister<T>): MultiValueRegister<T> {
+		let all = [...this.values.entries(), ...other.values.entries()];
+		let result: [Map<string, number>, T][] = [];
+		for (let i = 0; i < all.length; i++) {
+			let greatest = true;
+			for (let j = 0; j < all.length; j++) {
+				if (i == j) continue;
+				if (compare(all[i][0], all[j][0]) > 0) {
+					greatest = false;
+				}
+			}
+			if (greatest) {
+				if (!result.includes(all[i])) {
+					result.push(all[i]);
+				}
+			}
+		}
+		return new MultiValueRegister(new Map(result));
+	}
 }
 
 class LastWriterWins<T> implements Mergeable {
@@ -64,14 +150,14 @@ class PosNegCounter implements Mergeable {
 }
 
 class Project implements Mergeable {
-	name: LastWriterWins<string>;
-	maxHours: PosNegCounter;
-	account: LastWriterWins<string>;
+	name: MultiValueRegister<string>;
+	maxHours: MultiValueRegister<number>;
+	account: MultiValueRegister<string>;
 
 	constructor(
-		name: LastWriterWins<string>,
-		maxHours: PosNegCounter,
-		account: LastWriterWins<string>,
+		name: MultiValueRegister<string>,
+		maxHours: MultiValueRegister<number>,
+		account: MultiValueRegister<string>,
 	) {
 		this.name = name;
 		this.maxHours = maxHours;
@@ -85,9 +171,9 @@ class Project implements Mergeable {
 		account: string,
 	) {
 		return new Project(
-			new LastWriterWins(name, new Date()),
-			new PosNegCounter(new Map([[replicaId, maxHours]])),
-			new LastWriterWins(account, new Date()),
+			new MultiValueRegister(new Map([[new Map([[replicaId, 1]]), name]])),
+			new MultiValueRegister(new Map([[new Map([[replicaId, 1]]), maxHours]])),
+			new MultiValueRegister(new Map([[new Map([[replicaId, 1]]), account]])),
 		);
 	}
 
@@ -132,15 +218,72 @@ export class Peer {
 		this.connectedTo = [];
 	}
 
+	async editProject(projectId: string) {
+		console.log(`[${this.id}] edit project ${projectId}`);
+
+		let row = await this.driver.findElement(
+			By.css(`tr[data-id='${projectId}']`),
+		);
+
+		let editProjectButton = await row.findElement(
+			By.xpath(`.//button[text()="Edit"]`),
+		);
+		await editProjectButton.click();
+
+		let projectNameInput = await row.findElement(
+			By.css("input[placeholder='Name']"),
+		);
+		let maxHoursInput = await row.findElement(
+			By.css("input[placeholder='Max Hours']"),
+		);
+		let accountInput = await row.findElement(
+			By.css("input[placeholder='Account']"),
+		);
+
+		let projectName = chance.animal();
+		let maxHours = chance.integer({ min: 1, max: 10 });
+		let account = chance.name();
+
+		await projectNameInput.clear();
+		await projectNameInput.sendKeys(projectName);
+
+		await maxHoursInput.clear();
+		await maxHoursInput.sendKeys(maxHours);
+
+		await accountInput.clear();
+		await accountInput.sendKeys(account);
+
+		await (
+			await row.findElement(By.xpath('//button[text()="Save edit"]'))
+		).click();
+
+		let oldProject = this.projects.value.get(projectId)!;
+		let newProject = new Project(
+			oldProject.name.set(this.id, projectName),
+			oldProject.maxHours.set(this.id, maxHours),
+			oldProject.account.set(this.id, account),
+		);
+
+		this.projects.value.set(projectId, newProject);
+	}
+
 	async createProject() {
 		console.log(`[${this.id}] create project`);
 		// only on mobile:
 		// let dropdown = await random_peer.driver.findElement(By.id("dropdown-button"))
 		// await dropdown.click()
-		let projectsButton = await this.driver.findElement(
-			By.css(".navbar-center a[href='/projects']"),
-		);
-		await projectsButton.click();
+		if (process.env.SELENIUM_BROWSER === "safari") {
+			await this.driver.wait(
+				until.elementLocated(By.css(".navbar-center a[href='/projects']")),
+				10000,
+			);
+			await this.driver.sleep(500);
+		}
+		await (
+			await this.driver.findElement(
+				By.css(".navbar-center a[href='/projects']"),
+			)
+		).click();
 
 		let projectNameInput = await this.driver.findElement(
 			By.css("input[placeholder='Name']"),
@@ -152,7 +295,7 @@ export class Peer {
 			By.css("input[placeholder='Account']"),
 		);
 		let addProjectButton = await this.driver.findElement(
-			By.xpath(`//button[text()="Add Entity"]`),
+			By.xpath(`.//button[text()="Add Entity"]`),
 		);
 
 		let projectName = chance.animal();
@@ -192,6 +335,29 @@ export class Peer {
 		);
 	}
 
+	async goToPage(page: string) {
+		try {
+			let dropDown = await this.driver.findElement(By.css("div.dropdown"));
+			await dropDown.click();
+			let webrtcButton = await this.driver.findElement(
+				By.css(`.navbar-start a[href='${page}']`),
+			);
+			await webrtcButton.click();
+		} catch (ignoreNotMobile) {
+			let webrtcButton = await this.driver.findElement(
+				By.css(`.navbar-center a[href='${page}']`),
+			);
+			await webrtcButton.click();
+		}
+	}
+
+	async goToWebRTCPage() {
+		let drawer = await this.driver.findElement(
+			By.css('label[for="connection-drawer"]'),
+		);
+		await drawer.click();
+	}
+
 	async connectTo(other: Peer) {
 		console.log(`[${this.id}, ${other.id}] connect`);
 		let [[offerInput, submitOffer], [offer, answerInput, answerSubmit]] =
@@ -199,46 +365,62 @@ export class Peer {
 				(async () => {
 					let driver = this.driver;
 
-					let webrtcButton = await driver.findElement(
-						By.css(".navbar-center a[href='/webrtc']"),
+					await this.goToWebRTCPage();
+
+					let clientMode = await driver.findElement(
+						By.css(`label[for="clientMode"]`),
 					);
-					await webrtcButton.click();
+					await driver.wait(until.elementIsVisible(clientMode), 3000);
+					await clientMode.click();
 
-					let clientButton = await driver.findElement(
-						By.xpath(`//button[text()="Client"]`),
+					let name = await driver.findElement(
+						By.css(`input[placeholder="Your name"]`),
 					);
-					await clientButton.click();
+					await name.sendKeys("person a");
 
-					let textarea = await driver.findElement(By.css("textarea"));
-
+					let textarea = await driver.findElement(
+						By.css(`input[placeholder="Token"]`),
+					);
 					let submitOffer = await driver.findElement(
-						By.xpath(`//button[text()="Connect to host using token"]`),
+						By.xpath(`.//button[text()="Connect"]`),
 					);
-
 					return [textarea, submitOffer];
 				})(),
 				(async () => {
 					let driver = other.driver;
 
-					let webrtcButton = await driver.findElement(
-						By.css(".navbar-center a[href='/webrtc']"),
-					);
-					await webrtcButton.click();
+					await other.goToWebRTCPage();
 
-					let hostButton = await driver.findElement(
-						By.xpath(`//button[text()="Host"]`),
+					let hostMode = await driver.findElement(
+						By.css(`label[for="hostMode"]`),
+					);
+					await driver.wait(until.elementIsVisible(hostMode), 3000);
+					await hostMode.click();
+
+					let name = await driver.wait(
+						until.elementLocated(By.css(`input[placeholder="Your name"]`)),
+						3000,
+					);
+					await name.sendKeys("person a");
+
+					let hostButton = await driver.wait(
+						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`))
 					);
 					await hostButton.click();
 
-					let offer = await driver.findElement(By.css("div.overflow-x-auto"));
-					await driver.wait(until.elementTextMatches(offer, /.+/), 1000);
-					let value = await offer.getText();
-					//console.log(`got offer: ${value}`)
+					let offer = await driver.wait(
+						until.elementLocated(By.css(`button[data-token]`)),
+						3000,
+					);
+					let value = await offer.getAttribute("data-token");
+					//console.log(`got offer: ${value}`);
 
-					let answerInput = await driver.findElement(By.css("textarea"));
+					let answerInput = await driver.findElement(
+						By.css(`input[placeholder="Token"]`),
+					);
 
 					let answerSubmit = await driver.findElement(
-						By.xpath(`//button[text()="Connect to client using token"]`),
+						By.xpath(`.//button[text()="Finish Connection"]`),
 					);
 
 					return [value, answerInput, answerSubmit];
@@ -247,10 +429,12 @@ export class Peer {
 		await offerInput.sendKeys(offer);
 		await submitOffer.click();
 
-		let answer = await this.driver.findElement(By.css("div.overflow-x-auto"));
-		await this.driver.wait(until.elementTextMatches(answer, /.+/), 1000);
-		let value = await answer.getText();
-		//console.log(`got answer: ${value}`)
+		let answer = await this.driver.wait(
+			until.elementLocated(By.css(`button[data-token]`)),
+			3000,
+		);
+		let value = await answer.getAttribute("data-token");
+		//console.log(`got answer: ${value}`);
 
 		await answerInput.sendKeys(value);
 		await answerSubmit.click();
@@ -258,8 +442,14 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`//h2[text()="Connected"]`)),
+					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
+					3000,
 				);
+				let overlay = await peer.driver.findElement(
+					By.css("label.drawer-overlay"),
+				);
+				await overlay.click();
+				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000);
 			}),
 		);
 
@@ -270,7 +460,7 @@ export class Peer {
 	public static async create(headless: boolean) {
 		let chromeOptions = new chrome.Options().windowSize({
 			width: 1200,
-			height: 750,
+			height: 800,
 		});
 
 		if (headless) {
@@ -279,25 +469,63 @@ export class Peer {
 
 		let firefoxOptions = new firefox.Options().windowSize({
 			width: 1200,
-			height: 750,
+			height: 800,
 		});
 
 		if (headless) {
 			firefoxOptions = firefoxOptions.headless();
 		}
 
+		const capabilities: Record<string, {}> = {
+			chrome: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Chrome",
+				},
+				browserName: "Chrome",
+			},
+			firefox: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "109",
+					buildName: `${new Date()}`,
+					sessionName: "Firefox",
+				},
+				browserName: "Firefox",
+			},
+			safari: {
+				"bstack:options": {
+					local: "true",
+					debug: "true",
+					consoleLogs: "info",
+					os: "OS X",
+					osVersion: "Ventura",
+					browserVersion: "16",
+					buildName: `${new Date()}`,
+					sessionName: "Safari",
+				},
+				browserName: "Safari",
+			},
+		};
+
 		let driver = new Builder()
-			.forBrowser("chrome")
+			.withCapabilities(capabilities[process.env.SELENIUM_BROWSER!])
 			.setChromeOptions(chromeOptions)
 			.setFirefoxOptions(firefoxOptions)
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		//await driver.manage().window().setRect({x: 0, y: 0, width: 2000, height: 750})
-
-		await driver.manage().setTimeouts({
-			script: 10000,
-		});
+		await driver.manage().window().setRect({ width: 1200, height: 800 });
 
 		let id = (await driver.getSession()).getId();
 
@@ -326,13 +554,22 @@ export async function check(peers: Peer[]) {
 	let condition = new Condition<boolean>(
 		"all peers are fully synced",
 		async () => {
-			console.log("condition");
 			let results = await Promise.all(
 				peers.map<Promise<number>>(async (peer) => {
-					let projectsButton = await peer.driver.findElement(
-						By.css(".navbar-center a[href='/projects']"),
-					);
-					await projectsButton.click();
+					if (process.env.SELENIUM_BROWSER === "safari") {
+						await peer.driver.wait(
+							until.elementLocated(
+								By.css(".navbar-center a[href='/projects']"),
+							),
+							10000,
+						);
+						await peer.driver.sleep(1000);
+					}
+					await (
+						await peer.driver.findElement(
+							By.css(".navbar-center a[href='/projects']"),
+						)
+					).click();
 
 					let projects = await peer.driver.findElements(
 						By.css("tbody tr[data-id]"),
@@ -340,31 +577,44 @@ export async function check(peers: Peer[]) {
 
 					let expectedProjects = [...peer.projects.value.entries()]
 						.map(([k, v]) => {
-							return [
-								k,
-								v.name.value,
-								[...v.maxHours.value.values()].reduce(
-									(partialSum, a) => partialSum + a,
-									0,
-								),
-								v.account.value,
-							];
+							return [k, v.name.value(), v.maxHours.value(), v.account.value()];
 						})
-						.sort((a, b) => a[0].toString().localeCompare(b[0].toString()));
+						.sort(
+							(a, b) =>
+								a[0]?.toString().localeCompare(b[0]?.toString() || "") || -1,
+						);
 
 					let actualProjects = (
 						await Promise.all(
 							projects.map(async (project) => {
 								let id = await project.getAttribute("data-id");
 								let tds = await project.findElements(By.css("td"));
+
+								let nameConflicted =
+									(await tds[0].findElements(By.css(".tooltip-error")))
+										.length == 1;
 								let name = await tds[0].getText();
+								let maxHoursConflicted =
+									(await tds[1].findElements(By.css(".tooltip-error")))
+										.length == 1;
 								let maxHours = Number.parseInt(await tds[1].getText());
+								let accountConflicted =
+									(await tds[2].findElements(By.css(".tooltip-error")))
+										.length == 1;
 								let account = await tds[2].getText();
 
-								return [id, name, maxHours, account];
+								return [
+									id,
+									nameConflicted ? null : name,
+									maxHoursConflicted ? null : maxHours,
+									accountConflicted ? null : account,
+								];
 							}),
 						)
-					).sort((a, b) => a[0].toString().localeCompare(b[0].toString()));
+					).sort(
+						(a, b) =>
+							a[0]?.toString().localeCompare(b[0]?.toString() || "") || -1,
+					);
 
 					try {
 						assert.deepEqual(actualProjects, expectedProjects);
@@ -387,7 +637,7 @@ export async function check(peers: Peer[]) {
 
 	let result = await peers[0].driver.wait(
 		condition,
-		10000,
+		20000,
 		"waiting for peers synced timed out",
 	);
 	assert.strictEqual(result, true);

@@ -15,13 +15,17 @@ limitations under the License.
  */
 package webapp
 
+import cats.effect.SyncIO
+import loci.registry.Registry
 import outwatch.*
 import outwatch.dsl.*
-import cats.effect.SyncIO
-import rescala.default.{Event, Signal, Var}
-import colibri.{Cancelable, Observer, Source, Subject}
+import webapp.npm.IIndexedDB
+import webapp.npm.IndexedDB
+import webapp.services.DiscoveryService
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
+
 import scala.scalajs.js
-import js.annotation.*
 
 // object JavaScriptHot {
 //   @js.native
@@ -57,12 +61,23 @@ import js.annotation.*
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
-    implicit val services = ServicesDefault
+    given routing: RoutingService = RoutingService()
+    given indexedDb: IIndexedDB = IndexedDB()
+    given registry: Registry = Registry()
+    given webrtc: WebRTCService = WebRTCService()
+    given repositories: Repositories = Repositories()
+    given discovery: DiscoveryService = DiscoveryService()
+    if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using services: Services) = body(
-    services.routing.render,
+  def app(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ) = body(
+    routing.render,
   )
 }
 

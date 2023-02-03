@@ -15,195 +15,127 @@ limitations under the License.
  */
 package webapp.components
 
-import org.scalajs.dom
+import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
 import webapp.*
-import cats.effect.SyncIO
-import colibri.{Cancelable, Observer, Source, Subject}
 import webapp.given
 import webapp.pages.*
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLElement
+import webapp.services.DiscoveryService
+import webapp.services.RoutingService
+import webapp.webrtc.WebRTCService
 
-def navigationMenu(using services: Services)(classes: String) = {
+def navigationMenu(using routing: RoutingService, repositories: Repositories)(
+    classes: String,
+) = {
   ul(
     tabIndex := 0,
     cls := classes,
     li(
-      a(
-        "Home",
-        href := "/",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HomePage(), true)
-        }),
-      ),
+      navigationLink(ProjectsPage(), "Projects"),
+    ),
+    li(
+      navigationLink(UsersPage(), "Users"),
     ),
     li(
       a(
-        "Login",
-        href := "/login",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(LoginPage(), true)
-        }),
+        cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+        "Settings",
+        Icons.expand("w-4 h-4"),
+      ),
+      ul(
+        cls := "p-2 bg-base-100 focus:bg-slate-200 z-10 shadow-lg rounded-md",
+        li(
+          navigationLink(PaymentLevelsPage(), "Payment levels"),
+        ),
+        li(
+          navigationLink(SalaryChangesPage(), "Salary changes"),
+        ),
       ),
     ),
     li(
-      a(
-        "Projekte",
-        href := "/projects",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ProjectsPage(), true)
-        }),
-      ),
+      navigationLink(HiwisPage(), "Hiwis"),
     ),
     li(
-      a(
-        "Users",
-        href := "/users",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(UsersPage(), true)
-        }),
-      ),
+      navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      a(
-        "Paymentlevels",
-        href := "/paymentlevels",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(PaymentLevelsPage(), true)
-        }),
-      ),
+      navigationLink(ContractSchemasPage(), "Contract schemas"),
     ),
     li(
-      a(
-        "SalaryChanges",
-        href := "/salarychanges",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SalaryChangesPage(), true)
-        }),
-      ),
+      navigationLink(ContractsPage(), "Contract templates"),
     ),
     li(
-      a(
-        "Hiwis",
-        href := "/hiwis",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(HiwisPage(), true)
-        }),
-      ),
+      navigationLink(EditContractsPage(), "Contract templates"),
     ),
     li(
-      a(
-        "Supervisors",
-        href := "/supervisors",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(SupervisorsPage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
-        "ContractSchemas",
-        href := "/contractSchemas",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ContractSchemasPage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
-        "Contracts",
-        href := "/contracts",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(ContractsPage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
-        "EditContracts",
-        href := "/editContracts",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(EditContractsPage(), true)
-        }),
-      ),
-    ),
-    li(
-      a(
-        "WebRTC",
-        href := "/webrtc",
-        onClick.foreach(e => {
-          e.preventDefault()
-          e.target.asInstanceOf[HTMLElement].blur()
-          services.routing.to(WebRTCHandling(), true)
-        }),
-      ),
-    ),
-    li(
-      i(
-        s"${services.webrtc.registry.remotes.size} Connections",
-      ),
+      navigationLink(RequiredDocumentsPage(), "Required documents"),
     ),
   )
 }
 
-def navigationHeader(using services: Services) = {
-  import svg.*
+def navigationHeader(
+    content: VNode,
+)(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService) = {
   div(
-    cls := "navbar bg-base-300",
+    cls := "drawer drawer-end",
+    input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "navbar-start",
+      cls := "drawer-content flex flex-col",
       div(
-        cls := "dropdown",
-        label(
-          tabIndex := 0,
-          idAttr := "dropdown-button",
-          cls := "btn btn-ghost lg:hidden",
-          svg(
-            xmlns := "http://www.w3.org/2000/svg",
-            cls := "h-5 w-5",
-            fill := "none",
-            viewBox := "0 0 24 24",
-            stroke := "currentColor",
-            path(
-              VModifier.attr("stroke-linecap") := "round",
-              VModifier.attr("stroke-linejoin") := "round",
-              VModifier.attr("stroke-width") := "2",
-              d := "M4 6h16M4 12h8m-8 6h16",
+        cls := "navbar bg-base-100 shadow",
+        div(
+          cls := "flex-none",
+          div(
+            cls := "dropdown",
+            label(
+              tabIndex := 0,
+              idAttr := "dropdown-button",
+              cls := "btn btn-ghost lg:hidden",
+              Icons.hamburger("h-5 w-5"),
+            ),
+            navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+          ),
+        ),
+        div(
+          cls := "flex-1",
+          a(
+            Icons.reform(),
+            cls := "btn btn-ghost normal-case text-xl",
+            href := "/",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              routing.to(HomePage(), true)
+            }),
+          ),
+        ),
+        div(
+          cls := "navbar-center hidden lg:flex",
+          navigationMenu("menu menu-horizontal p-0"),
+        ),
+        div(
+          cls := "flex-none",
+          label(
+            forId := "connection-drawer",
+            cls := "btn btn-ghost",
+            div(
+              cls := "indicator",
+              Icons.connections("h-6 w-6", "#000"),
+              span(
+                cls := "badge badge-sm indicator-item",
+                webrtc.connections.map(_.size),
+              ),
             ),
           ),
         ),
-        navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
       ),
-      a(cls := "btn btn-ghost normal-case text-xl", "reform"),
+      content,
     ),
     div(
-      cls := "navbar-center hidden lg:flex",
-      navigationMenu("menu menu-horizontal p-0"),
+      cls := "drawer-side",
+      label(forId := "connection-drawer", cls := "drawer-overlay"),
+      ConnectionModal().render,
     ),
   )
 }
