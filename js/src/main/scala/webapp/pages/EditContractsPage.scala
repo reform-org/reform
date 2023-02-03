@@ -35,7 +35,7 @@ case class EditContractsPage() extends Page {
     */
   /*
   private val selectedContract: UISelectAttribute[Contract, String] = UISelectAttribute(
-    null,
+    null
     null,
     readConverter = identity,
     writeConverter = identity,
@@ -164,8 +164,7 @@ case class EditContractsPage() extends Page {
       webrtc: WebRTCService,
       discovery: DiscoveryService,
   ): VNode =
-    div(
-      navigationHeader,
+    navigationHeader(div(
       div(
         cls := "p-1",
         h1(cls := "text-4xl text-center", "EditContractsPage"),
@@ -213,6 +212,6 @@ case class EditContractsPage() extends Page {
           ),
         ),
       ),
-    )
+    ))
 
 }
