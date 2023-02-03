@@ -37,6 +37,7 @@ object Routes {
     case Root / "supervisor"     => SupervisorsPage();
     case Root / "contractSchema" => ContractSchemasPage();
     case Root / "Contracts"      => ContractsPage();
+    case Root / "editContracts" => EditContractsPage();
   }
 
   val toPath: Page => Path = {
@@ -51,5 +52,6 @@ object Routes {
     case SupervisorsPage()     => Root / "supervisor"
     case ContractSchemasPage() => Root / "contractSchema"
     case ContractsPage()       => Root / "Contracts"
+    case EditContractsPage()   => Root / "editContracts"
   }
 }

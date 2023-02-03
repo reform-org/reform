@@ -17,14 +17,20 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import rescala.default.*
 import webapp.utils.Date
 
-private val contractAssociatedHiwi: UIAttribute[Contract, String] = UIAttribute(
+
+private val contractAssociatedHiwi: UISelectAttribute[Contract, String] = UISelectAttribute(
   _._contractAssociatedHiwi,
   (p, a) => p.copy(_contractAssociatedHiwi = a),
   readConverter = identity,
   writeConverter = identity,
   placeholder = "AssociatedHiwi",
+  options = Repositories.hiwis.all.map(list =>
+    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v._firstName.get.getOrElse("")))),
+  ),
+
 )
 
 private val contractType: UIAttribute[Contract, String] = UIAttribute(
