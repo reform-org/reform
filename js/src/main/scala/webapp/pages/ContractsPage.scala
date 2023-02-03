@@ -18,8 +18,6 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 import rescala.default.*
-import webapp.utils.Date
-import HiwisPage.*
 
 
 private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] = UISelectAttribute(

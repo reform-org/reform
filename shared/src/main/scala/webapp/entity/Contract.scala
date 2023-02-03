@@ -31,6 +31,9 @@ case class Contract(
     this.copy(exists = exists.set(_exists))
   }
 
+  def default =
+    Contract(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty,Attribute.empty,Attribute.empty,Attribute.empty)
+
 }
 
 object Contract {
