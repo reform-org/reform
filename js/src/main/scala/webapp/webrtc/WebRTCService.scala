@@ -16,22 +16,26 @@ limitations under the License.
 package webapp.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import com.github.plokhotnyuk.jsoniter_scala.core.*
 import loci.communicator.Connector
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import loci.registry.*
 import loci.transmitter.RemoteRef
 import org.scalajs.dom
+import org.scalajs.dom.{console, window}
 import rescala.default.*
 import webapp.*
 import webapp.npm.Utils
 import webapp.utils.Base64
+import scala.util.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Promise
+
+import loci.serializer.jsoniterScala.given
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -60,6 +64,8 @@ object PendingConnection {
 
 class WebRTCService(using registry: Registry) {
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
+  private val pings = scala.collection.mutable.Map[RemoteRef, Int]()
+  private val intervals = scala.collection.mutable.Map[RemoteRef, Int]()
   private val webRTCConnections =
     scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
   private val connectionRefs = scala.collection.mutable.Map[String, RemoteRef]()
@@ -110,6 +116,47 @@ class WebRTCService(using registry: Registry) {
     Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
 
-  // registry.remoteJoined.monitor(addConnection.fire)
-  registry.remoteLeft.monitor(removeConnection.fire)
+  private def ping(ref: RemoteRef): Unit = {
+    val remoteUpdate = registry.lookup(binding, ref)
+    remoteUpdate("pingdata").onComplete {
+      case Success(_) => console.log("update ping success")
+      case Failure(_) => console.log("update ping failure")
+    }
+  }
+
+
+  implicit val codec: JsonValueCodec[String] = JsonCodecMaker.make
+  val binding = Binding[String => Unit]("pings")
+
+  registry.remoteJoined.monitor(remoteRef => {
+    val interval = window.setInterval(
+      () => {
+        if (remoteRef.connected) {
+          if (pings.applyOrElse(remoteRef, _ => 0) >= 2) {
+            remoteRef.disconnect()
+          } else {
+            ping(remoteRef);
+            pings += (remoteRef -> pings.applyOrElse(remoteRef, _ => 0))
+          }
+        }
+      },
+      10000,
+    );
+    intervals += (remoteRef -> interval)
+  })
+
+    registry.remoteLeft.monitor(remoteRef => {
+      removeConnection.fire(remoteRef)
+      window.clearInterval(intervals(remoteRef))
+      intervals -= remoteRef
+      pings -= remoteRef
+    })
+
+
+  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: String) =>
+    {
+      pings(remoteRef) = 0;
+    }
+  }
+
 }
