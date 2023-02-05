@@ -4,20 +4,23 @@ import outwatch.VNode
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.{document, console}
+import org.scalajs.dom.{console, document}
 import webapp.given
 import org.scalajs.dom.Element
 
-class ModalButton(val text: String, val classes: String = "", val callback: Option[() => Unit] = None)
+class ModalButton(val text: String, val classes: String = "", val callback: () => Unit = () => {})
 
-class Modal(val title: String = "", val body: String = "", val buttons: Seq[ModalButton]) {
+class Modal(val title: String = "", val body: String = "", val buttons: Seq[ModalButton] = Seq()) {
   private val openState = Var(false)
 
-  document.addEventListener("click", event => {
-    if(event.target.asInstanceOf[Element].matches(".modal.modal-open")){
+  document.addEventListener(
+    "click",
+    event => {
+      if (event.target.asInstanceOf[Element].matches(".modal.modal-open")) {
         this.openState.set(false)
-    }
-  })
+      }
+    },
+  )
 
   def button(): VNode = {
     input(
@@ -54,13 +57,8 @@ class Modal(val title: String = "", val body: String = "", val buttons: Seq[Moda
                 cls := s"btn btn-active p-2 h-fit min-h-10 border-0 ${button.classes}",
                 button.text,
                 onClick.foreach(_ => {
-                  button.callback match {
-                    case None => this.close()
-                    case Some(actualCallback) => {
-                      actualCallback()
-                      this.close()
-                    }
-                  }
+                  button.callback()
+                  this.close()
                 }),
               ),
             ),

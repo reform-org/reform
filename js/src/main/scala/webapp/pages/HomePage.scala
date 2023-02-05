@@ -38,7 +38,7 @@ case class HomePage() extends Page {
       new ModalButton(
         "Yay!",
         "bg-purple-600",
-        Some(() => {
+        () => {
           document.getElementById("loadPDF").classList.add("loading")
           PDF
             .fill(
@@ -59,7 +59,7 @@ case class HomePage() extends Page {
               console.log(s)
               document.getElementById("loadPDF").classList.remove("loading")
             })
-        }),
+        },
       ),
       new ModalButton("Nay!"),
     ),
