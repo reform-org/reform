@@ -52,14 +52,13 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
-      // like there could also be sane defaults but no
       "-no-indent",
+      // "-W",
+      // "-Y",
       // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
-      "--unchecked",
-      "-deprecation",
-      "-Xmigration",
       "-Wunused:all",
-      // "-Xcheck-macros" // breaks utest
+      "-Wvalue-discard",
+      //"-Xcheck-macros", // breaks utest, outwatch
     ),
   )
