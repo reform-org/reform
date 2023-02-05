@@ -26,7 +26,17 @@ private def showConnectionToken(connection: PendingConnection) = {
         data.token := PendingConnection.sessionAsToken(session),
         cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
         Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-        onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
+        onClick.foreach(_ =>
+          window.navigator.clipboard
+            .writeText(PendingConnection.sessionAsToken(session))
+            .toFuture
+            .onComplete(value => {
+              if (value.isFailure) {
+                // TODO FIXME show Toast
+                window.alert(value.failed.get.getMessage().nn)
+              }
+            }),
+        ),
       ),
       a(
         cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",

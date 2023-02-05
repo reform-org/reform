@@ -55,7 +55,14 @@ class DiscoveryService {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
       console.log("should connect")
-      discovery.connect()
+      discovery
+        .connect()
+        .onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     }
   }
 
@@ -128,22 +135,28 @@ class DiscoveryService {
               promise.success(newToken)
             }
           })
-      })
+      }).toFuture
+        .onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     }
 
     promise.future
   }
 
   def addToWhitelist(uuid: String): Unit = {
-    ws.map(emit(_, "whitelist_add", js.Dynamic.literal("uuid" -> uuid)))
+    ws.foreach(emit(_, "whitelist_add", js.Dynamic.literal("uuid" -> uuid)))
   }
 
   def deleteFromWhitelist(uuid: String): Unit = {
-    ws.map(emit(_, "whitelist_del", js.Dynamic.literal("uuid" -> uuid)))
+    ws.foreach(emit(_, "whitelist_del", js.Dynamic.literal("uuid" -> uuid)))
   }
 
   def refetchAvailableClients(): Unit = {
-    ws.map(emit(_, "request_available_clients", null.nn))
+    ws.foreach(emit(_, "request_available_clients", null.nn))
   }
 
   private def emit(ws: WebSocket, name: String, payload: js.Dynamic) = {

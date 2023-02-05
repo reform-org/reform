@@ -24,6 +24,8 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import org.scalajs.dom.window
+import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
 
@@ -67,7 +69,15 @@ object Main {
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
-    if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
+    if (discovery.tokenIsValid(discovery.getToken()))
+      discovery
+        .connect()
+        .onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 

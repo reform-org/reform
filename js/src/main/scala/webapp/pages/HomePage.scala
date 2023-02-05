@@ -64,6 +64,12 @@ case class HomePage() extends Page {
                 console.log(s)
                 document.getElementById("loadPDF").classList.remove("loading")
               })
+              .onComplete(value => {
+                if (value.isFailure) {
+                  // TODO FIXME show Toast
+                  window.alert(value.failed.get.getMessage().nn)
+                }
+              })
           }),
         ),
       ),
