@@ -81,4 +81,13 @@ case class Repository[A](name: String, defaultValue: A)(using
   private def updateRepoVersionOnChangesReceived(synced: Synced[A]): Unit =
     synced.signal.observe(value => valuesStorage.set(synced.id, value))
 
+  // if we update a value:
+  // we should set the value using a future so we can return an error
+  // to set the value we should start a transaction
+  // that transaction should read the current value in storage
+  // then it should merge it with our new value
+  // and then it should write it to storage
+  // then we should probably somehow notify the other tabs
+  // that the value has been updated. these update notification
+  // could in theory come the same way that loci updates are received.
 }
