@@ -45,20 +45,11 @@ class DiscoveryService {
 
   class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
 
-  private val setAvailableConnections = Evt[Seq[AvailableConnection]]()
-  private val setAvailableConnectionsB = setAvailableConnections.act(identity) // dunno why this warns
+  val availableConnections: Var[Seq[AvailableConnection]] = Var(Seq.empty)
 
-  val availableConnections = Fold(Seq.empty: Seq[AvailableConnection])(setAvailableConnectionsB)
+  private val token: Var[Option[String]] = Var(None)
 
-  private val setToken = Evt[String]()
-  private val setTokenB = setToken.act(identity) // dunno why this warns
-
-  private val token = Fold(null: String)(setTokenB)
-
-  private val setOnlineStatus = Evt[Boolean]()
-  private val setOnlineStatusB = setOnlineStatus.act(identity) // dunno why this warns
-
-  val online = Fold(false: Boolean)(setOnlineStatusB)
+  val online: Var[Boolean] = Var(false)
 
   def setAutoconnect(value: Boolean)(using discovery: DiscoveryService, webrtc: WebRTCService): Unit = {
     Settings.set[Boolean]("autoconnect", value)
@@ -78,19 +69,19 @@ class DiscoveryService {
     )
   }
 
-  def getTokenSignal(): Signal[String] = {
+  def getTokenSignal(): Signal[Option[String]] = {
     getToken()
     token
   }
 
-  def getToken(): String = {
-    val storedToken = window.localStorage.getItem("discovery-token")
-    setToken.fire(storedToken)
+  def getToken(): Option[String] = {
+    val storedToken = Option(window.localStorage.getItem("discovery-token"))
+    token.set(storedToken)
     storedToken
   }
 
-  def tokenIsValid(token: String): Boolean = {
-    return token != null && !token.isBlank() && Date.now() > decodeToken(token).exp
+  def tokenIsValid(token: Option[String]): Boolean = {
+    return token.nonEmpty && !token.get.isBlank() && Date.now() > decodeToken(token.get).exp
   }
 
   def logout(): Unit = {
@@ -99,7 +90,7 @@ class DiscoveryService {
       case Some(socket) => ws.get.close()
     }
     window.localStorage.removeItem("discovery-token")
-    setToken.fire(null)
+    token.set(None)
   }
 
   def login(loginInfo: LoginInfo)(using webrtc: WebRTCService): Future[String] = {
@@ -129,12 +120,12 @@ class DiscoveryService {
                 ),
               )
             } else {
-              val token = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
-              window.localStorage.setItem("discovery-token", token)
-              setToken.fire(token)
+              val newToken = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
+              window.localStorage.setItem("discovery-token", newToken)
+              token.set(Some(newToken))
               console.log("Fetched a new token.")
               this.connect()
-              promise.success(token)
+              promise.success(newToken)
             }
           })
       })
@@ -152,7 +143,7 @@ class DiscoveryService {
   }
 
   def refetchAvailableClients(): Unit = {
-    ws.map(emit(_, "request_available_clients", null))
+    ws.map(emit(_, "request_available_clients", null.nn))
   }
 
   private def emit(ws: WebSocket, name: String, payload: js.Dynamic) = {
@@ -239,7 +230,7 @@ class DiscoveryService {
             ),
           )
         var clientsSeq: Seq[AvailableConnection] = clients.toSeq
-        setAvailableConnections.fire(clientsSeq)
+        availableConnections.set(clientsSeq)
       }
       case "request_client_finish_connection" => {
         pendingConnections -= payload.id.asInstanceOf[String]
@@ -252,7 +243,7 @@ class DiscoveryService {
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
       }
       case "ping" => {
-        emit(ws, "pong", null)
+        emit(ws, "pong", null.nn)
       }
       case "connection_closed" => {
         webrtc.closeConnectionById(payload.id.asInstanceOf[String])
@@ -273,8 +264,8 @@ class DiscoveryService {
 
       ws.get.onopen = (_) => {
         console.log("opened websocket")
-        setOnlineStatus.fire(true)
-        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken()))
+        online.set(true)
+        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken().orNull.nn))
         promise.success(true)
       }
 
@@ -284,7 +275,7 @@ class DiscoveryService {
       }
 
       ws.get.onclose = (_) => {
-        setOnlineStatus.fire(false)
+        online.set(false)
         console.log("closed websocket")
       }
 

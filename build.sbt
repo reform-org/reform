@@ -55,7 +55,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "-no-indent",
       // "-W",
       // "-Y",
-      // "-Yexplicit-nulls", // breaks json macro, probably also coverage
+      //"-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
       "-Wunused:all",
       "-Wvalue-discard",
