@@ -29,6 +29,8 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
+import webapp.components.{Modal, ModalButton}
+
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -44,6 +46,7 @@ private class EntityRow[T <: Entity[T]](
     editingValue.map(editingNow => {
       val res = editingNow match {
         case Some(_) => {
+          
           val res = Some(
             tr(
               cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
@@ -93,9 +96,18 @@ private class EntityRow[T <: Entity[T]](
                   button(
                     cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
                     data.tip := "Delete",
-                    "X",
+                    s"entity \"${p.signal.now.identifier.get}\"?",//"X",
                     onClick.foreach(_ => removeEntity(p)),
                   )
+                  /*button(
+                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                          data.tip := "Delete",
+                          "X",
+                          onClick.foreach(_ => {
+                            //modal.open()
+                          }),
+                        )*/
+                  //modal.render()
                 }),
               ),
             ),
@@ -105,6 +117,19 @@ private class EntityRow[T <: Entity[T]](
         case None => {
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedEntity) => {
+              val modal = new Modal(
+                    "Delete",
+                    s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get}\"?",
+                    Seq(
+                      new ModalButton(
+                        "Yay!",
+                        "bg-purple-600",
+                        () => {syncedEntity.update(syncedEntity => syncedEntity.withExists(false))
+                        },
+                      ),
+                      new ModalButton("Nay!"),
+                    ),
+              )
               val res = syncedEntity.signal.map(p => {
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
@@ -121,12 +146,21 @@ private class EntityRow[T <: Entity[T]](
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        button(
+                        /*button(
                           cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
                           data.tip := "Delete",
                           "X",
                           onClick.foreach(_ => removeEntity(syncedEntity)),
+                        ),*/
+                        button(
+                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                          data.tip := "Delete",
+                          "X",
+                          onClick.foreach(_ => {
+                            modal.open()
+                          }),
                         ),
+                        modal.render(),
                       ),
                     ),
                   )
