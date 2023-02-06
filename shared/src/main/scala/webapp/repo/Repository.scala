@@ -26,6 +26,8 @@ import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import webapp.webrtc.DeltaFor
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
@@ -37,8 +39,28 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
-  private val syncedIds = SyncedIdSet(name)
-  syncedIds.syncWithStorage(idStorage)
+  implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
+
+  private val idSyncer = Syncer[GrowOnlySet[String]](name + "-ids")
+
+  private val idSynced = idSyncer.sync("ids", GrowOnlySet.empty)
+
+  def addId(id: String): Unit =
+    idSynced.update(_.add(id))
+
+  val ids: Signal[Set[String]] =
+    idSynced.signal.map(_.set)
+
+  def syncIdsWithStorage(storage: Storage[GrowOnlySet[String]]): Unit = {
+    storage
+      .getOrDefault("ids")
+      .map(ids => {
+        idSynced.update(_.union(ids))
+      })
+    idSynced.signal.observe(storage.set("ids", _))
+  }
+
+  syncIdsWithStorage(idStorage)
 
   private val valuesStorage = Storage[A](name, defaultValue)
 
@@ -50,7 +72,7 @@ case class Repository[A](name: String, defaultValue: A)(using
     getOrCreate(UUID.randomUUID.toString)
 
   val all: Signal[List[Synced[A]]] = {
-    syncedIds.ids
+    ids
       .map(ids => {
         val futures = ids.toList.map(getOrCreate)
         val future = Future.sequence(futures)
@@ -73,7 +95,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       .map(project => {
         val synced = valueSyncer.sync(id, project)
         cache.put(id, synced)
-        syncedIds.add(id)
+        addId(id)
         updateRepoVersionOnChangesReceived(synced)
         synced
       })
