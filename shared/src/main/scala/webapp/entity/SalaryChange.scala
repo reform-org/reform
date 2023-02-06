@@ -31,6 +31,4 @@ object SalaryChange {
   val empty: SalaryChange = SalaryChange()
 
   implicit val codec: JsonValueCodec[SalaryChange] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[SalaryChange]] = JsonCodecMaker.make
 }

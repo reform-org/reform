@@ -31,6 +31,4 @@ object Supervisor {
   val empty: Supervisor = Supervisor()
 
   implicit val codec: JsonValueCodec[Supervisor] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[Supervisor]] = JsonCodecMaker.make
 }

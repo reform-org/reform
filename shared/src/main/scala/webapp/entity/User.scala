@@ -31,6 +31,4 @@ object User {
   val empty: User = User()
 
   implicit val codec: JsonValueCodec[User] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[User]] = JsonCodecMaker.make
 }

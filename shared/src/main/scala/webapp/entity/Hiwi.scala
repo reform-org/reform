@@ -34,6 +34,4 @@ object Hiwi {
   val empty: Hiwi = Hiwi()
 
   implicit val codec: JsonValueCodec[Hiwi] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[Hiwi]] = JsonCodecMaker.make
 }

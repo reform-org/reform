@@ -39,8 +39,6 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
-  implicit val codecDeltaForGrowOnlySetString: JsonValueCodec[DeltaFor[GrowOnlySet[String]]] = JsonCodecMaker.make
-
   private val idSyncer = Syncer[GrowOnlySet[String]](name + "-ids")
 
   private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)

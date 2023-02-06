@@ -32,6 +32,4 @@ object RequiredDocument {
   val empty: RequiredDocument = RequiredDocument()
 
   implicit val codec: JsonValueCodec[RequiredDocument] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[RequiredDocument]] = JsonCodecMaker.make
 }

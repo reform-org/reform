@@ -29,6 +29,4 @@ object ContractSchema {
   val empty: ContractSchema = ContractSchema()
 
   implicit val codec: JsonValueCodec[ContractSchema] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[ContractSchema]] = JsonCodecMaker.make
 }

@@ -29,6 +29,4 @@ object PaymentLevel {
   val empty: PaymentLevel = PaymentLevel()
 
   implicit val codec: JsonValueCodec[PaymentLevel] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[PaymentLevel]] = JsonCodecMaker.make
 }
