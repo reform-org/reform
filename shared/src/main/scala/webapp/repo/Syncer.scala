@@ -16,7 +16,7 @@ case class Syncer[A](name: String)(using
 
   private val replicator = ReplicationGroup(name)
 
-  def sync(id: String, value: A): Synced[A] = {
+  def sync(storage: Storage[A], id: String, value: A): Synced[A] = {
 
     val deltaEvents = TwoWayDeltaEvents()
 
@@ -24,7 +24,7 @@ case class Syncer[A](name: String)(using
 
     replicator.distributeDeltaRDT(id, signal, deltaEvents.deltaEvent)
 
-    Synced(id, signal, deltaEvents.deltaEvent)
+    Synced(storage, id, signal, deltaEvents.deltaEvent)
   }
 
   private class TwoWayDeltaEvents {
