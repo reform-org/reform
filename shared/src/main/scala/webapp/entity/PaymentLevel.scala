@@ -5,7 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class PaymentLevel(
     title: Attribute[String] = Attribute.empty,

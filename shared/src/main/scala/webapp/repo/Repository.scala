@@ -26,8 +26,6 @@ import java.util.UUID
 import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import webapp.webrtc.DeltaFor
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,

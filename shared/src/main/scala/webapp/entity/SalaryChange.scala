@@ -6,7 +6,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import webapp.Codecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class SalaryChange(
     value: Attribute[Int] = Attribute.empty,
