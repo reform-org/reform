@@ -22,27 +22,17 @@ case class Syncer[A](name: String)(using
 
     val signal: Signal[A] = deltaEvents.mergeAllDeltas(value)
 
-    replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
+    replicator.distributeDeltaRDT(id, signal, deltaEvents.deltaEvent)
 
-    Synced(id, signal, deltaEvents.outgoingDeltaEvent)
+    Synced(id, signal, deltaEvents.deltaEvent)
   }
 
   private class TwoWayDeltaEvents {
 
-    val outgoingDeltaEvent: Evt[A => A] = Evt()
-
-    val incomingDeltaEvent: Evt[A] = Evt()
+    val deltaEvent: Evt[A => A] = Evt()
+    val deltaEventAct = deltaEvent.act(v => v(current))
 
     def mergeAllDeltas(value: A): Signal[A] =
-      Events.foldAll(value) { current =>
-        Seq(
-          outgoingDeltaEvent.act2 { function =>
-            function(current)
-          },
-          incomingDeltaEvent.act2 { delta =>
-            current.merge(delta)
-          },
-        )
-      }
+      Fold(value)(deltaEventAct)
   }
 }

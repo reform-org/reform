@@ -58,7 +58,7 @@ class ReplicationGroup[A](name: String)(using
 
   /** Map from concrete thing to handle to the event handler for that.
     */
-  private var localListeners: Map[String, Evt[A]] = Map.empty
+  private var localListeners: Map[String, Evt[A => A]] = Map.empty
 
   /** Map from the concrete thing to handle to a map of remote ids and the thing to sync.
     */
@@ -66,7 +66,7 @@ class ReplicationGroup[A](name: String)(using
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
     localListeners.get(payload.name) match {
-      case Some(handler) => handler.fire(payload.delta)
+      case Some(handler) => handler.fire(v => v.merge(payload.delta))
       case None =>
         unhandled = unhandled.updatedWith(payload.name) { current =>
           current.merge(Some(Map(remoteRef.toString -> payload.delta)))
@@ -77,7 +77,7 @@ class ReplicationGroup[A](name: String)(using
   def distributeDeltaRDT(
       name: String,
       signal: Signal[A],
-      deltaEvt: Evt[A],
+      deltaEvt: Evt[A => A],
   ): Unit = {
     require(!localListeners.contains(name), s"already registered a RDT with name $name")
     localListeners = localListeners.updated(name, deltaEvt)
@@ -91,7 +91,7 @@ class ReplicationGroup[A](name: String)(using
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.foreach((_, v) => deltaEvt.fire(v))
+        changes.foreach((_, v) => deltaEvt.fire(value => value.merge(v)))
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
