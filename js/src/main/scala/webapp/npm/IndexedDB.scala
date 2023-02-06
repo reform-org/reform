@@ -9,6 +9,7 @@ import scala.scalajs.js.Promise
 import scala.scalajs.js.annotation.JSImport
 
 import concurrent.ExecutionContext.Implicits.global
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 class IndexedDB extends IIndexedDB {
 
@@ -21,7 +22,9 @@ class IndexedDB extends IIndexedDB {
       )
   }
 
-  override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T], codec2: JsonValueCodec[Option[T]]): Future[T] = {
+  given optionCodec[T](using codec: JsonValueCodec[T]): JsonValueCodec[Option[T]] = JsonCodecMaker.make
+
+  override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
     val theFun: Function[js.Dynamic, js.Dynamic] = a => {
       val in = castFromJsDynamic[Option[T]](a)
       val value = scalaFun(in)

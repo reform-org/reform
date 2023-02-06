@@ -8,13 +8,12 @@ import scala.concurrent.Future
 
 case class Storage[T](private val name: String, private val defaultValue: T)(using
     codec: JsonValueCodec[T],
-    codec2: JsonValueCodec[Option[T]],
     indexedDb: IIndexedDB,
 ) {
 
   def getOrDefault(id: String): Future[T] =
     indexedDb
-      .get(getKey(id))
+      .get[T](getKey(id))
       .map(option => option.getOrElse(defaultValue))
 
   private def getKey(id: String): String = s"$name-$id"
