@@ -43,7 +43,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val idSyncer = Syncer[GrowOnlySet[String]](name + "-ids")
 
-  private val idSynced = idSyncer.sync("ids", GrowOnlySet.empty)
+  private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
 
   def addId(id: String): Unit =
     idSynced.update(_.add(id))
@@ -93,7 +93,7 @@ case class Repository[A](name: String, defaultValue: A)(using
     valuesStorage
       .getOrDefault(id)
       .map(project => {
-        val synced = valueSyncer.sync(id, project)
+        val synced = valueSyncer.sync(valuesStorage, id, project)
         cache.put(id, synced)
         addId(id)
         updateRepoVersionOnChangesReceived(synced)

@@ -18,7 +18,7 @@ case class Storage[T](private val name: String, private val defaultValue: T)(usi
 
   private def getKey(id: String): String = s"$name-$id"
 
-  def set(id: String, value: T): Future[Unit] =
-    indexedDb.set(getKey(id), value)
-
+  def update(id: String, fun: T => T): Future[T] = {
+    indexedDb.update(getKey(id), fun)
+  }
 }

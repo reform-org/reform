@@ -21,10 +21,14 @@ class IndexedDB extends IIndexedDB {
       )
   }
 
-  override def set[T](key: String, value: T)(using codec: JsonValueCodec[T]): Future[Unit] = {
-    val dynamic = castToJsDynamic(value)
-    val promise: Promise[Unit] = NativeImpl.set(key, dynamic)
-    promise.toFuture
+  override def update[T](key: String, scalaFun: Function[T, T])(using codec: JsonValueCodec[T]): Future[T] = {
+    val theFun: Function[js.Dynamic, js.Dynamic] = a => {
+      val in = castFromJsDynamic(a)
+      val value = scalaFun(in)
+      castToJsDynamic(value)
+    }
+    val promise = NativeImpl.update(key, theFun)
+    promise.toFuture.map(castFromJsDynamic)
   }
 
   private def castToJsDynamic[T](value: T)(using codec: JsonValueCodec[T]): js.Dynamic =
@@ -41,5 +45,5 @@ private object NativeImpl extends js.Object {
 
   def get(key: String): js.Promise[js.UndefOr[js.Dynamic]] = js.native
 
-  def set(key: String, value: js.Dynamic): js.Promise[Unit] = js.native
+  def update(key: String, value: js.Function1[js.Dynamic, js.Dynamic]): js.Promise[js.Dynamic] = js.native
 }
