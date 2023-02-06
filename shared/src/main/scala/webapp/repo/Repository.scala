@@ -35,7 +35,7 @@ case class Repository[A](name: String, defaultValue: A)(using
     codec: JsonValueCodec[A],
 ) {
 
-  private val idStorage = IdSetStorage(name)
+  private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
   private val syncedIds = SyncedIdSet(name)
   syncedIds.syncWithStorage(idStorage)

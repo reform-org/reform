@@ -23,10 +23,12 @@ case class SyncedIdSet(name: String)(using registry: Registry) {
   val ids: Signal[Set[String]] =
     synced.signal.map(_.set)
 
-  def syncWithStorage(storage: IdSetStorage): Unit = {
-    storage.get.map(ids => {
-      synced.update(_.union(ids))
-    })
-    synced.signal.observe(storage.set)
+  def syncWithStorage(storage: Storage[GrowOnlySet[String]]): Unit = {
+    storage
+      .getOrDefault("ids")
+      .map(ids => {
+        synced.update(_.union(ids))
+      })
+    synced.signal.observe(storage.set("ids", _))
   }
 }
