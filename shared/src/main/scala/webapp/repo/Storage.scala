@@ -8,6 +8,7 @@ import scala.concurrent.Future
 
 case class Storage[T](private val name: String, private val defaultValue: T)(using
     codec: JsonValueCodec[T],
+    codec2: JsonValueCodec[Option[T]],
     indexedDb: IIndexedDB,
 ) {
 
@@ -18,7 +19,7 @@ case class Storage[T](private val name: String, private val defaultValue: T)(usi
 
   private def getKey(id: String): String = s"$name-$id"
 
-  def update(id: String, fun: T => T): Future[T] = {
+  def update(id: String, fun: Option[T] => T): Future[T] = {
     indexedDb.update(getKey(id), fun)
   }
 }

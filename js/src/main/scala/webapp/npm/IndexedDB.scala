@@ -21,9 +21,9 @@ class IndexedDB extends IIndexedDB {
       )
   }
 
-  override def update[T](key: String, scalaFun: Function[T, T])(using codec: JsonValueCodec[T]): Future[T] = {
+  override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T], codec2: JsonValueCodec[Option[T]]): Future[T] = {
     val theFun: Function[js.Dynamic, js.Dynamic] = a => {
-      val in = castFromJsDynamic(a)
+      val in = castFromJsDynamic[Option[T]](a)
       val value = scalaFun(in)
       castToJsDynamic(value)
     }

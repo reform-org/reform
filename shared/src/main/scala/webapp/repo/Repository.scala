@@ -46,7 +46,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
 
   def addId(id: String): Unit =
-    idSynced.update(_.add(id))
+    idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id))
 
   val ids: Signal[Set[String]] =
     idSynced.signal.map(_.set)
@@ -55,9 +55,9 @@ case class Repository[A](name: String, defaultValue: A)(using
     storage
       .getOrDefault("ids")
       .map(ids => {
-        idSynced.update(_.union(ids))
+        idSynced.update(_.getOrElse(GrowOnlySet.empty).union(ids))
       })
-    idSynced.signal.observe(storage.set("ids", _))
+    idSynced.signal.observe(v => storage.update("ids", _ => v))
   }
 
   syncIdsWithStorage(idStorage)
@@ -101,7 +101,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       })
 
   private def updateRepoVersionOnChangesReceived(synced: Synced[A]): Unit =
-    synced.signal.observe(value => valuesStorage.set(synced.id, value))
+    synced.signal.observe(value => valuesStorage.update(synced.id, _ => value))
 
   // if we update a value:
   // we should set the value using a future so we can return an error

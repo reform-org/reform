@@ -29,8 +29,9 @@ class MemoryIndexedDB extends IIndexedDB {
     Future.successful(o)
   }
 
-  override def set[T](key: String, value: T)(using codec: JsonValueCodec[T]): Future[Unit] = {
+  override def update[T](key: String, fun: Option[T] => T)(using codec: JsonValueCodec[T], codec2: JsonValueCodec[Option[T]]): Future[T] = {
+    val value = fun(data.get(key).map(readFromString(_)))
     data.put(key, writeToString(value))
-    Future.successful(())
+    Future.successful(value)
   }
 }

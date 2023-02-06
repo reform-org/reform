@@ -149,7 +149,7 @@ private class EntityRow[T <: Entity[T]](
   def removeEntity(p: Synced[T]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
     if (yes) {
-      p.update(p => p.withExists(false))
+      p.update(p => p.get.withExists(false))
     }
   }
 
@@ -162,7 +162,7 @@ private class EntityRow[T <: Entity[T]](
     (existingValue match {
       case Some(existing) => {
         existing.update(p => {
-          p.merge(editingNow.get)
+          p.get.merge(editingNow.get)
         })
         editingValue.set(None)
       }
@@ -172,7 +172,7 @@ private class EntityRow[T <: Entity[T]](
           .map(entity => {
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.merge(editingNow.get)
+              p.get.merge(editingNow.get)
             })
             editingValue.set(Some(bottom.empty.default))
           })
