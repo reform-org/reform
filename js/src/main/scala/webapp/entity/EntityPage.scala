@@ -150,6 +150,12 @@ private class EntityRow[T <: Entity[T]](
     val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
     if (yes) {
       p.update(p => p.get.withExists(false))
+        .onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     }
   }
 
@@ -169,12 +175,18 @@ private class EntityRow[T <: Entity[T]](
       case None => {
         repository
           .create()
-          .map(entity => {
+          .flatMap(entity => {
+            editingValue.set(Some(bottom.empty.default))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
               p.get.merge(editingNow.get)
             })
-            editingValue.set(Some(bottom.empty.default))
+          })
+          .onComplete(value => {
+            if (value.isFailure) {
+              // TODO FIXME show Toast
+              window.alert(value.failed.get.getMessage().nn)
+            }
           })
       }
     })
