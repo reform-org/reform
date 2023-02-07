@@ -112,7 +112,7 @@ class Login() {
   def render(using discovery: DiscoveryService, webrtc: WebRTCService): VNode = {
     div(
       discovery
-        .getTokenSignal()
+        .token
         .map(token =>
           if (discovery.tokenIsValid(token))
             button(

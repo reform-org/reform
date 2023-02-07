@@ -62,14 +62,19 @@ import scala.scalajs.js
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
-    js.`import`("../../../../index.css")
+    js.`import`("../../../../index.css").toFuture.onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
-    if (discovery.tokenIsValid(discovery.getToken()))
+    if (discovery.tokenIsValid(discovery.token.now))
       discovery
         .connect()
         .onComplete(value => {

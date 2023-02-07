@@ -17,7 +17,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
     discovery: DiscoveryService,
 ) = {
   if (source == "discovery") {
-    val own = discovery.decodeToken(discovery.getToken().get)
+    val own = discovery.decodeToken(discovery.token.now.get)
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
       div(

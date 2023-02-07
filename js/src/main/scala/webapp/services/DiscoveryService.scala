@@ -47,7 +47,7 @@ class DiscoveryService {
 
   val availableConnections: Var[Seq[AvailableConnection]] = Var(Seq.empty)
 
-  private val token: Var[Option[String]] = Var(None)
+  val token: Var[Option[String]] = Var(Option(window.localStorage.getItem("discovery-token")))
 
   val online: Var[Boolean] = Var(false)
 
@@ -76,15 +76,16 @@ class DiscoveryService {
     )
   }
 
-  def getTokenSignal(): Signal[Option[String]] = {
-    getToken()
-    token
-  }
-
-  def getToken(): Option[String] = {
-    val storedToken = Option(window.localStorage.getItem("discovery-token"))
-    token.set(storedToken)
-    storedToken
+  def updateToken(value: Option[String]) = {
+    value match {
+      case Some(value) => {
+        window.localStorage.setItem("discovery-token", value)
+      }
+      case None => {
+        window.localStorage.removeItem("discovery-token")
+      }
+    }
+    token.set(value)
   }
 
   def tokenIsValid(token: Option[String]): Boolean = {
@@ -96,15 +97,13 @@ class DiscoveryService {
       case None         => {}
       case Some(socket) => ws.get.close()
     }
-    window.localStorage.removeItem("discovery-token")
-    token.set(None)
+    updateToken(None)
   }
 
   def login(loginInfo: LoginInfo)(using webrtc: WebRTCService): Future[String] = {
-    val savedToken = getToken()
     val promise = Promise[String]()
 
-    if (!tokenIsValid(savedToken)) {
+    if (!tokenIsValid(token.now)) {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
@@ -128,8 +127,7 @@ class DiscoveryService {
               )
             } else {
               val newToken = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
-              window.localStorage.setItem("discovery-token", newToken)
-              token.set(Some(newToken))
+              updateToken(Some(newToken))
               console.log("Fetched a new token.")
               this.connect()
               promise.success(newToken)
@@ -269,7 +267,7 @@ class DiscoveryService {
 
     if (resetWebsocket) ws = None
 
-    if (tokenIsValid(getToken()) && Settings.get[Boolean]("autoconnect").getOrElse(false)) {
+    if (tokenIsValid(token.now) && Settings.get[Boolean]("autoconnect").getOrElse(false)) {
       ws match {
         case Some(socket) => {}
         case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
@@ -278,7 +276,7 @@ class DiscoveryService {
       ws.get.onopen = (_) => {
         console.log("opened websocket")
         online.set(true)
-        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> getToken().orNull.nn))
+        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
         promise.success(true)
       }
 
