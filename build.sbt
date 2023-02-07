@@ -21,7 +21,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
   // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
-  .enablePlugins(ScalablyTypedConverterExternalNpmPlugin)
+  .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
@@ -38,6 +38,20 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
     ),
+    externalNpm := {
+      scala.sys.process.Process("npm", baseDirectory.value.getParentFile()).!
+      baseDirectory.value.getParentFile()
+    },
+    stIgnore := List("@types/chance",
+    "@types/selenium-webdriver",
+    "browserstack-local",
+    "chance",
+    "daisyui",
+    "pdf-lib",
+    "selenium-webdriver",
+    "snabbdom",
+    "typescript"),
+    stStdlib := List("esnext", "dom"),
   )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
@@ -63,19 +77,5 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "-Wvalue-discard",
       //"-Xcheck-macros", // breaks utest, outwatch
     ),
-    externalNpm := {
-      scala.sys.process.Process("npm", baseDirectory.value.getParentFile()).!
-      baseDirectory.value.getParentFile()
-    },
-    stIgnore := List("@types/chance",
-    "@types/selenium-webdriver",
-    "browserstack-local",
-    "chance",
-    "daisyui",
-    "pdf-lib",
-    "selenium-webdriver",
-    "snabbdom",
-    "typescript"),
-    stStdlib := List("esnext", "dom"),
   )
 

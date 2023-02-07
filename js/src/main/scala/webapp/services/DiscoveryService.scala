@@ -276,38 +276,38 @@ class DiscoveryService {
     if (resetWebsocket) ws = None
 
     if (Settings.get[Boolean]("autoconnect").getOrElse(false)) {
-    if (tokenIsValid(token.now)) {
-      ws match {
-        case Some(socket) => {}
-        case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
-      }
+      if (tokenIsValid(token.now)) {
+        ws match {
+          case Some(socket) => {}
+          case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
+        }
 
-      ws.get.onopen = (_) => {
-        console.log("opened websocket")
-        online.set(true)
-        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
-        promise.success(true)
-      }
+        ws.get.onopen = (_) => {
+          console.log("opened websocket")
+          online.set(true)
+          emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
+          promise.success(true)
+        }
 
-      ws.get.onmessage = (event) => {
-        val json = JSON.parse(event.data.asInstanceOf[String])
-        handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
-      }
+        ws.get.onmessage = (event) => {
+          val json = JSON.parse(event.data.asInstanceOf[String])
+          handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
+        }
 
-      ws.get.onclose = (_) => {
-        online.set(false)
-        console.log("closed websocket")
-      }
+        ws.get.onclose = (_) => {
+          online.set(false)
+          console.log("closed websocket")
+        }
 
-      ws.get.onerror = (_) => {
-        promise.failure(new Exception("Connection failed"))
+        ws.get.onerror = (_) => {
+          promise.failure(new Exception("Connection failed"))
+        }
+        promise.future
+      } else {
+        promise.failure(new Exception("Your token is wrong")).future
       }
-      promise.future
     } else {
-      promise.failure(new Exception("Your token is wrong")).future
+      Future.successful(true)
     }
-  } else {
-    Future.successful(true)
-  }
   }
 }

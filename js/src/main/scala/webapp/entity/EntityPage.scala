@@ -196,7 +196,7 @@ private class EntityRow[T <: Entity[T]](
           .onComplete(value => {
             value match {
               case Failure(exception) => throw exception
-              case Success(value) => {}
+              case Success(value)     => {}
             }
           })
       }
