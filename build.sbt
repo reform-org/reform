@@ -72,7 +72,6 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     "browserstack-local",
     "chance",
     "daisyui",
-    "idb-keyval",
     "pdf-lib",
     "selenium-webdriver",
     "snabbdom",

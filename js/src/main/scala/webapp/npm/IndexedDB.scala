@@ -10,7 +10,6 @@ import scala.scalajs.js.annotation.JSImport
 
 import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import typings.idb.buildEntryMod.OpenDBCallbacks
 
 class IndexedDB extends IIndexedDB {
 
@@ -35,13 +34,13 @@ class IndexedDB extends IIndexedDB {
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
     for
       db <- database
-      tx = db.transaction(List("reform"), "readwrite")
+      tx = db.transaction(List("reform"), IDBTransactionMode.readwrite)
       store = tx.objectStore("reform")
       v <- store.get(key).toFuture
     do {
       val value = Option(v.orNull).map(_.asInstanceOf[T])
       val newValue = scalaFun(value)
-      store.put(key, newValue)
+      store.add(newValue, key)
     }
     
     val theFun: Function[js.Dynamic, js.Dynamic] = a => {
