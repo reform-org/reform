@@ -105,7 +105,7 @@ private class EntityRow[T <: Entity[T]](
         case None => {
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedEntity) => {
-              val res = syncedEntity.signal.map(p => {
+              val res = syncedEntity.value.map(p => {
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
@@ -147,7 +147,7 @@ private class EntityRow[T <: Entity[T]](
   }
 
   def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
+    val yes = window.confirm(s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?")
     if (yes) {
       p.update(p => p.get.withExists(false))
         .onComplete(value => {
@@ -193,7 +193,7 @@ private class EntityRow[T <: Entity[T]](
   }
 
   private def startEditing(): Unit = {
-    editingValue.set(Some(existingValue.get.signal.now))
+    editingValue.set(Some(existingValue.get.value.now))
   }
 }
 

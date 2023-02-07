@@ -30,6 +30,7 @@ import webapp.Codecs.*
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
+import webapp.repo.Synced
 
 /** @param name
   *   The name/type of the thing to sync
@@ -58,7 +59,7 @@ class ReplicationGroup[A](name: String)(using
 
   /** Map from concrete thing to handle to the event handler for that.
     */
-  private var localListeners: Map[String, Evt[A => A]] = Map.empty
+  private var localListeners: Map[String, Synced[A]] = Map.empty
 
   /** Map from the concrete thing to handle to a map of remote ids and the thing to sync.
     */
@@ -66,7 +67,7 @@ class ReplicationGroup[A](name: String)(using
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
     localListeners.get(payload.name) match {
-      case Some(handler) => handler.fire(v => v.merge(payload.delta))
+      case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)); () }
       case None =>
         unhandled = unhandled.updatedWith(payload.name) { current =>
           current.merge(Some(Map(remoteRef.toString -> payload.delta)))
@@ -76,11 +77,10 @@ class ReplicationGroup[A](name: String)(using
 
   def distributeDeltaRDT(
       name: String,
-      signal: Signal[A],
-      deltaEvt: Evt[A => A],
+      synced: Synced[A],
   ): Unit = {
     require(!localListeners.contains(name), s"already registered a RDT with name $name")
-    localListeners = localListeners.updated(name, deltaEvt)
+    localListeners = localListeners.updated(name, synced)
 
     // observe changes to send them to every remote
     var observers = Map[RemoteRef, Disconnectable]()
@@ -91,7 +91,7 @@ class ReplicationGroup[A](name: String)(using
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.foreach((_, v) => deltaEvt.fire(value => value.merge(v)))
+        changes.foreach((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v)))
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
@@ -128,12 +128,12 @@ class ReplicationGroup[A](name: String)(using
       }
 
       // Send full state to initialize remote
-      val currentState = signal.readValueOnce
+      val currentState = synced.value.readValueOnce
       // only send full state if it's not empty for efficiency
       if (currentState != bottom.empty) sendUpdate(currentState)
 
       // Whenever the crdt is changed propagate the delta
-      val observer = signal.observe { s =>
+      val observer = synced.value.observe { s =>
         // note: isn't the resendbuffer also added in sendUpdate again?
         // combine the resend buffer and the current delta
         val deltaStateList = List(s) ++ resendBuffer.get(remoteRef).toList

@@ -42,14 +42,14 @@ case class Repository[A](name: String, defaultValue: A)(using
   private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
 
   val ids: Signal[Set[String]] =
-    idSynced.signal.map(_.set)
+    idSynced.value.map(_.set)
 
   idStorage
     .getOrDefault("ids")
     .map(ids => {
       idSynced.update(_.getOrElse(GrowOnlySet.empty).union(ids))
     })
-  idSynced.signal.observe(v => idStorage.update("ids", _ => v))
+  idSynced.value.observe(v => idStorage.update("ids", _ => v))
 
   private val valuesStorage = Storage[A](name, defaultValue)
 
@@ -85,7 +85,7 @@ case class Repository[A](name: String, defaultValue: A)(using
         val synced = valueSyncer.sync(valuesStorage, id, project)
         cache.put(id, synced)
         idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id))
-        synced.signal.observe(value => valuesStorage.update(synced.id, _ => value))
+        synced.value.observe(value => valuesStorage.update(synced.id, _ => value))
         synced
       })
 
