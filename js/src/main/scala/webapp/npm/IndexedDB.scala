@@ -10,6 +10,9 @@ import scala.scalajs.js.annotation.JSImport
 
 import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import typings.idb.buildEntryMod.OpenDBCallbacks
+import typings.std.IDBTransactionMode
+import typings.idb.buildEntryMod.StoreValue
 
 class IndexedDB extends IIndexedDB {
 
@@ -40,7 +43,7 @@ class IndexedDB extends IIndexedDB {
     do {
       val value = Option(v.orNull).map(_.asInstanceOf[T])
       val newValue = scalaFun(value)
-      store.add(newValue, key)
+      store.add(StoreValue(newValue), key)
     }
     
     val theFun: Function[js.Dynamic, js.Dynamic] = a => {
