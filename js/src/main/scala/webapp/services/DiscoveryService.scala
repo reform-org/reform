@@ -189,7 +189,7 @@ class DiscoveryService {
 
         pendingConnections(payload.id.asInstanceOf[String]).session
           .map(PendingConnection.sessionAsToken)
-          .map(token => {
+          .foreach(token => {
             emit(ws, "host_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
           })
 

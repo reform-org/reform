@@ -23,7 +23,6 @@ import webapp.*
 import webapp.npm.IIndexedDB
 
 import java.util.UUID
-import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -54,7 +53,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = Syncer[A](name)
 
-  private val cache: mutable.Map[String, Synced[A]] = mutable.Map.empty
+  private var cache: Map[String, Synced[A]] = Map.empty
 
   def create(): Future[Synced[A]] =
     getOrCreate(UUID.randomUUID.toString)
@@ -82,7 +81,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       .getOrDefault(id)
       .map(project => {
         val synced = valueSyncer.sync(valuesStorage, id, project)
-        cache.put(id, synced)
+        cache += (id -> synced)
         idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id))
         synced
       })

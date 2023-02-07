@@ -111,5 +111,5 @@ class WebRTCService(using registry: Registry) {
   }
 
   // registry.remoteJoined.monitor(addConnection.fire)
-  registry.remoteLeft.monitor(removeConnection.fire)
+  registry.remoteLeft.monitor(removeConnection.fire): @nowarn("msg=discarded expression")
 }

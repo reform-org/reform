@@ -2,6 +2,10 @@ package webapp
 
 import outwatch.*
 import outwatch.dsl.*
+import rescala.core.Disconnectable
+import scala.annotation.nowarn
+
+def ignoreDisconnectable(@nowarn("msg=unused explicit parameter") disconnectable: Disconnectable): Unit = {}
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   Seq(

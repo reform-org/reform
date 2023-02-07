@@ -185,13 +185,13 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
 class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
 
   private val mode = Var("host")
-  mode.observe(v => {
+  ignoreDisconnectable(mode.observe(v => {
     if (v == "host") {
       state.set(Init)
     } else {
       state.set(ClientAskingForHostSessionToken())
     }
-  })
+  }))
 
   def render(using webrtc: WebRTCService): VNode = {
     div(
