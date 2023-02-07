@@ -135,18 +135,18 @@ private class EntityRow[T <: Entity[T]](
     })
   }
 
-  def removeEntity(p: Synced[T]): Unit = {
+  private def removeEntity(p: Synced[T]): Unit = {
     val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
     if (yes) {
       p.update(p => p.withExists(false))
     }
   }
 
-  def cancelEdit(): Unit = {
+  private def cancelEdit(): Unit = {
     editingValue.set(None)
   }
 
-  def createOrUpdate(): Unit = {
+  private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
     (existingValue match {
       case Some(existing) => {
@@ -183,6 +183,8 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
+  private val search = Var("")
+
   def render(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService): VNode = {
     div(
       navigationHeader,
@@ -201,6 +203,10 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             renderEntities(repository.all),
             newUserRow.render(),
           ),
+          input(
+            value <-- search,
+            onInput.value --> search,
+          ),
         ),
       ),
     )
@@ -209,9 +215,11 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private def renderEntities(
       entities: Signal[List[Synced[T]]],
   ) =
-    entities.map(
-      _.map(syncedEntity => {
-        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
-      }),
-    )
+    entities
+      .map(
+        _.filter(_.signal.now.identifier.get.exists(_.toLowerCase.contains(search.value.toLowerCase)))
+          .map(syncedEntity => {
+            EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
+          }),
+      )
 }
