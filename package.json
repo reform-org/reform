@@ -21,7 +21,7 @@
     "tailwindcss": "^3.2.4",
     "ts-node": "^10.9.1",
     "vite": "^4.1.1",
-    "vitest": "^0.28.3"
+    "vitest": "^0.28.4"
   },
   "dependencies": {
     "@types/chance": "^1.1.3",
