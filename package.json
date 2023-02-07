@@ -29,6 +29,7 @@
     "browserstack-local": "^1.5.1",
     "chance": "^1.1.9",
     "daisyui": "^2.49.0",
+    "idb": "^7.1.1",
     "idb-keyval": "^6.2.0",
     "pdf-lib": "^1.17.1",
     "selenium-webdriver": "^4.8.0",

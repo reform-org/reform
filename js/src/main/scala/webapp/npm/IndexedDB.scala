@@ -10,8 +10,16 @@ import scala.scalajs.js.annotation.JSImport
 
 import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import typings.idb.buildEntryMod.OpenDBCallbacks
 
 class IndexedDB extends IIndexedDB {
+
+  val database = 
+    typings.idb.mod.openDB("reform", 1, OpenDBCallbacks()
+    .setUpgrade((db, oldVersion, newVersion, transaction, event) => {
+      db.createObjectStore("reform")
+    })
+    ).toFuture
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     val promise: js.Promise[js.UndefOr[js.Dynamic]] = NativeImpl.get(key)
@@ -25,6 +33,17 @@ class IndexedDB extends IIndexedDB {
   given optionCodec[T](using codec: JsonValueCodec[T]): JsonValueCodec[Option[T]] = JsonCodecMaker.make
 
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
+    for
+      db <- database
+      tx = db.transaction(List("reform"), "readwrite")
+      store = tx.objectStore("reform")
+      v <- store.get(key).toFuture
+    do {
+      val value = Option(v.orNull).map(_.asInstanceOf[T])
+      val newValue = scalaFun(value)
+      store.put(key, newValue)
+    }
+    
     val theFun: Function[js.Dynamic, js.Dynamic] = a => {
       val in = castFromJsDynamic[Option[T]](a)
       val value = scalaFun(in)
@@ -48,5 +67,5 @@ private object NativeImpl extends js.Object {
 
   def get(key: String): js.Promise[js.UndefOr[js.Dynamic]] = js.native
 
-  def update(key: String, value: js.Function1[js.Dynamic, js.Dynamic]): js.Promise[js.Dynamic] = js.native
+  def update(key: String, value: js.Function1[js.Dynamic, js.Dynamic]): js.Promise[Unit] = js.native
 }
