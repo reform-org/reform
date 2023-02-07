@@ -91,7 +91,7 @@ class ReplicationGroup[A](name: String)(using
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.foreach((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v)))
+        changes.map((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v)))
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
