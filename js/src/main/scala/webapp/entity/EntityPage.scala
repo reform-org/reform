@@ -32,8 +32,6 @@ import webapp.{*, given}
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
-import scala.util.Failure
-import scala.util.Success
 
 private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
@@ -194,9 +192,10 @@ private class EntityRow[T <: Entity[T]](
             })
           })
           .onComplete(value => {
-            value match {
-              case Failure(exception) => throw exception
-              case Success(value)     => {}
+            if (value.isFailure) {
+              // TODO FIXME show Toast
+              value.failed.get.printStackTrace()
+              window.alert(value.failed.get.getMessage().nn)
             }
           })
       }
