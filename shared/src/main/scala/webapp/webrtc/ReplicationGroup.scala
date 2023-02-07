@@ -75,6 +75,7 @@ class ReplicationGroup[A](name: String)(using
     }
   }
 
+  // TODO FIXME integrate all this unhandled thing into the repository in such a way that the values are lazily loaded then.
   def distributeDeltaRDT(
       name: String,
       synced: Synced[A],
