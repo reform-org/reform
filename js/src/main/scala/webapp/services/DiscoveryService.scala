@@ -135,7 +135,7 @@ class DiscoveryService {
                 .onComplete(value => {
                   if (value.isFailure) {
                     // TODO FIXME show Toast
-            value.failed.get.printStackTrace()
+                    value.failed.get.printStackTrace()
                     window.alert(value.failed.get.getMessage().nn)
                   }
                 })

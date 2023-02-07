@@ -12,16 +12,21 @@ import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import typings.idb.buildEntryMod.OpenDBCallbacks
 import typings.std.IDBTransactionMode
-import typings.idb.buildEntryMod.StoreValue
+import scala.annotation.nowarn
 
 class IndexedDB extends IIndexedDB {
 
-  val database = 
-    typings.idb.mod.openDB("reform", 1, OpenDBCallbacks()
-    .setUpgrade((db, oldVersion, newVersion, transaction, event) => {
-      db.createObjectStore("reform")
-    })
-    ).toFuture
+  val database =
+    typings.idb.mod
+      .openDB(
+        "reform",
+        1,
+        OpenDBCallbacks()
+          .setUpgrade((db, oldVersion, newVersion, transaction, event) => {
+            db.createObjectStore("reform")
+          }),
+      )
+      .toFuture
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     val promise: js.Promise[js.UndefOr[js.Dynamic]] = NativeImpl.get(key)
@@ -35,24 +40,17 @@ class IndexedDB extends IIndexedDB {
   given optionCodec[T](using codec: JsonValueCodec[T]): JsonValueCodec[Option[T]] = JsonCodecMaker.make
 
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
-    for
-      db <- database
-      tx = db.transaction(List("reform"), IDBTransactionMode.readwrite)
-      store = tx.objectStore("reform")
-      v <- store.get(key).toFuture
-    do {
-      val value = Option(v.orNull).map(_.asInstanceOf[T])
-      val newValue = scalaFun(value)
-      store.add(StoreValue(newValue), key)
+    for db <- database
+    tx = db.transaction(List("reform"), IDBTransactionMode.readwrite)
+    store = tx.objectStore("reform")
+    v <- store.get(key).toFuture
+    value = Option(v.orNull).map(_.asInstanceOf[T])
+    newValue = scalaFun(value)
+    result <- store.add(newValue.asInstanceOf[js.Any], key.asInstanceOf[js.Any]).toFuture
+    yield {
+      result: @nowarn()
+      newValue
     }
-    
-    val theFun: Function[js.Dynamic, js.Dynamic] = a => {
-      val in = castFromJsDynamic[Option[T]](a)
-      val value = scalaFun(in)
-      castToJsDynamic(value)
-    }
-    val promise = NativeImpl.update(key, theFun)
-    promise.toFuture.map(castFromJsDynamic)
   }
 
   private def castToJsDynamic[T](value: T)(using codec: JsonValueCodec[T]): js.Dynamic =
