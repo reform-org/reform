@@ -164,7 +164,7 @@ class DiscoveryService {
   }
 
   def refetchAvailableClients(): Unit = {
-    ws.foreach(emit(_, "request_available_clients", null.nn))
+    ws.foreach(emit(_, "request_available_clients", None.orNull))
   }
 
   private def emit(ws: WebSocket, name: String, payload: js.Dynamic) = {
@@ -262,7 +262,7 @@ class DiscoveryService {
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
       }
       case "ping" => {
-        emit(ws, "pong", null.nn)
+        emit(ws, "pong", None.orNull)
       }
       case "connection_closed" => {
         webrtc.closeConnectionById(payload.id.asInstanceOf[String])
@@ -275,7 +275,8 @@ class DiscoveryService {
 
     if (resetWebsocket) ws = None
 
-    if (tokenIsValid(token.now) && Settings.get[Boolean]("autoconnect").getOrElse(false)) {
+    if (Settings.get[Boolean]("autoconnect").getOrElse(false)) {
+    if (tokenIsValid(token.now)) {
       ws match {
         case Some(socket) => {}
         case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
@@ -303,7 +304,10 @@ class DiscoveryService {
       }
       promise.future
     } else {
-      promise.failure(new Exception("Either your token is wrong or autoconnect is disabled")).future
+      promise.failure(new Exception("Your token is wrong")).future
     }
+  } else {
+    Future.successful(true)
+  }
   }
 }

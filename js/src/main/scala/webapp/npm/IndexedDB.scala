@@ -20,7 +20,7 @@ class IndexedDB extends IIndexedDB {
     typings.idb.mod
       .openDB(
         "reform",
-        1,
+        2,
         OpenDBCallbacks()
           .setUpgrade((db, oldVersion, newVersion, transaction, event) => {
             db.createObjectStore("reform")
@@ -29,43 +29,38 @@ class IndexedDB extends IIndexedDB {
       .toFuture
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
-    val promise: js.Promise[js.UndefOr[js.Dynamic]] = NativeImpl.get(key)
-    promise.toFuture
-      .map(undefOr =>
-        undefOr.toOption
-          .map(dynamic => castFromJsDynamic(dynamic)),
-      )
+    for db <- database
+    tx = db.transaction(js.Array("reform"), IDBTransactionMode.readonly)
+    store = tx.objectStore("reform")
+    v <- store.get(key).toFuture
+    _ <- tx.done.toFuture
+    value = Option(v.orNull).map(castFromJsDynamic(_))
+    yield {
+      value
+    }
   }
 
   given optionCodec[T](using codec: JsonValueCodec[T]): JsonValueCodec[Option[T]] = JsonCodecMaker.make
 
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
     for db <- database
-    tx = db.transaction(List("reform"), IDBTransactionMode.readwrite)
+    tx = db.transaction(js.Array("reform"), IDBTransactionMode.readwrite)
     store = tx.objectStore("reform")
+    _ = println(store)
     v <- store.get(key).toFuture
-    value = Option(v.orNull).map(_.asInstanceOf[T])
+    value = Option(v.orNull).map(castFromJsDynamic(_))
     newValue = scalaFun(value)
-    result <- store.add(newValue.asInstanceOf[js.Any], key.asInstanceOf[js.Any]).toFuture
+    result <- store.put(castToJsDynamic(newValue), key).toFuture
+    _ <- tx.done.toFuture
     yield {
       result: @nowarn()
       newValue
     }
   }
 
-  private def castToJsDynamic[T](value: T)(using codec: JsonValueCodec[T]): js.Dynamic =
+  private def castToJsDynamic[T](value: T)(using codec: JsonValueCodec[T]): js.Any =
     JSON.parse(writeToString(value))
 
-  private def castFromJsDynamic[T](dynamic: js.Dynamic)(using codec: JsonValueCodec[T]) =
+  private def castFromJsDynamic[T](dynamic: js.Any)(using codec: JsonValueCodec[T]) =
     readFromString(JSON.stringify(dynamic))
-}
-
-// https://github.com/jakearchibald/idb-keyval/blob/main/src/index.ts#L44
-@js.native
-@JSImport("idb-keyval", JSImport.Namespace)
-private object NativeImpl extends js.Object {
-
-  def get(key: String): js.Promise[js.UndefOr[js.Dynamic]] = js.native
-
-  def update(key: String, value: js.Function1[js.Dynamic, js.Dynamic]): js.Promise[Unit] = js.native
 }

@@ -32,6 +32,8 @@ import webapp.{*, given}
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
+import scala.util.Failure
+import scala.util.Success
 
 private class EntityRow[T <: Entity[T]](
     repository: Repository[T],
@@ -188,14 +190,13 @@ private class EntityRow[T <: Entity[T]](
             editingValue.set(Some(bottom.empty.default))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.get.merge(editingNow.get)
+              p.getOrElse(bottom.empty).merge(editingNow.get)
             })
           })
           .onComplete(value => {
-            if (value.isFailure) {
-              // TODO FIXME show Toast
-              value.failed.get.printStackTrace()
-              window.alert(value.failed.get.getMessage().nn)
+            value match {
+              case Failure(exception) => throw exception
+              case Success(value) => {}
             }
           })
       }
