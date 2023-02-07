@@ -167,9 +167,11 @@ private class EntityRow[T <: Entity[T]](
     val editingNow = editingValue.now
     (existingValue match {
       case Some(existing) => {
-        existing.update(p => {
-          p.get.merge(editingNow.get)
-        }).onComplete(value => {
+        existing
+          .update(p => {
+            p.get.merge(editingNow.get)
+          })
+          .onComplete(value => {
             if (value.isFailure) {
               // TODO FIXME show Toast
               window.alert(value.failed.get.getMessage().nn)

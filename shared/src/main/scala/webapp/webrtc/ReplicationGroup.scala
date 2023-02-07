@@ -31,6 +31,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.util.*
 import webapp.repo.Synced
+import scala.annotation.nowarn
 
 /** @param name
   *   The name/type of the thing to sync
@@ -149,14 +150,14 @@ class ReplicationGroup[A](name: String)(using
     }
 
     // if a remote joins register it to handle updates to it
-    registry.remoteJoined.monitor(registerRemote)
+    registry.remoteJoined.foreach(registerRemote): @nowarn("msg=discarded expression")
     // also register all existing remotes
     registry.remotes.foreach(registerRemote)
     // remove remotes that disconnect
     registry.remoteLeft.monitor { remoteRef =>
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
-    }
+    }: @nowarn("msg=discarded expression")
     ()
   }
 }

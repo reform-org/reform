@@ -32,6 +32,7 @@ import webapp.utils.Base64
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import scala.annotation.nowarn
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -49,7 +50,7 @@ case class PendingConnection(
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String) = {
     val p = Promise[ConnectionInformation]()
-    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
+    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
     PendingConnection(answer, p.future, answer.connection)
   }
   private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
@@ -59,10 +60,9 @@ object PendingConnection {
 }
 
 class WebRTCService(using registry: Registry) {
-  private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
-  private val webRTCConnections =
-    scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
-  private val connectionRefs = scala.collection.mutable.Map[String, RemoteRef]()
+  private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
+  private var webRTCConnections = Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
+  private var connectionRefs = Map[String, RemoteRef]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()

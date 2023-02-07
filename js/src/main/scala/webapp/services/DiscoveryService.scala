@@ -129,7 +129,14 @@ class DiscoveryService {
               val newToken = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
               updateToken(Some(newToken))
               console.log("Fetched a new token.")
-              this.connect()
+              this
+                .connect()
+                .onComplete(value => {
+                  if (value.isFailure) {
+                    // TODO FIXME show Toast
+                    window.alert(value.failed.get.getMessage().nn)
+                  }
+                })
               promise.success(newToken)
             }
           })
@@ -166,19 +173,25 @@ class DiscoveryService {
     console.log(name, payload)
     name match {
       case "request_host_token" => {
-        var _iceServers = js.Array[RTCIceServer]()
-        _iceServers += new RTCIceServer {
-          urls = Globals.turnServerURL;
-          username = payload.host.turn.username.asInstanceOf[String];
-          credential = payload.host.turn.credential.asInstanceOf[String];
-        }
         val config = new RTCConfiguration {
-          iceServers = _iceServers;
+          iceServers = js.Array(
+            new RTCIceServer {
+              urls = Globals.turnServerURL;
+              username = payload.host.turn.username.asInstanceOf[String];
+              credential = payload.host.turn.credential.asInstanceOf[String];
+            },
+          );
         }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(config),
           payload.client.user.name.asInstanceOf[String],
         ))
+
+        pendingConnections(payload.id.asInstanceOf[String]).session
+          .map(PendingConnection.sessionAsToken)
+          .map(token => {
+            emit(ws, "host_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
+          })
 
         webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
@@ -188,22 +201,14 @@ class DiscoveryService {
           payload.client.user.uuid.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
-
-        pendingConnections(payload.id.asInstanceOf[String]).session
-          .map(PendingConnection.sessionAsToken)
-          .map(token => {
-            emit(ws, "host_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
-          })
       }
       case "request_client_token" => {
-        var _iceServers = js.Array[RTCIceServer]()
-        _iceServers += new RTCIceServer {
-          urls = Globals.turnServerURL;
-          username = payload.client.turn.username.asInstanceOf[String];
-          credential = payload.client.turn.credential.asInstanceOf[String];
-        }
         val config = new RTCConfiguration {
-          iceServers = _iceServers;
+          iceServers = js.Array(new RTCIceServer {
+            urls = Globals.turnServerURL;
+            username = payload.client.turn.username.asInstanceOf[String];
+            credential = payload.client.turn.credential.asInstanceOf[String];
+          });
         }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(config),
@@ -213,6 +218,12 @@ class DiscoveryService {
         pendingConnections(payload.id.asInstanceOf[String]).connector
           .set(PendingConnection.tokenAsSession(payload.host.token.asInstanceOf[String]).session)
 
+        pendingConnections(payload.id.asInstanceOf[String]).session
+          .map(PendingConnection.sessionAsToken)
+          .foreach(token => {
+            emit(ws, "client_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
+          })
+
         webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
@@ -221,12 +232,6 @@ class DiscoveryService {
           payload.host.user.uuid.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
-
-        pendingConnections(payload.id.asInstanceOf[String]).session
-          .map(PendingConnection.sessionAsToken)
-          .map(token => {
-            emit(ws, "client_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
-          })
       }
       case "available_clients" => {
         val clients = payload.clients
@@ -293,10 +298,9 @@ class DiscoveryService {
       ws.get.onerror = (_) => {
         promise.failure(new Exception("Connection failed"))
       }
+      promise.future
     } else {
-      promise.failure(new Exception("Either your token is wrong or autoconnect is disabled"))
+      promise.failure(new Exception("Either your token is wrong or autoconnect is disabled")).future
     }
-
-    promise.future
   }
 }

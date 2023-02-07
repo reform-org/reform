@@ -62,12 +62,14 @@ import scala.scalajs.js
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
-    js.`import`("../../../../index.css").toFuture.onComplete(value => {
-          if (value.isFailure) {
-            // TODO FIXME show Toast
-            window.alert(value.failed.get.getMessage().nn)
-          }
-        })
+    js.`import`("../../../../index.css")
+      .toFuture
+      .onComplete(value => {
+        if (value.isFailure) {
+          // TODO FIXME show Toast
+          window.alert(value.failed.get.getMessage().nn)
+        }
+      })
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
