@@ -82,8 +82,10 @@ case class Repository[A](name: String, defaultValue: A)(using
       .map(project => {
         val synced = valueSyncer.sync(valuesStorage, id, project)
         cache += (id -> synced)
-        idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id))
         synced
+      })
+      .flatMap(value => {
+        idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value)
       })
 
   // if we update a value:
