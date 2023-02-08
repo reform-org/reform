@@ -13,12 +13,12 @@ case class Storage[T](private val name: String, private val defaultValue: T)(usi
 
   def getOrDefault(id: String): Future[T] =
     indexedDb
-      .get(getKey(id))
+      .get[T](getKey(id))
       .map(option => option.getOrElse(defaultValue))
 
   private def getKey(id: String): String = s"$name-$id"
 
-  def set(id: String, value: T): Future[Unit] =
-    indexedDb.set(getKey(id), value)
-
+  def update(id: String, fun: Option[T] => T): Future[T] = {
+    indexedDb.update(getKey(id), fun)
+  }
 }

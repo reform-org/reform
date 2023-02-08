@@ -16,33 +16,11 @@ case class Syncer[A](name: String)(using
 
   private val replicator = ReplicationGroup(name)
 
-  def sync(id: String, value: A): Synced[A] = {
+  def sync(storage: Storage[A], id: String, value: A): Synced[A] = {
+    var synced = Synced(storage, id, Var(value))
 
-    val deltaEvents = TwoWayDeltaEvents()
+    replicator.distributeDeltaRDT(id, synced)
 
-    val signal: Signal[A] = deltaEvents.mergeAllDeltas(value)
-
-    replicator.distributeDeltaRDT(id, signal, deltaEvents.incomingDeltaEvent)
-
-    Synced(id, signal, deltaEvents.outgoingDeltaEvent)
-  }
-
-  private class TwoWayDeltaEvents {
-
-    val outgoingDeltaEvent: Evt[A => A] = Evt()
-
-    val incomingDeltaEvent: Evt[A] = Evt()
-
-    def mergeAllDeltas(value: A): Signal[A] =
-      Events.foldAll(value) { current =>
-        Seq(
-          outgoingDeltaEvent.act2 { function =>
-            function(current)
-          },
-          incomingDeltaEvent.act2 { delta =>
-            current.merge(delta)
-          },
-        )
-      }
+    synced
   }
 }
