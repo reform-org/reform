@@ -12,6 +12,26 @@ class UIOption[NameType](
     val name: NameType,
 ) {}
 
+class UIFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType]) {
+
+  private val search = Var("")
+
+  def render: VNode = {
+    td(input(
+      placeholder := "Filter here",
+      value <-- search,
+      onChange.value --> search
+    ))
+  }
+
+  val predicate: Signal[EntityType => Boolean] = {
+    search.map(s =>
+      e => uiAttribute.getter(e).get.exists(
+        v => uiAttribute.readConverter(v).toLowerCase.contains(s.toLowerCase))
+    )
+  }
+}
+
 class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
     val setter: (EntityType, Attribute[AttributeType]) => EntityType,

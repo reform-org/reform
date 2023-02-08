@@ -40,7 +40,7 @@ private class EntityRow[T <: Entity[T]](
     uiAttributes: Seq[UIAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T]) {
 
-  def render() = {
+  def render = {
     editingValue.map(editingNow => {
       val res = editingNow match {
         case Some(_) => {
@@ -185,6 +185,20 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
+private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? <: Any]]) {
+
+  private val filters = uiAttributes.map(UIFilter(_))
+
+  def render: VNode = tr(
+    filters.map(_.render)
+  )
+
+  def test(e: EntityType): Signal[Boolean] = {
+    val preds = Signal(filters.map(_.predicate)).flatten
+    preds.map(_.forall(_(e)))
+  }
+}
+
 abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
     bottom: Bottom[T],
     lattice: Lattice[T],
@@ -192,6 +206,8 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
+
+  private val filterRow = FilterRow[T](uiAttributes)
 
   private val search = Var("")
 
@@ -214,8 +230,9 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             ),
           ),
           tbody(
+            filterRow.render,
             renderEntities(repository.all),
-            newUserRow.render(),
+            newUserRow.render,
           ),
           input(
             value <-- search,
@@ -228,12 +245,21 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 
   private def renderEntities(
       entities: Signal[List[Synced[T]]],
-  ) =
-    entities
+  ) = {
+    val filtered = entities
       .map(
-        _.filter(_.signal.now.identifier.get.exists(_.toLowerCase.contains(search.value.toLowerCase)))
-          .map(syncedEntity => {
-            EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
-          }),
+        _.map(
+          s => s.signal.map(
+            e => filterRow.test(e).map(if (_) Seq(s) else Seq.empty)
+          ).flatten
+        )
+      ).flatten
+    filtered.map(
+      _.flatMap(
+        _.map(syncedEntity => {
+          EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
+        }),
       )
+    )
+  }
 }
