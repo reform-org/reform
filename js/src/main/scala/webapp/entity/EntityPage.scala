@@ -34,10 +34,10 @@ import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
 
 private class EntityRow[T <: Entity[T]](
-    repository: Repository[T],
-    existingValue: Option[Synced[T]],
-    editingValue: Var[Option[T]],
-    uiAttributes: Seq[UIAttribute[T, ? <: Any]],
+    val repository: Repository[T],
+    val existingValue: Option[Synced[T]],
+    val editingValue: Var[Option[T]],
+    val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T]) {
 
   def render = {
@@ -207,6 +207,14 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
+  private val entityRows: Signal[Seq[EntityRow[T]]] =
+    repository.all.map(
+      _.map(syncedEntity => {
+        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes)
+      }),
+    )
+
+
   private val filterRow = FilterRow[T](uiAttributes)
 
   private val search = Var("")
@@ -231,7 +239,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
           ),
           tbody(
             filterRow.render,
-            renderEntities(repository.all),
+            renderEntities,
             newUserRow.render,
           ),
           input(
@@ -243,23 +251,17 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
     )
   }
 
-  private def renderEntities(
-      entities: Signal[List[Synced[T]]],
-  ) = {
-    val filtered = entities
+  private def renderEntities = {
+    val filtered: Signal[Seq[Seq[EntityRow[T]]]] = entityRows
       .map(
         _.map(
-          s => s.signal.map(
-            e => filterRow.test(e).map(if (_) Seq(s) else Seq.empty)
-          ).flatten
+          r => r.existingValue.map(
+            v => filterRow.test(v.signal.now).map(if (_) Seq(r) else Seq.empty)
+          ).getOrElse(Signal(Seq()))
         )
       ).flatten
     filtered.map(
-      _.flatMap(
-        _.map(syncedEntity => {
-          EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
-        }),
-      )
+      _.flatMap(_.map(_.render))
     )
   }
 }
