@@ -17,17 +17,18 @@ class UIFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, A
   private val search = Var("")
 
   def render: VNode = {
-    td(input(
-      placeholder := "Filter here",
-      value <-- search,
-      onChange.value --> search
-    ))
+    td(
+      input(
+        placeholder := "Filter here",
+        value <-- search,
+        onChange.value --> search,
+      ),
+    )
   }
 
   val predicate: Signal[EntityType => Boolean] = {
     search.map(s =>
-      e => uiAttribute.getter(e).get.exists(
-        v => uiAttribute.readConverter(v).toLowerCase.contains(s.toLowerCase))
+      e => uiAttribute.getter(e).get.exists(v => uiAttribute.readConverter(v).toLowerCase.contains(s.toLowerCase)),
     )
   }
 }

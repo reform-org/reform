@@ -190,12 +190,12 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? 
   private val filters = uiAttributes.map(UIFilter(_))
 
   def render: VNode = tr(
-    filters.map(_.render)
+    filters.map(_.render),
   )
 
-  def test(e: EntityType): Signal[Boolean] = {
+  def test(entity: Signal[EntityType]): Signal[Boolean] = {
     val preds = Signal(filters.map(_.predicate)).flatten
-    preds.map(_.forall(_(e)))
+    entity.map(e => preds.map(_.forall(_(e)))).flatten
   }
 }
 
@@ -213,7 +213,6 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
         EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes)
       }),
     )
-
 
   private val filterRow = FilterRow[T](uiAttributes)
 
@@ -254,14 +253,13 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private def renderEntities = {
     val filtered: Signal[Seq[Seq[EntityRow[T]]]] = entityRows
       .map(
-        _.map(
-          r => r.existingValue.map(
-            v => filterRow.test(v.signal.now).map(if (_) Seq(r) else Seq.empty)
-          ).getOrElse(Signal(Seq()))
-        )
-      ).flatten
+        _.map(r =>
+          r.existingValue.map(v => filterRow.test(v.signal).map(if (_) Seq(r) else Seq.empty)).getOrElse(Signal(Seq())),
+        ),
+      )
+      .flatten
     filtered.map(
-      _.flatMap(_.map(_.render))
+      _.flatMap(_.map(_.render)),
     )
   }
 }
