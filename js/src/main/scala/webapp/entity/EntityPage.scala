@@ -187,7 +187,7 @@ private class EntityRow[T <: Entity[T]](
 
 private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? <: Any]]) {
 
-  private val filters = uiAttributes.map(UIFilter(_))
+  private val filters = uiAttributes.map(_.uiFilter)
 
   def render: VNode = tr(
     filters.map(_.render),
