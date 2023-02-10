@@ -13,6 +13,13 @@
 			"jdkVersion": "latest",
 			"jdkDistro": "tem"
 		}
+	},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"scalameta.metals"
+			]
+		}
 	}
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
