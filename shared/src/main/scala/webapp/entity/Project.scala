@@ -5,7 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class Project(
     name: Attribute[String] = Attribute.empty,
@@ -31,6 +30,4 @@ object Project {
   val empty: Project = Project()
 
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[Project]] = JsonCodecMaker.make
 }

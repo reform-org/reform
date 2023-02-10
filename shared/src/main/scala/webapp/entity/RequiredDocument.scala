@@ -5,7 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class RequiredDocument(
     name: Attribute[String] = Attribute.empty,
@@ -32,6 +31,4 @@ object RequiredDocument {
   val empty: RequiredDocument = RequiredDocument()
 
   implicit val codec: JsonValueCodec[RequiredDocument] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[RequiredDocument]] = JsonCodecMaker.make
 }

@@ -59,6 +59,13 @@ case class HomePage() extends Page {
               console.log(s)
               document.getElementById("loadPDF").classList.remove("loading")
             })
+             .onComplete(value => {
+                if (value.isFailure) {
+                  // TODO FIXME show Toast
+                  value.failed.get.printStackTrace()
+                  window.alert(value.failed.get.getMessage().nn)
+                }
+              })
         },
       ),
       new ModalButton("Nay!"),

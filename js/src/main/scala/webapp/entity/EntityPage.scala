@@ -149,7 +149,7 @@ private class EntityRow[T <: Entity[T]](
                   new ModalButton("Nay!"),
                 ),
               )
-              val res = syncedEntity.signal.map(p => {
+              val res = syncedEntity.value.map(p => {
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
@@ -200,9 +200,16 @@ private class EntityRow[T <: Entity[T]](
   }
 
   def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
+    val yes = window.confirm(s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?")
     if (yes) {
-      p.update(p => p.withExists(false))
+      p.update(p => p.get.withExists(false))
+        .onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            value.failed.get.printStackTrace()
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     }
   }
 
@@ -214,27 +221,42 @@ private class EntityRow[T <: Entity[T]](
     val editingNow = editingValue.now
     (existingValue match {
       case Some(existing) => {
-        existing.update(p => {
-          p.merge(editingNow.get)
-        })
+        existing
+          .update(p => {
+            p.get.merge(editingNow.get)
+          })
+          .onComplete(value => {
+            if (value.isFailure) {
+              // TODO FIXME show Toast
+              value.failed.get.printStackTrace()
+              window.alert(value.failed.get.getMessage().nn)
+            }
+          })
         editingValue.set(None)
       }
       case None => {
         repository
           .create()
-          .map(entity => {
+          .flatMap(entity => {
+            editingValue.set(Some(bottom.empty.default))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.merge(editingNow.get)
+              p.getOrElse(bottom.empty).merge(editingNow.get)
             })
-            editingValue.set(Some(bottom.empty.default))
+          })
+          .onComplete(value => {
+            if (value.isFailure) {
+              // TODO FIXME show Toast
+              value.failed.get.printStackTrace()
+              window.alert(value.failed.get.getMessage().nn)
+            }
           })
       }
     })
   }
 
   private def startEditing(): Unit = {
-    editingValue.set(Some(existingValue.get.signal.now))
+    editingValue.set(Some(existingValue.get.value.now))
   }
 }
 
