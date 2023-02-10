@@ -27,7 +27,7 @@ object PaymentLevelsPage {
   private val title = UIAttributeBuilder.string
     .withLabel("Title")
     .require
-    .bind[PaymentLevel](
+    .bindAsText[PaymentLevel](
       _.title,
       (p, a) => p.copy(title = a),
     )

@@ -30,7 +30,7 @@ case class UIAttributeBuilder[AttributeType](
     writeConverter = s => writeMapper(writeConverter(s)),
   )
 
-  def bind[EntityType](
+  def bindAsText[EntityType](
       getter: EntityType => Attribute[AttributeType],
       setter: (EntityType, Attribute[AttributeType]) => EntityType,
   ): UIAttribute[EntityType, AttributeType] = UIAttribute(

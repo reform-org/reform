@@ -32,7 +32,7 @@ object SalaryChangesPage {
     .withLabel("Value")
     .require
     .map[Int](_ / 100.0f, f => Math.round(f * 100.0f))
-    .bind[SalaryChange](
+    .bindAsText[SalaryChange](
       _.value,
       (s, a) => s.copy(value = a),
     )
