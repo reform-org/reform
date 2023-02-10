@@ -19,7 +19,7 @@ class UIAttribute[EntityType, AttributeType](
     val writeConverter: String => AttributeType,
     val label: String,
     val isRequired: Boolean,
-    val fieldType: String = "text",
+    val fieldType: String,
 ) {
   private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
     entityVar.transform(
@@ -76,6 +76,26 @@ class UIAttribute[EntityType, AttributeType](
     attr.getAll.map(x => readConverter(x)).mkString("/")
 
   def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+}
+
+class UINumberAttribute[EntityType](
+    getter: EntityType => Attribute[Int],
+    setter: (EntityType, Attribute[Int]) => EntityType,
+    readConverter: Int => String,
+    writeConverter: String => Int,
+    label: String,
+    isRequired: Boolean,
+) extends UIAttribute[EntityType, Int](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "number",
+    ) {
+
+  override def uiFilter: UIFilter[EntityType] = UIIntervalFilter(this)
 }
 
 class UIDateAttribute[EntityType](
