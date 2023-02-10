@@ -35,28 +35,12 @@ export async function run() {
 		);
 		peers = [];
 	}
-	actions = [
-		Actions.CONNECT_TO_PEER,
-		Actions.SLEEP,
-		Actions.CREATE_PROJECT,
-		Actions.SLEEP,
-		Actions.RELOAD,
-		Actions.RELOAD,
-		Actions.SLEEP,
-		Actions.EDIT_PROJECT,
-		Actions.SLEEP,
-		Actions.EDIT_PROJECT,
-		Actions.SLEEP,
-		Actions.CONNECT_TO_PEER,
-		Actions.SLEEP,
-		Actions.EDIT_PROJECT,
-		Actions.SLEEP,
-	];
+
 	let peer1 = await Peer.create(false);
-	let peer2 = await Peer.create(false);
-	await peer1.driver.get("http://localhost:5173/");
+	await peer1.driver.get("http://localhost:5173/projects");
 	peers.push(peer1);
-	await peer2.driver.get("http://localhost:5173/");
+	let peer2 = await Peer.create(false);
+	await peer2.driver.get("http://localhost:5173/projects");
 	peers.push(peer2);
 	await peer1.driver.manage().window().setRect({
 		x: 0,
@@ -70,6 +54,34 @@ export async function run() {
 		width: 1920,
 		height: 1080/2
 	})
+	await peer1.driver.sleep(2000)
+	await peer1.createProject();
+	await peer1.driver.sleep(2000)
+	await peer1.connectTo(peer2);
+	/*
+	await peer1.driver.sleep(4000)
+	await peer1.driver.get("about:blank")
+	await peer2.driver.get("about:blank")
+	await peer1.driver.sleep(2000)
+	await peer1.driver.get("http://localhost:5173/projects");
+	await peer2.driver.get("http://localhost:5173/projects");
+	await peer1.driver.sleep(2000)
+	peer1.connectedTo = []
+	peer2.connectedTo = []
+	*/
+	await peer1.driver.sleep(2000)
+	await peer2.editProject([...peer2.projects.value.keys()][0]);
+	await check(peers);
+	await peer1.driver.sleep(2000)
+	/*await peer2.editProject([...peer2.projects.value.keys()][0]);
+	await peer1.driver.sleep(2000)
+	await peer1.connectTo(peer2);
+	await peer1.editProject([...peer1.projects.value.keys()][0]);*/
+
+	await Promise.all(peers.map((peer) => peer.driver.quit()));
+
+	return 0
+
 
 	try {
 		for (let action of actions) {

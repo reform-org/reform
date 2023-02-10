@@ -460,8 +460,8 @@ export class Peer {
 
 	public static async create(headless: boolean) {
 		let chromeOptions = new chrome.Options().windowSize({
-			width: 1200,
-			height: 800,
+			width: 1920,
+			height: 1080/2
 		});
 
 		if (headless) {
@@ -469,8 +469,8 @@ export class Peer {
 		}
 
 		let firefoxOptions = new firefox.Options().windowSize({
-			width: 1200,
-			height: 800,
+			width: 1920,
+			height: 1080/2
 		});
 
 		if (headless) {
@@ -526,7 +526,8 @@ export class Peer {
 			.setSafariOptions(new safari.Options())
 			.build();
 
-		await driver.manage().window().setRect({ width: 1200, height: 800 });
+		await driver.manage().window().setRect({ width: 1920,
+			height: 1080/2 });
 
 		let id = (await driver.getSession()).getId();
 
