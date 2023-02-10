@@ -10,14 +10,14 @@ import scala.scalajs.js.annotation.JSImport
 
 import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import typings.idb.buildEntryMod.OpenDBCallbacks
+import typings.reformOrgIdb.buildEntryMod.OpenDBCallbacks
 import typings.std.IDBTransactionMode
 import scala.annotation.nowarn
 
 class IndexedDB extends IIndexedDB {
 
   val database =
-    typings.idb.mod
+    typings.reformOrgIdb.mod
       .openDB(
         "reform",
         2,
