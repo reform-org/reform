@@ -35,12 +35,41 @@ export async function run() {
 		);
 		peers = [];
 	}
+	actions = [
+		Actions.CONNECT_TO_PEER,
+		Actions.CREATE_PROJECT,
+		Actions.RELOAD,
+		Actions.RELOAD,
+		Actions.EDIT_PROJECT,
+		Actions.EDIT_PROJECT,
+		Actions.CONNECT_TO_PEER,
+		Actions.EDIT_PROJECT
+	];
+	let peer1 = await Peer.create(false);
+	let peer2 = await Peer.create(false);
+	await peer1.driver.get("http://localhost:5173/");
+	peers.push(peer1);
+	await peer2.driver.get("http://localhost:5173/");
+	peers.push(peer2);
+	await peer1.driver.manage().window().setRect({
+		x: 0,
+		y: 0,
+		width: 1920,
+		height: 1080/2
+	})
+	await peer2.driver.manage().window().setRect({
+		x: 0,
+		y: 1080/2,
+		width: 1920,
+		height: 1080/2
+	})
+
 
 	try {
 		for (let action of actions) {
 			switch (action) {
 				case Actions.CREATE_PEER: {
-					let peer = await Peer.create(true);
+					let peer = await Peer.create(false);
 					await peer.driver.get("http://localhost:5173/");
 					peers.push(peer);
 					console.log(`[${peer.id}] peer created`);

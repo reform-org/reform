@@ -7,7 +7,7 @@ import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
 //export let seed = new Chance().integer();
-export let seed = 7196640142163968;
+export let seed = 7196640142163968; // TODO FIXME in main branch this needs to be random again
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
