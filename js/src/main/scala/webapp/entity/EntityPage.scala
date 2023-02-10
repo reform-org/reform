@@ -94,7 +94,7 @@ private class EntityRow[T <: Entity[T]](
                 existingValue.map(p => {
                   val modal = new Modal(
                     "Delete",
-                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?",
+                    s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?",
                     Seq(
                       new ModalButton(
                         "Yay!",
@@ -139,12 +139,12 @@ private class EntityRow[T <: Entity[T]](
             case Some(syncedEntity) => {
               val modal = new Modal(
                 "Delete",
-                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get}\"?",
+                s"Do you really want to delete the entity \"${syncedEntity.value.now.identifier.get}\"?",
                 Seq(
                   new ModalButton(
                     "Yay!",
                     "bg-purple-600",
-                    () => { syncedEntity.update(syncedEntity => syncedEntity.withExists(false)) },
+                    () => { removeEntity(syncedEntity) },
                   ),
                   new ModalButton("Nay!"),
                 ),
