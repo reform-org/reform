@@ -131,6 +131,8 @@ class UIDateAttribute[EntityType](
       evt
     },
   )
+
+  override def uiFilter: UIFilter[EntityType] = UIIntervalFilter(this)
 }
 
 class UICheckboxAttribute[EntityType](

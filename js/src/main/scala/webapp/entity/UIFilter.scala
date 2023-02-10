@@ -33,7 +33,9 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
   }
 }
 
-class UIIntervalFilter[EntityType](uiAttribute: UIAttribute[EntityType, Int]) extends UIFilter[EntityType] {
+class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])(implicit
+    ordering: Ordering[AttributeType],
+) extends UIFilter[EntityType] {
 
   private val min = Var("")
 
@@ -43,11 +45,13 @@ class UIIntervalFilter[EntityType](uiAttribute: UIAttribute[EntityType, Int]) ex
     td(
       input(
         placeholder := "Minimum value",
+        `type` := uiAttribute.fieldType,
         value <-- min,
         onChange.value --> min,
       ),
       input(
         placeholder := "Maximum value",
+        `type` := uiAttribute.fieldType,
         value <-- max,
         onChange.value --> max,
       ),
@@ -70,9 +74,21 @@ class UIIntervalFilter[EntityType](uiAttribute: UIAttribute[EntityType, Int]) ex
       .flatten
   }
 
-  private def isBetween(min: String, value: Int, max: String): Boolean = {
-    val minInt = min.toIntOption.getOrElse(Integer.MIN_VALUE)
-    val maxInt = max.toIntOption.getOrElse(Integer.MAX_VALUE)
-    minInt <= value && value <= maxInt
+  private def isBetween(min: String, value: AttributeType, max: String): Boolean = {
+    if (!min.isBlank) {
+      val minVal = uiAttribute.writeConverter(min)
+      if (ordering.gt(minVal, value)) {
+        return false
+      }
+    }
+
+    if (!max.isBlank) {
+      val maxVal = uiAttribute.writeConverter(max)
+      if (ordering.lt(maxVal, value)) {
+        return false
+      }
+    }
+
+    true
   }
 }
