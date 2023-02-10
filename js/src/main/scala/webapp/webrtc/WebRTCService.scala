@@ -34,6 +34,7 @@ import scala.util.*
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Promise
+import scala.annotation.nowarn
 
 import loci.serializer.jsoniterScala.given
 
@@ -53,7 +54,7 @@ case class PendingConnection(
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String) = {
     val p = Promise[ConnectionInformation]()
-    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
+    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
     PendingConnection(answer, p.future, answer.connection)
   }
   private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
@@ -63,11 +64,11 @@ object PendingConnection {
 }
 
 class WebRTCService(using registry: Registry) {
-  private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
-  private val intervals = scala.collection.mutable.Map[RemoteRef, Int]()
-  private val webRTCConnections =
-    scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
-  private val connectionRefs = scala.collection.mutable.Map[String, RemoteRef]()
+
+  private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
+  private var webRTCConnections = Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
+  private var connectionRefs = Map[String, RemoteRef]()
+  private var intervals = Map[RemoteRef, Int]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
@@ -110,7 +111,7 @@ class WebRTCService(using registry: Registry) {
   }
 
   def getConnectionMode(ref: RemoteRef): Future[String] = {
-    val connection = webRTCConnections.get(ref).getOrElse(null)
+    val connection = webRTCConnections.get(ref).get
 
     Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
@@ -136,13 +137,13 @@ class WebRTCService(using registry: Registry) {
       10000,
     );
     intervals += (remoteRef -> interval)
-  })
+  }): @nowarn("msg=discarded expression")
 
   registry.remoteLeft.monitor(remoteRef => {
     removeConnection.fire(remoteRef)
     window.clearInterval(intervals(remoteRef))
     intervals -= remoteRef
-  })
+  }): @nowarn("msg=discarded expression")
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: String) => {} }
 }

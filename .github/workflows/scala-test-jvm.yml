@@ -24,6 +24,7 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
+    - run: npm ci
     - name: Test
       run: sbt clean coverage webappJVM/test webappJVM/coverageReport
     - uses: actions/upload-artifact@v3

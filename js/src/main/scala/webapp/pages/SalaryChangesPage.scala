@@ -46,7 +46,7 @@ object SalaryChangesPage {
       writeConverter = identity,
       label = "PaymentLevel",
       options = repositories.paymentLevels.all.map(list =>
-        list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
+        list.map(value => new UIOption[Signal[String]](value.id, value.value.map(v => v.title.get.getOrElse("")))),
       ),
       isRequired = true,
     )

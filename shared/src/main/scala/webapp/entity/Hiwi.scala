@@ -5,7 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class Hiwi(
     firstName: Attribute[String] = Attribute.empty,
@@ -34,6 +33,4 @@ object Hiwi {
   val empty: Hiwi = Hiwi()
 
   implicit val codec: JsonValueCodec[Hiwi] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[Hiwi]] = JsonCodecMaker.make
 }

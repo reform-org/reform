@@ -23,7 +23,6 @@ import webapp.*
 import webapp.npm.IIndexedDB
 
 import java.util.UUID
-import scala.collection.mutable
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
@@ -35,22 +34,32 @@ case class Repository[A](name: String, defaultValue: A)(using
     codec: JsonValueCodec[A],
 ) {
 
-  private val idStorage = IdSetStorage(name)
+  private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
-  private val syncedIds = SyncedIdSet(name)
-  syncedIds.syncWithStorage(idStorage)
+  private val idSyncer = Syncer[GrowOnlySet[String]](name + "-ids")
+
+  private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
+
+  val ids: Signal[Set[String]] =
+    idSynced.value.map(_.set)
+
+  idStorage
+    .getOrDefault("ids")
+    .map(ids => {
+      idSynced.update(_.getOrElse(GrowOnlySet.empty).union(ids))
+    })
 
   private val valuesStorage = Storage[A](name, defaultValue)
 
   private val valueSyncer = Syncer[A](name)
 
-  private val cache: mutable.Map[String, Synced[A]] = mutable.Map.empty
+  private var cache: Map[String, Synced[A]] = Map.empty
 
   def create(): Future[Synced[A]] =
     getOrCreate(UUID.randomUUID.toString)
 
   val all: Signal[List[Synced[A]]] = {
-    syncedIds.ids
+    ids
       .map(ids => {
         val futures = ids.toList.map(getOrCreate)
         val future = Future.sequence(futures)
@@ -71,14 +80,21 @@ case class Repository[A](name: String, defaultValue: A)(using
     valuesStorage
       .getOrDefault(id)
       .map(project => {
-        val synced = valueSyncer.sync(id, project)
-        cache.put(id, synced)
-        syncedIds.add(id)
-        updateRepoVersionOnChangesReceived(synced)
+        val synced = valueSyncer.sync(valuesStorage, id, project)
+        cache += (id -> synced)
         synced
       })
+      .flatMap(value => {
+        idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value)
+      })
 
-  private def updateRepoVersionOnChangesReceived(synced: Synced[A]): Unit =
-    synced.signal.observe(value => valuesStorage.set(synced.id, value))
-
+  // if we update a value:
+  // we should set the value using a future so we can return an error
+  // to set the value we should start a transaction
+  // that transaction should read the current value in storage
+  // then it should merge it with our new value
+  // and then it should write it to storage
+  // then we should probably somehow notify the other tabs
+  // that the value has been updated. these update notification
+  // could in theory come the same way that loci updates are received.
 }

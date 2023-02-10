@@ -5,7 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class PaymentLevel(
     title: Attribute[String] = Attribute.empty,
@@ -29,6 +28,4 @@ object PaymentLevel {
   val empty: PaymentLevel = PaymentLevel()
 
   implicit val codec: JsonValueCodec[PaymentLevel] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[PaymentLevel]] = JsonCodecMaker.make
 }
