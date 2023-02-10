@@ -39,18 +39,29 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
     ),
     externalNpm := {
-      scala.sys.process.Process("npm", baseDirectory.value.getParentFile()).!
+      val os = sys.props("os.name").toLowerCase
+      scala.sys.process
+        .Process(
+          os match {
+            case x if x contains "windows" => "./npm_proxy.bat"
+            case _                         => "npm"
+          },
+          baseDirectory.value.getParentFile(),
+        )
+        .!
       baseDirectory.value.getParentFile()
     },
-    stIgnore := List("@types/chance",
-    "@types/selenium-webdriver",
-    "browserstack-local",
-    "chance",
-    "daisyui",
-    "pdf-lib",
-    "selenium-webdriver",
-    "snabbdom",
-    "typescript"),
+    stIgnore := List(
+      "@types/chance",
+      "@types/selenium-webdriver",
+      "browserstack-local",
+      "chance",
+      "daisyui",
+      "pdf-lib",
+      "selenium-webdriver",
+      "snabbdom",
+      "typescript",
+    ),
     stStdlib := List("esnext", "dom"),
   )
   .settings(
@@ -71,11 +82,10 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "-no-indent",
       // "-W",
       // "-Y",
-      //"-Yexplicit-nulls", // breaks json macro, probably also coverage
+      // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
       "-Wunused:all",
       "-Wvalue-discard",
-      //"-Xcheck-macros", // breaks utest, outwatch
+      // "-Xcheck-macros", // breaks utest, outwatch
     ),
   )
-
