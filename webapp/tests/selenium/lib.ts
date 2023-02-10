@@ -24,6 +24,7 @@ export const Actions = Object.freeze({
 	BAD_NETWORK: Symbol("BAD_NETWORK"),
 	GOOD_NETWORK: Symbol("GOOD_NETWORK"),
 	RELOAD: Symbol("RELOAD"),
+	SLEEP: Symbol("SLEEP"),
 });
 
 interface Mergeable {

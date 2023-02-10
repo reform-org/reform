@@ -37,13 +37,20 @@ export async function run() {
 	}
 	actions = [
 		Actions.CONNECT_TO_PEER,
+		Actions.SLEEP,
 		Actions.CREATE_PROJECT,
+		Actions.SLEEP,
 		Actions.RELOAD,
 		Actions.RELOAD,
+		Actions.SLEEP,
 		Actions.EDIT_PROJECT,
+		Actions.SLEEP,
 		Actions.EDIT_PROJECT,
+		Actions.SLEEP,
 		Actions.CONNECT_TO_PEER,
-		Actions.EDIT_PROJECT
+		Actions.SLEEP,
+		Actions.EDIT_PROJECT,
+		Actions.SLEEP,
 	];
 	let peer1 = await Peer.create(false);
 	let peer2 = await Peer.create(false);
@@ -63,7 +70,6 @@ export async function run() {
 		width: 1920,
 		height: 1080/2
 	})
-
 
 	try {
 		for (let action of actions) {
@@ -150,6 +156,15 @@ export async function run() {
 
 					peers = peers.filter((p) => p !== random_peer);
 
+					break;
+				}
+				case Actions.SLEEP: {
+					if (peers.length === 0) {
+						continue;
+					}
+					let random_peer: Peer = chance.pickone(peers);
+					console.log(`[${random_peer.id}] sleep`);
+					await random_peer.driver.sleep(5000)
 					break;
 				}
 				default: {
