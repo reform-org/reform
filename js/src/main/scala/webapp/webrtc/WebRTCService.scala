@@ -64,7 +64,6 @@ object PendingConnection {
 
 class WebRTCService(using registry: Registry) {
   private val connectionInfo = scala.collection.mutable.Map[RemoteRef, StoredConnectionInformation]()
-  private val pings = scala.collection.mutable.Map[RemoteRef, Int]()
   private val intervals = scala.collection.mutable.Map[RemoteRef, Int]()
   private val webRTCConnections =
     scala.collection.mutable.Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
@@ -124,7 +123,6 @@ class WebRTCService(using registry: Registry) {
     }
   }
 
-
   implicit val codec: JsonValueCodec[String] = JsonCodecMaker.make
   val binding = Binding[String => Unit]("pings")
 
@@ -132,12 +130,7 @@ class WebRTCService(using registry: Registry) {
     val interval = window.setInterval(
       () => {
         if (remoteRef.connected) {
-          if (pings.applyOrElse(remoteRef, _ => 0) >= 2) {
-            remoteRef.disconnect()
-          } else {
-            ping(remoteRef);
-            pings += (remoteRef -> pings.applyOrElse(remoteRef, _ => 0))
-          }
+          ping(remoteRef);
         }
       },
       10000,
@@ -145,18 +138,11 @@ class WebRTCService(using registry: Registry) {
     intervals += (remoteRef -> interval)
   })
 
-    registry.remoteLeft.monitor(remoteRef => {
-      removeConnection.fire(remoteRef)
-      window.clearInterval(intervals(remoteRef))
-      intervals -= remoteRef
-      pings -= remoteRef
-    })
+  registry.remoteLeft.monitor(remoteRef => {
+    removeConnection.fire(remoteRef)
+    window.clearInterval(intervals(remoteRef))
+    intervals -= remoteRef
+  })
 
-
-  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: String) =>
-    {
-      pings(remoteRef) = 0;
-    }
-  }
-
+  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: String) => {} }
 }
