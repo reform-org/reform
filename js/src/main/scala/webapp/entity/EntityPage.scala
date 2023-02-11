@@ -94,7 +94,7 @@ private class EntityRow[T <: Entity[T]](
                 existingValue.map(p => {
                   val modal = new Modal(
                     "Delete",
-                    s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?",
+                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?",
                     Seq(
                       new ModalButton(
                         "Yay!",
@@ -139,7 +139,7 @@ private class EntityRow[T <: Entity[T]](
             case Some(syncedEntity) => {
               val modal = new Modal(
                 "Delete",
-                s"Do you really want to delete the entity \"${syncedEntity.value.now.identifier.get}\"?",
+                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get}\"?",
                 Seq(
                   new ModalButton(
                     "Yay!",
@@ -149,7 +149,7 @@ private class EntityRow[T <: Entity[T]](
                   new ModalButton("Nay!"),
                 ),
               )
-              val res = syncedEntity.value.map(p => {
+              val res = syncedEntity.signal.map(p => {
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
@@ -199,15 +199,15 @@ private class EntityRow[T <: Entity[T]](
     })
   }
 
-  private def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?")
+  private def removeEntity(s: Synced[T]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the entity \"${s.signal.now.identifier.get}\"?")
     if (yes) {
-      p.update(p => p.get.withExists(false))
+      s.update(p => p.get.withExists(false))
         .onComplete(value => {
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            window.alert(value.failed.get.getMessage().nn)
+            window.alert(value.failed.get.getMessage.nn)
           }
         })
     }
@@ -256,7 +256,7 @@ private class EntityRow[T <: Entity[T]](
   }
 
   private def startEditing(): Unit = {
-    editingValue.set(Some(existingValue.get.value.now))
+    editingValue.set(Some(existingValue.get.signal.now))
   }
 }
 
