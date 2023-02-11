@@ -21,7 +21,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
       input(
         placeholder := "Filter here",
         value <-- search,
-        onChange.value --> search,
+        onInput.value --> search,
       ),
     )
   }
@@ -47,13 +47,13 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Entit
         placeholder := "Minimum value",
         `type` := uiAttribute.fieldType,
         value <-- min,
-        onChange.value --> min,
+        onInput.value --> min,
       ),
       input(
         placeholder := "Maximum value",
         `type` := uiAttribute.fieldType,
         value <-- max,
-        onChange.value --> max,
+        onInput.value --> max,
       ),
     )
   }
