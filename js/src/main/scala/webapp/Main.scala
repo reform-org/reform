@@ -24,6 +24,8 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import org.scalajs.dom.window
+import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
 
@@ -61,13 +63,30 @@ import scala.scalajs.js
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
+      .toFuture
+      .onComplete(value => {
+        if (value.isFailure) {
+          // TODO FIXME show Toast
+          value.failed.get.printStackTrace()
+          window.alert(value.failed.get.getMessage().nn)
+        }
+      })
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
-    if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
+    if (discovery.tokenIsValid(discovery.token.now))
+      discovery
+        .connect()
+        .onComplete(value => {
+          if (value.isFailure) {
+            // TODO FIXME show Toast
+            value.failed.get.printStackTrace()
+            window.alert(value.failed.get.getMessage().nn)
+          }
+        })
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 

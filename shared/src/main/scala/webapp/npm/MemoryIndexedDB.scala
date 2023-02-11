@@ -17,20 +17,20 @@ package webapp.npm
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 
-import scala.collection.mutable
 import scala.concurrent.Future
 
 class MemoryIndexedDB extends IIndexedDB {
 
-  private val data: mutable.Map[String, String] = mutable.Map()
+  private var data: Map[String, String] = Map()
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     val o = data.get(key).map(readFromString(_))
     Future.successful(o)
   }
 
-  override def set[T](key: String, value: T)(using codec: JsonValueCodec[T]): Future[Unit] = {
-    data.put(key, writeToString(value))
-    Future.successful(())
+  override def update[T](key: String, fun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
+    val value = fun(data.get(key).map(readFromString(_)))
+    data += (key -> writeToString(value))
+    Future.successful(value)
   }
 }

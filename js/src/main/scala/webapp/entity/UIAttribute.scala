@@ -6,6 +6,7 @@ import rescala.default.*
 import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.utils.Date
+import webapp.*
 
 class UIOption[NameType](
     val id: String,
@@ -66,7 +67,7 @@ class UIAttribute[EntityType, AttributeType](
       value := attr.get.map(x => readConverter(x)).getOrElse(""),
       onInput.value --> {
         val evt = Evt[String]()
-        evt.observe(set.compose(writeConverter))
+        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
         evt
       },
       placeholder := label,
@@ -127,7 +128,7 @@ class UIDateAttribute[EntityType](
     value := attr.get.map(x => editConverter(x)).getOrElse(""),
     onInput.value --> {
       val evt = Evt[String]()
-      evt.observe(set.compose(writeConverter))
+      ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
       evt
     },
   )
@@ -208,7 +209,7 @@ class UISelectAttribute[EntityType, AttributeType](
       required := isRequired,
       onInput.value --> {
         val evt = Evt[String]()
-        evt.observe(set.compose(writeConverter))
+        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
         evt
       },
       option(VMod.attr("value") := "", "Bitte wählen..."),
