@@ -155,16 +155,8 @@ class UICheckboxAttribute[EntityType](
     val attr = getter(entity)
     td(
       cls := "px-6 py-0",
-      duplicateValuesHandler(attr.getAll.map(booleanToGerman)),
+      duplicateValuesHandler(attr.getAll.map(if (_) "Yes" else "No")),
     )
-  }
-
-  private def booleanToGerman(b: Boolean) = {
-    if (b) {
-      "Ja"
-    } else {
-      "Nein"
-    }
   }
 
   override def renderEditInput(_formId: String, attr: Attribute[Boolean], set: Boolean => Unit): VNode = input(
@@ -174,6 +166,8 @@ class UICheckboxAttribute[EntityType](
     checked := attr.get.getOrElse(false),
     onClick.foreach(_ => set(!attr.get.getOrElse(false))),
   )
+
+  override def uiFilter: UIFilter[EntityType] = UIBooleanFilter(this)
 }
 
 class UISelectAttribute[EntityType, AttributeType](

@@ -92,3 +92,24 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Entit
     true
   }
 }
+
+class UIBooleanFilter[EntityType](uiAttribute: UIAttribute[EntityType, Boolean]) extends UIFilter[EntityType] {
+
+  private val selected = Var("")
+
+  def render: VNode = {
+    td(
+      select(
+        cls := "input valid:input-success",
+        onInput.value --> selected,
+        option(value := "both", "Both"),
+        option(value := "true", "Yes"),
+        option(value := "false", "No"),
+      ),
+    )
+  }
+
+  val predicate: Signal[EntityType => Boolean] = {
+    selected.map(s => e => uiAttribute.getter(e).get.exists(v => s.isBlank || s == "both" || s.toBoolean == v))
+  }
+}
