@@ -86,7 +86,7 @@ class Toast(
 
   def render: VNode = {
     div(
-      cls := s"${toastType.primaryBgClass} ${toastType.textClass} shadow-md alert relative overflow-hidden",
+      cls := s"${toastType.primaryBgClass} ${toastType.textClass} shadow-md alert relative overflow-hidden w-fit",
       idAttr := s"toast-$id", {
         if (autodismiss)
           Some(
@@ -98,12 +98,18 @@ class Toast(
           None
       },
       div(
-        cls := "z-50",
-        toastType.icon match {
-          case None       => ""
-          case Some(icon) => icon
-        },
-        span(text),
+        cls := "z-50 flex flex-row",
+        div(
+          cls := "shrink-0",
+          toastType.icon match {
+            case None       => ""
+            case Some(icon) => icon
+          },
+        ),
+        div(
+          cls := "shrink-0",
+          text,
+        ),
         div(
           Icons.close("fill-red-600 w-4 h-4"),
           cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
@@ -140,7 +146,7 @@ class Toaster() {
 
   def render: VNode = {
     div(
-      cls := "toast toast-end",
+      cls := "toast toast-end items-end",
       toasts.map(_.map(toast => { toast.render })),
     )
   }

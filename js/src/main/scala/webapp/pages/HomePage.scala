@@ -122,7 +122,11 @@ case class HomePage() extends Page {
           idAttr := "makeToast",
           "Make me an error toast 🍞",
           onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", true, ToastType.Error)
+            toaster.make(
+              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 🍞",
+              true,
+              ToastType.Error,
+            )
           }),
         ),
         button(
