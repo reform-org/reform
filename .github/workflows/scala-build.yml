@@ -24,6 +24,16 @@ jobs:
         java-version: '11'
         distribution: 'temurin'
         cache: 'sbt'
+    - uses: actions/setup-node@v3
+      with:
+        node-version: latest
+        cache: 'npm'
+    - name: Cache scalablytyped
+      id: cache-scalablytyped
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/scalablytyped
+        key: ${{ runner.os }}-scalablytyped
     - run: npm ci
     - name: Build ScalaJS
       run: sbt fastLinkJS
