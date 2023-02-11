@@ -91,7 +91,7 @@ class Toast(
         if (autodismiss)
           Some(
             div(
-              cls := s"toast-progress absolute w-0 h-full left-0 ${toastType.secondaryBgClass}",
+              cls := s"toast-progress absolute w-0 h-full left-0 top-0 ${toastType.secondaryBgClass}",
             ),
           )
         else
