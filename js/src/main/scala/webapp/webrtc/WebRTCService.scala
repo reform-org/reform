@@ -145,5 +145,5 @@ class WebRTCService(using registry: Registry) {
     intervals -= remoteRef
   }): @nowarn("msg=discarded expression")
 
-  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: String) => {} }
+  registry.bindSbj(binding) { (_: RemoteRef, _: String) => {} }
 }

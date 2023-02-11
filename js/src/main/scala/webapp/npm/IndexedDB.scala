@@ -5,8 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.*
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSON
-import scala.scalajs.js.Promise
-import scala.scalajs.js.annotation.JSImport
 
 import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
@@ -22,7 +20,7 @@ class IndexedDB extends IIndexedDB {
         "reform",
         2,
         OpenDBCallbacks()
-          .setUpgrade((db, oldVersion, newVersion, transaction, event) => {
+          .setUpgrade((db, _, _, _, _) => {
             db.createObjectStore("reform")
           }),
       )
