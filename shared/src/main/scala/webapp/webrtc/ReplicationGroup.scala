@@ -54,9 +54,14 @@ class ReplicationGroup[A](name: String)(using
     codec: JsonValueCodec[A], // this is not unused as it's used inside the macro
 ) {
 
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
+  given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 
-  private val binding = Binding[DeltaFor[A] => Unit](name)
+  given IdenticallyTransmittable[DeltaFor[A]] = IdenticallyTransmittable()
+  given IdenticallyTransmittable[A] = IdenticallyTransmittable()
+
+  given magicCodec: JsonValueCodec[Tuple2[Option[Option[A]], Option[String]]] = JsonCodecMaker.make
+
+  private val binding = Binding[DeltaFor[A] => Future[Option[A]]](name)
 
   /** Map from concrete thing to handle to the event handler for that.
     */
@@ -67,13 +72,15 @@ class ReplicationGroup[A](name: String)(using
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
-    localListeners.get(payload.name) match {
-      case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)); () }
+    val result: Future[Option[A]] = localListeners.get(payload.name) match {
+      case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)).map(Some(_)) }
       case None =>
         unhandled = unhandled.updatedWith(payload.name) { current =>
           current.merge(Some(Map(remoteRef.toString -> payload.delta)))
         }
+        Future.successful(None)
     }
+    result
   }
 
   // TODO FIXME integrate all this unhandled thing into the repository in such a way that the values are lazily loaded then.
@@ -98,7 +105,7 @@ class ReplicationGroup[A](name: String)(using
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
       // Lookup method to send data to remote
-      val remoteUpdate: DeltaFor[A] => Future[Unit] = registry.lookup(binding, remoteRef)
+      val remoteUpdate = registry.lookup(binding, remoteRef)
 
       def sendUpdate(delta: A): Unit = {
         // the contents of the resend buffer and the delta need to be sent
