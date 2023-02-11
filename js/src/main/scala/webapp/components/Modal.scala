@@ -4,7 +4,7 @@ import outwatch.VNode
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.document
 import webapp.given
 import org.scalajs.dom.Element
 
