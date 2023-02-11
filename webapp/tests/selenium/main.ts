@@ -17,7 +17,7 @@ export async function run() {
 	}
 
 	try {
-		for (let count = 0; count < 10;) {
+		for (let count = 0; count < 100;) {
 			let action;
 			if (
 				process.env.SELENIUM_BROWSER === "safari" ||
