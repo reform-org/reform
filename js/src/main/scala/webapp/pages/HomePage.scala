@@ -26,60 +26,64 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
+import webapp.services.{ToastType, Toaster}
 import concurrent.ExecutionContext.Implicits.global
 import webapp.components.{Modal, ModalButton}
 
 case class HomePage() extends Page {
-
-  val modal = new Modal(
-    "Title",
-    "Creative Text",
-    Seq(
-      new ModalButton(
-        "Yay!",
-        "bg-purple-600",
-        () => {
-          document.getElementById("loadPDF").classList.add("loading")
-          PDF
-            .fill(
-              "contract_unlocked.pdf",
-              "arbeitsvertrag2.pdf",
-              Seq(
-                PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
-                PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
-                PDFTextField("Vertragsbeginn", "25.01.2023"),
-                PDFTextField("Vertragsende", "25.01.2024"),
-                PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
-                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
-                PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
-              ),
-            )
-            .andThen(s => {
-              console.log(s)
-              document.getElementById("loadPDF").classList.remove("loading")
-            })
-            .onComplete(value => {
-              if (value.isFailure) {
-                // TODO FIXME show Toast
-                value.failed.get.printStackTrace()
-                window.alert(value.failed.get.getMessage().nn)
-              }
-            })
-        },
-      ),
-      new ModalButton("Nay!"),
-    ),
-  )
 
   def render(using
       routing: RoutingService,
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
-  ): VNode =
+      toaster: Toaster,
+  ): VNode = {
+    val modal = new Modal(
+      "Title",
+      "Creative Text",
+      Seq(
+        new ModalButton(
+          "Yay!",
+          "bg-purple-600",
+          () => {
+            document.getElementById("loadPDF").classList.add("loading")
+            PDF
+              .fill(
+                "contract_unlocked.pdf",
+                "arbeitsvertrag2.pdf",
+                Seq(
+                  PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
+                  PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
+                  PDFTextField("Vertragsbeginn", "25.01.2023"),
+                  PDFTextField("Vertragsende", "25.01.2024"),
+                  PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
+                  PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                  PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
+                  PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
+                ),
+              )
+              .andThen(s => {
+                console.log(s)
+                document.getElementById("loadPDF").classList.remove("loading")
+              })
+              .onComplete(value => {
+                if (value.isFailure) {
+                  // TODO FIXME show Toast
+                  value.failed.get.printStackTrace()
+                  toaster.make(value.failed.get.getMessage().nn, true)
+                  // window.alert(value.failed.get.getMessage().nn)
+                }
+              })
+          },
+        ),
+        new ModalButton("Nay!"),
+      ),
+    )
+
     navigationHeader(
       div(
+        cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
         button(
           cls := "btn btn-active p-2 h-fit min-h-10 border-0",
@@ -89,7 +93,48 @@ case class HomePage() extends Page {
             modal.open()
           }),
         ),
+        button(
+          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a boring normal toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", true, ToastType.Default)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-success p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a successful toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", true, ToastType.Success)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-warning p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a warning toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", true, ToastType.Warning)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me an error toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", true, ToastType.Error)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a persistent error toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", false, ToastType.Error)
+          }),
+        ),
         modal.render(),
       ),
     )
+  }
 }

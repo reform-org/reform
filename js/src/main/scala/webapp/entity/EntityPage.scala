@@ -30,6 +30,7 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
 import webapp.components.{Modal, ModalButton}
+import webapp.services.Toaster
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -39,7 +40,7 @@ private class EntityRow[T <: Entity[T]](
     existingValue: Option[Synced[T]],
     editingValue: Var[Option[T]],
     uiAttributes: Seq[UIAttribute[T, ? <: Any]],
-)(using bottom: Bottom[T], lattice: Lattice[T]) {
+)(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
   def render() = {
     editingValue.map(editingNow => {
@@ -207,7 +208,8 @@ private class EntityRow[T <: Entity[T]](
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            window.alert(value.failed.get.getMessage().nn)
+            toaster.make(value.failed.get.getMessage().nn, true)
+            // window.alert(value.failed.get.getMessage().nn)
           }
         })
     }
@@ -229,7 +231,8 @@ private class EntityRow[T <: Entity[T]](
             if (value.isFailure) {
               // TODO FIXME show Toast
               value.failed.get.printStackTrace()
-              window.alert(value.failed.get.getMessage().nn)
+              toaster.make(value.failed.get.getMessage().nn, true)
+              // window.alert(value.failed.get.getMessage().nn)
             }
           })
         editingValue.set(None)
@@ -248,7 +251,8 @@ private class EntityRow[T <: Entity[T]](
             if (value.isFailure) {
               // TODO FIXME show Toast
               value.failed.get.printStackTrace()
-              window.alert(value.failed.get.getMessage().nn)
+              toaster.make(value.failed.get.getMessage().nn, true)
+              // window.alert(value.failed.get.getMessage().nn)
             }
           })
       }
@@ -263,6 +267,7 @@ private class EntityRow[T <: Entity[T]](
 abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
     bottom: Bottom[T],
     lattice: Lattice[T],
+    toaster: Toaster,
 ) extends Page {
 
   private val newUserRow: EntityRow[T] =
@@ -273,6 +278,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ): VNode = {
     navigationHeader(
       div(

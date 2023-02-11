@@ -18,9 +18,11 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
+import webapp.services.Toaster
+
 import SupervisorsPage.*
 
-case class SupervisorsPage()(using repositories: Repositories)
+case class SupervisorsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail)) {}
 
 object SupervisorsPage {

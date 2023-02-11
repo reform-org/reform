@@ -17,10 +17,11 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import RequiredDocumentsPage.*
 
-case class RequiredDocumentsPage()(using repositories: Repositories)
+case class RequiredDocumentsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[RequiredDocument](repositories.requiredDocuments, Seq(name, fileName, isActuallyRequired)) {}
 
 object RequiredDocumentsPage {

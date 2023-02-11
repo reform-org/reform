@@ -24,8 +24,9 @@ import webapp.pages.*
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import webapp.services.Toaster
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories)(
+def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster)(
     classes: String,
 ) = {
   ul(
@@ -70,7 +71,13 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories)(
 
 def navigationHeader(
     content: VNode,
-)(using routing: RoutingService, repositories: Repositories, webrtc: WebRTCService, discovery: DiscoveryService) = {
+)(using
+    routing: RoutingService,
+    repositories: Repositories,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+    toaster: Toaster,
+) = {
   div(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),

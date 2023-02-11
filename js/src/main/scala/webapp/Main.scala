@@ -24,6 +24,7 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import webapp.services.Toaster
 import org.scalajs.dom.window
 import concurrent.ExecutionContext.Implicits.global
 
@@ -68,7 +69,8 @@ object Main {
         if (value.isFailure) {
           // TODO FIXME show Toast
           value.failed.get.printStackTrace()
-          window.alert(value.failed.get.getMessage().nn)
+          toaster.make(value.failed.get.getMessage().nn, true)
+          // window.alert(value.failed.get.getMessage().nn)
         }
       })
     given routing: RoutingService = RoutingService()
@@ -77,6 +79,7 @@ object Main {
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
+    given toaster: Toaster = Toaster()
     if (discovery.tokenIsValid(discovery.token.now))
       discovery
         .connect()
@@ -84,7 +87,8 @@ object Main {
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            window.alert(value.failed.get.getMessage().nn)
+            toaster.make(value.failed.get.getMessage().nn, true)
+            // window.alert(value.failed.get.getMessage().nn)
           }
         })
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
@@ -95,8 +99,10 @@ object Main {
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ) = body(
     routing.render,
+    toaster.render,
   )
 }
 

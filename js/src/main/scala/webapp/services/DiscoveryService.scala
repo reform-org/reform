@@ -18,6 +18,7 @@ import scala.concurrent.Promise
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
+import webapp.services.Toaster
 
 class AvailableConnection(
     val name: String,
@@ -51,7 +52,9 @@ class DiscoveryService {
 
   val online: Var[Boolean] = Var(false)
 
-  def setAutoconnect(value: Boolean)(using discovery: DiscoveryService, webrtc: WebRTCService): Unit = {
+  def setAutoconnect(
+      value: Boolean,
+  )(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster): Unit = {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
       console.log("should connect")
@@ -61,7 +64,8 @@ class DiscoveryService {
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            window.alert(value.failed.get.getMessage().nn)
+            toaster.make(value.failed.get.getMessage().nn, true)
+            // window.alert(value.failed.get.getMessage().nn)
           }
         })
     }
@@ -101,7 +105,7 @@ class DiscoveryService {
     updateToken(None)
   }
 
-  def login(loginInfo: LoginInfo)(using webrtc: WebRTCService): Future[String] = {
+  def login(loginInfo: LoginInfo)(using webrtc: WebRTCService, toaster: Toaster): Future[String] = {
     val promise = Promise[String]()
 
     if (!tokenIsValid(token.now)) {
@@ -136,7 +140,8 @@ class DiscoveryService {
                   if (value.isFailure) {
                     // TODO FIXME show Toast
                     value.failed.get.printStackTrace()
-                    window.alert(value.failed.get.getMessage().nn)
+                    toaster.make(value.failed.get.getMessage().nn, true)
+                    // window.alert(value.failed.get.getMessage().nn)
                   }
                 })
               promise.success(newToken)
@@ -147,7 +152,8 @@ class DiscoveryService {
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            window.alert(value.failed.get.getMessage().nn)
+            toaster.make(value.failed.get.getMessage().nn, true)
+            // window.alert(value.failed.get.getMessage().nn)
           }
         })
     }
