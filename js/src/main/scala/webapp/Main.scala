@@ -25,7 +25,6 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
-import org.scalajs.dom.window
 import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js

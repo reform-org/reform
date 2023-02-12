@@ -24,7 +24,6 @@ import outwatch.dsl.*
 import rescala.default.*
 import webapp.*
 
-import webapp.services.Toaster
 import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js

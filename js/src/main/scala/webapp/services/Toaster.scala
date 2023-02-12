@@ -4,12 +4,11 @@ import outwatch.VNode
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.{console, document, window}
+import org.scalajs.dom.{document, window}
 import scala.scalajs.js
 import webapp.*
 import webapp.given
 import webapp.components.Icons
-import org.scalajs.dom.Element
 import org.scalajs.dom.HTMLHtmlElement
 
 enum ToastType(
@@ -55,7 +54,7 @@ class Toast(
       start match {
         case None => {
           start = Some(timestamp)
-          window.requestAnimationFrame(animate)
+          window.requestAnimationFrame(t => animate(t))
         }
         case Some(startValue) => {
           val elapsed = timestamp - startValue;
@@ -69,19 +68,19 @@ class Toast(
           if (elapsed < autoDismissAfter) {
             previousTimeStamp = timestamp
             if (!animationDone) {
-              window.requestAnimationFrame(animate)
+              window.requestAnimationFrame(t => animate(t))
 
             }
           }
         }
       }
     } else {
-      window.requestAnimationFrame(animate)
+      window.requestAnimationFrame(t => animate(t))
     }
   }
 
   if (autodismiss) {
-    window.requestAnimationFrame(animate)
+    window.requestAnimationFrame(t => animate(t))
   }
 
   def render: VNode = {
