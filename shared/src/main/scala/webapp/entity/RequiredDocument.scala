@@ -17,7 +17,7 @@ case class RequiredDocument(
 
   // empty for required fields, default for optional fields
   def default: RequiredDocument =
-    RequiredDocument(Attribute.default, Attribute.default, Attribute.default, Attribute.default)
+    RequiredDocument(Attribute.default, Attribute.default, Attribute(true), Attribute(true))
 
   def identifier: Attribute[String] = name
 

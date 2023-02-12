@@ -4,7 +4,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
-import webapp.entity.Attribute.given
 
 case class Supervisor(
     firstName: Attribute[String] = Attribute.empty,
@@ -16,7 +15,7 @@ case class Supervisor(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
+  def default: Supervisor = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = firstName
 

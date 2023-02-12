@@ -17,9 +17,7 @@ object Seqnal {
   implicit class SeqOps[T](self: Seq[T]) {
 
     def filterSignal(p: T => Signal[Boolean]): Signal[Seq[T]] = self
-      .map(e =>
-        p(e).map(if _ then Seq(e) else Seq.empty)
-      )
+      .map(e => p(e).map(if (_) Seq(e) else Seq.empty))
       .seqToSignal
       .map(_.flatten)
 

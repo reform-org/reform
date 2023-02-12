@@ -16,7 +16,7 @@ case class Project(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = Project(Attribute.empty, Attribute.empty, Attribute.default, Attribute.default)
+  def default: Project = Project(Attribute.empty, Attribute.empty, Attribute.default, Attribute(true))
 
   def identifier: Attribute[String] = name
 
