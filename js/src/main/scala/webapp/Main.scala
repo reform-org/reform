@@ -29,11 +29,7 @@ import webapp.Codecs.*
 import webapp.utils.Futures.*
 import concurrent.ExecutionContext.Implicits.global
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-
 import scala.scalajs.js
-import concurrent.ExecutionContext.Implicits.global
 
 // object JavaScriptHot {
 //   @js.native
