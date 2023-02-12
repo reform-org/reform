@@ -16,7 +16,7 @@ async function startPeers(count: number) {
 
 async function loadPage(peers: Peer[]) {
 	await Promise.all(
-		peers.map(async (peer) => peer.driver.get("http://127.0.0.1:5173/")),
+		peers.map(async (peer) => peer.driver.get("http://localhost:5173/")),
 	);
 }
 
