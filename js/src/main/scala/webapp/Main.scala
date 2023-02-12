@@ -87,7 +87,7 @@ object Main {
       .onComplete(value => {
         if (value.isFailure) {
           toaster.make(
-            "Failed to write into the storage. Your Browser does not support indexedDB! 🔒",
+            "Failed to write into the storage. Your Browser does not support IndexedDB!",
             false,
             ToastType.Error,
           )
