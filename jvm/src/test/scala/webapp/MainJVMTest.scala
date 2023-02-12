@@ -18,13 +18,13 @@ package webapp
 import loci.communicator.tcp.TCP
 import loci.registry.Registry
 import utest.*
-import webapp.MainSharedTest.continually
-import webapp.MainSharedTest.eventually
 import webapp.MainSharedTest.testRepository
+import webapp.MainSharedTest.waitUntilTrue
 import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
+import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js.annotation.*
 
@@ -36,52 +36,53 @@ object MainJVMTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
-  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T]) = {
+  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T], port: Int) = {
     val registry0 = Registry()
     val registry1 = Registry()
     val indexedDb0: IIndexedDB = MemoryIndexedDB()
     val indexedDb1: IIndexedDB = MemoryIndexedDB()
     val repositories0 = Repositories(using registry0, indexedDb0)
     val repositories1 = Repositories(using registry1, indexedDb1)
-    testRepository(fun(repositories0))
-    eventually(() => fun(repositories0).all.now.length == 1)
-    continually(() => fun(repositories1).all.now.length == 0)
-    registry0.listen(TCP(1337))
-    registry1.connect(TCP("localhost", 1337))
-    eventually(() => fun(repositories1).all.now.length == 1)
-    continually(() => fun(repositories1).all.now.length == 1)
-    registry0.terminate()
-    registry1.terminate()
+    for _ <- testRepository(fun(repositories0))
+    _ <- waitUntilTrue(fun(repositories0).all.map(_.length == 1))
+    _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 0))
+    _ = registry0.listen(TCP(port))
+    _ <- registry1.connect(TCP("localhost", port))
+    _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
+    _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
+    _ = registry0.terminate()
+    _ = registry1.terminate()
+    yield ()
   }
 
   val tests: Tests = Tests {
 
     test("test syncing projects") {
-      testSyncing(r => r.projects)
+      testSyncing(r => r.projects, 1337)
     }
 
     test("test syncing users") {
-      testSyncing(r => r.users)
+      testSyncing(r => r.users, 1338)
     }
 
     test("test syncing hiwis") {
-      testSyncing(r => r.hiwis)
+      testSyncing(r => r.hiwis, 1339)
     }
 
     test("test syncing supervisors") {
-      testSyncing(r => r.supervisors)
+      testSyncing(r => r.supervisors, 1340)
     }
 
     test("test syncing contractSchemas") {
-      testSyncing(r => r.contractSchemas)
+      testSyncing(r => r.contractSchemas, 1341)
     }
 
     test("test syncing paymentLevels") {
-      testSyncing(r => r.paymentLevels)
+      testSyncing(r => r.paymentLevels, 1342)
     }
 
-    test("test salaryChanges projects") {
-      testSyncing(r => r.salaryChanges)
+    test("test syncing salaryChanges") {
+      testSyncing(r => r.salaryChanges, 1343)
     }
   }
 
