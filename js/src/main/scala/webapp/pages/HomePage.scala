@@ -69,10 +69,8 @@ case class HomePage() extends Page {
               })
               .onComplete(value => {
                 if (value.isFailure) {
-                  // TODO FIXME show Toast
                   value.failed.get.printStackTrace()
                   toaster.make(value.failed.get.getMessage().nn)
-                  // window.alert(value.failed.get.getMessage().nn)
                 }
               })
           },

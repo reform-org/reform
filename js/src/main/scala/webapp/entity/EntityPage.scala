@@ -28,7 +28,7 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
 import webapp.components.{Modal, ModalButton}
-import webapp.services.Toaster
+import webapp.services.{ToastMode, ToastType, Toaster}
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -192,10 +192,8 @@ private class EntityRow[T <: Entity[T]](
     s.update(p => p.get.withExists(false))
       .onComplete(value => {
         if (value.isFailure) {
-          // TODO FIXME show Toast
           value.failed.get.printStackTrace()
-          toaster.make(value.failed.get.getMessage.nn)
-          // window.alert(value.failed.get.getMessage().nn)
+          toaster.make(value.failed.get.getMessage.nn, ToastMode.Infinit, ToastType.Error)
         }
       })
   }
@@ -214,10 +212,8 @@ private class EntityRow[T <: Entity[T]](
           })
           .onComplete(value => {
             if (value.isFailure) {
-              // TODO FIXME show Toast
               value.failed.get.printStackTrace()
-              toaster.make(value.failed.get.getMessage().nn)
-              // window.alert(value.failed.get.getMessage().nn)
+              toaster.make(value.failed.get.getMessage().nn, ToastMode.Infinit, ToastType.Error)
             }
           })
         editingValue.set(None)
@@ -234,10 +230,8 @@ private class EntityRow[T <: Entity[T]](
           })
           .onComplete(value => {
             if (value.isFailure) {
-              // TODO FIXME show Toast
               value.failed.get.printStackTrace()
-              toaster.make(value.failed.get.getMessage().nn)
-              // window.alert(value.failed.get.getMessage().nn)
+              toaster.make(value.failed.get.getMessage().nn, ToastMode.Infinit, ToastType.Error)
             }
           })
       }
