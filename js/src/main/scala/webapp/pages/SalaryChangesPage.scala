@@ -18,10 +18,11 @@ package webapp.pages
 import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import SalaryChangesPage.*
 
-case class SalaryChangesPage()(using repositories: Repositories)
+case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[SalaryChange](
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),

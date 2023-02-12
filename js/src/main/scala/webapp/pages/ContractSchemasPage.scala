@@ -17,10 +17,11 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import ContractSchemasPage.*
 
-case class ContractSchemasPage()(using repositories: Repositories)
+case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name)) {}
 
 object ContractSchemasPage {

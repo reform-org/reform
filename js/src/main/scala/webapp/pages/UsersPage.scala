@@ -19,8 +19,9 @@ import webapp.Repositories
 import webapp.entity.*
 
 import UsersPage.*
+import webapp.services.Toaster
 
-case class UsersPage()(using repositories: Repositories)
+case class UsersPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[User](repositories.users, Seq(username, role, comment)) {}
 
 object UsersPage {

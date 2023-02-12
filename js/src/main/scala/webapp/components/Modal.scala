@@ -4,9 +4,8 @@ import outwatch.VNode
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.document
 import webapp.given
-import org.scalajs.dom.Element
+import org.scalajs.dom.{document, Element}
 
 class ModalButton(val text: String, val classes: String = "", val callback: () => Unit = () => {})
 

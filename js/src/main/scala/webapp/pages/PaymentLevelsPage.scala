@@ -17,10 +17,11 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import PaymentLevelsPage.*
 
-case class PaymentLevelsPage()(using repositories: Repositories)
+case class PaymentLevelsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
 
 object PaymentLevelsPage {

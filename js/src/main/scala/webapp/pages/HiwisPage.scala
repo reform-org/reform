@@ -17,10 +17,11 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import HiwisPage.*
 
-case class HiwisPage()(using repositories: Repositories)
+case class HiwisPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Hiwi](
       repositories.hiwis,
       Seq(firstName, lastName, hours, eMail, birthdate),

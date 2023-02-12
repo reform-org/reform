@@ -17,10 +17,10 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
+import webapp.services.Toaster
 import ProjectsPage.*
 
-case class ProjectsPage()(using repositories: Repositories)
+case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
       Seq(name, maxHours, accountName),
