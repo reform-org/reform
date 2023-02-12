@@ -63,11 +63,11 @@ object Main {
   }
 
   private def app(using
-                  routing: RoutingService,
-                  repositories: Repositories,
-                  webrtc: WebRTCService,
-                  discovery: DiscoveryService,
-                  toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+      toaster: Toaster,
   ) = body(
     routing.render,
     toaster.render,
