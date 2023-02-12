@@ -28,7 +28,7 @@ object ContractSchemasPage {
   private val name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bind[ContractSchema](
+    .bindAsText[ContractSchema](
       _.name,
       (s, a) => s.copy(name = a),
     )

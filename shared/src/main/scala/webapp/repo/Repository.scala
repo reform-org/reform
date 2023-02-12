@@ -41,7 +41,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
 
   val ids: Signal[Set[String]] =
-    idSynced.value.map(_.set)
+    idSynced.signal.map(_.set)
 
   idStorage
     .getOrDefault("ids")

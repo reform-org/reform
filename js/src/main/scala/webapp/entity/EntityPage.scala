@@ -36,13 +36,13 @@ import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
 
 private class EntityRow[T <: Entity[T]](
-    repository: Repository[T],
-    existingValue: Option[Synced[T]],
-    editingValue: Var[Option[T]],
-    uiAttributes: Seq[UIAttribute[T, ? <: Any]],
+    val repository: Repository[T],
+    val existingValue: Option[Synced[T]],
+    val editingValue: Var[Option[T]],
+    val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
-  def render() = {
+  def render = {
     editingValue.map(editingNow => {
       val res = editingNow match {
         case Some(_) => {
@@ -95,7 +95,7 @@ private class EntityRow[T <: Entity[T]](
                 existingValue.map(p => {
                   val modal = new Modal(
                     "Delete",
-                    s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?",
+                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?",
                     Seq(
                       new ModalButton(
                         "Yay!",
@@ -140,7 +140,7 @@ private class EntityRow[T <: Entity[T]](
             case Some(syncedEntity) => {
               val modal = new Modal(
                 "Delete",
-                s"Do you really want to delete the entity \"${syncedEntity.value.now.identifier.get}\"?",
+                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get}\"?",
                 Seq(
                   new ModalButton(
                     "Yay!",
@@ -150,7 +150,7 @@ private class EntityRow[T <: Entity[T]](
                   new ModalButton("Nay!"),
                 ),
               )
-              val res = syncedEntity.value.map(p => {
+              val res = syncedEntity.signal.map(p => {
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
                     tr(
@@ -200,26 +200,26 @@ private class EntityRow[T <: Entity[T]](
     })
   }
 
-  def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.value.now.identifier.get}\"?")
+  private def removeEntity(s: Synced[T]): Unit = {
+    val yes = window.confirm(s"Do you really want to delete the entity \"${s.signal.now.identifier.get}\"?")
     if (yes) {
-      p.update(p => p.get.withExists(false))
+      s.update(p => p.get.withExists(false))
         .onComplete(value => {
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage().nn, true)
+            toaster.make(value.failed.get.getMessage.nn, true)
             // window.alert(value.failed.get.getMessage().nn)
           }
         })
     }
   }
 
-  def cancelEdit(): Unit = {
+  private def cancelEdit(): Unit = {
     editingValue.set(None)
   }
 
-  def createOrUpdate(): Unit = {
+  private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
     (existingValue match {
       case Some(existing) => {
@@ -260,7 +260,21 @@ private class EntityRow[T <: Entity[T]](
   }
 
   private def startEditing(): Unit = {
-    editingValue.set(Some(existingValue.get.value.now))
+    editingValue.set(Some(existingValue.get.signal.now))
+  }
+}
+
+private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? <: Any]]) {
+
+  private val filters = uiAttributes.map(_.uiFilter)
+
+  def render: VNode = tr(
+    filters.map(_.render),
+  )
+
+  def test(entity: Signal[EntityType]): Signal[Boolean] = {
+    val preds = Signal(filters.map(_.predicate)).flatten
+    entity.map(e => preds.map(_.forall(_(e)))).flatten
   }
 }
 
@@ -272,6 +286,17 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
+
+  private val entityRows: Signal[Seq[EntityRow[T]]] =
+    repository.all.map(
+      _.map(syncedEntity => {
+        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes)
+      }),
+    )
+
+  private val filterRow = FilterRow[T](uiAttributes)
+
+  private val search = Var("")
 
   def render(using
       routing: RoutingService,
@@ -293,20 +318,29 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             ),
           ),
           tbody(
-            renderEntities(repository.all),
-            newUserRow.render(),
+            filterRow.render,
+            renderEntities,
+            newUserRow.render,
+          ),
+          input(
+            value <-- search,
+            onInput.value --> search,
           ),
         ),
       ),
     )
   }
 
-  private def renderEntities(
-      entities: Signal[List[Synced[T]]],
-  ) =
-    entities.map(
-      _.map(syncedEntity => {
-        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
-      }),
+  private def renderEntities = {
+    val filtered: Signal[Seq[Seq[EntityRow[T]]]] = entityRows
+      .map(
+        _.map(r =>
+          r.existingValue.map(v => filterRow.test(v.signal).map(if (_) Seq(r) else Seq.empty)).getOrElse(Signal(Seq())),
+        ),
+      )
+      .flatten
+    filtered.map(
+      _.flatMap(_.map(_.render)),
     )
+  }
 }

@@ -33,7 +33,7 @@ object SalaryChangesPage {
     .withLabel("Value")
     .require
     .map[Int](_ / 100.0f, f => Math.round(f * 100.0f))
-    .bind[SalaryChange](
+    .bindAsText[SalaryChange](
       _.value,
       (s, a) => s.copy(value = a),
     )
@@ -47,7 +47,7 @@ object SalaryChangesPage {
       writeConverter = identity,
       label = "PaymentLevel",
       options = repositories.paymentLevels.all.map(list =>
-        list.map(value => new UIOption[Signal[String]](value.id, value.value.map(v => v.title.get.getOrElse("")))),
+        list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
       ),
       isRequired = true,
     )
