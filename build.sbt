@@ -44,7 +44,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
         .Process(
           os match {
             case x if x contains "windows" => "./npm_proxy.bat"
-            case _                         => "npm"
+            case _                         => "npm --version"
           },
           baseDirectory.value.getParentFile(),
         )
