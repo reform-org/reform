@@ -2,5 +2,13 @@
     "files.watcherExclude": {
         "**/target": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "name": "SQLite",
+            "driver": "SQLite",
+            "database": "./reform.db"
+        }
+    ],
 }

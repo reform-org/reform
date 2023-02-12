@@ -19,7 +19,9 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"scalameta.metals"
+				"scalameta.metals",
+				"mtxr.sqltools",
+				"mtxr.sqltools-driver-sqlite"
 			]
 		}
 	},
