@@ -38,19 +38,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
     ),
-    externalNpm := {
-      val os = sys.props("os.name").toLowerCase
-      scala.sys.process
-        .Process(
-          os match {
-            case x if x contains "windows" => "./npm_proxy.bat"
-            case _                         => "npm"
-          },
-          baseDirectory.value.getParentFile(),
-        )
-        .!
-      baseDirectory.value.getParentFile()
-    },
+    externalNpm := baseDirectory.value.getParentFile(),
     stIgnore := List(
       "@types/chance",
       "@types/selenium-webdriver",

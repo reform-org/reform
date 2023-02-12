@@ -27,7 +27,7 @@ object RequiredDocumentsPage {
   private val name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bind[RequiredDocument](
+    .bindAsText[RequiredDocument](
       _.name,
       (d, a) => d.copy(name = a),
     )
@@ -35,7 +35,7 @@ object RequiredDocumentsPage {
   private val fileName = UIAttributeBuilder.string
     .withLabel("File Name")
     .require
-    .bind[RequiredDocument](
+    .bindAsText[RequiredDocument](
       _.fileName,
       (d, a) => d.copy(fileName = a),
     )
