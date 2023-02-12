@@ -25,13 +25,11 @@ import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import concurrent.ExecutionContext.Implicits.global
 
-import scala.scalajs.js.annotation.*
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
 import loci.communicator.ws.jetty.WS
 
-@JSExportTopLevel("MainJVMTest")
 object MainJVMTest extends TestSuite {
 
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
@@ -52,11 +50,11 @@ object MainJVMTest extends TestSuite {
     val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
     server.setHandler(context)
     server.addConnector(connector)
-    server.start()
     for _ <- testRepository(fun(repositories0))
     _ <- waitUntilTrue(fun(repositories0).all.map(_.length == 1))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 0))
     _ = registry0.listen(WS(context, "/registry/*"))
+    _ = server.start()
     _ <- registry1.connect(WS(s"ws://localhost:$port/registry/"))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
@@ -96,7 +94,6 @@ object MainJVMTest extends TestSuite {
     }
   }
 
-  @JSExport
   def main(): Int = {
     val results = TestRunner.runAndPrint(
       tests,

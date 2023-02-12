@@ -8,7 +8,6 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 name := "Reform"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.0-RC2"
-ThisBuild / fork := true
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -56,6 +55,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     stStdlib := List("esnext", "dom"),
   )
   .jvmSettings(
+    fork := true,
     libraryDependencies ++= Seq(
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
     ),

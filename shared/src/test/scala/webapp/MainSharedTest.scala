@@ -23,15 +23,12 @@ import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
 
-import scala.scalajs.js.annotation.*
-
 import concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Promise
 import rescala.default.*
 import rescala.core.Disconnectable
 import scala.annotation.nowarn
 
-@JSExportTopLevel("MainSharedTest")
 object MainSharedTest extends TestSuite {
 
   def signalToFuture[T](signal: Signal[T]) = {
@@ -115,7 +112,6 @@ object MainSharedTest extends TestSuite {
     }
   }
 
-  @JSExport
   def main(): Int = {
     val results = TestRunner.runAndPrint(
       tests,
