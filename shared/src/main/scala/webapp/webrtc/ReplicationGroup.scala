@@ -24,7 +24,6 @@ import loci.registry.Registry
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.core.Disconnectable
-import rescala.default.*
 import webapp.Codecs.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -137,12 +136,12 @@ class ReplicationGroup[A](name: String)(using
       }
 
       // Send full state to initialize remote
-      val currentState = synced.value.readValueOnce
+      val currentState = synced.signal.readValueOnce
       // only send full state if it's not empty for efficiency
       if (currentState != bottom.empty) sendUpdate(currentState)
 
       // Whenever the crdt is changed propagate the delta
-      val observer = synced.value.observe { s =>
+      val observer = synced.signal.observe { s =>
         // note: isn't the resendbuffer also added in sendUpdate again?
         // combine the resend buffer and the current delta
         val deltaStateList = List(s) ++ resendBuffer.get(remoteRef).toList

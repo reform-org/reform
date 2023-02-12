@@ -30,7 +30,7 @@ object HiwisPage {
   private val firstName = UIAttributeBuilder.string
     .withLabel("First Name")
     .require
-    .bind[Hiwi](
+    .bindAsText[Hiwi](
       _.firstName,
       (h, a) => h.copy(firstName = a),
     )
@@ -38,7 +38,7 @@ object HiwisPage {
   private val lastName = UIAttributeBuilder.string
     .withLabel("Last Name")
     .require
-    .bind[Hiwi](
+    .bindAsText[Hiwi](
       _.lastName,
       (h, a) => h.copy(lastName = a),
     )
@@ -46,7 +46,7 @@ object HiwisPage {
   private val hours = UIAttributeBuilder.int
     .withLabel("Hours")
     .require
-    .bind[Hiwi](
+    .bindAsNumber[Hiwi](
       _.hours,
       (h, a) => h.copy(hours = a),
     )
@@ -54,7 +54,7 @@ object HiwisPage {
   private val eMail = UIAttributeBuilder.string
     .withLabel("Email")
     .require
-    .bind[Hiwi](
+    .bindAsText[Hiwi](
       _.eMail,
       (h, a) => h.copy(eMail = a),
     )
