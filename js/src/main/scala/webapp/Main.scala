@@ -25,7 +25,7 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 import webapp.utils.Futures.*
 import webapp.given_ExecutionContext
 
@@ -62,11 +62,11 @@ object Main {
   }
 
   private def app(using
-                  routing: RoutingService,
-                  repositories: Repositories,
-                  webrtc: WebRTCService,
-                  discovery: DiscoveryService,
-                  toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+      toaster: Toaster,
   ) = body(
     routing.render,
     toaster.render,
