@@ -26,14 +26,7 @@ jobs:
         cache: 'sbt'
     - uses: actions/setup-node@v3
       with:
-        node-version: latest
         cache: 'npm'
-    - name: Cache scalablytyped
-      id: cache-scalablytyped
-      uses: actions/cache@v3
-      with:
-        path: ~/.cache/scalablytyped
-        key: ${{ runner.os }}-scalablytyped
     - run: npm ci
     - name: Test
       run: sbt clean coverage webappJVM/test webappJVM/coverageReport
