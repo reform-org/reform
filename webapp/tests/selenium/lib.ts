@@ -1,4 +1,3 @@
-import "./fast-selenium.js";
 import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
@@ -442,8 +441,8 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
-					3000,
+					until.elementLocated(By.xpath(`.//*[text()="person a"]`)),
+					10000,
 				);
 				let overlay = await peer.driver.findElement(
 					By.css("label.drawer-overlay"),

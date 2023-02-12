@@ -56,10 +56,11 @@ object MainSharedTest extends TestSuite {
   }
 
   def testE[T <: Entity[T]](value: Synced[T]) = {
-    value.value.now.exists
-    value.value.now.identifier
-    value.value.now.withExists(false).exists
-    value.value.now.default
+    val now = value.signal.now
+    now.exists
+    now.identifier
+    now.withExists(false).exists
+    now.default
   }
 
   def testRepository[T <: Entity[T]](repository: Repository[T]) = {

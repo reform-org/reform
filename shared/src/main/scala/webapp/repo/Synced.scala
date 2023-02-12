@@ -5,7 +5,7 @@ import scala.concurrent.Future
 import concurrent.ExecutionContext.Implicits.global
 
 // TODO: make members private and create accessors
-case class Synced[A](storage: Storage[A], id: String, value: Var[A]) {
+case class Synced[A](private val storage: Storage[A], id: String, private val value: Var[A]) {
 
   def update(f: Option[A] => A): Future[A] = {
     storage
@@ -17,4 +17,6 @@ case class Synced[A](storage: Storage[A], id: String, value: Var[A]) {
         newValue
       })
   }
+
+  val signal: Signal[A] = value
 }

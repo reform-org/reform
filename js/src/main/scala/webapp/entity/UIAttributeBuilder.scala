@@ -5,15 +5,12 @@ import webapp.utils.Date
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
     writeConverter: String => AttributeType,
-    fieldType: String = "text",
     label: String = "",
     isRequired: Boolean = false,
     min: String = "",
 ) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
-
-  def withFieldType(fieldType: String): UIAttributeBuilder[AttributeType] = copy(fieldType = fieldType)
 
   def withMin(min: String): UIAttributeBuilder[AttributeType] = copy(min = min)
 
@@ -30,7 +27,7 @@ case class UIAttributeBuilder[AttributeType](
     writeConverter = s => writeMapper(writeConverter(s)),
   )
 
-  def bind[EntityType](
+  def bindAsText[EntityType](
       getter: EntityType => Attribute[AttributeType],
       setter: (EntityType, Attribute[AttributeType]) => EntityType,
   ): UIAttribute[EntityType, AttributeType] = UIAttribute(
@@ -40,7 +37,7 @@ case class UIAttributeBuilder[AttributeType](
     writeConverter = writeConverter,
     label = label,
     isRequired = isRequired,
-    fieldType = fieldType,
+    fieldType = "text",
   )
 
 }
@@ -55,14 +52,26 @@ object UIAttributeBuilder {
   )
 
   val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
-    .withFieldType("number")
 
   val float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
-    .withFieldType("number")
 
   val boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
 
-  implicit class BindToDate(self: UIAttributeBuilder[Long]) {
+  implicit class BindToInt(self: UIAttributeBuilder[Int]) {
+    def bindAsNumber[EntityType](
+        getter: EntityType => Attribute[Int],
+        setter: (EntityType, Attribute[Int]) => EntityType,
+    ): UIAttribute[EntityType, Int] = UINumberAttribute(
+      getter = getter,
+      setter = setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      isRequired = self.isRequired,
+    )
+  }
+
+  implicit class BindToLong(self: UIAttributeBuilder[Long]) {
     def bindAsDatePicker[EntityType](
         getter: EntityType => Attribute[Long],
         setter: (EntityType, Attribute[Long]) => EntityType,
