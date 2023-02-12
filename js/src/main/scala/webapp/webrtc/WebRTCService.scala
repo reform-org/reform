@@ -69,7 +69,6 @@ class WebRTCService(using registry: Registry) {
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
   private var connectionRefs = Map[String, RemoteRef]()
-  private var intervals = Map[RemoteRef, Int]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
@@ -118,35 +117,4 @@ class WebRTCService(using registry: Registry) {
 
     Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
-
-  private def ping(ref: RemoteRef): Unit = {
-    val remoteUpdate = registry.lookup(binding, ref)
-    remoteUpdate("pingdata").onComplete {
-      case Success(_) => console.log("update ping success")
-      case Failure(_) => console.log("update ping failure")
-    }
-  }
-
-  implicit val codec: JsonValueCodec[String] = JsonCodecMaker.make
-  val binding = Binding[String => Unit]("pings")
-
-  registry.remoteJoined.monitor(remoteRef => {
-    val interval = window.setInterval(
-      () => {
-        if (remoteRef.connected) {
-          ping(remoteRef);
-        }
-      },
-      10000,
-    );
-    intervals += (remoteRef -> interval)
-  }): @nowarn("msg=discarded expression")
-
-  registry.remoteLeft.monitor(remoteRef => {
-    removeConnection.fire(remoteRef)
-    window.clearInterval(intervals(remoteRef))
-    intervals -= remoteRef
-  }): @nowarn("msg=discarded expression")
-
-  registry.bindSbj(binding) { (_: RemoteRef, _: String) => {} }
 }

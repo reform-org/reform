@@ -4,8 +4,11 @@ import loci.registry.Registry
 import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.repo.Repository
+import webapp.webrtc.PingService
 
 class Repositories(using registry: Registry, indexedDb: IIndexedDB) {
+
+  val _ = PingService(using registry)
 
   val projects: Repository[Project] = Repository("project", Project.empty)
   val users: Repository[User] = Repository("user", User.empty)
