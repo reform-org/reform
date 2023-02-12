@@ -74,6 +74,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "-Ysafe-init",
       "-Wunused:all",
       "-Wvalue-discard",
+      "-deprecation",
+      "-Werror",
       // "-Xcheck-macros", // breaks utest, outwatch
     ),
   )

@@ -10,6 +10,7 @@ import webapp.*
 import webapp.given
 import webapp.components.Icons
 import org.scalajs.dom.HTMLHtmlElement
+import scala.annotation.nowarn
 
 enum ToastType(
     val primaryBgClass: String,
@@ -54,7 +55,7 @@ class Toast(
       start match {
         case None => {
           start = Some(timestamp)
-          window.requestAnimationFrame(t => animate(t))
+          window.requestAnimationFrame(t => animate(t)): @nowarn
         }
         case Some(startValue) => {
           val elapsed = timestamp - startValue;
@@ -68,19 +69,19 @@ class Toast(
           if (elapsed < autoDismissAfter) {
             previousTimeStamp = timestamp
             if (!animationDone) {
-              window.requestAnimationFrame(t => animate(t))
+              window.requestAnimationFrame(t => animate(t)): @nowarn
 
             }
           }
         }
       }
     } else {
-      window.requestAnimationFrame(t => animate(t))
+      window.requestAnimationFrame(t => animate(t)): @nowarn
     }
   }
 
   if (autodismiss) {
-    window.requestAnimationFrame(t => animate(t))
+    window.requestAnimationFrame(t => animate(t)): @nowarn
   }
 
   def render: VNode = {
@@ -130,16 +131,16 @@ class Toaster() {
 
   def make(text: String, autodismiss: Boolean, style: ToastType = ToastType.Default): Unit = {
     val dismissAfter = 10000;
-    val toast = new Toast(text, autodismiss, dismissAfter, style, (t: Toast) => { this.removeToast(t) })
-    this.addToast(toast);
+    val toast = new Toast(text, autodismiss, dismissAfter, style, (t: Toast) => { this.removeToast.fire(t) })
+    this.addToast.fire(toast);
 
     if (autodismiss) {
-      val interval = window.setTimeout(
+      window.setTimeout(
         () => {
           this.removeToast(toast)
         },
         dismissAfter,
-      )
+      ): @nowarn
     }
   }
 

@@ -21,7 +21,7 @@ class IndexedDB extends IIndexedDB {
         2,
         OpenDBCallbacks()
           .setUpgrade((db, _, _, _, _) => {
-            db.createObjectStore("reform")
+            val _ = db.createObjectStore("reform")
           }),
       )
       .toFuture
@@ -38,6 +38,7 @@ class IndexedDB extends IIndexedDB {
     }
   }
 
+  @nowarn("msg=unused implicit parameter")
   given optionCodec[T](using codec: JsonValueCodec[T]): JsonValueCodec[Option[T]] = JsonCodecMaker.make
 
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
@@ -48,10 +49,9 @@ class IndexedDB extends IIndexedDB {
     v <- store.get(key).toFuture
     value = Option(v.orNull).map(castFromJsDynamic(_))
     newValue = scalaFun(value)
-    result <- store.put(castToJsDynamic(newValue), key).toFuture
+    _ <- store.put(castToJsDynamic(newValue), key).toFuture
     _ <- tx.done.toFuture
     yield {
-      result: @nowarn()
       newValue
     }
   }
