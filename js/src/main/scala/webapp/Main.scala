@@ -24,8 +24,10 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.Toaster
+import webapp.services.*
+import webapp.Codecs.*
 import webapp.utils.Futures.*
+import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
 
@@ -71,9 +73,8 @@ object Main {
     given discovery: DiscoveryService = DiscoveryService()
     given toaster: Toaster = Toaster()
 
-    implicit val stringCodec: JsonValueCodec[String] = JsonCodecMaker.make
     indexedDb
-      .update[String]("test", (_) => "test")
+      .update[String]("test", _ => "test")
       .onComplete(value => {
         if (value.isFailure) {
           toaster.make(
