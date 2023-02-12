@@ -5,7 +5,6 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import webapp.Codecs.*
-import webapp.entity.Attribute.given
 
 case class SalaryChange(
     value: Attribute[Int] = Attribute.empty,
@@ -17,7 +16,7 @@ case class SalaryChange(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
+  def default: SalaryChange = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = paymentLevel
 

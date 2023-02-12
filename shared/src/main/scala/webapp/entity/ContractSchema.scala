@@ -4,7 +4,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.Codecs.*
-import webapp.entity.Attribute.given
 
 case class ContractSchema(
     name: Attribute[String] = Attribute.empty,
@@ -14,7 +13,7 @@ case class ContractSchema(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = ContractSchema(Attribute.empty, Attribute.default)
+  def default: ContractSchema = ContractSchema(Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = name
 

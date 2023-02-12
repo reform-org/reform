@@ -26,30 +26,26 @@ case class Attribute[T](register: MultiValueRegister[T]) {
 
 object Attribute {
 
+  def apply[T](value: T): Attribute[T] = Attribute.empty.set(value)
+
   given stringDefault: Default[String] with {
     def default = ""
   }
 
-  given booleanDefault: Default[Boolean] with {
-    def default = true // TODO FIXME this may not be a good idea
-  }
-
   given defaultInt: Default[Int] with {
-    def default = 0
+    def default: Int = 0
   }
 
   given defaultLong: Default[Long] with {
-    def default = 0
+    def default: Long = 0
   }
 
   given defaultOptional[T]: Default[Option[T]] with {
-    def default = None
+    def default: Option[T] = None
   }
 
   given attributeDefault[T](using defaultT: Default[T]): Default[Attribute[T]] with {
-    def default = {
-      Attribute(MultiValueRegister(Map.empty).write(myReplicaID, defaultT.default))
-    }
+    def default: Attribute[T] = Attribute(defaultT.default)
   }
 
   def default[T](using defaultAttribute: Default[T]): Attribute[T] = attributeDefault.default
