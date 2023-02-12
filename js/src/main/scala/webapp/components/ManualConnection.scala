@@ -34,7 +34,7 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
               if (value.isFailure) {
                 // TODO FIXME show Toast
                 value.failed.get.printStackTrace()
-                toaster.make(value.failed.get.getMessage().nn, true)
+                toaster.make(value.failed.get.getMessage().nn)
                 // window.alert(value.failed.get.getMessage().nn)
               }
             }),

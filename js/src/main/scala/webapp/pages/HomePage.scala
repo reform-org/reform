@@ -26,7 +26,7 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
-import webapp.services.{ToastType, Toaster}
+import webapp.services.{ToastMode, ToastType, Toaster}
 import concurrent.ExecutionContext.Implicits.global
 import webapp.components.{Modal, ModalButton}
 
@@ -71,7 +71,7 @@ case class HomePage() extends Page {
                 if (value.isFailure) {
                   // TODO FIXME show Toast
                   value.failed.get.printStackTrace()
-                  toaster.make(value.failed.get.getMessage().nn, true)
+                  toaster.make(value.failed.get.getMessage().nn)
                   // window.alert(value.failed.get.getMessage().nn)
                 }
               })
@@ -98,7 +98,7 @@ case class HomePage() extends Page {
           idAttr := "makeToast",
           "Make me a boring normal toast 🍞",
           onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", true, ToastType.Default)
+            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Default)
           }),
         ),
         button(
@@ -106,7 +106,7 @@ case class HomePage() extends Page {
           idAttr := "makeToast",
           "Make me a successful toast 🍞",
           onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", true, ToastType.Success)
+            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Success)
           }),
         ),
         button(
@@ -114,7 +114,7 @@ case class HomePage() extends Page {
           idAttr := "makeToast",
           "Make me a warning toast 🍞",
           onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", true, ToastType.Warning)
+            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Warning)
           }),
         ),
         button(
@@ -124,7 +124,7 @@ case class HomePage() extends Page {
           onClick.foreach(_ => {
             toaster.make(
               "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 🍞",
-              true,
+              ToastMode.Short,
               ToastType.Error,
             )
           }),
@@ -134,7 +134,7 @@ case class HomePage() extends Page {
           idAttr := "makeToast",
           "Make me a persistent error toast 🍞",
           onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", false, ToastType.Error)
+            toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
           }),
         ),
         modal.render(),

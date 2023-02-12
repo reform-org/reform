@@ -12,6 +12,13 @@ import webapp.components.Icons
 import org.scalajs.dom.HTMLHtmlElement
 import scala.annotation.nowarn
 
+enum ToastMode(val autodismiss: Boolean, val closeable: Boolean, val duration: Int = 0) {
+  case Short extends ToastMode(true, true, 10000)
+  case Long extends ToastMode(true, true, 20000)
+  case Infinit extends ToastMode(false, true)
+  case Persistent extends ToastMode(false, false)
+}
+
 enum ToastType(
     val primaryBgClass: String,
     val secondaryBgClass: String,
@@ -39,8 +46,7 @@ enum ToastType(
 
 class Toast(
     val text: String,
-    val autodismiss: Boolean,
-    val autoDismissAfter: Int,
+    val toastMode: ToastMode,
     val toastType: ToastType,
     val onclose: (Toast) => Unit,
 ) {
@@ -62,11 +68,11 @@ class Toast(
 
           if (previousTimeStamp != timestamp) {
             // animation magic
-            val width = s"${js.Math.min((100 / autoDismissAfter.toDouble) * elapsed, 100)}%"
+            val width = s"${js.Math.min((100 / toastMode.duration.toDouble) * elapsed, 100)}%"
             element.querySelector(".toast-progress").asInstanceOf[HTMLHtmlElement].style.width = width
           }
 
-          if (elapsed < autoDismissAfter) {
+          if (elapsed < toastMode.duration) {
             previousTimeStamp = timestamp
             if (!animationDone) {
               window.requestAnimationFrame(t => animate(t)): @nowarn
@@ -80,7 +86,7 @@ class Toast(
     }
   }
 
-  if (autodismiss) {
+  if (toastMode.autodismiss) {
     window.requestAnimationFrame(t => animate(t)): @nowarn
   }
 
@@ -88,7 +94,7 @@ class Toast(
     div(
       cls := s"${toastType.primaryBgClass} ${toastType.textClass} shadow-md alert relative overflow-hidden w-fit",
       idAttr := s"toast-$id", {
-        if (autodismiss)
+        if (toastMode.autodismiss)
           Some(
             div(
               cls := s"toast-progress absolute w-0 h-full left-0 top-0 ${toastType.secondaryBgClass}",
@@ -98,7 +104,7 @@ class Toast(
           None
       },
       div(
-        cls := s"z-50 flex flex-row items-start !mt-0 ${if (!autodismiss) "!w-full" else ""}",
+        cls := s"z-50 flex flex-row items-start !mt-0 ${if (!toastMode.autodismiss) "!w-full" else ""}",
         div(
           cls := "shrink-0",
           toastType.icon match {
@@ -109,12 +115,17 @@ class Toast(
         div(
           cls := "",
           text,
-        ),
-        div(
-          Icons.close("fill-red-600 w-4 h-4"),
-          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
-          onClick.foreach(_ => onclose(this)),
-        ),
+        ), {
+          if (toastMode.closeable) {
+            Some(
+              div(
+                Icons.close("fill-red-600 w-4 h-4"),
+                cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                onClick.foreach(_ => onclose(this)),
+              ),
+            )
+          } else None
+        },
       ),
     )
   }
@@ -129,18 +140,16 @@ class Toaster() {
 
   val toasts = Fold(Seq.empty: Seq[Toast])(addToastB, removeToastB)
 
-  def make(text: String, autodismiss: Boolean, style: ToastType = ToastType.Default): Unit = {
-    val dismissAfter = 10000;
-
-    val toast = new Toast(text, autodismiss, dismissAfter, style, (t: Toast) => { this.removeToast.fire(t) })
+  def make(text: String, mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Default): Unit = {
+    val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
 
-    if (autodismiss) {
+    if (mode.autodismiss) {
       window.setTimeout(
         () => {
           this.removeToast(toast)
         },
-        dismissAfter,
+        mode.duration,
       ): @nowarn
     }
   }

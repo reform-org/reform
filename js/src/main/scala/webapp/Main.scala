@@ -24,7 +24,7 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.{ToastType, Toaster}
+import webapp.services.{ToastMode, ToastType, Toaster}
 import concurrent.ExecutionContext.Implicits.global
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
@@ -69,7 +69,7 @@ object Main {
         if (value.isFailure) {
           // TODO FIXME show Toast
           value.failed.get.printStackTrace()
-          toaster.make(value.failed.get.getMessage().nn, true)
+          toaster.make(value.failed.get.getMessage().nn)
           // window.alert(value.failed.get.getMessage().nn)
         }
       })
@@ -88,7 +88,7 @@ object Main {
         if (value.isFailure) {
           toaster.make(
             "Failed to write into the storage. Your Browser does not support IndexedDB!",
-            false,
+            ToastMode.Persistent,
             ToastType.Error,
           )
         }
@@ -101,7 +101,7 @@ object Main {
           if (value.isFailure) {
             // TODO FIXME show Toast
             value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage().nn, true)
+            toaster.make(value.failed.get.getMessage().nn)
             // window.alert(value.failed.get.getMessage().nn)
           }
         })
