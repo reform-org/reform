@@ -34,5 +34,6 @@ jobs:
       with:
         path: ~/.cache/scalablytyped
         key: ${{ runner.os }}-scalablytyped
+    - run: npm ci
     - name: Test
       run: sbt webappJS/test
