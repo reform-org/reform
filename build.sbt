@@ -8,6 +8,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 name := "Reform"
 ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.0-RC2"
+ThisBuild / fork := true
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -37,6 +38,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "69ab30877539712051f508bdf680134e90032e0b",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "69ab30877539712051f508bdf680134e90032e0b",
     ),
     externalNpm := baseDirectory.value.getParentFile(),
     stIgnore := List(
@@ -52,13 +55,16 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     ),
     stStdlib := List("esnext", "dom"),
   )
+  .jvmSettings(
+    libraryDependencies ++= Seq(
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
+    ),
+  )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "573435684c9c1a4a57ef4a2ab7c87f7e3387905d",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "573435684c9c1a4a57ef4a2ab7c87f7e3387905d",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-tcp" % "573435684c9c1a4a57ef4a2ab7c87f7e3387905d",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "69ab30877539712051f508bdf680134e90032e0b",
       "com.github.rescala-lang.REScala" %%% "rescala" % "70dc2dde6cdc93abb9aaaa39fe8b6983f381b899",
       "com.github.rescala-lang.REScala" %%% "kofre" % "70dc2dde6cdc93abb9aaaa39fe8b6983f381b899",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.20.6",

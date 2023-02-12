@@ -37,6 +37,7 @@ import scala.concurrent.Promise
 import scala.annotation.nowarn
 
 import loci.serializer.jsoniterScala.given
+import loci.communicator.ws.webnative.WS
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -76,6 +77,8 @@ class WebRTCService(using registry: Registry) {
   private val removeConnectionB = removeConnection.act(r => current[Seq[RemoteRef]].filter(b => !b.equals(r)))
 
   val connections = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
+
+  registry.connect(WS("ws://localhost:1334/registry/")): @nowarn
 
   def registerConnection(
       connector: Connector[Connections.Protocol],
