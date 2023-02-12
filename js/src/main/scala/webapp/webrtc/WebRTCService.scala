@@ -24,19 +24,16 @@ import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import loci.registry.*
 import loci.transmitter.RemoteRef
 import org.scalajs.dom
-import org.scalajs.dom.{console, window}
 import rescala.default.*
 import webapp.*
 import webapp.npm.Utils
 import webapp.utils.Base64
-import scala.util.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.annotation.nowarn
 
-import loci.serializer.jsoniterScala.given
 import loci.communicator.ws.webnative.WS
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
