@@ -45,7 +45,7 @@ enum ToastType(
 }
 
 class Toast(
-    val text: String,
+    val text: VNode,
     val toastMode: ToastMode,
     val toastType: ToastType,
     val onclose: (Toast) => Unit,
@@ -141,6 +141,10 @@ class Toaster() {
   val toasts = Fold(Seq.empty: Seq[Toast])(addToastB, removeToastB)
 
   def make(text: String, mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Default): Unit = {
+    this.make(span(text), mode, style)
+  }
+
+  def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
     val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
 
