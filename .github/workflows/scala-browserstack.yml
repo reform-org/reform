@@ -25,11 +25,12 @@ jobs:
     - name: Set up JDK
       uses: actions/setup-java@v3
       with:
-        java-version: '11'
+        java-version: '17'
         distribution: 'temurin'
         cache: 'sbt'
     - uses: actions/setup-node@v3
       with:
+        node-version: 18
         cache: 'npm'
     - name: Cache scalablytyped
       id: cache-scalablytyped
