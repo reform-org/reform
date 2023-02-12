@@ -44,6 +44,7 @@ class SqliteDB extends IIndexedDB {
     } else {
       None
     }
+    connection.commit()
     val o = dbValue.map(readFromString(_))
     Future.successful(o)
   }
