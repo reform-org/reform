@@ -24,7 +24,6 @@ import loci.registry.Registry
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.core.Disconnectable
-import webapp.Codecs.*
 
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -46,11 +45,12 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
+@nowarn("msg=unused implicit parameter")
 class ReplicationGroup[A](name: String)(using
     registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
-    codec: JsonValueCodec[A], // this is not unused as it's used inside the macro
+    codec: JsonValueCodec[A],
 ) {
 
   given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
@@ -99,7 +99,7 @@ class ReplicationGroup[A](name: String)(using
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.map((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v)))
+        changes.map((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v))): @nowarn // TODO FIXME
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {

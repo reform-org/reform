@@ -18,7 +18,6 @@ import scala.concurrent.Promise
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
-import webapp.services.Toaster
 
 class AvailableConnection(
     val name: String,

@@ -76,7 +76,7 @@ object MainSharedTest extends TestSuite {
     for _ <- repository
       .create()
       .map(value => testE(value))
-    value <- waitUntilTrue(repository.all.map(_.length == 1))
+    _ <- waitUntilTrue(repository.all.map(_.length == 1))
     _ <- waitUntilTrue(repository.all.map(_.length == 1))
     yield ()
   }
