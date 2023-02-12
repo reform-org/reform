@@ -28,6 +28,7 @@ import webapp.services.Toaster
 import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
+import org.scalajs.dom
 
 // object JavaScriptHot {
 //   @js.native
