@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, it } from "vitest";
 import browserstack from "browserstack-local";
 import { writeFile } from "fs/promises";
 
-let headless = true;
+let headless = false;
 
 async function startPeers(count: number) {
 	return await Promise.all(

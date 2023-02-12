@@ -441,7 +441,7 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
+					until.elementLocated(By.xpath(`.//*[text()="person a"]`)),
 					3000,
 				);
 				let overlay = await peer.driver.findElement(
