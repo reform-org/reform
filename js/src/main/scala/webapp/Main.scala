@@ -24,9 +24,10 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.Toaster
+import webapp.services.{ToastType, Toaster}
 import concurrent.ExecutionContext.Implicits.global
-
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import scala.scalajs.js
 
 // object JavaScriptHot {
@@ -79,6 +80,20 @@ object Main {
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
     given toaster: Toaster = Toaster()
+
+    implicit val stringCodec: JsonValueCodec[String] = JsonCodecMaker.make
+    indexedDb
+      .update[String]("test", (_) => "test")
+      .onComplete(value => {
+        if (value.isFailure) {
+          toaster.make(
+            "Failed to write into the storage. Your Browser does not support indexedDB! 🔒",
+            false,
+            ToastType.Error,
+          )
+        }
+      })
+
     if (discovery.tokenIsValid(discovery.token.now))
       discovery
         .connect()
