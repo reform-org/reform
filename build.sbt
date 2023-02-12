@@ -58,6 +58,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     fork := true,
     libraryDependencies ++= Seq(
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
+      "org.xerial" % "sqlite-jdbc" % "3.39.2.1",
     ),
   )
   .settings(

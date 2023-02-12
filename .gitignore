@@ -71,3 +71,4 @@ out/
 # PDFs in assets
 public/*.pdf
 screenshot.png
+*.sqlite

@@ -1,16 +1,15 @@
 package webapp
 
 import loci.registry.Registry
-import webapp.npm.MemoryIndexedDB
 import loci.communicator.ws.jetty.WS
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
+import webapp.npm.SqliteDB
 
 @main def runServer() = {
   val registry = Registry()
-  // TODO FIXME sqlite
-  val indexedDb = MemoryIndexedDB()
+  val indexedDb = SqliteDB()
   val _ = Repositories(using registry, indexedDb)
 
   val server = new Server()
