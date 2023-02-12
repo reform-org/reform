@@ -17,7 +17,6 @@ package webapp.entity
 
 import kofre.base.*
 import org.scalajs.dom
-import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
@@ -95,14 +94,17 @@ private class EntityRow[T <: Entity[T]](
                 existingValue.map(p => {
                   val modal = new Modal(
                     "Delete",
-                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?",
+                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
                     Seq(
                       new ModalButton(
-                        "Yay!",
-                        "bg-purple-600",
-                        () => removeEntity(p),
+                        "Delete",
+                        "bg-red-600",
+                        () => {
+                          removeEntity(p)
+                          cancelEdit()
+                        },
                       ),
-                      new ModalButton("Nay!"),
+                      new ModalButton("Cancel"),
                     ),
                   )
                   deleteModal.set(Some(modal))
@@ -113,23 +115,16 @@ private class EntityRow[T <: Entity[T]](
                       "X",
                       onClick.foreach(_ => modal.open()),
                     )
-                    /*button(
-                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                          data.tip := "Delete",
-                          "X",
-                          onClick.foreach(_ => {
-                            //modal.open()
-                          }),
-                        )*/
-                    // modal.render()
                   }
                   res
                 }),
               ), {
-                deleteModal.now match {
-                  case None        => {}
-                  case Some(modal) => modal.render()
-                }
+                deleteModal.map(modal =>
+                  modal match {
+                    case None        => {}
+                    case Some(modal) => modal.render()
+                  },
+                )
               },
             ),
           )
@@ -140,14 +135,14 @@ private class EntityRow[T <: Entity[T]](
             case Some(syncedEntity) => {
               val modal = new Modal(
                 "Delete",
-                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get}\"?",
+                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get.getOrElse("")}\"?",
                 Seq(
                   new ModalButton(
-                    "Yay!",
-                    "bg-purple-600",
+                    "Delete",
+                    "bg-red-600",
                     () => { removeEntity(syncedEntity) },
                   ),
-                  new ModalButton("Nay!"),
+                  new ModalButton("Cancel"),
                 ),
               )
               val res = syncedEntity.signal.map(p => {
@@ -166,12 +161,6 @@ private class EntityRow[T <: Entity[T]](
                           "Edit",
                           onClick.foreach(_ => startEditing()),
                         ),
-                        /*button(
-                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                          data.tip := "Delete",
-                          "X",
-                          onClick.foreach(_ => removeEntity(syncedEntity)),
-                        ),*/
                         button(
                           cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
                           data.tip := "Delete",
@@ -201,18 +190,15 @@ private class EntityRow[T <: Entity[T]](
   }
 
   private def removeEntity(s: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${s.signal.now.identifier.get}\"?")
-    if (yes) {
-      s.update(p => p.get.withExists(false))
-        .onComplete(value => {
-          if (value.isFailure) {
-            // TODO FIXME show Toast
-            value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage.nn, true)
-            // window.alert(value.failed.get.getMessage().nn)
-          }
-        })
-    }
+    s.update(p => p.get.withExists(false))
+      .onComplete(value => {
+        if (value.isFailure) {
+          // TODO FIXME show Toast
+          value.failed.get.printStackTrace()
+          toaster.make(value.failed.get.getMessage.nn, true)
+          // window.alert(value.failed.get.getMessage().nn)
+        }
+      })
   }
 
   private def cancelEdit(): Unit = {

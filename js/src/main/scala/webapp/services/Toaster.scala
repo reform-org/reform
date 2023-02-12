@@ -97,7 +97,7 @@ class Toast(
           None
       },
       div(
-        cls := "z-50 flex flex-row",
+        cls := s"z-50 flex flex-row items-start !mt-0 ${if (!autodismiss) "!w-full" else ""}",
         div(
           cls := "shrink-0",
           toastType.icon match {
@@ -106,12 +106,12 @@ class Toast(
           },
         ),
         div(
-          cls := "shrink-0",
+          cls := "",
           text,
         ),
         div(
           Icons.close("fill-red-600 w-4 h-4"),
-          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
           onClick.foreach(_ => onclose(this)),
         ),
       ),
@@ -130,6 +130,7 @@ class Toaster() {
 
   def make(text: String, autodismiss: Boolean, style: ToastType = ToastType.Default): Unit = {
     val dismissAfter = 10000;
+
     val toast = new Toast(text, autodismiss, dismissAfter, style, (t: Toast) => { this.removeToast(t) })
     this.addToast(toast);
 

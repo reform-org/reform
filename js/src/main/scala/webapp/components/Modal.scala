@@ -44,11 +44,13 @@ class Modal(val title: String = "", val body: String = "", val buttons: Seq[Moda
         cls <-- openState.map(v => s"modal ${(if (v == true) Some("modal-open") else None).getOrElse("")}"),
         div(
           cls := "modal-box",
-          h3(cls := "font-bold text-lg text-purple-600", title),
+          h3(cls := "font-bold text-xl", title),
+          div(cls := "divider"),
           p(
             cls := "py-4",
             body,
           ),
+          div(cls := "divider"),
           div(
             cls := "modal-action flex flex-row",
             buttons.map(button =>
