@@ -28,7 +28,8 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
 import webapp.components.{Modal, ModalButton}
-import webapp.services.{ToastMode, ToastType, Toaster}
+import webapp.services.{ToastMode, Toaster}
+import webapp.utils.Futures.*
 
 import scala.collection.immutable.List
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -190,12 +191,7 @@ private class EntityRow[T <: Entity[T]](
 
   private def removeEntity(s: Synced[T]): Unit = {
     s.update(p => p.get.withExists(false))
-      .onComplete(value => {
-        if (value.isFailure) {
-          value.failed.get.printStackTrace()
-          toaster.make(value.failed.get.getMessage.nn, ToastMode.Infinit, ToastType.Error)
-        }
-      })
+      .toastOnError(ToastMode.Infinit)
   }
 
   private def cancelEdit(): Unit = {
@@ -210,12 +206,7 @@ private class EntityRow[T <: Entity[T]](
           .update(p => {
             p.get.merge(editingNow.get)
           })
-          .onComplete(value => {
-            if (value.isFailure) {
-              value.failed.get.printStackTrace()
-              toaster.make(value.failed.get.getMessage().nn, ToastMode.Infinit, ToastType.Error)
-            }
-          })
+          .toastOnError(ToastMode.Infinit)
         editingValue.set(None)
       }
       case None => {
@@ -228,12 +219,7 @@ private class EntityRow[T <: Entity[T]](
               p.getOrElse(bottom.empty).merge(editingNow.get)
             })
           })
-          .onComplete(value => {
-            if (value.isFailure) {
-              value.failed.get.printStackTrace()
-              toaster.make(value.failed.get.getMessage().nn, ToastMode.Infinit, ToastType.Error)
-            }
-          })
+          .toastOnError(ToastMode.Infinit)
       }
     })
   }

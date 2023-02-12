@@ -13,6 +13,7 @@ import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
 import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.utils.Futures.*
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
@@ -30,12 +31,7 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
           window.navigator.clipboard
             .writeText(PendingConnection.sessionAsToken(session))
             .toFuture
-            .onComplete(value => {
-              if (value.isFailure) {
-                value.failed.get.printStackTrace()
-                toaster.make(value.failed.get.getMessage().nn)
-              }
-            }),
+            .toastOnError(),
         ),
       ),
       a(

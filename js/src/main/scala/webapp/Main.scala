@@ -24,10 +24,14 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.Toaster
+import webapp.services.{ToastMode, ToastType, Toaster}
 import webapp.utils.Futures.*
 
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+
 import scala.scalajs.js
+import concurrent.ExecutionContext.Implicits.global
 
 // object JavaScriptHot {
 //   @js.native
@@ -62,7 +66,7 @@ import scala.scalajs.js
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
-    js.`import`("../../../../index.css").toFuture.toastOnError
+    js.`import`("../../../../index.css").toFuture.toastOnError()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
@@ -87,7 +91,7 @@ object Main {
     if (discovery.tokenIsValid(discovery.token.now))
       discovery
         .connect()
-        .toastOnError
+        .toastOnError()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 

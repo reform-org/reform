@@ -18,6 +18,7 @@ import scala.concurrent.Promise
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
+import webapp.utils.Futures.*
 
 class AvailableConnection(
     val name: String,
@@ -59,12 +60,7 @@ class DiscoveryService {
       console.log("should connect")
       discovery
         .connect()
-        .onComplete(value => {
-          if (value.isFailure) {
-            value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage().nn)
-          }
-        })
+        .toastOnError()
     }
   }
 
@@ -133,22 +129,12 @@ class DiscoveryService {
               console.log("Fetched a new token.")
               this
                 .connect()
-                .onComplete(value => {
-                  if (value.isFailure) {
-                    value.failed.get.printStackTrace()
-                    toaster.make(value.failed.get.getMessage().nn)
-                  }
-                })
+                .toastOnError()
               promise.success(newToken)
             }
           })
       }).toFuture
-        .onComplete(value => {
-          if (value.isFailure) {
-            value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage().nn)
-          }
-        })
+        .toastOnError()
     }
 
     promise.future

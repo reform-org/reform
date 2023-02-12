@@ -29,6 +29,7 @@ import webapp.webrtc.WebRTCService
 import webapp.services.{ToastMode, ToastType, Toaster}
 import concurrent.ExecutionContext.Implicits.global
 import webapp.components.{Modal, ModalButton}
+import webapp.utils.Futures.*
 
 case class HomePage() extends Page {
 
@@ -67,12 +68,7 @@ case class HomePage() extends Page {
                 console.log(s)
                 document.getElementById("loadPDF").classList.remove("loading")
               })
-              .onComplete(value => {
-                if (value.isFailure) {
-                  value.failed.get.printStackTrace()
-                  toaster.make(value.failed.get.getMessage().nn)
-                }
-              })
+              .toastOnError()
           },
         ),
         new ModalButton("Nay!"),

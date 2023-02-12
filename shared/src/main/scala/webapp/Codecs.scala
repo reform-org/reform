@@ -10,7 +10,5 @@ object Codecs {
   // every client has an id
   val myReplicaID: kofre.base.Id = kofre.base.Id.gen()
 
-  implicit val stringCodec: JsonValueCodec[String] = JsonCodecMaker.make
-
   implicit val idCodec: JsonValueCodec[kofre.base.Id] = JsonCodecMaker.make[String].asInstanceOf
 }
