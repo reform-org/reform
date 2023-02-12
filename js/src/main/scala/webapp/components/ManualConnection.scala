@@ -57,7 +57,7 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
 }
 
 private case object Init extends State {
-  private def initializeHostSession(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): Unit = {
+  private def initializeHostSession(using state: Var[State], webrtc: WebRTCService): Unit = {
     val pendingConnection =
       PendingConnection.webrtcIntermediate(WebRTC.offer(), alias.now)
     state.set(HostPending(pendingConnection))

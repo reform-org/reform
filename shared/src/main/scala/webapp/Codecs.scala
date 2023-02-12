@@ -2,7 +2,6 @@ package webapp
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import loci.transmitter.IdenticallyTransmittable
 
 // Supporting code to serialize and deserialize objects
 // TODO: Codecs should be declared where they are used

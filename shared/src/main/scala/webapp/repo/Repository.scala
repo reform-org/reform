@@ -25,6 +25,7 @@ import scala.collection.mutable
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
+import scala.annotation.nowarn
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
@@ -47,7 +48,7 @@ case class Repository[A](name: String, defaultValue: A)(using
     .getOrDefault("ids")
     .map(ids => {
       idSynced.update(_.getOrElse(GrowOnlySet.empty).union(ids))
-    })
+    }): @nowarn("msg=discarded expression")
 
   private val valuesStorage = Storage[A](name, defaultValue)
 
