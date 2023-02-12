@@ -29,37 +29,6 @@ import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
 
-// object JavaScriptHot {
-//   @js.native
-//   @JSGlobal("accept")
-//   def accept(): Unit = js.native
-// }
-
-// object JavaScriptMeta {
-//   @js.native
-//   @JSGlobal("hot")
-//   val hot: JavaScriptHot
-// }
-
-// object JavaScriptImport {
-//   @js.native
-//   @JSGlobal("meta")
-//   val meta: JavaScriptMeta
-// }
-
-// object DOMGlobals {
-//   @js.native
-//   @JSGlobal("import")
-//   val javascriptImport: JavaScriptImport = js.native
-
-//   def magic(): Unit = {
-//     if (javascriptImport.meta.hot) {
-//       DOMGlobals.javascriptImport.meta.hot.accept()
-//     }
-//   }
-// }
-
-// https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css")
@@ -93,12 +62,12 @@ object Main {
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
+  private def app(using
+                  routing: RoutingService,
+                  repositories: Repositories,
+                  webrtc: WebRTCService,
+                  discovery: DiscoveryService,
+                  toaster: Toaster,
   ) = body(
     routing.render,
     toaster.render,

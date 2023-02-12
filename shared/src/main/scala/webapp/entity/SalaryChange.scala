@@ -4,7 +4,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 
 case class SalaryChange(
     value: Attribute[Int] = Attribute.empty,
