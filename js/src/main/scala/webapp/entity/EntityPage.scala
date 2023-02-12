@@ -18,6 +18,7 @@ package webapp.entity
 import kofre.base.*
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 import rescala.default.*
 import webapp.components.navigationHeader
 import webapp.repo.Repository
@@ -30,6 +31,7 @@ import webapp.{*, given}
 import webapp.components.{Modal, ModalButton}
 import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
+import webapp.utils.Seqnal.*
 
 import scala.collection.immutable.List
 import webapp.given_ExecutionContext
@@ -119,12 +121,10 @@ private class EntityRow[T <: Entity[T]](
                   res
                 }),
               ), {
-                deleteModal.map(modal =>
-                  modal match {
-                    case None        => {}
-                    case Some(modal) => modal.render()
-                  },
-                )
+                deleteModal.map {
+                  case None =>
+                  case Some(modal) => modal.render()
+                }
               },
             ),
           )
@@ -200,7 +200,7 @@ private class EntityRow[T <: Entity[T]](
 
   private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
-    (existingValue match {
+    existingValue match {
       case Some(existing) => {
         existing
           .update(p => {
@@ -221,7 +221,7 @@ private class EntityRow[T <: Entity[T]](
           })
           .toastOnError(ToastMode.Infinit)
       }
-    })
+    }
   }
 
   private def startEditing(): Unit = {
@@ -237,10 +237,11 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? 
     filters.map(_.render),
   )
 
-  def test(entity: Signal[EntityType]): Signal[Boolean] = {
-    val preds = Signal(filters.map(_.predicate)).flatten
-    entity.map(e => preds.map(_.forall(_(e)))).flatten
+  val predicate: Signal[EntityType => Boolean] = {
+    val preds = filters.map(_.predicate).seqToSignal
+    preds.map(preds => (e: EntityType) => preds.forall(_(e)))
   }
+
 }
 
 abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
@@ -297,15 +298,15 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   }
 
   private def renderEntities = {
-    val filtered: Signal[Seq[Seq[EntityRow[T]]]] = entityRows
-      .map(
-        _.map(r =>
-          r.existingValue.map(v => filterRow.test(v.signal).map(if (_) Seq(r) else Seq.empty)).getOrElse(Signal(Seq())),
+    filterRow.predicate
+      .map(p =>
+        entityRows.map(
+          _.filterSignal(
+            _.existingValue.mapToSignal(_.signal).map(_.exists(p)),
+          )
+            .mapInside(_.render),
         ),
       )
       .flatten
-    filtered.map(
-      _.flatMap(_.map(_.render)),
-    )
   }
 }
