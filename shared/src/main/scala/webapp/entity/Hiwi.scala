@@ -3,7 +3,7 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 
 case class Hiwi(
     firstName: Attribute[String] = Attribute.empty,

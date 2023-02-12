@@ -3,7 +3,7 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 import webapp.entity.Attribute.given
 
 case class Project(
