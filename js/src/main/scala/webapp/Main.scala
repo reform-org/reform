@@ -24,7 +24,9 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.Toaster
+import webapp.services.*
+import webapp.Codecs.*
+import webapp.utils.Futures.*
 import concurrent.ExecutionContext.Implicits.global
 
 import scala.scalajs.js
@@ -62,16 +64,7 @@ import scala.scalajs.js
 // https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
-    js.`import`("../../../../index.css")
-      .toFuture
-      .onComplete(value => {
-        if (value.isFailure) {
-          // TODO FIXME show Toast
-          value.failed.get.printStackTrace()
-          toaster.make(value.failed.get.getMessage().nn, true)
-          // window.alert(value.failed.get.getMessage().nn)
-        }
-      })
+    js.`import`("../../../../index.css").toFuture.toastOnError()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
@@ -79,17 +72,23 @@ object Main {
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
     given toaster: Toaster = Toaster()
+
+    indexedDb
+      .update[String]("test", _ => "test")
+      .onComplete(value => {
+        if (value.isFailure) {
+          toaster.make(
+            "Failed to write into the storage. Your Browser does not support IndexedDB!",
+            ToastMode.Persistent,
+            ToastType.Error,
+          )
+        }
+      })
+
     if (discovery.tokenIsValid(discovery.token.now))
       discovery
         .connect()
-        .onComplete(value => {
-          if (value.isFailure) {
-            // TODO FIXME show Toast
-            value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage().nn, true)
-            // window.alert(value.failed.get.getMessage().nn)
-          }
-        })
+        .toastOnError()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
