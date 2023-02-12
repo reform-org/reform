@@ -21,7 +21,7 @@ import loci.registry.Registry
 import rescala.default.*
 import webapp.*
 import webapp.npm.IIndexedDB
-
+import scala.collection.mutable
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -53,7 +53,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = Syncer[A](name)
 
-  private var cache: Map[String, Synced[A]] = Map.empty
+  private var cache: mutable.Map[String, Future[Synced[A]]] = mutable.Map.empty
 
   def create(): Future[Synced[A]] =
     getOrCreate(UUID.randomUUID.toString)
@@ -69,21 +69,13 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   private def getOrCreate(id: String): Future[Synced[A]] = {
-    if (cache.contains(id)) {
-      return Future(cache(id))
-    }
-
-    createSyncedFromRepo(id)
+    cache.synchronized(cache.getOrElseUpdate(id, createSyncedFromRepo(id)))
   }
 
   private def createSyncedFromRepo(id: String): Future[Synced[A]] =
     valuesStorage
       .getOrDefault(id)
-      .map(project => {
-        val synced = valueSyncer.sync(valuesStorage, id, project)
-        cache += (id -> synced)
-        synced
-      })
+      .map(project => valueSyncer.sync(valuesStorage, id, project))
       .flatMap(value => {
         idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value)
       })
