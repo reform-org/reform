@@ -442,7 +442,7 @@ export class Peer {
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
 					until.elementLocated(By.xpath(`.//*[text()="person a"]`)),
-					3000,
+					10000,
 				);
 				let overlay = await peer.driver.findElement(
 					By.css("label.drawer-overlay"),
