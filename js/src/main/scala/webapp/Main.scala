@@ -25,43 +25,12 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 import webapp.utils.Futures.*
 import webapp.given_ExecutionContext
 
 import scala.scalajs.js
 
-// object JavaScriptHot {
-//   @js.native
-//   @JSGlobal("accept")
-//   def accept(): Unit = js.native
-// }
-
-// object JavaScriptMeta {
-//   @js.native
-//   @JSGlobal("hot")
-//   val hot: JavaScriptHot
-// }
-
-// object JavaScriptImport {
-//   @js.native
-//   @JSGlobal("meta")
-//   val meta: JavaScriptMeta
-// }
-
-// object DOMGlobals {
-//   @js.native
-//   @JSGlobal("import")
-//   val javascriptImport: JavaScriptImport = js.native
-
-//   def magic(): Unit = {
-//     if (javascriptImport.meta.hot) {
-//       DOMGlobals.javascriptImport.meta.hot.accept()
-//     }
-//   }
-// }
-
-// https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css").toFuture.toastOnError()
@@ -92,7 +61,7 @@ object Main {
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using
+  private def app(using
       routing: RoutingService,
       repositories: Repositories,
       webrtc: WebRTCService,
