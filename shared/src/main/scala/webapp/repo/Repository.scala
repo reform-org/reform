@@ -70,7 +70,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   private def getOrCreate(id: String): Future[Synced[A]] = {
-    cache.synchronized { cache.getOrElseUpdate(id, createSyncedFromRepo(id)) }
+    cache.synchronized { cache.getOrElseUpdate(id, { createSyncedFromRepo(id) }) }
   }
 
   private def createSyncedFromRepo(id: String): Future[Synced[A]] =
