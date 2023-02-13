@@ -26,9 +26,10 @@ import java.util.UUID
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.annotation.nowarn
-import webapp.entity.Entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
+import scala.collection.mutable
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
@@ -36,17 +37,37 @@ case class Repository[A](name: String, defaultValue: A)(using
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
-    entity: Entity[A],
 ) {
 
-  given magicCodec: JsonValueCodec[Repository[A]] = new JsonValueCodec {
-    def encodeValue(x: Repository[A], out: JsonWriter): Unit = ???
+  given mapCodec: JsonValueCodec[mutable.Map[String, A]] = JsonCodecMaker.make
 
-    def decodeValue(in: JsonReader, default: Repository[A]): Repository[A] =
-      ???
+  given magicCodec: JsonValueCodec[Repository[A]] =
+    new JsonValueCodec {
+      def encodeValue(x: Repository[A], out: JsonWriter): Unit = {
+        var values: mutable.Map[String, A] = mutable.Map()
+        x.all.now.foreach(f => values += (f.id -> f.signal.now))
+        mapCodec.encodeValue(values, out)
+      }
 
-    def nullValue: Repository[A] = ???
-  }
+      def decodeValue(in: JsonReader, default: Repository[A]): Repository[A] = {
+        var values: mutable.Map[String, A] = mapCodec.decodeValue(in, mutable.Map())
+        Future
+          .sequence(
+            values
+              .map((k, v) => {
+                default.createSyncedFromRepo(k).flatMap(_.update(old => old.getOrElse(bottom.empty).merge(v)))
+              }),
+          )
+          .onComplete(value => {
+            if (value.isFailure) {
+              value.failed.get.printStackTrace()
+            }
+          })
+        default
+      }
+
+      def nullValue: Repository[A] = ???
+    }
 
   private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 

@@ -42,7 +42,7 @@ object MainJVMTest extends TestSuite {
     val indexedDb0: IIndexedDB = MemoryIndexedDB()
     val indexedDb1: IIndexedDB = MemoryIndexedDB()
     val repositories0 = Repositories()(using registry0, indexedDb0)
-    val repositories1 = Repositories(using registry1, indexedDb1)
+    val repositories1 = Repositories()(using registry1, indexedDb1)
     for _ <- testRepository(fun(repositories0))
     _ <- waitUntilTrue(fun(repositories0).all.map(_.length == 1))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 0))

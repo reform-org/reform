@@ -4,29 +4,31 @@ import webapp.Repositories
 import webapp.repo.Repository
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import scala.collection.mutable
-import webapp.entity.Entity
-import webapp.repo.Synced
 
 def exportIndexedDBJson(using repositories: Repositories): String = {
-  implicit val codec: JsonValueCodec[mutable.Map[String, String]] = JsonCodecMaker.make
-  var exp: mutable.Map[String, String] = mutable.Map()
 
-  repositories.productIterator.foreach(f => {
-    f match {
-      case repository: Repository[?] => {
-        val name: String = repository.name
-        var values: mutable.Map[String, String] = mutable.Map()
-
-        // repository.all.now.foreach(f => values += (f.id -> writeToString(f.signal.now)))
-        exp += (name -> writeToString(repository)(using repository.magicCodec))
+  given theEverythingCodec: JsonValueCodec[Repositories] =
+    new JsonValueCodec {
+      def encodeValue(x: Repositories, out: JsonWriter): Unit = {
+        out.writeObjectStart()
+        x.productIterator.foreach(f => {
+          f match {
+            case repository: Repository[?] => {
+              out.writeKey(repository.name)
+              repository.magicCodec.encodeValue(repository, out)
+            }
+            case _ => {}
+          }
+        })
+        out.writeObjectEnd()
       }
-      case _ => {}
-    }
-  })
 
-  return writeToString(exp)
+      def decodeValue(in: JsonReader, default: Repositories): Repositories = ???
+
+      def nullValue: Repositories = ???
+    }
+
+  return writeToString(repositories)(using theEverythingCodec)
 }
 
 def importIndexedDBJson(json: String): Unit = {
