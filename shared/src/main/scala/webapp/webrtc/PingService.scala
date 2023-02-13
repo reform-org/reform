@@ -8,10 +8,10 @@ import loci.registry.Binding
 import scala.util.Success
 import scala.util.Failure
 import scala.annotation.nowarn
-import concurrent.ExecutionContext.Implicits.global
 import java.util.Timer
 import java.util.TimerTask
 import loci.serializer.jsoniterScala.given
+import webapp.given_ExecutionContext
 
 class PingService(using registry: Registry) {
 
