@@ -87,8 +87,10 @@ class ReplicationGroup[A](name: String)(using
       name: String,
       synced: Synced[A],
   ): Unit = {
-    require(!localListeners.contains(name), s"already registered a RDT with name $name")
-    localListeners = localListeners.updated(name, synced)
+    synchronized {
+      require(!localListeners.contains(name), s"already registered a RDT with name $name")
+      localListeners = localListeners.updated(name, synced)
+    }
 
     // observe changes to send them to every remote
     var observers = Map[RemoteRef, Disconnectable]()
