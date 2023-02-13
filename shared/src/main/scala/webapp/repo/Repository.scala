@@ -54,7 +54,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = Syncer[A](name)
 
-  private var cache: Map[String, Future[Synced[A]]] = Map.empty
+  private var cache: mutable.Map[String, Future[Synced[A]]] = mutable.Map.empty
 
   def create(): Future[Synced[A]] =
     getOrCreate(UUID.randomUUID.toString)
