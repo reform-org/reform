@@ -54,6 +54,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = Syncer[A](name)
 
+  @volatile
   private var cache: Map[String, Future[Synced[A]]] = Map.empty
 
   def create(): Future[Synced[A]] =
