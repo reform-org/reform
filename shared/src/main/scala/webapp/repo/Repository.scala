@@ -70,15 +70,15 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   private def getOrCreate(id: String): Future[Synced[A]] = {
-    // synchronized {
-    if (cache.contains(id)) {
-      cache(id)
-    } else {
-      val synced = createSyncedFromRepo(id)
-      cache += (id -> synced)
-      synced
+    synchronized {
+      if (cache.contains(id)) {
+        cache(id)
+      } else {
+        val synced = createSyncedFromRepo(id)
+        cache += (id -> synced)
+        synced
+      }
     }
-    // }
   }
 
   private def createSyncedFromRepo(id: String): Future[Synced[A]] =
