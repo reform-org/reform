@@ -32,7 +32,7 @@ import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 
 import scala.collection.immutable.List
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 private class EntityRow[T <: Entity[T]](
     val repository: Repository[T],

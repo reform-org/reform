@@ -12,7 +12,7 @@ import webapp.Settings
 import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.scalajs.js

@@ -21,9 +21,9 @@ import loci.registry.Registry
 import rescala.default.*
 import webapp.*
 import webapp.npm.IIndexedDB
-import scala.collection.mutable
+
 import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.annotation.nowarn
 
@@ -54,7 +54,8 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = Syncer[A](name)
 
-  private var cache: mutable.Map[String, Future[Synced[A]]] = mutable.Map.empty
+  @volatile
+  private var cache: Map[String, Future[Synced[A]]] = Map.empty
 
   def create(): Future[Synced[A]] =
     getOrCreate(UUID.randomUUID.toString)
@@ -70,7 +71,15 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   private def getOrCreate(id: String): Future[Synced[A]] = {
-    cache.synchronized(cache.getOrElseUpdate(id, createSyncedFromRepo(id)))
+    synchronized {
+      if (cache.contains(id)) {
+        cache(id)
+      } else {
+        val synced = createSyncedFromRepo(id)
+        cache += (id -> synced)
+        synced
+      }
+    }
   }
 
   private def createSyncedFromRepo(id: String): Future[Synced[A]] =

@@ -27,7 +27,7 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
 import webapp.services.{ToastMode, ToastType, Toaster}
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
 import webapp.utils.Futures.*
 

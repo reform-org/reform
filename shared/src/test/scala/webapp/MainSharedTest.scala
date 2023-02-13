@@ -25,7 +25,7 @@ import webapp.repo.Synced
 
 import scala.scalajs.js.annotation.*
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Promise
 import rescala.default.*
 import rescala.core.Disconnectable

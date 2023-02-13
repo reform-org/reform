@@ -24,7 +24,7 @@ import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 import scala.scalajs.js.annotation.*
 

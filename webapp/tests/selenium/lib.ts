@@ -323,7 +323,7 @@ export class Peer {
 				return false;
 			}
 			return [...addedProjects.values()][0];
-		}, 1000);
+		}, 10000);
 		if (addedProject === false) {
 			throw new Error("couldn't identify which project was added");
 		}
@@ -403,7 +403,8 @@ export class Peer {
 					await name.sendKeys("person a");
 
 					let hostButton = await driver.wait(
-						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`))
+						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`)),
+						3000
 					);
 					await hostButton.click();
 

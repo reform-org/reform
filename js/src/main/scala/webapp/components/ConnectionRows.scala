@@ -10,7 +10,7 @@ import webapp.services.AvailableConnection
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(using
     webrtc: WebRTCService,

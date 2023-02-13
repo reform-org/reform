@@ -25,7 +25,7 @@ import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.core.Disconnectable
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.util.*
 import webapp.repo.Synced
@@ -64,6 +64,7 @@ class ReplicationGroup[A](name: String)(using
 
   /** Map from concrete thing to handle to the event handler for that.
     */
+  @volatile
   private var localListeners: Map[String, Synced[A]] = Map.empty
 
   /** Map from the concrete thing to handle to a map of remote ids and the thing to sync.
@@ -71,7 +72,7 @@ class ReplicationGroup[A](name: String)(using
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
-    val result: Future[Option[A]] = localListeners.get(payload.name) match {
+    val result: Future[Option[A]] = synchronized { localListeners.get(payload.name) } match {
       case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)).map(Some(_)) }
       case None =>
         unhandled = unhandled.updatedWith(payload.name) { current =>
@@ -87,8 +88,10 @@ class ReplicationGroup[A](name: String)(using
       name: String,
       synced: Synced[A],
   ): Unit = {
-    require(!localListeners.contains(name), s"already registered a RDT with name $name")
-    localListeners = localListeners.updated(name, synced)
+    synchronized {
+      require(!localListeners.contains(name), s"already registered a RDT with name $name")
+      localListeners = localListeners.updated(name, synced)
+    }
 
     // observe changes to send them to every remote
     var observers = Map[RemoteRef, Disconnectable]()
