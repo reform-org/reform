@@ -32,7 +32,6 @@ import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
 
-import scala.collection.immutable.List
 import webapp.given_ExecutionContext
 
 private class EntityRow[T <: Entity[T]](
@@ -121,7 +120,7 @@ private class EntityRow[T <: Entity[T]](
                 }),
               ), {
                 deleteModal.map {
-                  case None =>
+                  case None        =>
                   case Some(modal) => modal.render()
                 }
               },
