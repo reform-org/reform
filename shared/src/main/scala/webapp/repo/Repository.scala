@@ -21,7 +21,7 @@ import loci.registry.Registry
 import rescala.default.*
 import webapp.*
 import webapp.npm.IIndexedDB
-import scala.collection.mutable
+import scala.collection.concurrent
 import java.util.UUID
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
@@ -54,7 +54,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = Syncer[A](name)
 
-  private var cache: mutable.Map[String, Future[Synced[A]]] = mutable.Map.empty
+  private var cache: concurrent.Map[String, Future[Synced[A]]] = concurrent.TrieMap()
 
   def create(): Future[Synced[A]] =
     getOrCreate(UUID.randomUUID.toString)
