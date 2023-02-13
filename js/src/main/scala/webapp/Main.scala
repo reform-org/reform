@@ -27,7 +27,7 @@ import webapp.webrtc.WebRTCService
 import webapp.services.*
 import webapp.Codecs.*
 import webapp.utils.Futures.*
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 import scala.scalajs.js
 

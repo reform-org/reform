@@ -6,7 +6,7 @@ import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSON
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import typings.reformOrgIdb.buildEntryMod.OpenDBCallbacks
 import typings.std.IDBTransactionMode
@@ -45,7 +45,6 @@ class IndexedDB extends IIndexedDB {
     for db <- database
     tx = db.transaction(js.Array("reform"), IDBTransactionMode.readwrite)
     store = tx.objectStore("reform")
-    _ = println(store)
     v <- store.get(key).toFuture
     value = Option(v.orNull).map(castFromJsDynamic(_))
     newValue = scalaFun(value)

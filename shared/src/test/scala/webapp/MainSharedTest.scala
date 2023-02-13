@@ -23,7 +23,7 @@ import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Promise
 import rescala.default.*
 import rescala.core.Disconnectable

@@ -14,7 +14,7 @@ import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.util.Failure
 import scala.util.Success
 

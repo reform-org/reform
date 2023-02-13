@@ -3,7 +3,7 @@ package webapp.repo
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import webapp.npm.*
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 
 case class Storage[T](private val name: String, private val defaultValue: T)(using

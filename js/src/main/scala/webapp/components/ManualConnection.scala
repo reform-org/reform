@@ -12,7 +12,7 @@ import webapp.given
 import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
 
 private sealed trait State {
