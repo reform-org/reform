@@ -45,7 +45,6 @@ class IndexedDB extends IIndexedDB {
     for db <- database
     tx = db.transaction(js.Array("reform"), IDBTransactionMode.readwrite)
     store = tx.objectStore("reform")
-    _ = println(store)
     v <- store.get(key).toFuture
     value = Option(v.orNull).map(castFromJsDynamic(_))
     newValue = scalaFun(value)

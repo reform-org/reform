@@ -83,7 +83,7 @@ describe.concurrent("safari-compatible", () => {
 describe
 	.skipIf(
 		process.env.SELENIUM_BROWSER === "safari" ||
-			process.env.BROWSERSTACK_ACCESS_KEY,
+		process.env.BROWSERSTACK_ACCESS_KEY,
 	)
 	.concurrent("safari-incompatible", () => {
 		it("connects", async () => {

@@ -1,9 +1,9 @@
 package webapp
 
-import org.scalajs.macrotaskexecutor.MacrotaskExecutor
 import scala.concurrent.ExecutionContext
 
-given ExecutionContext = MacrotaskExecutor
+// macrotask executor breaks indexeddb
+given ExecutionContext = scala.concurrent.ExecutionContext.global
 
 object Globals {
   val discoveryServerURL = "https://discovery.lukasschreiber.com"
