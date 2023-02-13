@@ -29,11 +29,10 @@ case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaste
     ) {}
 
 object SalaryChangesPage {
-  private val salaryChangeValue = UIAttributeBuilder.float
+  private val salaryChangeValue = UIAttributeBuilder.money
     .withLabel("Value")
     .require
-    .map[Int](_ / 100.0f, f => Math.round(f * 100.0f))
-    .bindAsText[SalaryChange](
+    .bindAsNumber[SalaryChange](
       _.value,
       (s, a) => s.copy(value = a),
     )
