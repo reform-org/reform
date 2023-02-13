@@ -23,11 +23,10 @@ import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import loci.registry.*
 import loci.transmitter.RemoteRef
-import org.scalajs.dom
 import rescala.default.*
 import webapp.*
-import webapp.npm.Utils
 import webapp.utils.Base64
+import webapp.npm.JSUtils
 
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
@@ -35,6 +34,7 @@ import scala.concurrent.Promise
 import scala.annotation.nowarn
 
 import loci.communicator.ws.webnative.WS
+import org.scalajs.dom.RTCPeerConnection
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -47,24 +47,24 @@ class StoredConnectionInformation(
 case class PendingConnection(
     connector: WebRTC.Connector,
     session: Future[ConnectionInformation],
-    connection: dom.RTCPeerConnection,
+    connection: RTCPeerConnection,
 )
 object PendingConnection {
-  def webrtcIntermediate(cf: ConnectorFactory, alias: String) = {
+  def webrtcIntermediate(cf: ConnectorFactory, alias: String): PendingConnection = {
     val p = Promise[ConnectionInformation]()
     val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
     PendingConnection(answer, p.future, answer.connection)
   }
   private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
-  def sessionAsToken(s: ConnectionInformation) = Base64.encode(writeToString(s)(codec))
+  def sessionAsToken(s: ConnectionInformation): String = Base64.encode(writeToString(s)(codec))
 
-  def tokenAsSession(s: String) = readFromString(Base64.decode(s))(codec)
+  def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)
 }
 
 class WebRTCService(using registry: Registry) {
 
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
-  private var webRTCConnections = Map[RemoteRef, dom.RTCPeerConnection]() // could merge this map with the one above
+  private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
   private var connectionRefs = Map[String, RemoteRef]()
 
   private val removeConnection = Evt[RemoteRef]()
@@ -72,7 +72,7 @@ class WebRTCService(using registry: Registry) {
   private val addConnectionB = addConnection.act(current[Seq[RemoteRef]] :+ _)
   private val removeConnectionB = removeConnection.act(r => current[Seq[RemoteRef]].filter(b => !b.equals(r)))
 
-  val connections = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
+  val connections: Signal[Seq[RemoteRef]] = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
 
   registry.connect(WS("ws://localhost:1334/registry/")): @nowarn
 
@@ -80,7 +80,7 @@ class WebRTCService(using registry: Registry) {
       connector: Connector[Connections.Protocol],
       alias: Future[String],
       source: String,
-      connection: dom.RTCPeerConnection,
+      connection: RTCPeerConnection,
       uuid: String = "",
       connectionId: String = "",
   ): Future[RemoteRef] = {
@@ -98,20 +98,20 @@ class WebRTCService(using registry: Registry) {
       })
   }
 
-  def closeConnectionById(id: String) = {
+  def closeConnectionById(id: String): Unit = {
     connectionRefs.get(id) match {
-      case None      => {}
+      case None      =>
       case Some(ref) => ref.disconnect()
     }
   }
 
   def getInformation(ref: RemoteRef): StoredConnectionInformation = {
-    connectionInfo.get(ref).getOrElse(StoredConnectionInformation("Anonymous", "unknown"))
+    connectionInfo.getOrElse(ref, StoredConnectionInformation("Anonymous", "unknown"))
   }
 
   def getConnectionMode(ref: RemoteRef): Future[String] = {
-    val connection = webRTCConnections.get(ref).get
+    val connection = webRTCConnections(ref)
 
-    Utils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
+    JSUtils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
 }

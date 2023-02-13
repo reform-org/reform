@@ -3,7 +3,7 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 import webapp.entity.Attribute.given
 
 case class RequiredDocument(
@@ -17,7 +17,7 @@ case class RequiredDocument(
 
   // empty for required fields, default for optional fields
   def default: RequiredDocument =
-    RequiredDocument(Attribute.default, Attribute.default, Attribute.default, Attribute.default)
+    RequiredDocument(Attribute.default, Attribute.default, Attribute(true), Attribute(true))
 
   def identifier: Attribute[String] = name
 

@@ -4,7 +4,6 @@ import rescala.default.*
 import scala.concurrent.Future
 import webapp.given_ExecutionContext
 
-// TODO: make members private and create accessors
 case class Synced[A](private val storage: Storage[A], id: String, private val value: Var[A]) {
 
   def update(f: Option[A] => A): Future[A] = {
