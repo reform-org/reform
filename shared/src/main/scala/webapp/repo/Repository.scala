@@ -71,7 +71,6 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private def getOrCreate(id: String): Future[Synced[A]] = {
     this.synchronized {
-      println(s"start ${this.hashCode()} $id")
       val value = if (cache.contains(id)) {
         cache(id)
       } else {
@@ -79,7 +78,6 @@ case class Repository[A](name: String, defaultValue: A)(using
         cache.put(id, value): @nowarn("msg=discarded expression")
         value
       }
-      println(s"end   ${this.hashCode()} $id")
       value
     }
   }
