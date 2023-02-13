@@ -6,7 +6,7 @@ import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSON
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import typings.reformOrgIdb.buildEntryMod.OpenDBCallbacks
 import typings.std.IDBTransactionMode

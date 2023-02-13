@@ -4,7 +4,7 @@ import webapp.services.Toaster
 
 import scala.concurrent.Future
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import webapp.services.ToastMode
 import webapp.services.ToastType
 

@@ -2,7 +2,7 @@ package webapp.repo
 
 import rescala.default.*
 import scala.concurrent.Future
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 // TODO: make members private and create accessors
 case class Synced[A](private val storage: Storage[A], id: String, private val value: Var[A]) {

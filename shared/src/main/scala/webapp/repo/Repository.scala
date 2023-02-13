@@ -23,7 +23,7 @@ import webapp.*
 import webapp.npm.IIndexedDB
 
 import java.util.UUID
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.annotation.nowarn
 

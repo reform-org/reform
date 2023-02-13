@@ -31,7 +31,7 @@ import webapp.npm.Utils
 import webapp.utils.Base64
 import scala.util.*
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.annotation.nowarn
