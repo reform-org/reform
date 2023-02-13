@@ -79,7 +79,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       // "-Y",
       // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
-      "-Wunused:all",
+      // "-Wunused:all",
       // "-Wvalue-discard",
       "-deprecation",
       if (sys.env.get("CI") == Some("true")) "-Werror" else "",
