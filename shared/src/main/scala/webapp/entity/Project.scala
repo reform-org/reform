@@ -29,5 +29,7 @@ case class Project(
 object Project {
   val empty: Project = Project()
 
+  given Entity[Project] = Project()
+
   implicit val codec: JsonValueCodec[Project] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 }

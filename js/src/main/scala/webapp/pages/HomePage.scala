@@ -16,6 +16,7 @@ limitations under the License.
 package webapp.pages
 
 import org.scalajs.dom.*
+import scala.scalajs.js
 import outwatch.*
 import outwatch.dsl.*
 import webapp.*
@@ -30,6 +31,9 @@ import webapp.services.{ToastMode, ToastType, Toaster}
 import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
 import webapp.utils.Futures.*
+import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
+import webapp.npm.Utils.downloadJson
+import org.scalajs.dom.HTMLInputElement
 
 case class HomePage() extends Page {
 
@@ -129,6 +133,34 @@ case class HomePage() extends Page {
           "Make me a persistent error toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
+          }),
+        ),
+        button(
+          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+          "Export DB",
+          onClick.foreach(_ => {
+            val json = exportIndexedDBJson
+            downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+          }),
+        ),
+        input(tpe := "file", cls := "file-input w-full max-w-xs", idAttr := "import-file"),
+        button(
+          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+          "Import DB",
+          onClick.foreach(_ => {
+            val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
+            if (fileList.size != 0)
+              fileList(0)
+                .text()
+                .toFuture
+                .onComplete(value => {
+                  if (value.isFailure) {
+                    value.failed.get.printStackTrace()
+                    toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
+                  }
+                  val json = value.getOrElse("");
+                  importIndexedDBJson(json)
+                })
           }),
         ),
         modal.render(),

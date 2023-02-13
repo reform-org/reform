@@ -16,11 +16,18 @@ object Utils {
     promise.toFuture
   }
 
+  def downloadJson(name: String, content: String): Unit = {
+    NativeImpl.downloadJson(name, content)
+  }
+
   @js.native
   @JSImport("../../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
 
     def usesTurn(connection: js.Object): js.Promise[Boolean] =
+      js.native
+
+    def downloadJson(name: String, content: String): Unit =
       js.native
   }
 }
