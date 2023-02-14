@@ -47,14 +47,14 @@ jobs:
       - name: Build JavaScript
         run: npm run build
       - name: Connect Subdomain
-        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "${GITHUB_HEAD_REF##*/}"
+        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "$BRANCH_NAME"
       - name: Deploy with rsync
-        run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/${GITHUB_HEAD_REF##*/}.reform.lukasschreiber.com
+        run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/$BRANCH_NAME.reform.lukasschreiber.com
       - name: Send Success Comment
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
             ### :white_check_mark: Deployment Success
             You can view the app here:           
-            https://${GITHUB_HEAD_REF##*/}.reform.lukasschreiber.com
+            https://$BRANCH_NAME.reform.lukasschreiber.com
           comment_tag: Deployment Success
