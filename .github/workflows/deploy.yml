@@ -6,10 +6,15 @@ on:
   pull_request:
     branches: ["main"]
 
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Branch Name
+        run: echo $BRANCH_NAME
       - name: Install SSH Key
         uses: shimataro/ssh-key-action@v2
         with:
@@ -42,14 +47,14 @@ jobs:
       - name: Build JavaScript
         run: npm run build
       - name: Connect Subdomain
-        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "${{ github.head_ref || github.ref_name }} "
+        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "${GITHUB_HEAD_REF##*/}"
       - name: Deploy with rsync
-        run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/${{ github.head_ref || github.ref_name }} .reform.lukasschreiber.com
+        run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/${GITHUB_HEAD_REF##*/}.reform.lukasschreiber.com
       - name: Send Success Comment
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
             ### :white_check_mark: Deployment Success
             You can view the app here:           
-            https://${{ github.head_ref || github.ref_name }} .reform.lukasschreiber.com
+            https://${GITHUB_HEAD_REF##*/}.reform.lukasschreiber.com
           comment_tag: Deployment Success
