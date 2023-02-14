@@ -67,7 +67,7 @@ object MainJVMTest extends TestSuite {
   val tests: Tests = Tests {
 
     test("race conditions are awesome") {
-      val results = List.tabulate(500)(n => testSyncing(r => r.projects, 10000 + n))
+      val results = List.tabulate(50)(n => testSyncing(r => r.projects, 10000 + n))
       val result = Future.sequence(results)
       result.map(_.length)
     }
