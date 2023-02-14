@@ -49,6 +49,7 @@ jobs:
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            _(execution **${{ github.run_id }}** / attempt **${{ github.run_attempt }}**)_
-            Test Comment
-          comment_tag: execution
+            ### :white-check-mark: Deployment Success
+            You can view the app here:           
+            https://${GITHUB_HEAD_REF##*/}.reform.lukasschreiber.com
+          comment_tag: Deployment Success
