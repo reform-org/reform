@@ -32,7 +32,7 @@ import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
 import webapp.utils.Futures.*
 import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
-import webapp.npm.Utils.downloadJson
+import webapp.npm.JSUtils.downloadJson
 import org.scalajs.dom.HTMLInputElement
 
 case class HomePage() extends Page {
