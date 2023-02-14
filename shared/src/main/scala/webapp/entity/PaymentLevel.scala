@@ -3,9 +3,7 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
-import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
+import webapp.BasicCodecs.*
 
 case class PaymentLevel(
     title: Attribute[String] = Attribute.empty,
@@ -15,7 +13,7 @@ case class PaymentLevel(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = PaymentLevel(Attribute.empty, Attribute.default)
+  def default: PaymentLevel = PaymentLevel(Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = title
 
@@ -29,6 +27,4 @@ object PaymentLevel {
   val empty: PaymentLevel = PaymentLevel()
 
   implicit val codec: JsonValueCodec[PaymentLevel] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[PaymentLevel]] = JsonCodecMaker.make
 }

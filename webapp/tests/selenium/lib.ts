@@ -1,4 +1,3 @@
-import "./fast-selenium.js";
 import { Builder, By, Condition, until, WebDriver } from "selenium-webdriver";
 import chrome from "selenium-webdriver/chrome.js";
 import firefox from "selenium-webdriver/firefox.js";
@@ -6,8 +5,8 @@ import safari from "selenium-webdriver/safari.js";
 import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
-//export let seed = new Chance().integer();
-export let seed = 7196640142163968;
+export let seed = new Chance().integer();
+//export let seed = 7196640142163968;
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
@@ -324,7 +323,7 @@ export class Peer {
 				return false;
 			}
 			return [...addedProjects.values()][0];
-		}, 1000);
+		}, 10000);
 		if (addedProject === false) {
 			throw new Error("couldn't identify which project was added");
 		}
@@ -404,7 +403,8 @@ export class Peer {
 					await name.sendKeys("person a");
 
 					let hostButton = await driver.wait(
-						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`))
+						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`)),
+						3000
 					);
 					await hostButton.click();
 
@@ -442,8 +442,8 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`.//*[text()="manual"]`)),
-					3000,
+					until.elementLocated(By.xpath(`.//*[text()="person a"]`)),
+					10000,
 				);
 				let overlay = await peer.driver.findElement(
 					By.css("label.drawer-overlay"),

@@ -17,17 +17,18 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import ContractSchemasPage.*
 
-case class ContractSchemasPage()(using repositories: Repositories)
+case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name)) {}
 
 object ContractSchemasPage {
   private val name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bind[ContractSchema](
+    .bindAsText[ContractSchema](
       _.name,
       (s, a) => s.copy(name = a),
     )

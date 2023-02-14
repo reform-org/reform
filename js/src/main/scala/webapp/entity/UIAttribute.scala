@@ -6,6 +6,7 @@ import rescala.default.*
 import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.utils.Date
+import webapp.*
 
 class UIOption[NameType](
     val id: String,
@@ -19,7 +20,7 @@ class UIAttribute[EntityType, AttributeType](
     val writeConverter: String => AttributeType,
     val label: String,
     val isRequired: Boolean,
-    val fieldType: String = "text",
+    val fieldType: String,
 ) {
   private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
     entityVar.transform(
@@ -66,7 +67,7 @@ class UIAttribute[EntityType, AttributeType](
       value := attr.get.map(x => readConverter(x)).getOrElse(""),
       onInput.value --> {
         val evt = Evt[String]()
-        evt.observe(set.compose(writeConverter))
+        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
         evt
       },
       placeholder := label,
@@ -74,6 +75,28 @@ class UIAttribute[EntityType, AttributeType](
 
   private def renderConflicts(attr: Attribute[AttributeType]): String =
     attr.getAll.map(x => readConverter(x)).mkString("/")
+
+  def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+}
+
+class UINumberAttribute[EntityType](
+    getter: EntityType => Attribute[Int],
+    setter: (EntityType, Attribute[Int]) => EntityType,
+    readConverter: Int => String,
+    writeConverter: String => Int,
+    label: String,
+    isRequired: Boolean,
+) extends UIAttribute[EntityType, Int](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "number",
+    ) {
+
+  override def uiFilter: UIFilter[EntityType] = UIIntervalFilter(this)
 }
 
 class UIDateAttribute[EntityType](
@@ -105,10 +128,12 @@ class UIDateAttribute[EntityType](
     value := attr.get.map(x => editConverter(x)).getOrElse(""),
     onInput.value --> {
       val evt = Evt[String]()
-      evt.observe(set.compose(writeConverter))
+      ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
       evt
     },
   )
+
+  override def uiFilter: UIFilter[EntityType] = UIIntervalFilter(this)
 }
 
 class UICheckboxAttribute[EntityType](
@@ -130,16 +155,8 @@ class UICheckboxAttribute[EntityType](
     val attr = getter(entity)
     td(
       cls := "px-6 py-0",
-      duplicateValuesHandler(attr.getAll.map(booleanToGerman)),
+      duplicateValuesHandler(attr.getAll.map(if (_) "Yes" else "No")),
     )
-  }
-
-  private def booleanToGerman(b: Boolean) = {
-    if (b) {
-      "Ja"
-    } else {
-      "Nein"
-    }
   }
 
   override def renderEditInput(_formId: String, attr: Attribute[Boolean], set: Boolean => Unit): VNode = input(
@@ -149,6 +166,8 @@ class UICheckboxAttribute[EntityType](
     checked := attr.get.getOrElse(false),
     onClick.foreach(_ => set(!attr.get.getOrElse(false))),
   )
+
+  override def uiFilter: UIFilter[EntityType] = UIBooleanFilter(this)
 }
 
 class UISelectAttribute[EntityType, AttributeType](
@@ -184,7 +203,7 @@ class UISelectAttribute[EntityType, AttributeType](
       required := isRequired,
       onInput.value --> {
         val evt = Evt[String]()
-        evt.observe(set.compose(writeConverter))
+        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
         evt
       },
       option(VMod.attr("value") := "", "Bitte wählen..."),

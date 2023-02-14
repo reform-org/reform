@@ -17,10 +17,10 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
-
+import webapp.services.Toaster
 import ProjectsPage.*
 
-case class ProjectsPage()(using repositories: Repositories)
+case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
       Seq(name, maxHours, accountName),
@@ -30,7 +30,7 @@ object ProjectsPage {
   private val name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bind[Project](
+    .bindAsText[Project](
       _.name,
       (p, a) => p.copy(name = a),
     )
@@ -38,7 +38,7 @@ object ProjectsPage {
   private val maxHours = UIAttributeBuilder.int
     .withLabel("Max Hours")
     .require
-    .bind[Project](
+    .bindAsNumber[Project](
       _.maxHours,
       (p, a) => p.copy(maxHours = a),
     )
@@ -46,7 +46,7 @@ object ProjectsPage {
   private val accountName = UIAttributeBuilder.string
     .withLabel("Account")
     .withDefaultValue("")
-    .bind[Project](
+    .bindAsText[Project](
       _.accountName,
       (p, a) => p.copy(accountName = a),
     )

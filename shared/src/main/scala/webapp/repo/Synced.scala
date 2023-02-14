@@ -1,11 +1,21 @@
 package webapp.repo
 
 import rescala.default.*
+import scala.concurrent.Future
+import webapp.given_ExecutionContext
 
-// TODO: make members private and create accessors
-case class Synced[A](id: String, signal: Signal[A], private val outgoingDeltaEvent: Evt[A => A]) {
+case class Synced[A](private val storage: Storage[A], id: String, private val value: Var[A]) {
 
-  def update(f: A => A): Unit =
-    outgoingDeltaEvent.fire(f)
+  def update(f: Option[A] => A): Future[A] = {
+    storage
+      .update(id, f)
+      .map(newValue => {
+        // TODO FIXME this is prone to race conditions with the storage.update
+        // maybe we could do this update within the databae transation?
+        value.set(newValue)
+        newValue
+      })
+  }
 
+  val signal: Signal[A] = value
 }

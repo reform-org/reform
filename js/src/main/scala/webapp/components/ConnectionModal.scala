@@ -12,8 +12,9 @@ import webapp.*
 import webapp.given
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
+import webapp.services.Toaster
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.util.Failure
 import scala.util.Success
 
@@ -50,7 +51,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
     )
   }
 
-  def render: VNode = {
+  def render(using toaster: Toaster): VNode = {
     ul(
       tabIndex := 0,
       cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52",
@@ -109,10 +110,9 @@ class Login() {
   private val username = Var("")
   private val password = Var("")
 
-  def render(using discovery: DiscoveryService, webrtc: WebRTCService): VNode = {
+  def render(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster): VNode = {
     div(
-      discovery
-        .getTokenSignal()
+      discovery.token
         .map(token =>
           if (discovery.tokenIsValid(token))
             button(

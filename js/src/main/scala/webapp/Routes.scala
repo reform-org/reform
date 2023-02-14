@@ -19,9 +19,9 @@ import colibri.*
 import colibri.router.*
 import webapp.pages.*
 import webapp.services.Page
-
+import webapp.services.Toaster
 object Routes {
-  def fromPath(using repositories: Repositories): Path => Page = {
+  def fromPath(using repositories: Repositories, toaster: Toaster): Path => Page = {
     case Root                      => HomePage()
     case Root / "projects"         => ProjectsPage()
     case Root / "users"            => UsersPage()

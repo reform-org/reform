@@ -3,9 +3,7 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
-import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
+import webapp.BasicCodecs.*
 
 case class Supervisor(
     firstName: Attribute[String] = Attribute.empty,
@@ -17,7 +15,7 @@ case class Supervisor(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
+  def default: Supervisor = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = firstName
 
@@ -31,6 +29,4 @@ object Supervisor {
   val empty: Supervisor = Supervisor()
 
   implicit val codec: JsonValueCodec[Supervisor] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[Supervisor]] = JsonCodecMaker.make
 }

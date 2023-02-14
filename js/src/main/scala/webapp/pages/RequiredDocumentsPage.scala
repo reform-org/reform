@@ -17,17 +17,18 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import RequiredDocumentsPage.*
 
-case class RequiredDocumentsPage()(using repositories: Repositories)
+case class RequiredDocumentsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[RequiredDocument](repositories.requiredDocuments, Seq(name, fileName, isActuallyRequired)) {}
 
 object RequiredDocumentsPage {
   private val name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bind[RequiredDocument](
+    .bindAsText[RequiredDocument](
       _.name,
       (d, a) => d.copy(name = a),
     )
@@ -35,7 +36,7 @@ object RequiredDocumentsPage {
   private val fileName = UIAttributeBuilder.string
     .withLabel("File Name")
     .require
-    .bind[RequiredDocument](
+    .bindAsText[RequiredDocument](
       _.fileName,
       (d, a) => d.copy(fileName = a),
     )

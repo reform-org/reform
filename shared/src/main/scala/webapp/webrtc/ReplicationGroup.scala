@@ -24,12 +24,12 @@ import loci.registry.Registry
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.core.Disconnectable
-import rescala.default.*
-import webapp.Codecs.*
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.util.*
+import webapp.repo.Synced
+import scala.annotation.nowarn
 
 /** @param name
   *   The name/type of the thing to sync
@@ -45,42 +45,53 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
+@nowarn("msg=unused implicit parameter")
 class ReplicationGroup[A](name: String)(using
     registry: Registry,
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
-    codec: JsonValueCodec[A], // this is not unused as it's used inside the macro
+    codec: JsonValueCodec[A],
 ) {
 
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
+  given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 
-  private val binding = Binding[DeltaFor[A] => Unit](name)
+  given IdenticallyTransmittable[DeltaFor[A]] = IdenticallyTransmittable()
+  given IdenticallyTransmittable[A] = IdenticallyTransmittable()
+
+  given magicCodec: JsonValueCodec[Tuple2[Option[Option[A]], Option[String]]] = JsonCodecMaker.make
+
+  private val binding = Binding[DeltaFor[A] => Future[Option[A]]](name)
 
   /** Map from concrete thing to handle to the event handler for that.
     */
-  private var localListeners: Map[String, Evt[A]] = Map.empty
+  @volatile
+  private var localListeners: Map[String, Synced[A]] = Map.empty
 
   /** Map from the concrete thing to handle to a map of remote ids and the thing to sync.
     */
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
-    localListeners.get(payload.name) match {
-      case Some(handler) => handler.fire(payload.delta)
+    val result: Future[Option[A]] = synchronized { localListeners.get(payload.name) } match {
+      case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)).map(Some(_)) }
       case None =>
         unhandled = unhandled.updatedWith(payload.name) { current =>
           current.merge(Some(Map(remoteRef.toString -> payload.delta)))
         }
+        Future.successful(None)
     }
+    result
   }
 
+  // TODO FIXME integrate all this unhandled thing into the repository in such a way that the values are lazily loaded then.
   def distributeDeltaRDT(
       name: String,
-      signal: Signal[A],
-      deltaEvt: Evt[A],
+      synced: Synced[A],
   ): Unit = {
-    require(!localListeners.contains(name), s"already registered a RDT with name $name")
-    localListeners = localListeners.updated(name, deltaEvt)
+    synchronized {
+      require(!localListeners.contains(name), s"already registered a RDT with name $name")
+      localListeners = localListeners.updated(name, synced)
+    }
 
     // observe changes to send them to every remote
     var observers = Map[RemoteRef, Disconnectable]()
@@ -91,12 +102,12 @@ class ReplicationGroup[A](name: String)(using
     unhandled.get(name) match {
       case None =>
       case Some(changes) =>
-        changes.foreach((_, v) => deltaEvt.fire(v))
+        changes.map((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v))): @nowarn // TODO FIXME
     }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
       // Lookup method to send data to remote
-      val remoteUpdate: DeltaFor[A] => Future[Unit] = registry.lookup(binding, remoteRef)
+      val remoteUpdate = registry.lookup(binding, remoteRef)
 
       def sendUpdate(delta: A): Unit = {
         // the contents of the resend buffer and the delta need to be sent
@@ -128,12 +139,12 @@ class ReplicationGroup[A](name: String)(using
       }
 
       // Send full state to initialize remote
-      val currentState = signal.readValueOnce
+      val currentState = synced.signal.readValueOnce
       // only send full state if it's not empty for efficiency
       if (currentState != bottom.empty) sendUpdate(currentState)
 
       // Whenever the crdt is changed propagate the delta
-      val observer = signal.observe { s =>
+      val observer = synced.signal.observe { s =>
         // note: isn't the resendbuffer also added in sendUpdate again?
         // combine the resend buffer and the current delta
         val deltaStateList = List(s) ++ resendBuffer.get(remoteRef).toList
@@ -148,14 +159,14 @@ class ReplicationGroup[A](name: String)(using
     }
 
     // if a remote joins register it to handle updates to it
-    registry.remoteJoined.monitor(registerRemote)
+    registry.remoteJoined.foreach(registerRemote): @nowarn("msg=discarded expression")
     // also register all existing remotes
     registry.remotes.foreach(registerRemote)
     // remove remotes that disconnect
     registry.remoteLeft.monitor { remoteRef =>
       println(s"removing remote $remoteRef")
       observers(remoteRef).disconnect()
-    }
+    }: @nowarn("msg=discarded expression")
     ()
   }
 }

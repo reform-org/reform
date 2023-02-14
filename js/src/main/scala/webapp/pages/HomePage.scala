@@ -26,7 +26,10 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.services.{ToastMode, ToastType, Toaster}
+import webapp.given_ExecutionContext
+import webapp.components.{Modal, ModalButton}
+import webapp.utils.Futures.*
 
 case class HomePage() extends Page {
 
@@ -35,15 +38,16 @@ case class HomePage() extends Page {
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
-  ): VNode =
-    navigationHeader(
-      div(
-        p("Homepage"),
-        button(
-          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-          idAttr := "loadPDF",
-          "Fill PDF",
-          onClick.foreach(_ => {
+      toaster: Toaster,
+  ): VNode = {
+    val modal = new Modal(
+      "Title",
+      "Creative Text",
+      Seq(
+        new ModalButton(
+          "Yay!",
+          "bg-purple-600",
+          () => {
             document.getElementById("loadPDF").classList.add("loading")
             PDF
               .fill(
@@ -64,8 +68,71 @@ case class HomePage() extends Page {
                 console.log(s)
                 document.getElementById("loadPDF").classList.remove("loading")
               })
-          }),
+              .toastOnError()
+          },
         ),
+        new ModalButton("Nay!"),
       ),
     )
+
+    navigationHeader(
+      div(
+        cls := "flex flex-col gap-2 max-w-sm",
+        p("Homepage"),
+        button(
+          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+          idAttr := "loadPDF",
+          "Fill PDF",
+          onClick.foreach(_ => {
+            modal.open()
+          }),
+        ),
+        button(
+          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a boring normal toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Default)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-success p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a successful toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Success)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-warning p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a warning toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Warning)
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me an error toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make(
+              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 🍞",
+              ToastMode.Short,
+              ToastType.Error,
+            )
+          }),
+        ),
+        button(
+          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
+          idAttr := "makeToast",
+          "Make me a persistent error toast 🍞",
+          onClick.foreach(_ => {
+            toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
+          }),
+        ),
+        modal.render(),
+      ),
+    )
+  }
 }

@@ -21,6 +21,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
   // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
+  .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
@@ -37,6 +38,19 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
     ),
+    externalNpm := baseDirectory.value.getParentFile(),
+    stIgnore := List(
+      "@types/chance",
+      "@types/selenium-webdriver",
+      "browserstack-local",
+      "chance",
+      "daisyui",
+      "pdf-lib",
+      "selenium-webdriver",
+      "snabbdom",
+      "typescript",
+    ),
+    stStdlib := List("esnext", "dom"),
   )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
@@ -50,16 +64,18 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.20.6",
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.20.6",
     ),
+    libraryDependencies += compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.4" cross CrossVersion.full),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
-      // like there could also be sane defaults but no
       "-no-indent",
+      // "-W",
+      // "-Y",
       // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
-      "--unchecked",
-      "-deprecation",
-      "-Xmigration",
       "-Wunused:all",
-      // "-Xcheck-macros" // breaks utest
+      "-Wvalue-discard",
+      "-deprecation",
+      if (sys.env.get("CI") == Some("true")) "-Werror" else "",
+      // "-Xcheck-macros", // breaks utest, outwatch
     ),
   )

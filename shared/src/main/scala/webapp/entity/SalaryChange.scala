@@ -4,9 +4,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
-import webapp.Codecs.*
-import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
+import webapp.BasicCodecs.*
 
 case class SalaryChange(
     value: Attribute[Int] = Attribute.empty,
@@ -18,7 +16,7 @@ case class SalaryChange(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
+  def default: SalaryChange = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = paymentLevel
 
@@ -31,6 +29,4 @@ object SalaryChange {
   val empty: SalaryChange = SalaryChange()
 
   implicit val codec: JsonValueCodec[SalaryChange] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[SalaryChange]] = JsonCodecMaker.make
 }

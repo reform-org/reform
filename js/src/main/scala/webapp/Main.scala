@@ -24,60 +24,52 @@ import webapp.npm.IndexedDB
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import webapp.services.*
+import webapp.BasicCodecs.*
+import webapp.utils.Futures.*
+import webapp.given_ExecutionContext
 
 import scala.scalajs.js
 
-// object JavaScriptHot {
-//   @js.native
-//   @JSGlobal("accept")
-//   def accept(): Unit = js.native
-// }
-
-// object JavaScriptMeta {
-//   @js.native
-//   @JSGlobal("hot")
-//   val hot: JavaScriptHot
-// }
-
-// object JavaScriptImport {
-//   @js.native
-//   @JSGlobal("meta")
-//   val meta: JavaScriptMeta
-// }
-
-// object DOMGlobals {
-//   @js.native
-//   @JSGlobal("import")
-//   val javascriptImport: JavaScriptImport = js.native
-
-//   def magic(): Unit = {
-//     if (javascriptImport.meta.hot) {
-//       DOMGlobals.javascriptImport.meta.hot.accept()
-//     }
-//   }
-// }
-
-// https://simerplaha.github.io/html-to-scala-converter/
 object Main {
   def main(): Unit = {
-    js.`import`("../../../../index.css")
+    js.`import`("../../../../index.css").toFuture.toastOnError()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
-    if (discovery.tokenIsValid(discovery.getToken())) discovery.connect()
+    given toaster: Toaster = Toaster()
+
+    indexedDb
+      .update[String]("test", _ => "test")
+      .onComplete(value => {
+        if (value.isFailure) {
+          toaster.make(
+            "Failed to write into the storage. Your Browser does not support IndexedDB!",
+            ToastMode.Persistent,
+            ToastType.Error,
+          )
+        }
+      })
+
+    if (discovery.tokenIsValid(discovery.token.now))
+      discovery
+        .connect()
+        .toastOnError()
     Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
   }
 
-  def app(using
+  private def app(using
       routing: RoutingService,
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ) = body(
     routing.render,
+    toaster.render,
   )
 }
 

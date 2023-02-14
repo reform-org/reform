@@ -8,5 +8,5 @@ trait IIndexedDB {
 
   def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]]
 
-  def set[T](key: String, value: T)(using codec: JsonValueCodec[T]): Future[Unit]
+  def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T]
 }

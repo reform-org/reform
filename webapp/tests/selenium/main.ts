@@ -4,23 +4,28 @@ import browserstack from "browserstack-local";
 import { promisify } from "util";
 
 export async function run() {
-	let actions;
 	let peers: Peer[];
 	if (
 		process.env.SELENIUM_BROWSER === "safari" ||
 		process.env.BROWSERSTACK_ACCESS_KEY
 	) {
-		actions = chance.n(
-			() => chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10]),
-			200,
-		);
 		let peer = await Peer.create(true);
 		await peer.driver.get("http://localhost:5173/");
 		peers = [peer];
 	} else {
-		actions = chance.n(
-			() =>
-				chance.weighted(
+		peers = [];
+	}
+
+	try {
+		for (let count = 0; count < 100;) {
+			let action;
+			if (
+				process.env.SELENIUM_BROWSER === "safari" ||
+				process.env.BROWSERSTACK_ACCESS_KEY
+			) {
+				action = chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10])
+			} else {
+				action = chance.weighted(
 					[
 						Actions.CREATE_PEER,
 						Actions.DELETE_PEER,
@@ -30,14 +35,8 @@ export async function run() {
 						Actions.RELOAD,
 					],
 					[10, 10, 20, 20, 20, 10],
-				),
-			200,
-		);
-		peers = [];
-	}
-
-	try {
-		for (let action of actions) {
+				)
+			}
 			switch (action) {
 				case Actions.CREATE_PEER: {
 					let peer = await Peer.create(true);
@@ -128,6 +127,7 @@ export async function run() {
 				}
 			}
 			await check(peers);
+			count++;
 		}
 
 		if (process.env.BROWSERSTACK_ACCESS_KEY) {

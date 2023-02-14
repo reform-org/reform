@@ -3,9 +3,8 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
+import webapp.BasicCodecs.*
 import webapp.entity.Attribute.given
-import webapp.webrtc.DeltaFor
 
 case class RequiredDocument(
     name: Attribute[String] = Attribute.empty,
@@ -18,7 +17,7 @@ case class RequiredDocument(
 
   // empty for required fields, default for optional fields
   def default: RequiredDocument =
-    RequiredDocument(Attribute.default, Attribute.default, Attribute.default, Attribute.default)
+    RequiredDocument(Attribute.default, Attribute.default, Attribute(true), Attribute(true))
 
   def identifier: Attribute[String] = name
 
@@ -32,6 +31,4 @@ object RequiredDocument {
   val empty: RequiredDocument = RequiredDocument()
 
   implicit val codec: JsonValueCodec[RequiredDocument] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
-
-  implicit val deltaCodec: JsonValueCodec[DeltaFor[RequiredDocument]] = JsonCodecMaker.make
 }

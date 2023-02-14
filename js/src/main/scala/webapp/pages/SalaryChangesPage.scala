@@ -18,10 +18,11 @@ package webapp.pages
 import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
+import webapp.services.Toaster
 
 import SalaryChangesPage.*
 
-case class SalaryChangesPage()(using repositories: Repositories)
+case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[SalaryChange](
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
@@ -32,7 +33,7 @@ object SalaryChangesPage {
     .withLabel("Value")
     .require
     .map[Int](_ / 100.0f, f => Math.round(f * 100.0f))
-    .bind[SalaryChange](
+    .bindAsText[SalaryChange](
       _.value,
       (s, a) => s.copy(value = a),
     )

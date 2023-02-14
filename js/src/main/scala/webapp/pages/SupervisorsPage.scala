@@ -18,16 +18,18 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 
+import webapp.services.Toaster
+
 import SupervisorsPage.*
 
-case class SupervisorsPage()(using repositories: Repositories)
+case class SupervisorsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail)) {}
 
 object SupervisorsPage {
   private val firstName = UIAttributeBuilder.string
     .withLabel("First Name")
     .require
-    .bind[Supervisor](
+    .bindAsText[Supervisor](
       _.firstName,
       (s, a) => s.copy(firstName = a),
     )
@@ -35,7 +37,7 @@ object SupervisorsPage {
   private val lastName = UIAttributeBuilder.string
     .withLabel("Last Name")
     .require
-    .bind[Supervisor](
+    .bindAsText[Supervisor](
       _.lastName,
       (s, a) => s.copy(lastName = a),
     )
@@ -43,7 +45,7 @@ object SupervisorsPage {
   private val eMail = UIAttributeBuilder.string
     .withLabel("Email")
     .require
-    .bind[Supervisor](
+    .bindAsText[Supervisor](
       _.eMail,
       (s, a) => s.copy(eMail = a),
     )

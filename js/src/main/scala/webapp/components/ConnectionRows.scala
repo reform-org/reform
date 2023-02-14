@@ -10,14 +10,14 @@ import webapp.services.AvailableConnection
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
 
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(using
     webrtc: WebRTCService,
     discovery: DiscoveryService,
 ) = {
   if (source == "discovery") {
-    val own = discovery.decodeToken(discovery.getToken())
+    val own = discovery.decodeToken(discovery.token.now.get)
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
       div(
@@ -31,7 +31,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
             "ID: ",
             cls := "text-slate-400",
           ),
-          uuid.split("-")(0),
+          uuid.split("-").nn(0).nn,
           cls := "text-slate-500 text-xs",
         ),
         i(
@@ -126,7 +126,7 @@ def availableConnectionRow(
           "ID: ",
           cls := "text-slate-400",
         ),
-        connection.uuid.split("-")(0),
+        connection.uuid.split("-").nn(0).nn,
         cls := "text-slate-500 text-xs",
       ),
       i(

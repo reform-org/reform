@@ -11,14 +11,15 @@ import webapp.*
 import webapp.given
 import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
-
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.services.Toaster
+import webapp.given_ExecutionContext
+import webapp.utils.Futures.*
 
 private sealed trait State {
-  def render(using state: Var[State], webrtc: WebRTCService): VNode
+  def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
 }
 
-private def showConnectionToken(connection: PendingConnection) = {
+private def showConnectionToken(connection: PendingConnection)(using toaster: Toaster) = {
   connection.session.map(session =>
     div(
       cls := "flex gap-1 mt-2",
@@ -26,7 +27,12 @@ private def showConnectionToken(connection: PendingConnection) = {
         data.token := PendingConnection.sessionAsToken(session),
         cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
         Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
-        onClick.foreach(_ => window.navigator.clipboard.writeText(PendingConnection.sessionAsToken(session))),
+        onClick.foreach(_ =>
+          window.navigator.clipboard
+            .writeText(PendingConnection.sessionAsToken(session))
+            .toFuture
+            .toastOnError(),
+        ),
       ),
       a(
         cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
@@ -52,7 +58,7 @@ private case object Init extends State {
   }
 
   private val alias = Var("")
-  override def render(using state: Var[State], webrtc: WebRTCService): VNode = {
+  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = {
     div(
       cls := "form-control w-full text-sm",
       label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
@@ -76,7 +82,7 @@ private case object Init extends State {
 private case class ClientAskingForHostSessionToken() extends State {
   private val sessionToken = Var("")
   private val alias = Var("")
-  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p1",
     label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
     input(
@@ -97,7 +103,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     button(
       cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
       "Connect",
-      disabled <-- alias.map(a => sessionToken.map(_.isBlank() || a.isBlank())).flatten,
+      disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
       onClick.foreach(_ => connectToHost),
     ),
   )
@@ -117,7 +123,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
     .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
     .foreach(_ => onConnected())
 
-  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p-1",
     span(
       cls := "label-text text-slate-500",
@@ -140,7 +146,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
     .foreach(_ => onConnected())
 
-  override def render(using state: Var[State], webrtc: WebRTCService): VNode = div(
+  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p-1",
     span(
       cls := "label-text text-slate-500",
@@ -175,15 +181,15 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
 class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
 
   private val mode = Var("host")
-  mode.observe(v => {
+  ignoreDisconnectable(mode.observe(v => {
     if (v == "host") {
       state.set(Init)
     } else {
       state.set(ClientAskingForHostSessionToken())
     }
-  })
+  }))
 
-  def render(using webrtc: WebRTCService): VNode = {
+  def render(using webrtc: WebRTCService, toaster: Toaster): VNode = {
     div(
       div(
         cls := "flex rounded-xl mt-2 gap-1 text-center",
@@ -215,7 +221,7 @@ class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
           "Client",
         ),
       ),
-      state.map(_.render(using state, webrtc)),
+      state.map(_.render(using state, webrtc, toaster)),
     )
   }
 }

@@ -23,31 +23,39 @@ import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
 
-import scala.concurrent.Future
 import scala.scalajs.js.annotation.*
 
-import concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
+import scala.concurrent.Promise
+import rescala.default.*
+import rescala.core.Disconnectable
+import scala.annotation.nowarn
 
 @JSExportTopLevel("MainSharedTest")
 object MainSharedTest extends TestSuite {
 
-  def eventually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()).flatMap { canceled =>
-      if (canceled)
-        Future.unit
-      else
-        eventually(fun)
-    }
+  def signalToFuture[T](signal: Signal[T]) = {
+    val promise = Promise[T]()
+    val disconnectable: Disconnectable = signal.observe(v => {
+      promise.success(v): @nowarn("msg=discarded expression")
+    })
+    promise.future.map(v => {
+      disconnectable.disconnect()
+      v
+    })
   }
 
-  // TODO FIXME implement properly
-  def continually(fun: () => Boolean): Future[Unit] = {
-    Future(fun()).flatMap { canceled =>
-      if (canceled)
-        Future.unit
-      else
-        continually(fun)
-    }
+  def waitUntilTrue(signal: Signal[Boolean]) = {
+    val promise = Promise[Unit]()
+    val disconnectable: Disconnectable = signal.observe(v => {
+      if (v) {
+        promise.success(()): @nowarn("msg=discarded expression")
+      }
+    })
+    promise.future.map(v => {
+      disconnectable.disconnect()
+      v
+    })
   }
 
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
@@ -56,20 +64,21 @@ object MainSharedTest extends TestSuite {
   }
 
   def testE[T <: Entity[T]](value: Synced[T]) = {
-    value.signal.now.exists
-    value.signal.now.identifier
-    value.signal.now.withExists(false).exists
-    value.signal.now.default
+    val now = value.signal.now
+    assert(now.exists.getAll == Seq())
+    assert(now.identifier.getAll == Seq())
+    assert(now.withExists(false).exists.getAll == Seq(false))
+    now.default
   }
 
   def testRepository[T <: Entity[T]](repository: Repository[T]) = {
     assert(repository.all.now.length == 0)
-    repository
+    for _ <- repository
       .create()
       .map(value => testE(value))
-    for _ <- eventually(() => repository.all.now.length == 1)
-    _ <- continually(() => repository.all.now.length == 1)
-    do ()
+    _ <- waitUntilTrue(repository.all.map(_.length == 1))
+    _ <- waitUntilTrue(repository.all.map(_.length == 1))
+    yield ()
   }
 
   val tests: Tests = Tests {

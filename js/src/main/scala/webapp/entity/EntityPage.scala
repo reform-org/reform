@@ -16,8 +16,6 @@ limitations under the License.
 package webapp.entity
 
 import kofre.base.*
-import org.scalajs.dom
-import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
@@ -29,21 +27,25 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.{*, given}
+import webapp.components.{Modal, ModalButton}
+import webapp.services.{ToastMode, Toaster}
+import webapp.utils.Futures.*
+import webapp.utils.Seqnal.*
 
-import scala.collection.immutable.List
-import scala.concurrent.ExecutionContext.Implicits.global
+import webapp.given_ExecutionContext
 
 private class EntityRow[T <: Entity[T]](
-    repository: Repository[T],
-    existingValue: Option[Synced[T]],
-    editingValue: Var[Option[T]],
-    uiAttributes: Seq[UIAttribute[T, ? <: Any]],
-)(using bottom: Bottom[T], lattice: Lattice[T]) {
+    val repository: Repository[T],
+    val existingValue: Option[Synced[T]],
+    val editingValue: Var[Option[T]],
+    val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
+)(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
-  def render() = {
+  def render = {
     editingValue.map(editingNow => {
       val res = editingNow match {
         case Some(_) => {
+          var deleteModal: Var[Option[Modal]] = Var(None)
           val res = Some(
             tr(
               cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
@@ -90,14 +92,38 @@ private class EntityRow[T <: Entity[T]](
                   }
                 },
                 existingValue.map(p => {
-                  button(
-                    cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                    data.tip := "Delete",
-                    "X",
-                    onClick.foreach(_ => removeEntity(p)),
+                  val modal = new Modal(
+                    "Delete",
+                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
+                    Seq(
+                      new ModalButton(
+                        "Delete",
+                        "bg-red-600",
+                        () => {
+                          removeEntity(p)
+                          cancelEdit()
+                        },
+                      ),
+                      new ModalButton("Cancel"),
+                    ),
                   )
+                  deleteModal.set(Some(modal))
+                  val res = {
+                    button(
+                      cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                      data.tip := "Delete",
+                      "X",
+                      onClick.foreach(_ => modal.open()),
+                    )
+                  }
+                  res
                 }),
-              ),
+              ), {
+                deleteModal.map {
+                  case None        =>
+                  case Some(modal) => modal.render()
+                }
+              },
             ),
           )
           Var(res)
@@ -105,6 +131,18 @@ private class EntityRow[T <: Entity[T]](
         case None => {
           val res: Signal[Option[VNode]] = existingValue match {
             case Some(syncedEntity) => {
+              val modal = new Modal(
+                "Delete",
+                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get.getOrElse("")}\"?",
+                Seq(
+                  new ModalButton(
+                    "Delete",
+                    "bg-red-600",
+                    () => { removeEntity(syncedEntity) },
+                  ),
+                  new ModalButton("Cancel"),
+                ),
+              )
               val res = syncedEntity.signal.map(p => {
                 val res = if (p.exists.get.getOrElse(true)) {
                   Some(
@@ -125,8 +163,11 @@ private class EntityRow[T <: Entity[T]](
                           cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
                           data.tip := "Delete",
                           "X",
-                          onClick.foreach(_ => removeEntity(syncedEntity)),
+                          onClick.foreach(_ => {
+                            modal.open()
+                          }),
                         ),
+                        modal.render(),
                       ),
                     ),
                   )
@@ -146,38 +187,39 @@ private class EntityRow[T <: Entity[T]](
     })
   }
 
-  def removeEntity(p: Synced[T]): Unit = {
-    val yes = window.confirm(s"Do you really want to delete the entity \"${p.signal.now.identifier.get}\"?")
-    if (yes) {
-      p.update(p => p.withExists(false))
-    }
+  private def removeEntity(s: Synced[T]): Unit = {
+    s.update(p => p.get.withExists(false))
+      .toastOnError(ToastMode.Infinit)
   }
 
-  def cancelEdit(): Unit = {
+  private def cancelEdit(): Unit = {
     editingValue.set(None)
   }
 
-  def createOrUpdate(): Unit = {
+  private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
-    (existingValue match {
+    existingValue match {
       case Some(existing) => {
-        existing.update(p => {
-          p.merge(editingNow.get)
-        })
+        existing
+          .update(p => {
+            p.get.merge(editingNow.get)
+          })
+          .toastOnError(ToastMode.Infinit)
         editingValue.set(None)
       }
       case None => {
         repository
           .create()
-          .map(entity => {
+          .flatMap(entity => {
+            editingValue.set(Some(bottom.empty.default))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.merge(editingNow.get)
+              p.getOrElse(bottom.empty).merge(editingNow.get)
             })
-            editingValue.set(Some(bottom.empty.default))
           })
+          .toastOnError(ToastMode.Infinit)
       }
-    })
+    }
   }
 
   private def startEditing(): Unit = {
@@ -185,19 +227,47 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
+private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? <: Any]]) {
+
+  private val filters = uiAttributes.map(_.uiFilter)
+
+  def render: VNode = tr(
+    filters.map(_.render),
+  )
+
+  val predicate: Signal[EntityType => Boolean] = {
+    val preds = filters.map(_.predicate).seqToSignal
+    preds.map(preds => (e: EntityType) => preds.forall(_(e)))
+  }
+
+}
+
 abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
     bottom: Bottom[T],
     lattice: Lattice[T],
+    toaster: Toaster,
 ) extends Page {
 
   private val newUserRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
+
+  private val entityRows: Signal[Seq[EntityRow[T]]] =
+    repository.all.map(
+      _.map(syncedEntity => {
+        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes)
+      }),
+    )
+
+  private val filterRow = FilterRow[T](uiAttributes)
+
+  private val search = Var("")
 
   def render(using
       routing: RoutingService,
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ): VNode = {
     navigationHeader(
       div(
@@ -212,20 +282,29 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             ),
           ),
           tbody(
-            renderEntities(repository.all),
-            newUserRow.render(),
+            filterRow.render,
+            renderEntities,
+            newUserRow.render,
+          ),
+          input(
+            value <-- search,
+            onInput.value --> search,
           ),
         ),
       ),
     )
   }
 
-  private def renderEntities(
-      entities: Signal[List[Synced[T]]],
-  ) =
-    entities.map(
-      _.map(syncedEntity => {
-        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes).render()
-      }),
-    )
+  private def renderEntities = {
+    filterRow.predicate
+      .map(p =>
+        entityRows.map(
+          _.filterSignal(
+            _.existingValue.mapToSignal(_.signal).map(_.exists(p)),
+          )
+            .mapInside(_.render),
+        ),
+      )
+      .flatten
+  }
 }

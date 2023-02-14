@@ -23,6 +23,7 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 import webapp.*
+
 import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js
@@ -33,6 +34,7 @@ trait Page {
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ): VNode
 }
 
@@ -42,7 +44,7 @@ class RoutingState(
     val canReturn: Boolean,
 ) extends js.Object
 
-class RoutingService(using repositories: Repositories) {
+class RoutingService(using repositories: Repositories, toaster: Toaster) {
   private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
   def render(using
@@ -50,6 +52,7 @@ class RoutingService(using repositories: Repositories) {
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ): Signal[VNode] =
     page.map(_.render)
 
