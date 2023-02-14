@@ -21,7 +21,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
   // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
-  .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
+  // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
@@ -40,6 +40,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "69ab30877539712051f508bdf680134e90032e0b",
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "69ab30877539712051f508bdf680134e90032e0b",
     ),
+    /*
     externalNpm := baseDirectory.value.getParentFile(),
     stIgnore := List(
       "@types/chance",
@@ -53,6 +54,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "typescript",
     ),
     stStdlib := List("esnext", "dom"),
+     */
   )
   .jvmSettings(
     fork := true,
