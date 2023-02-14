@@ -1,0 +1,70 @@
+name: Deploy
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+
+env:
+  BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+
+jobs:
+  deploy:
+    if: github.actor != 'dependabot[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Branch Name
+        run: echo $BRANCH_NAME
+      - name: Install SSH Key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          known_hosts: "just-a-placeholder-so-we-dont-get-errors"
+      - name: Adding Known Hosts
+        run: ssh-keyscan -H lukasschreiber.com >> ~/.ssh/known_hosts
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "sbt"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - name: Cache scalablytyped
+        id: cache-scalablytyped
+        uses: actions/cache@v3
+        with:
+          path: ~/.cache/scalablytyped
+          key: ${{ runner.os }}-scalablytyped
+      - run: npm ci
+      - name: Build ScalaJS
+        run: sbt fastLinkJS
+      - name: Build JavaScript
+        run: npm run build
+      - name: Connect Subdomain
+        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "$BRANCH_NAME"
+      - name: Deploy with rsync
+        run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/$BRANCH_NAME.reform.lukasschreiber.com
+      - name: Send Success Comment
+        if: success() && github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ### :white_check_mark: Deployment to lukasschreiber.com Success
+            You can view the app here:           
+            https://${{ github.head_ref || github.ref_name }}.reform.lukasschreiber.com
+          comment_tag: Deployment to lukasschreiber.com
+      - name: Step To run on failure
+        if: failure() && github.event_name == 'pull_request'
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ### :x: Deployment to lukasschreiber.com Error
+            The deployment has failed!
+          comment_tag: Deployment to lukasschreiber.com

@@ -7,7 +7,7 @@ import kofre.base.*
 import webapp.BasicCodecs.*
 
 case class SalaryChange(
-    value: Attribute[Int] = Attribute.empty,
+    value: Attribute[BigDecimal] = Attribute.empty,
     paymentLevel: Attribute[String] = Attribute.empty,
     fromDate: Attribute[Long] = Attribute.empty,
     exists: Attribute[Boolean] = Attribute.empty,
