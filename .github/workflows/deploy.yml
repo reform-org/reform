@@ -56,5 +56,5 @@ jobs:
           message: |
             ### :white_check_mark: Deployment Success
             You can view the app here:           
-            https://$BRANCH_NAME.reform.lukasschreiber.com
+            https://${{ github.head_ref || github.ref_name }}.reform.lukasschreiber.com
           comment_tag: Deployment Success
