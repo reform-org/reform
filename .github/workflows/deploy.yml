@@ -52,7 +52,7 @@ jobs:
       - name: Deploy with rsync
         run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/$BRANCH_NAME.reform.lukasschreiber.com
       - name: Send Success Comment
-        if: success()
+        if: success() && github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
@@ -61,7 +61,7 @@ jobs:
             https://${{ github.head_ref || github.ref_name }}.reform.lukasschreiber.com
           comment_tag: Deployment to lukasschreiber.com
       - name: Step To run on failure
-        if: failure()
+        if: failure() && github.event_name == 'pull_request'
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
