@@ -71,7 +71,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   def getOrCreate(id: String): Future[Synced[A]] = {
-    cache.synchronized {
+    this.synchronized {
       if (cache.contains(id)) {
         cache(id)
       } else {

@@ -72,7 +72,7 @@ class ReplicationGroup[A](name: String)(using
   private var unhandled: Map[String, Map[String, A]] = Map.empty
 
   registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
-    val result: Future[Option[A]] = localListeners.synchronized { localListeners.get(payload.name) } match {
+    val result: Future[Option[A]] = this.synchronized { localListeners.get(payload.name) } match {
       case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)).map(Some(_)) }
       case None =>
         unhandled = unhandled.updatedWith(payload.name) { current =>
@@ -88,7 +88,7 @@ class ReplicationGroup[A](name: String)(using
       name: String,
       synced: Synced[A],
   ): Unit = {
-    localListeners.synchronized {
+    this.synchronized {
       require(!localListeners.contains(name), s"already registered a RDT with name $name")
       localListeners = localListeners.updated(name, synced)
     }
