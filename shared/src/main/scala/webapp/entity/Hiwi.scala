@@ -3,8 +3,7 @@ package webapp.entity
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
-import webapp.Codecs.*
-import webapp.entity.Attribute.given
+import webapp.BasicCodecs.*
 
 case class Hiwi(
     firstName: Attribute[String] = Attribute.empty,
@@ -18,8 +17,8 @@ case class Hiwi(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default =
-    Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.default)
+  def default: Hiwi =
+    Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = firstName
 

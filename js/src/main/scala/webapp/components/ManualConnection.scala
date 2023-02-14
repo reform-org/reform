@@ -103,7 +103,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     button(
       cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
       "Connect",
-      disabled <-- alias.map(a => sessionToken.map(_.isBlank() || a.isBlank())).flatten,
+      disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
       onClick.foreach(_ => connectToHost),
     ),
   )

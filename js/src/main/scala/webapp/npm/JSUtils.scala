@@ -9,7 +9,7 @@ import scala.scalajs.js.annotation.JSImport
 
 import js.JSConverters.*
 
-object Utils {
+object JSUtils {
 
   def usesTurn(connection: RTCPeerConnection): Future[Boolean] = {
     val promise: js.Promise[Boolean] = NativeImpl.usesTurn(connection.asInstanceOf[js.Object])
