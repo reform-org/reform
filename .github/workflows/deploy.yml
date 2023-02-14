@@ -42,6 +42,6 @@ jobs:
       - name: Build JavaScript
         run: npm run build
       - name: connect subdomain
-        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh ${GITHUB_REF##*/}
+        run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "${GITHUB_REF##*/}"
       - name: Deploy with rsync
         run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/${GITHUB_REF##*/}.reform.lukasschreiber.com
