@@ -16,6 +16,6 @@ object Money {
 
   implicit class BigDecimalOps(self: BigDecimal) {
 
-    def toMoneyString: String = df.format(self) + "€"
+    def toMoneyString: String = df.format(self) + " €"
   }
 }
