@@ -2,5 +2,8 @@
     "files.watcherExclude": {
         "**/target": true
     },
-    "editor.formatOnSave": true
+    "editor.formatOnSave": true,
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file:///c%3A/Users/luke-/Desktop/Uni/BP/Reform/reform/.github/workflows/deploy.yml"
+    }
 }

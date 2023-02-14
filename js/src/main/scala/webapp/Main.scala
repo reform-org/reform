@@ -68,8 +68,8 @@ object Main {
       discovery: DiscoveryService,
       toaster: Toaster,
   ) = body(
-    routing.render,
     toaster.render,
+    routing.render,
   )
 }
 

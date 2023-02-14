@@ -8,14 +8,175 @@ import scala.scalajs.js.JSON
 
 import webapp.given_ExecutionContext
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import typings.reformOrgIdb.buildEntryMod.OpenDBCallbacks
-import typings.std.IDBTransactionMode
 import scala.annotation.nowarn
+import scala.scalajs.js.annotation.JSImport
+import org.scalajs.dom.IDBVersionChangeEvent
+
+// manually extracted from scalablytyped
+
+trait StObject extends js.Object
+
+object StObject {
+  @inline
+  def set[Self <: js.Any](x: Self, key: String, value: Any): Self = {
+    x.asInstanceOf[js.Dynamic].updateDynamic(key)(value.asInstanceOf[js.Any])
+    x
+  }
+}
+
+type Pick[T, K /* <: /* keyof T */ java.lang.String */ ] = T
+
+type Exclude[T, U] = T
+
+type Extract[T, U] = T
+
+type KeyOf[T /* <: js.Object */ ] = Extract[ /* keyof T */ String, String]
+
+type Omit[T, K] = Pick[T, Exclude[ /* keyof T */ String, K]]
+
+type StoreKey[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
+  /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['key'] */ js.Any
+
+type StoreNames[DBTypes /* <: DBSchema */ ] = KeyOf[DBTypes]
+
+type StoreValue[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
+  /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['value'] */ js.Any
+
+@js.native
+sealed trait versionchange extends StObject
+inline def versionchange: versionchange = "versionchange".asInstanceOf[versionchange]
+
+trait OpenDBCallbacks[DBTypes /* <: DBSchema */ ] extends StObject {}
+
+object OpenDBCallbacks {
+
+  inline def apply[DBTypes /* <: DBSchema */ ](): OpenDBCallbacks[DBTypes] = {
+    val __obj = js.Dynamic.literal()
+    __obj.asInstanceOf[OpenDBCallbacks[DBTypes]]
+  }
+
+  @scala.inline
+  implicit open class MutableBuilder[Self <: OpenDBCallbacks[?], DBTypes /* <: DBSchema */ ](
+      val x: Self & OpenDBCallbacks[DBTypes],
+  ) extends AnyVal {
+
+    inline def setUpgrade(
+        value: (
+            /* database */ IDBPDatabase[DBTypes], /* oldVersion */ Double, /* newVersion */ Double | Null,
+            /* transaction */ IDBPTransaction[
+              DBTypes,
+              js.Array[js.Any],
+              versionchange,
+            ], /* event */ IDBVersionChangeEvent,
+        ) => Unit,
+    ): Self = StObject.set(x, "upgrade", js.Any.fromFunction5(value))
+
+  }
+}
+
+object mod {
+
+  @JSImport("@reform-org/idb", JSImport.Namespace)
+  @js.native
+  val ^ : js.Any = js.native
+
+  inline def openDB[DBTypes /* <: DBSchema */ ](
+      name: String,
+      version: Double,
+      param2: OpenDBCallbacks[DBTypes],
+  ): js.Promise[IDBPDatabase[DBTypes]] = (^.asInstanceOf[js.Dynamic]
+    .applyDynamic("openDB")(name.asInstanceOf[js.Any], version.asInstanceOf[js.Any], param2.asInstanceOf[js.Any]))
+    .asInstanceOf[js.Promise[IDBPDatabase[DBTypes]]]
+}
+
+trait IDBPDatabaseExtends extends StObject {}
+
+object IDBPDatabaseExtends {}
+
+@js.native
+trait IDBPDatabase[DBTypes /* <: DBSchema */ ] extends StObject with IDBPDatabaseExtends {
+
+  def createObjectStore[Name /* <: StoreNames[DBTypes] */ ](
+      name: Name,
+  ): IDBPObjectStore[DBTypes, Array[js.Any], Name, versionchange] = js.native
+
+  def transaction[Names /* <: ArrayLike[StoreNames[DBTypes]] */, Mode /* <: IDBTransactionMode */ ](
+      storeNames: Names,
+      mode: Mode,
+  ): IDBPTransaction[DBTypes, Names, Mode] = js.native
+}
+
+trait IDBPObjectStoreExtends extends StObject {}
+
+object IDBPObjectStoreExtends {}
+
+@js.native
+trait IDBPObjectStore[
+    DBTypes /* <: DBSchema */,
+    TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
+    StoreName /* <: StoreNames[DBTypes] */,
+    Mode, /* <: IDBTransactionMode */
+] extends StObject
+    with IDBPObjectStoreExtends {
+  def get(query: StoreKey[DBTypes, StoreName]): js.Promise[js.UndefOr[StoreValue[DBTypes, StoreName]]] = js.native
+
+  def put(
+      value: StoreValue[DBTypes, StoreName],
+      key: StoreKey[DBTypes, StoreName],
+  ): js.Promise[StoreKey[DBTypes, StoreName]] = js.native
+
+}
+
+trait IDBPTransactionExtends extends StObject {}
+
+object IDBPTransactionExtends {}
+
+trait IDBPTransaction[
+    DBTypes /* <: DBSchema */,
+    TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
+    Mode, /* <: IDBTransactionMode */
+] extends StObject
+    with IDBPTransactionExtends {
+
+  val done: js.Promise[Unit]
+
+  def objectStore[
+      StoreName, /* <: /* import warning: importer.ImportType#apply Failed type conversion: TxStores[number] */ js.Any */
+  ](name: StoreName): IDBPObjectStore[DBTypes, TxStores, StoreName, Mode]
+
+}
+
+object stdStrings {
+
+  @js.native
+  sealed trait readonly extends StObject with IDBTransactionMode
+  inline def readonly: readonly = "readonly".asInstanceOf[readonly]
+
+  @js.native
+  sealed trait readwrite extends StObject with IDBTransactionMode
+  inline def readwrite: readwrite = "readwrite".asInstanceOf[readwrite]
+
+  @js.native
+  sealed trait versionchange extends StObject with IDBTransactionMode
+  inline def versionchange: versionchange = "versionchange".asInstanceOf[versionchange]
+
+}
+
+trait IDBTransactionMode extends StObject
+object IDBTransactionMode {
+
+  inline def readonly: stdStrings.readonly = "readonly".asInstanceOf[stdStrings.readonly]
+
+  inline def readwrite: stdStrings.readwrite = "readwrite".asInstanceOf[stdStrings.readwrite]
+
+  inline def versionchange: stdStrings.versionchange =
+    "versionchange".asInstanceOf[stdStrings.versionchange]
+}
 
 class IndexedDB extends IIndexedDB {
 
   val database =
-    typings.reformOrgIdb.mod
+    mod
       .openDB(
         "reform",
         2,
