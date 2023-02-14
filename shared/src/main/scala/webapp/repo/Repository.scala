@@ -55,7 +55,8 @@ case class Repository[A](name: String, defaultValue: A)(using
           .sequence(
             values
               .map((k, v) => {
-                default.createSyncedFromRepo(k).flatMap(_.update(old => old.getOrElse(bottom.empty).merge(v)))
+                getOrCreate(k).flatMap(_.update(old => old.getOrElse(bottom.empty).merge(v)))
+                // default.createSyncedFromRepo(k).flatMap(_.update(old => old.getOrElse(bottom.empty).merge(v)))
               }),
           )
           .onComplete(value => {

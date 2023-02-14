@@ -6,6 +6,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import scala.collection.mutable
 import webapp.*
 import scala.annotation.nowarn
+import org.scalajs.dom.console
 
 def exportIndexedDBJson(using repositories: Repositories): String = {
   given repositoryCodec: JsonValueCodec[Repositories] =
