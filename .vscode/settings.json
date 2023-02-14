@@ -11,4 +11,7 @@
             "database": "./reform.db"
         }
     ],
+    "yaml.schemas": {
+        "https://json.schemastore.org/github-workflow.json": "file://.github/workflows/deploy.yml"
+    }
 }
