@@ -159,7 +159,7 @@ case class HomePage() extends Page {
                     toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
                   }
                   val json = value.getOrElse("");
-                  importIndexedDBJson(json)
+                  importIndexedDBJson(json)(using repositories)
                 })
           }),
         ),
