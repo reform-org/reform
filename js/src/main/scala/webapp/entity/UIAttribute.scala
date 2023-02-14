@@ -5,8 +5,8 @@ import outwatch.dsl.*
 import rescala.default.*
 import webapp.duplicateValuesHandler
 import webapp.given
-import webapp.utils.Date
 import webapp.*
+import webapp.utils.Date
 
 class UIOption[NameType](
     val id: String,
@@ -17,10 +17,13 @@ class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
     val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     val readConverter: AttributeType => String,
+    val editConverter: AttributeType => String,
     val writeConverter: String => AttributeType,
     val label: String,
     val isRequired: Boolean,
     val fieldType: String,
+    val regex: String = ".*",
+    val stepSize: String = "1",
 ) {
   private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
     entityVar.transform(
@@ -64,7 +67,9 @@ class UIAttribute[EntityType, AttributeType](
       `type` := fieldType,
       formId := _formId,
       required := isRequired,
-      value := attr.get.map(x => readConverter(x)).getOrElse(""),
+      stepAttr := stepSize,
+      pattern := regex,
+      value := getEditString(attr),
       onInput.value --> {
         val evt = Evt[String]()
         ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
@@ -73,26 +78,36 @@ class UIAttribute[EntityType, AttributeType](
       placeholder := label,
     )
 
+  protected def getEditString(attr: Attribute[AttributeType]): String =
+    attr.get.map(x => editConverter(x)).getOrElse("")
+
   private def renderConflicts(attr: Attribute[AttributeType]): String =
     attr.getAll.map(x => readConverter(x)).mkString("/")
 
   def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
 }
 
-class UINumberAttribute[EntityType](
-    getter: EntityType => Attribute[Int],
-    setter: (EntityType, Attribute[Int]) => EntityType,
-    readConverter: Int => String,
-    writeConverter: String => Int,
+class UINumberAttribute[EntityType, AttributeType](
+    getter: EntityType => Attribute[AttributeType],
+    setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    readConverter: AttributeType => String,
+    editConverter: AttributeType => String,
+    writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-) extends UIAttribute[EntityType, Int](
+    regex: String,
+    stepSize: String,
+)(implicit ordering: Ordering[AttributeType])
+    extends UIAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
+      editConverter = editConverter,
       writeConverter = writeConverter,
       label = label,
       isRequired = isRequired,
+      regex = regex,
+      stepSize = stepSize,
       fieldType = "number",
     ) {
 
@@ -112,12 +127,11 @@ class UIDateAttribute[EntityType](
       setter = setter,
       readConverter = readConverter,
       writeConverter = writeConverter,
+      editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
       label = label,
       isRequired = isRequired,
       fieldType = "date",
     ) {
-
-  private val editConverter = Date.epochDayToDate(_, "yyyy-MM-dd")
 
   override def renderEditInput(_formId: String, attr: Attribute[Long], set: Long => Unit): VNode = input(
     cls := "input valid:input-success",
@@ -125,7 +139,7 @@ class UIDateAttribute[EntityType](
     formId := _formId,
     required := isRequired,
     minAttr := min,
-    value := attr.get.map(x => editConverter(x)).getOrElse(""),
+    value := getEditString(attr),
     onInput.value --> {
       val evt = Evt[String]()
       ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
@@ -145,6 +159,7 @@ class UICheckboxAttribute[EntityType](
       getter = getter,
       setter = setter,
       readConverter = _.toString,
+      editConverter = _.toString,
       writeConverter = _.toBoolean,
       label = label,
       isRequired = isRequired,
@@ -182,6 +197,7 @@ class UISelectAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
+      editConverter = _.toString,
       writeConverter = writeConverter,
       label = label,
       isRequired = isRequired,
