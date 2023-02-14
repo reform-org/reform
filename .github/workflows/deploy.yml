@@ -5,7 +5,7 @@ on:
     branches: ["deploy"]
 
 jobs:
-  write-to-console:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Install SSH Key
@@ -40,4 +40,4 @@ jobs:
       - name: Build JavaScript
         run: npm run build
       - name: Deploy with rsync
-        run: rsync -avz ./ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/reform.lukasschreiber.com
+        run: rsync -avz ./dist ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/reform.lukasschreiber.com
