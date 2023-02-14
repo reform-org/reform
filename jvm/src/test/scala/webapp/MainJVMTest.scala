@@ -29,6 +29,7 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
 import loci.communicator.ws.jetty.WS
+import scala.concurrent.Future
 
 object MainJVMTest extends TestSuite {
 
@@ -64,6 +65,12 @@ object MainJVMTest extends TestSuite {
   }
 
   val tests: Tests = Tests {
+
+    test("race conditions are awesome") {
+      val results = List.tabulate(500)(n => testSyncing(r => r.projects, 10000 + n))
+      val result = Future.sequence(results)
+      result.map(_ => ())
+    }
 
     test("test syncing projects") {
       testSyncing(r => r.projects, 1337)
