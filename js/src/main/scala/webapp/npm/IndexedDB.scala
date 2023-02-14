@@ -12,6 +12,8 @@ import scala.annotation.nowarn
 import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom.IDBVersionChangeEvent
 
+// manually extracted from scalablytyped
+
 trait StObject extends js.Object
 
 object StObject {
@@ -144,15 +146,31 @@ trait IDBPTransaction[
 
 }
 
+object stdStrings {
+
+  @js.native
+  sealed trait readonly extends StObject with IDBTransactionMode
+  inline def readonly: readonly = "readonly".asInstanceOf[readonly]
+
+  @js.native
+  sealed trait readwrite extends StObject with IDBTransactionMode
+  inline def readwrite: readwrite = "readwrite".asInstanceOf[readwrite]
+
+  @js.native
+  sealed trait versionchange extends StObject with IDBTransactionMode
+  inline def versionchange: versionchange = "versionchange".asInstanceOf[versionchange]
+
+}
+
 trait IDBTransactionMode extends StObject
 object IDBTransactionMode {
 
-  inline def readonly: typings.std.stdStrings.readonly = "readonly".asInstanceOf[typings.std.stdStrings.readonly]
+  inline def readonly: stdStrings.readonly = "readonly".asInstanceOf[stdStrings.readonly]
 
-  inline def readwrite: typings.std.stdStrings.readwrite = "readwrite".asInstanceOf[typings.std.stdStrings.readwrite]
+  inline def readwrite: stdStrings.readwrite = "readwrite".asInstanceOf[stdStrings.readwrite]
 
-  inline def versionchange: typings.std.stdStrings.versionchange =
-    "versionchange".asInstanceOf[typings.std.stdStrings.versionchange]
+  inline def versionchange: stdStrings.versionchange =
+    "versionchange".asInstanceOf[stdStrings.versionchange]
 }
 
 class IndexedDB extends IIndexedDB {

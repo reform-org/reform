@@ -21,7 +21,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
   // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("."))
-  .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
+  // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
@@ -38,6 +38,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "org.scala-js" %%% "scala-js-macrotask-executor" % "1.1.1",
     ),
+    /*
     externalNpm := baseDirectory.value.getParentFile(),
     stIgnore := List(
       "@types/chance",
@@ -51,6 +52,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "typescript",
     ),
     stStdlib := List("esnext", "dom"),
+     */
   )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
