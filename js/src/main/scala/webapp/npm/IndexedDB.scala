@@ -8,27 +8,25 @@ import scala.scalajs.js.JSON
 
 import webapp.given_ExecutionContext
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import typings.std.IDBTransactionMode
 import scala.annotation.nowarn
 import scala.scalajs.js.annotation.JSImport
-import typings.reformOrgIdb.reformOrgIdbStrings.versionchange
 import org.scalajs.dom.IDBVersionChangeEvent
-import org.scalablytyped.runtime.StObject
-import typings.reformOrgIdb.buildEntryMod.IDBPDatabaseExtends
-import typings.std.ArrayLike
-import typings.reformOrgIdb.buildEntryMod.IDBPObjectStoreExtends
-import typings.reformOrgIdb.buildEntryMod.IDBPTransactionExtends
-import typings.reformOrgIdb.buildEntryMod.IDBPIndex
-import typings.reformOrgIdb.buildEntryMod.DBSchemaValue
-import org.scalablytyped.runtime.StringDictionary
+
+trait StObject extends js.Object
+
+object StObject {
+  @inline
+  def set[Self <: js.Any](x: Self, key: String, value: Any): Self = {
+    x.asInstanceOf[js.Dynamic].updateDynamic(key)(value.asInstanceOf[js.Any])
+    x
+  }
+}
 
 type Pick[T, K /* <: /* keyof T */ java.lang.String */ ] = T
 
 type Exclude[T, U] = T
 
 type Extract[T, U] = T
-
-type DBSchema = StringDictionary[DBSchemaValue]
 
 type KeyOf[T /* <: js.Object */ ] = Extract[ /* keyof T */ String, String]
 
@@ -41,6 +39,10 @@ type StoreNames[DBTypes /* <: DBSchema */ ] = KeyOf[DBTypes]
 
 type StoreValue[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
   /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['value'] */ js.Any
+
+@js.native
+sealed trait versionchange extends StObject
+inline def versionchange: versionchange = "versionchange".asInstanceOf[versionchange]
 
 trait OpenDBCallbacks[DBTypes /* <: DBSchema */ ] extends StObject {}
 
@@ -85,18 +87,26 @@ object mod {
     .asInstanceOf[js.Promise[IDBPDatabase[DBTypes]]]
 }
 
+trait IDBPDatabaseExtends extends StObject {}
+
+object IDBPDatabaseExtends {}
+
 @js.native
 trait IDBPDatabase[DBTypes /* <: DBSchema */ ] extends StObject with IDBPDatabaseExtends {
 
   def createObjectStore[Name /* <: StoreNames[DBTypes] */ ](
       name: Name,
-  ): IDBPObjectStore[DBTypes, ArrayLike[js.Any], Name, versionchange] = js.native
+  ): IDBPObjectStore[DBTypes, Array[js.Any], Name, versionchange] = js.native
 
   def transaction[Names /* <: ArrayLike[StoreNames[DBTypes]] */, Mode /* <: IDBTransactionMode */ ](
       storeNames: Names,
       mode: Mode,
   ): IDBPTransaction[DBTypes, Names, Mode] = js.native
 }
+
+trait IDBPObjectStoreExtends extends StObject {}
+
+object IDBPObjectStoreExtends {}
 
 @js.native
 trait IDBPObjectStore[
@@ -115,6 +125,10 @@ trait IDBPObjectStore[
 
 }
 
+trait IDBPTransactionExtends extends StObject {}
+
+object IDBPTransactionExtends {}
+
 trait IDBPTransaction[
     DBTypes /* <: DBSchema */,
     TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
@@ -128,6 +142,17 @@ trait IDBPTransaction[
       StoreName, /* <: /* import warning: importer.ImportType#apply Failed type conversion: TxStores[number] */ js.Any */
   ](name: StoreName): IDBPObjectStore[DBTypes, TxStores, StoreName, Mode]
 
+}
+
+trait IDBTransactionMode extends StObject
+object IDBTransactionMode {
+
+  inline def readonly: typings.std.stdStrings.readonly = "readonly".asInstanceOf[typings.std.stdStrings.readonly]
+
+  inline def readwrite: typings.std.stdStrings.readwrite = "readwrite".asInstanceOf[typings.std.stdStrings.readwrite]
+
+  inline def versionchange: typings.std.stdStrings.versionchange =
+    "versionchange".asInstanceOf[typings.std.stdStrings.versionchange]
 }
 
 class IndexedDB extends IIndexedDB {
