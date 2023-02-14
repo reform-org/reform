@@ -41,7 +41,14 @@ jobs:
         run: sbt fastLinkJS
       - name: Build JavaScript
         run: npm run build
-      - name: connect subdomain
+      - name: Connect Subdomain
         run: ssh ${{ secrets.SSH_USER }}@lukasschreiber.com ./reform/create_subdomain.sh "${GITHUB_HEAD_REF##*/}"
       - name: Deploy with rsync
         run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/${GITHUB_HEAD_REF##*/}.reform.lukasschreiber.com
+      - name: Send Success Comment
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            _(execution **${{ github.run_id }}** / attempt **${{ github.run_attempt }}**)_
+            Test Comment
+          comment_tag: execution
