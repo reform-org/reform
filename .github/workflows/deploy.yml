@@ -51,10 +51,19 @@ jobs:
       - name: Deploy with rsync
         run: rsync -avz ./dist/ ${{ secrets.SSH_USER }}@lukasschreiber.com:/var/www/virtual/${{ secrets.SSH_USER }}/$BRANCH_NAME.reform.lukasschreiber.com
       - name: Send Success Comment
+        if: success()
         uses: thollander/actions-comment-pull-request@v2
         with:
           message: |
-            ### :white_check_mark: Deployment Success
+            ### :white_check_mark: Deployment to lukasschreiber.com Success
             You can view the app here:           
             https://${{ github.head_ref || github.ref_name }}.reform.lukasschreiber.com
-          comment_tag: Deployment Success
+          comment_tag: Deployment to lukasschreiber.com
+      - name: Step To run on failure
+        if: failure()
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: |
+            ### :x: Deployment to lukasschreiber.com Error
+            The deployment has failed!
+          comment_tag: Deployment to lukasschreiber.com
