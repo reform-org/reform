@@ -11,82 +11,38 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import typings.std.IDBTransactionMode
 import scala.annotation.nowarn
 import scala.scalajs.js.annotation.JSImport
-import typings.reformOrgIdb.buildEntryMod.IDBPTransaction
 import typings.reformOrgIdb.reformOrgIdbStrings.versionchange
 import org.scalajs.dom.IDBVersionChangeEvent
 import org.scalablytyped.runtime.StObject
 import typings.reformOrgIdb.buildEntryMod.IDBPDatabaseExtends
-import typings.reformOrgIdb.buildEntryMod.IDBPObjectStore
 import typings.std.ArrayLike
+import typings.reformOrgIdb.buildEntryMod.IDBPObjectStoreExtends
+import typings.reformOrgIdb.buildEntryMod.IDBPTransactionExtends
+import typings.reformOrgIdb.buildEntryMod.IDBPIndex
+import typings.reformOrgIdb.buildEntryMod.DBSchemaValue
+import org.scalablytyped.runtime.StringDictionary
 
-trait OpenDBCallbacks[DBTypes /* <: DBSchema */ ] extends StObject {
+type Pick[T, K /* <: /* keyof T */ java.lang.String */ ] = T
 
-  /** Called if there are older versions of the database open on the origin, so this version cannot open.
-    *
-    * @param currentVersion
-    *   Version of the database that's blocking this one.
-    * @param blockedVersion
-    *   The version of the database being blocked (whatever version you provided to `openDB`).
-    * @param event
-    *   The event object for the associated `blocked` event.
-    */
-  var blocked: js.UndefOr[
-    js.Function3[
-      /* currentVersion */ Double,
-      /* blockedVersion */ Double | Null,
-      /* event */ IDBVersionChangeEvent,
-      Unit,
-    ],
-  ] = js.undefined
+type Exclude[T, U] = T
 
-  /** Called if this connection is blocking a future version of the database from opening.
-    *
-    * @param currentVersion
-    *   Version of the open database (whatever version you provided to `openDB`).
-    * @param blockedVersion
-    *   The version of the database that's being blocked.
-    * @param event
-    *   The event object for the associated `versionchange` event.
-    */
-  var blocking: js.UndefOr[
-    js.Function3[
-      /* currentVersion */ Double,
-      /* blockedVersion */ Double | Null,
-      /* event */ IDBVersionChangeEvent,
-      Unit,
-    ],
-  ] = js.undefined
+type Extract[T, U] = T
 
-  /** Called if the browser abnormally terminates the connection. This is not called when `db.close()` is called.
-    */
-  var terminated: js.UndefOr[js.Function0[Unit]] = js.undefined
+type DBSchema = StringDictionary[DBSchemaValue]
 
-  /** Called if this version of the database has never been opened before. Use it to specify the schema for the
-    * database.
-    *
-    * @param database
-    *   A database instance that you can use to add/remove stores and indexes.
-    * @param oldVersion
-    *   Last version of the database opened by the user.
-    * @param newVersion
-    *   Whatever new version you provided.
-    * @param transaction
-    *   The transaction for this upgrade. This is useful if you need to get data from other stores as part of a
-    *   migration.
-    * @param event
-    *   The event object for the associated 'upgradeneeded' event.
-    */
-  var upgrade: js.UndefOr[
-    js.Function5[
-      /* database */ IDBPDatabase[DBTypes],
-      /* oldVersion */ Double,
-      /* newVersion */ Double | Null,
-      /* transaction */ IDBPTransaction[DBTypes, js.Array[js.Any], versionchange],
-      /* event */ IDBVersionChangeEvent,
-      Unit,
-    ],
-  ] = js.undefined
-}
+type KeyOf[T /* <: js.Object */ ] = Extract[ /* keyof T */ String, String]
+
+type Omit[T, K] = Pick[T, Exclude[ /* keyof T */ String, K]]
+
+type StoreKey[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
+  /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['key'] */ js.Any
+
+type StoreNames[DBTypes /* <: DBSchema */ ] = KeyOf[DBTypes]
+
+type StoreValue[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
+  /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['value'] */ js.Any
+
+trait OpenDBCallbacks[DBTypes /* <: DBSchema */ ] extends StObject {}
 
 object OpenDBCallbacks {
 
@@ -140,6 +96,37 @@ trait IDBPDatabase[DBTypes /* <: DBSchema */ ] extends StObject with IDBPDatabas
       storeNames: Names,
       mode: Mode,
   ): IDBPTransaction[DBTypes, Names, Mode] = js.native
+}
+
+@js.native
+trait IDBPObjectStore[
+    DBTypes /* <: DBSchema */,
+    TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
+    StoreName /* <: StoreNames[DBTypes] */,
+    Mode, /* <: IDBTransactionMode */
+] extends StObject
+    with IDBPObjectStoreExtends {
+  def get(query: StoreKey[DBTypes, StoreName]): js.Promise[js.UndefOr[StoreValue[DBTypes, StoreName]]] = js.native
+
+  def put(
+      value: StoreValue[DBTypes, StoreName],
+      key: StoreKey[DBTypes, StoreName],
+  ): js.Promise[StoreKey[DBTypes, StoreName]] = js.native
+
+}
+
+trait IDBPTransaction[
+    DBTypes /* <: DBSchema */,
+    TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
+    Mode, /* <: IDBTransactionMode */
+] extends StObject
+    with IDBPTransactionExtends {
+
+  val done: js.Promise[Unit]
+
+  def objectStore[
+      StoreName, /* <: /* import warning: importer.ImportType#apply Failed type conversion: TxStores[number] */ js.Any */
+  ](name: StoreName): IDBPObjectStore[DBTypes, TxStores, StoreName, Mode]
 
 }
 
