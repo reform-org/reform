@@ -6,7 +6,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import scala.collection.mutable
 import webapp.*
 import scala.annotation.nowarn
-import org.scalajs.dom.console
 
 def exportIndexedDBJson(using repositories: Repositories): String = {
   given repositoryCodec: JsonValueCodec[Repositories] =
@@ -59,16 +58,10 @@ def importIndexedDBJson(
           else {
             in.rollbackToken()
             val mb = mutable.Map.newBuilder[String, Repository[?]]
-            var i = 0
             while ({
               val key = in.readKeyAsString()
               val repository = repositoryCodecs.get(key).get
-              println(s"$key, ${repository.name}")
               mb += (key -> repository.magicCodec.decodeValue(in, repository)): @nowarn
-              i += 1
-              if (i > 100000) { // a safe limit to avoid DoS attacks, see https://github.com/scala/bug/issues/11203
-                in.decodeError("too many map inserts")
-              }
               in.isNextToken(',')
             }) ()
             if (in.isCurrentToken('}')) mb.result()
@@ -81,9 +74,6 @@ def importIndexedDBJson(
         mutable.Map()
       }
     }
-  // given mapCodec: JsonValueCodec[mutable.Map[String, Repository[?]]] = JsonCodecMaker.make
-  val map = readFromString(json)(using repositoryMapCodec)
-  println(map)
-}
 
-// repository.getOrCreate
+  readFromString(json)(using repositoryMapCodec): @nowarn
+}
