@@ -45,7 +45,7 @@ object Routes {
     case SupervisorsPage()       => Root / "supervisor"
     case ContractSchemasPage()   => Root / "contractSchema"
     case ContractsPage()         => Root / "contracts"
-    case EditContractsPage()     => Root / "editContracts"
+    case EditContractsPage()     => Root / "edit-contracts"
     case RequiredDocumentsPage() => Root / "requiredDocument"
   }
 }
