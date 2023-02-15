@@ -19,7 +19,7 @@ import org.scalajs.dom.*
 import scala.scalajs.js
 import outwatch.*
 import outwatch.dsl.*
-import webapp.*
+import webapp.{*, given}
 import webapp.components.navigationHeader
 import webapp.npm.*
 import webapp.services.DiscoveryService
@@ -34,6 +34,8 @@ import webapp.utils.Futures.*
 import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
 import webapp.npm.JSUtils.downloadJson
 import org.scalajs.dom.HTMLInputElement
+import rescala.default.*
+import scala.annotation.nowarn
 
 case class HomePage() extends Page {
 
@@ -76,6 +78,54 @@ case class HomePage() extends Page {
           },
         ),
         new ModalButton("Nay!"),
+      ),
+    )
+
+    val deleteButtonActive = Var(false)
+    val deleteDBModal = new Modal(
+      "Do you really want to drop the Database?",
+      div(
+        cls := "flex flex-col gap-4",
+        span(
+          cls := "text-red-600",
+          "Proceeding will drop the database and all of it's contents on your machine, so the data will be ",
+          b("unrecoverably lost"),
+          "!!!",
+        ),
+        div(
+          input(
+            tpe := "checkbox",
+            idAttr := "export-success",
+            cls := "mr-2",
+            onClick.foreach(_ => deleteButtonActive.transform(!_)),
+          ),
+          label(
+            forId := "export-success",
+            cls := "text-slate-600",
+            "I have verified that the export has downloaded correctly ",
+          ),
+        ),
+        div(
+          cls := "text-blue-300 uppercase hover:text-blue-600 cursor-pointer",
+          "Export again",
+          onClick.foreach(_ => {
+            val json = exportIndexedDBJson
+            downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+          }),
+        ),
+      ),
+      Seq(
+        new ModalButton(
+          "Delete",
+          "bg-red-600",
+          () => {
+            window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform"): @nowarn;
+          },
+          Seq(
+            disabled <-- deleteButtonActive.map(!_),
+          ),
+        ),
+        new ModalButton("Cancel"),
       ),
     )
 
@@ -163,7 +213,18 @@ case class HomePage() extends Page {
                 })
           }),
         ),
+        button(
+          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
+          "Delete DB",
+          onClick.foreach(_ => {
+            val json = exportIndexedDBJson
+            downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+            deleteDBModal.open()
+
+          }),
+        ),
         modal.render(),
+        deleteDBModal.render(),
       ),
     )
   }
