@@ -209,7 +209,7 @@ class Toaster() {
 
   def render: VNode = {
     div(
-      cls := "toast toast-end items-end !p-0 inset-4",
+      cls := "toast toast-end items-end !p-0 bottom-4 right-4",
       toasts.map(_.map(toast => { toast.render(using this) })),
     )
   }
