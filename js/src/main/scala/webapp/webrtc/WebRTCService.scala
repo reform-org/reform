@@ -144,6 +144,9 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
   }): @nowarn("msg=discarded expression")
 
   registry.remoteLeft.monitor(remoteRef => {
+    val connectionInfo = getInformation(remoteRef);
+    toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
+
     removeConnection.fire(remoteRef)
     window.clearInterval(intervals(remoteRef))
     intervals -= remoteRef
