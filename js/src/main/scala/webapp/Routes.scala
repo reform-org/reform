@@ -30,6 +30,8 @@ object Routes {
     case Root / "salarychanges"    => SalaryChangesPage()
     case Root / "supervisor"       => SupervisorsPage()
     case Root / "contractSchema"   => ContractSchemasPage()
+    case Root / "contracts"        => ContractsPage()
+    case Root / "edit-contracts"   => EditContractsPage()
     case Root / "requiredDocument" => RequiredDocumentsPage()
   }
 
@@ -42,6 +44,8 @@ object Routes {
     case SalaryChangesPage()     => Root / "salarychanges"
     case SupervisorsPage()       => Root / "supervisor"
     case ContractSchemasPage()   => Root / "contractSchema"
+    case ContractsPage()         => Root / "contracts"
+    case EditContractsPage()     => Root / "edit-contracts"
     case RequiredDocumentsPage() => Root / "requiredDocument"
   }
 }
