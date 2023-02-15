@@ -35,7 +35,7 @@ import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
 import webapp.npm.JSUtils.downloadJson
 import org.scalajs.dom.HTMLInputElement
 import rescala.default.*
-import scala.annotation.nowarn
+
 import scala.util.Success
 import scala.util.Failure
 
@@ -121,7 +121,7 @@ case class HomePage() extends Page {
           "Delete",
           "bg-red-600",
           () => {
-            window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform"): @nowarn
+            let _ = window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform")
           },
           Seq(
             disabled <-- deleteButtonActive.map(!_),
