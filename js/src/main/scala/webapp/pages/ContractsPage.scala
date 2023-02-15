@@ -18,24 +18,25 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 import rescala.default.*
+import webapp.services.Toaster
 
+private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
+  UISelectAttribute(
+    _.contractAssociatedHiwi,
+    (p, a) => p.copy(contractAssociatedHiwi = a),
+    readConverter = identity,
+    writeConverter = identity,
+    label = "AssociatedHiwi",
+    options = repositories.hiwis.all.map(list =>
+      list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
+    ),
+    isRequired = true,
+  )
 
-private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] = UISelectAttribute(
-  _.contractAssociatedHiwi,
-  (p, a) => p.copy(contractAssociatedHiwi = a),
-  readConverter = identity,
-  writeConverter = identity,
-  label = "AssociatedHiwi",
-  options = repositories.hiwis.all.map(list =>
-    list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
-  ),
-  isRequired = true,
-)
-
-case class ContractsPage()(using repositories: Repositories)
+case class ContractsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Contract](
       repositories.contracts,
       Seq(
-        contractAssociatedHiwi
+        contractAssociatedHiwi,
       ),
     ) {}

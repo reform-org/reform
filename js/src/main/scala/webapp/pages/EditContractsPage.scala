@@ -15,20 +15,17 @@ limitations under the License.
  */
 package webapp.pages
 
-import org.scalajs.dom
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.*
 import webapp.components.navigationHeader
 import webapp.services.Page
 import webapp.entity.*
-import webapp.utils.Date
 import webapp.{*, given}
 import webapp.services.DiscoveryService
-import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
+import webapp.services.Toaster
 case class EditContractsPage() extends Page {
 
   /** For now until implemented contract in URL Getter TODO!
@@ -163,27 +160,29 @@ case class EditContractsPage() extends Page {
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
+      toaster: Toaster,
   ): VNode =
-    navigationHeader(div(
+    navigationHeader(
       div(
-        cls := "p-1",
-        h1(cls := "text-4xl text-center", "EditContractsPage"),
-      ),
-      div(
-        // button(tpe := "button", cls := "btn btn-default", tabIndex := -1, "Button"),
-        form(
-          // label("Contract:"),
-          // selectedContract.renderEdit(currentContract),
-          br,
-          label("AssociatedHiwi:"),
-          contractAssociatedHiwi.renderEdit("",currentContract),
-          br,
-          label("AssociatedSupervisor:"),
-          contractAssociatedSupervisor.renderEdit("",currentContract),
-          br,
-          label("ContractType:"),
-          contractAssociatedType.renderEdit("",currentContract),
-          /*
+        div(
+          cls := "p-1",
+          h1(cls := "text-4xl text-center", "EditContractsPage"),
+        ),
+        div(
+          // button(tpe := "button", cls := "btn btn-default", tabIndex := -1, "Button"),
+          form(
+            // label("Contract:"),
+            // selectedContract.renderEdit(currentContract),
+            br,
+            label("AssociatedHiwi:"),
+            contractAssociatedHiwi.renderEdit("", currentContract),
+            br,
+            label("AssociatedSupervisor:"),
+            contractAssociatedSupervisor.renderEdit("", currentContract),
+            br,
+            label("ContractType:"),
+            contractAssociatedType.renderEdit("", currentContract),
+            /*
           br,
           label("StartDate:"),
           contractStartDate.renderEdit(currentContract),
@@ -197,21 +196,22 @@ case class EditContractsPage() extends Page {
           label("AssociatedPaymentLevel:"),
           contractAssociatedPaymentLevel.renderEdit(currentContract),
           br,
-           */
-          button(
-            cls := "btn",
-            idAttr := "confirmEdit",
-            "Edit",
-            // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
-          ),
-          button(
-            cls := "btn",
-            idAttr := "cancelEdit",
-            "Cancel",
-            // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
+             */
+            button(
+              cls := "btn",
+              idAttr := "confirmEdit",
+              "Edit",
+              // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
+            ),
+            button(
+              cls := "btn",
+              idAttr := "cancelEdit",
+              "Cancel",
+              // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
+            ),
           ),
         ),
       ),
-    ))
+    )
 
 }
