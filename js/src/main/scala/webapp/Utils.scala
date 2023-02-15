@@ -5,7 +5,7 @@ import outwatch.dsl.*
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
-    cls := s"flex w-full h-full flex-row justify-between items-center h-9 px-4 ${if (values.size > 1) "bg-yellow-200"
+    cls := s"flex w-full flex-row justify-between items-center h-9 px-4 ${if (values.size > 1) "bg-yellow-200"
       else ""}", {
       Some(span(values.headOption.getOrElse("not initialized")))
     }, {
