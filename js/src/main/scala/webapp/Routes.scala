@@ -36,15 +36,15 @@ object Routes {
   }
 
   def toPath: Page => Path = {
-    case HomePage()            => Root / ""
-    case ProjectsPage()        => Root / "projects"
-    case UsersPage()           => Root / "users"
-    case HiwisPage()           => Root / "hiwis"
-    case PaymentLevelsPage()   => Root / "paymentlevels"
-    case SalaryChangesPage()   => Root / "salarychanges"
-    case SupervisorsPage()     => Root / "supervisor"
-    case ContractSchemasPage() => Root / "contractSchema"
-    case ContractsPage()       => Root / "contracts"
+    case HomePage()              => Root / ""
+    case ProjectsPage()          => Root / "projects"
+    case UsersPage()             => Root / "users"
+    case HiwisPage()             => Root / "hiwis"
+    case PaymentLevelsPage()     => Root / "paymentlevels"
+    case SalaryChangesPage()     => Root / "salarychanges"
+    case SupervisorsPage()       => Root / "supervisor"
+    case ContractSchemasPage()   => Root / "contractSchema"
+    case ContractsPage()         => Root / "contracts"
     case EditContractsPage()     => Root / "editContracts"
     case RequiredDocumentsPage() => Root / "requiredDocument"
   }
