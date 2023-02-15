@@ -450,8 +450,9 @@ export class Peer {
 				);
 				await overlay.click();
 				let toast = await peer.driver.findElement(
-					By.css(".toast #close"),
+					By.css(".toast .reform-toast-close"),
 				);
+				await peer.driver.wait(until.elementIsVisible(toast), 3000);
 				await toast.click();
 				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000);
 			}),
