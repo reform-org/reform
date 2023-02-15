@@ -18,4 +18,5 @@ class Repositories(using registry: Registry, indexedDb: IIndexedDB) {
   val paymentLevels: Repository[PaymentLevel] = Repository("payment-level", PaymentLevel.empty)
   val salaryChanges: Repository[SalaryChange] = Repository("salary-change", SalaryChange.empty)
   val requiredDocuments: Repository[RequiredDocument] = Repository("required-document", RequiredDocument.empty)
+  val contracts: Repository[Contract] = Repository("contracts", Contract.empty)
 }
