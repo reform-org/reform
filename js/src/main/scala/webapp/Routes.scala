@@ -35,7 +35,7 @@ object Routes {
     case Root / "requiredDocument" => RequiredDocumentsPage()
   }
 
-  val toPath: Page => Path = {
+  def toPath: Page => Path = {
     case HomePage()            => Root / ""
     case ProjectsPage()        => Root / "projects"
     case UsersPage()           => Root / "users"
