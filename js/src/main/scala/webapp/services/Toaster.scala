@@ -24,6 +24,7 @@ enum ToastType(
     val secondaryBgClass: String,
     val textClass: String,
     val icon: Option[VNode],
+    val copyable: Boolean = false,
 ) {
   case Default extends ToastType("bg-white", "bg-slate-100", "", Some(Icons.infoStar("w-6 h-6", "#475569")))
   case Success
@@ -41,7 +42,13 @@ enum ToastType(
         Some(Icons.warningTriangle("w-6 h-6", "#ca8a04")),
       )
   case Error
-      extends ToastType("bg-red-100", "bg-red-200", "text-red-600", Some(Icons.warningPolygon("w-6 h-6 fill-red-600")))
+      extends ToastType(
+        "bg-red-100",
+        "bg-red-200",
+        "text-red-600",
+        Some(Icons.warningPolygon("w-6 h-6 fill-red-600")),
+        true,
+      )
 }
 
 class Toast(
@@ -53,10 +60,19 @@ class Toast(
   val id = js.Math.round(js.Math.random() * 100000)
   var start: Option[Double] = None
   var previousTimeStamp: Double = 0
+  var pausedAtTimeStamp: Double = 0
   var animationDone = false
+  var animationRef: Option[Int] = None
 
-  private def animate(timestamp: Double): Unit = {
+  private def animate(timestamp: Double, resumeTo: Double = 0): Unit = {
     val element = document.querySelector(s"#toast-$id").asInstanceOf[HTMLHtmlElement];
+    if (resumeTo > 0) {
+      start match {
+        case None             => {}
+        case Some(startValue) => start = Some(startValue + timestamp - resumeTo)
+      }
+    }
+
     if (element != null) {
       start match {
         case None => {
@@ -64,35 +80,56 @@ class Toast(
           window.requestAnimationFrame(t => animate(t)): @nowarn
         }
         case Some(startValue) => {
-          val elapsed = timestamp - startValue;
+          val elapsed = timestamp - startValue
 
           if (previousTimeStamp != timestamp) {
             // animation magic
-            val width = s"${js.Math.min((100 / toastMode.duration.toDouble) * elapsed, 100)}%"
+            val widthVal = js.Math.min((100 / toastMode.duration.toDouble) * elapsed, 100)
+            val width = s"${widthVal}%"
             element.querySelector(".toast-progress").asInstanceOf[HTMLHtmlElement].style.width = width
+
+            if (widthVal >= 100) {
+              this.onclose(this)
+            }
           }
 
           if (elapsed < toastMode.duration) {
             previousTimeStamp = timestamp
             if (!animationDone) {
-              window.requestAnimationFrame(t => animate(t)): @nowarn
-
+              animationRef = Some(window.requestAnimationFrame(t => animate(t)))
             }
           }
         }
       }
     } else {
-      window.requestAnimationFrame(t => animate(t)): @nowarn
+      animationRef = Some(window.requestAnimationFrame(t => animate(t)))
     }
   }
 
   if (toastMode.autodismiss) {
-    window.requestAnimationFrame(t => animate(t)): @nowarn
+    animationRef = Some(window.requestAnimationFrame(t => animate(t)))
   }
 
-  def render: VNode = {
+  def render(using toaster: Toaster): VNode = {
     div(
       cls := s"${toastType.primaryBgClass} ${toastType.textClass} shadow-md alert relative overflow-hidden w-fit",
+      onMouseEnter.foreach(_ =>
+        animationRef match {
+          case Some(ref) => {
+            pausedAtTimeStamp = previousTimeStamp
+            window.cancelAnimationFrame(ref)
+          }
+          case None => {}
+        },
+      ),
+      onMouseLeave.foreach(_ =>
+        animationRef match {
+          case Some(ref) => {
+            animationRef = Some(window.requestAnimationFrame(t => animate(t, pausedAtTimeStamp)))
+          }
+          case None => {}
+        },
+      ),
       idAttr := s"toast-$id", {
         if (toastMode.autodismiss)
           Some(
@@ -116,6 +153,27 @@ class Toast(
           cls := "",
           text,
         ), {
+          if (toastType.copyable) {
+            Some(
+              div(
+                Icons.clipboard("w-4 h-4", "#dc2626"),
+                cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                onClick.foreach(_ =>
+                  window.navigator.clipboard
+                    .writeText(document.querySelector(s"#toast-$id").innerText)
+                    .toFuture
+                    .onComplete(value => {
+                      if (value.isFailure) {
+                        println("could not copy to clipboard")
+                      } else {
+                        toaster.make("Copied to Clipboard!", ToastMode.Short, ToastType.Success)
+                      }
+                    }),
+                ),
+              ),
+            )
+          } else None
+        }, {
           if (toastMode.closeable) {
             Some(
               div(
@@ -147,21 +205,12 @@ class Toaster() {
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
     val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
-
-    if (mode.autodismiss) {
-      window.setTimeout(
-        () => {
-          this.removeToast(toast)
-        },
-        mode.duration,
-      ): @nowarn
-    }
   }
 
   def render: VNode = {
     div(
-      cls := "toast toast-end items-end",
-      toasts.map(_.map(toast => { toast.render })),
+      cls := "toast toast-end items-end !p-0 bottom-4 right-4",
+      toasts.map(_.map(toast => { toast.render(using this) })),
     )
   }
 }
