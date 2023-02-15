@@ -36,7 +36,10 @@ class UIAttribute[EntityType, AttributeType](
 
   def render(entity: EntityType): VNode = {
     val attr = getter(entity)
-    td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+    td(
+      cls := "border border-gray-300 p-0",
+      duplicateValuesHandler(attr.getAll.map(x => readConverter(x))),
+    )
   }
 
   def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
@@ -44,13 +47,15 @@ class UIAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
-          cls := "px-6 py-0",
-          renderEditInput(formId, attr, x => set(entityVar, x)),
+          cls := " border-0 px-0 py-0",
+          renderEditInput(formId, attr, x => set(entityVar, x), Some("conflicting-values")),
           if (attr.getAll.size > 1) {
             Some(
-              p(
-                "Conflicting values: ",
-                renderConflicts(attr),
+              Seq(
+                dataList(
+                  idAttr := "conflicting-values",
+                  renderConflicts(attr),
+                ),
               ),
             )
           } else {
@@ -61,9 +66,14 @@ class UIAttribute[EntityType, AttributeType](
     }
   }
 
-  protected def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
+  protected def renderEditInput(
+      _formId: String,
+      attr: Attribute[AttributeType],
+      set: AttributeType => Unit,
+      datalist: Option[String] = None,
+  ): VNode =
     input(
-      cls := "input valid:input-success bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700  dark:placeholder-gray-400 dark:text-white",
+      cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
       `type` := fieldType,
       formId := _formId,
       required := isRequired,
@@ -75,14 +85,19 @@ class UIAttribute[EntityType, AttributeType](
         ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
         evt
       },
-      placeholder := label,
+      placeholder := label, {
+        datalist match {
+          case None        => {}
+          case Some(value) => listId := value
+        }
+      },
     )
 
   protected def getEditString(attr: Attribute[AttributeType]): String =
     attr.get.map(x => editConverter(x)).getOrElse("")
 
-  private def renderConflicts(attr: Attribute[AttributeType]): String =
-    attr.getAll.map(x => readConverter(x)).mkString("/")
+  private def renderConflicts(attr: Attribute[AttributeType]): Seq[VNode] =
+    attr.getAll.map(x => option(value := readConverter(x)))
 
   def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
 }
@@ -133,7 +148,12 @@ class UIDateAttribute[EntityType](
       fieldType = "date",
     ) {
 
-  override def renderEditInput(_formId: String, attr: Attribute[Long], set: Long => Unit): VNode = input(
+  override def renderEditInput(
+      _formId: String,
+      attr: Attribute[Long],
+      set: Long => Unit,
+      datalist: Option[String] = None,
+  ): VNode = input(
     cls := "input valid:input-success",
     `type` := "date",
     formId := _formId,
@@ -169,12 +189,17 @@ class UICheckboxAttribute[EntityType](
   override def render(entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
-      cls := "px-6 py-0",
+      cls := "border border-gray-300 px-6 py-0",
       duplicateValuesHandler(attr.getAll.map(if (_) "Yes" else "No")),
     )
   }
 
-  override def renderEditInput(_formId: String, attr: Attribute[Boolean], set: Boolean => Unit): VNode = input(
+  override def renderEditInput(
+      _formId: String,
+      attr: Attribute[Boolean],
+      set: Boolean => Unit,
+      datalist: Option[String] = None,
+  ): VNode = input(
     cls := "input valid:input-success",
     `type` := "checkbox",
     formId := _formId,
@@ -207,14 +232,19 @@ class UISelectAttribute[EntityType, AttributeType](
   override def render(entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
-      cls := "px-6 py-0",
+      cls := "border border-gray-300 px-6 py-0",
       duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
     )
   }
 
-  override def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
+  override def renderEditInput(
+      _formId: String,
+      attr: Attribute[AttributeType],
+      set: AttributeType => Unit,
+      datalist: Option[String] = None,
+  ): VNode =
     select(
-      cls := "input valid:input-success",
+      cls := "input valid:input-success input-ghost",
       formId := _formId,
       required := isRequired,
       onInput.value --> {

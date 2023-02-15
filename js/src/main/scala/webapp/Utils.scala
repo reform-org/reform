@@ -4,15 +4,16 @@ import outwatch.*
 import outwatch.dsl.*
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
-  Seq(
-    {
+  div(
+    cls := s"flex w-full h-full flex-row justify-between items-center h-9 px-4 ${if (values.size > 1) "bg-yellow-200"
+      else ""}", {
       Some(span(values.headOption.getOrElse("not initialized")))
     }, {
       val res = if (values.size > 1) {
         import outwatch.dsl.svg.*
         Some(
-          span(
-            cls := "tooltip tooltip-error",
+          div(
+            cls := "tooltip tooltip-error flex justify-center items-center",
             data.tip := "Conflicting values found. Edit to see all values and decide on a single value.",
             button(
               svg(
@@ -20,7 +21,7 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
                 fill := "none",
                 viewBox := "0 0 24 24",
                 VMod.attr("stroke-width") := "1.5",
-                stroke := "currentColor",
+                stroke := "#eab308",
                 cls := "w-6 h-6",
                 path(
                   VMod.attr("stroke-linecap") := "round",
