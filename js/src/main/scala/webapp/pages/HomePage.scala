@@ -121,7 +121,7 @@ case class HomePage() extends Page {
           "Delete",
           "bg-red-600",
           () => {
-            window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform"): @nowarn;
+            window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform"): @nowarn
           },
           Seq(
             disabled <-- deleteButtonActive.map(!_),
