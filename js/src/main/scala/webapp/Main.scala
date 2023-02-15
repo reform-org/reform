@@ -34,13 +34,13 @@ import scala.scalajs.js
 object Main {
   def main(): Unit = {
     js.`import`("../../../../index.css").toFuture.toastOnError()
+    given toaster: Toaster = Toaster()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
-    given toaster: Toaster = Toaster()
 
     indexedDb
       .update[String]("test", _ => "test")

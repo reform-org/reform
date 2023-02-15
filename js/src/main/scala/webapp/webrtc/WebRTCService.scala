@@ -28,6 +28,9 @@ import rescala.default.*
 import webapp.*
 import webapp.utils.Base64
 
+import outwatch.*
+import outwatch.dsl.*
+
 import scala.util.*
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
@@ -36,6 +39,7 @@ import scala.annotation.nowarn
 import webapp.npm.JSUtils
 import webapp.BasicCodecs.*
 import loci.serializer.jsoniterScala.given
+import webapp.services.{ToastMode, ToastType, Toaster}
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -62,7 +66,7 @@ object PendingConnection {
   def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)
 }
 
-class WebRTCService(using registry: Registry) {
+class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
@@ -91,6 +95,8 @@ class WebRTCService(using registry: Registry) {
           connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source, uuid, connectionId))
           connectionRefs += (connectionId -> r.get)
           webRTCConnections += (r.get -> connection)
+
+          toaster.make(span(b(alias.get), " has just joined! 🚀"), ToastMode.Short, ToastType.Success)
         })
       })
       .andThen(r => {
