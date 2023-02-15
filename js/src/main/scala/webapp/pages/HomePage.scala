@@ -36,6 +36,8 @@ import webapp.npm.JSUtils.downloadJson
 import org.scalajs.dom.HTMLInputElement
 import rescala.default.*
 import scala.annotation.nowarn
+import scala.util.Success
+import scala.util.Failure
 
 case class HomePage() extends Page {
 
@@ -191,6 +193,7 @@ case class HomePage() extends Page {
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
             downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+            toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
         input(tpe := "file", cls := "file-input w-full max-w-xs", idAttr := "import-file"),
@@ -209,7 +212,14 @@ case class HomePage() extends Page {
                     toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
                   }
                   val json = value.getOrElse("");
-                  importIndexedDBJson(json)(using repositories)
+                  importIndexedDBJson(json)(using repositories).onComplete(value => {
+                    value match {
+                      case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
+                      case Failure(exception) =>
+                        toaster
+                          .make("Failed to import database! " + exception.toString(), ToastMode.Long, ToastType.Error)
+                    }
+                  })
                 })
           }),
         ),

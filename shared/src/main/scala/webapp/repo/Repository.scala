@@ -31,6 +31,8 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 
+type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
+
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
     indexedDb: IIndexedDB,
@@ -39,35 +41,22 @@ case class Repository[A](name: String, defaultValue: A)(using
     codec: JsonValueCodec[A],
 ) {
 
+  def bottomEmpty = bottom.empty
+
+  def latticeMerge(left: A, right: A) = dcl.merge(left)(right)
+
   given mapCodec: JsonValueCodec[mutable.Map[String, A]] = JsonCodecMaker.make
 
-  given magicCodec: JsonValueCodec[Repository[A]] =
-    new JsonValueCodec {
-      def encodeValue(x: Repository[A], out: JsonWriter): Unit = {
-        var values: mutable.Map[String, A] = mutable.Map()
-        x.all.now.foreach(f => values += (f.id -> f.signal.now))
-        mapCodec.encodeValue(values, out)
-      }
+  def encodeRepository(out: JsonWriter): Unit = {
+    var values: mutable.Map[String, A] = mutable.Map()
+    all.now.foreach(f => values += (f.id -> f.signal.now))
+    mapCodec.encodeValue(values, out)
+  }
 
-      def decodeValue(in: JsonReader, default: Repository[A]): Repository[A] = {
-        var values: mutable.Map[String, A] = mapCodec.decodeValue(in, mutable.Map())
-        Future
-          .sequence(
-            values
-              .map((k, v) => {
-                getOrCreate(k).flatMap(_.update(old => old.getOrElse(bottom.empty).merge(v)))
-              }),
-          )
-          .onComplete(value => {
-            if (value.isFailure) {
-              value.failed.get.printStackTrace()
-            }
-          })
-        default
-      }
-
-      def nullValue: Repository[A] = ???
-    }
+  def decodeRepository(in: JsonReader): RepoAndValues[A] = {
+    var values = mapCodec.decodeValue(in, mutable.Map.empty)
+    (this, values)
+  }
 
   private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
@@ -104,7 +93,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       .flatten
   }
 
-  private def getOrCreate(id: String): Future[Synced[A]] = {
+  def getOrCreate(id: String): Future[Synced[A]] = {
     synchronized {
       if (cache.contains(id)) {
         cache(id)
