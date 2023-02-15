@@ -14,7 +14,7 @@ case class Repositories(
     val paymentLevels: Repository[PaymentLevel],
     val salaryChanges: Repository[SalaryChange],
     val requiredDocuments: Repository[RequiredDocument],
-    val contracts: Repository[Contract]
+    val contracts: Repository[Contract],
 ) {}
 
 object Repositories {
@@ -27,6 +27,6 @@ object Repositories {
     Repository("payment-level", PaymentLevel.empty),
     Repository("salary-change", SalaryChange.empty),
     Repository("required-document", RequiredDocument.empty),
-    Repository("contracts", Contract.empty)
+    Repository("contracts", Contract.empty),
   )
 }
