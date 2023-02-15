@@ -449,6 +449,10 @@ export class Peer {
 					By.css("label.drawer-overlay"),
 				);
 				await overlay.click();
+				let toast = await peer.driver.findElement(
+					By.css(".toast #close"),
+				);
+				await toast.click();
 				await peer.driver.wait(until.elementIsNotVisible(overlay), 3000);
 			}),
 		);

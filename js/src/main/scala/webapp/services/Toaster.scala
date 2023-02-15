@@ -122,6 +122,7 @@ class Toast(
                 Icons.close("fill-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
                 onClick.foreach(_ => onclose(this)),
+                idAttr := "close",
               ),
             )
           } else None
