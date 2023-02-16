@@ -26,7 +26,7 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
-case class EditContractsPage() extends Page {
+class EditContractsPage(using repositories: Repositories, toaster: Toaster)(contractId: String) extends Page {
 
   /** For now until implemented contract in URL Getter TODO!
     */
@@ -47,6 +47,10 @@ case class EditContractsPage() extends Page {
     ),
   )
    */
+  // Stackoverflow :)
+
+  def unapply(x: Int): Option[String] =
+    if (x == 0) Some("Hello, World") else None
 
   private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
     UISelectAttribute(
@@ -101,59 +105,52 @@ case class EditContractsPage() extends Page {
       ),
       isRequired = true,
     )
-  /*
-  private val contractStartDate: UIDateAttribute[Contract, Long] = UIDateAttribute(
-    _._contractStartDate,
-    (p, a) => p.copy(_contractStartDate = a),
-    readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-    editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-    writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-    placeholder = "StartDate",
-  )
 
-  private val contractEndDate: UIDateAttribute[Contract, Long] = UIDateAttribute(
-    _._contractEndDate,
-    (p, a) => p.copy(_contractEndDate = a),
-    readConverter = Date.epochDayToDate(_, "dd.MM.yyyy"),
-    editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
-    writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
-    placeholder = "EndDate",
-  )
+  private val contractStartDate = UIAttributeBuilder.date
+    .withLabel("Start Date")
+    .require
+    .bindAsDatePicker[Contract](
+      _.contractStartDate,
+      (h, a) => h.copy(contractStartDate = a),
+    )
 
-  private val contractHoursPerMonth: UIAttribute[Contract, Int] = UIAttribute(
-    _._contractHoursPerMonth,
-    (p, a) => p.copy(_contractHoursPerMonth = a),
-    readConverter = _.toString(),
-    writeConverter = _.toInt,
-    placeholder = "HoursPerMonth",
-    fieldType = "number",
-  )
-  /*
-  private val contractAssociatedPaymentLevel: UIAttribute[Contract, String] = UIAttribute(
-    _._contractAssociatedPaymentLevel,
-    (p, a) => p.copy(_contractAssociatedPaymentLevel = a),
-    readConverter = identity,
-    writeConverter = identity,
-    placeholder = "AssociatedPaymentLevel",
-  )
-   */
-  private val contractAssociatedPaymentLevel: UISelectAttribute[Contract, String] = UISelectAttribute(
-    _._contractAssociatedPaymentLevel,
-    (p, a) => p.copy(_contractAssociatedPaymentLevel = a),
-    readConverter = identity,
-    writeConverter = identity,
-    placeholder = "AssociatedPaymentLevel",
-    options = Repositories.paymentLevels.all.map(list =>
-      list.map(value =>
-        new UIOption[Signal[String]](
-          value.id,
-          value.signal.map(v => v._title.get.getOrElse("")),
+  private val contractEndDate = UIAttributeBuilder.date
+    .withLabel("Start Date")
+    .require
+    .bindAsDatePicker[Contract](
+      _.contractEndDate,
+      (h, a) => h.copy(contractEndDate = a),
+    )
+
+  private val contractHoursPerMonth = UIAttributeBuilder.int
+    .withLabel("Hours per Month")
+    .require
+    .bindAsNumber[Contract](
+      _.contractHoursPerMonth,
+      (h, a) => h.copy(contractHoursPerMonth = a),
+    )
+
+  private def contractAssociatedPaymentLevel(using repositories: Repositories): UISelectAttribute[Contract, String] =
+    UISelectAttribute(
+      _.contractType,
+      (p, a) => p.copy(contractType = a),
+      readConverter = identity,
+      writeConverter = identity,
+      label = "AssociatedPaymentLevel",
+      options = repositories.paymentLevels.all.map(list =>
+        list.map(value =>
+          new UIOption[Signal[String]](
+            value.id,
+            value.signal.map(v => v.title.get.getOrElse("")),
+          ),
         ),
       ),
-    ),
-  )
-   */
+      isRequired = true,
+    )
+
   private val currentContract = Var(Option(Contract.empty.copy(contractAssociatedHiwi = Attribute.empty.set("1"))))
+
+  val currentDirectory = new java.io.File(".").getCanonicalPath
 
   def render(using
       routing: RoutingService,
@@ -169,10 +166,10 @@ case class EditContractsPage() extends Page {
           h1(cls := "text-4xl text-center", "EditContractsPage"),
         ),
         div(
-          // button(tpe := "button", cls := "btn btn-default", tabIndex := -1, "Button"),
           form(
-            // label("Contract:"),
-            // selectedContract.renderEdit(currentContract),
+            br,
+            label("CurrentContract:"),
+            label(contractId),
             br,
             label("AssociatedHiwi:"),
             contractAssociatedHiwi.renderEdit("", currentContract),
@@ -182,21 +179,18 @@ case class EditContractsPage() extends Page {
             br,
             label("ContractType:"),
             contractAssociatedType.renderEdit("", currentContract),
-            /*
-          br,
-          label("StartDate:"),
-          contractStartDate.renderEdit(currentContract),
-          br,
-          label("EndDate:"),
-          contractEndDate.renderEdit(currentContract),
-          br,
-          label("HoursPerMonth:"),
-          contractHoursPerMonth.renderEdit(currentContract),
-          br,
-          label("AssociatedPaymentLevel:"),
-          contractAssociatedPaymentLevel.renderEdit(currentContract),
-          br,
-             */
+            br,
+            label("StartDate:"),
+            contractStartDate.renderEdit("", currentContract),
+            br,
+            label("EndDate:"),
+            contractEndDate.renderEdit("", currentContract),
+            br,
+            label("HoursPerMonth:"),
+            contractHoursPerMonth.renderEdit("", currentContract),
+            br,
+            label("AssociatedPaymentLevel:"),
+            contractAssociatedPaymentLevel.renderEdit("", currentContract),
             button(
               cls := "btn",
               idAttr := "confirmEdit",
