@@ -20,6 +20,8 @@ object JSUtils {
     NativeImpl.downloadJson(name, content)
   }
 
+  val isSelenium: Boolean = NativeImpl.isSelenium
+
   @js.native
   @JSImport("../../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
@@ -29,5 +31,7 @@ object JSUtils {
 
     def downloadJson(name: String, content: String): Unit =
       js.native
+
+    val isSelenium: Boolean = js.native
   }
 }

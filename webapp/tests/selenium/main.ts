@@ -23,7 +23,7 @@ export async function run() {
 				process.env.SELENIUM_BROWSER === "safari" ||
 				process.env.BROWSERSTACK_ACCESS_KEY
 			) {
-				action = chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10])
+				action = chance.weighted([Actions.CREATE_PROJECT, Actions.RELOAD], [10, 10]);
 			} else {
 				action = chance.weighted(
 					[
@@ -35,7 +35,7 @@ export async function run() {
 						Actions.RELOAD,
 					],
 					[10, 10, 20, 20, 20, 10],
-				)
+				);
 			}
 			switch (action) {
 				case Actions.CREATE_PEER: {

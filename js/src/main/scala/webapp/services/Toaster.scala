@@ -11,6 +11,7 @@ import webapp.given
 import webapp.components.Icons
 import org.scalajs.dom.HTMLHtmlElement
 import scala.annotation.nowarn
+import webapp.npm.JSUtils
 
 enum ToastMode(val autodismiss: Boolean, val closeable: Boolean, val duration: Int = 0) {
   case Short extends ToastMode(true, true, 10000)
@@ -43,7 +44,7 @@ enum ToastType(
       )
   case Error
       extends ToastType(
-        "bg-red-100",
+        "bg-red-100 toast-error",
         "bg-red-200",
         "text-red-600",
         Some(Icons.warningPolygon("w-6 h-6 fill-red-600")),
@@ -112,7 +113,7 @@ class Toast(
 
   def render(using toaster: Toaster): VNode = {
     div(
-      cls := s"${toastType.primaryBgClass} ${toastType.textClass} shadow-md alert relative overflow-hidden w-fit",
+      cls := s"${toastType.primaryBgClass} ${toastType.textClass} toast-elem shadow-md alert relative overflow-hidden w-fit",
       onMouseEnter.foreach(_ =>
         animationRef match {
           case Some(ref) => {
@@ -178,7 +179,7 @@ class Toast(
             Some(
               div(
                 Icons.close("fill-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5 reform-toast-close",
                 onClick.foreach(_ => onclose(this)),
               ),
             )
@@ -203,6 +204,7 @@ class Toaster() {
   }
 
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
+    if (JSUtils.isSelenium && style != ToastType.Error) return
     val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
   }
