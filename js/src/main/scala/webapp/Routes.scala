@@ -22,17 +22,17 @@ import webapp.services.Page
 import webapp.services.Toaster
 object Routes {
   def fromPath(using repositories: Repositories, toaster: Toaster): Path => Page = {
-    case Root                                 => HomePage()
-    case Root / "projects"                    => ProjectsPage()
-    case Root / "users"                       => UsersPage()
-    case Root / "hiwis"                       => HiwisPage()
-    case Root / "paymentlevels"               => PaymentLevelsPage()
-    case Root / "salarychanges"               => SalaryChangesPage()
-    case Root / "supervisor"                  => SupervisorsPage()
-    case Root / "contractSchema"              => ContractSchemasPage()
-    case Root / "contracts"                   => ContractsPage()
-    case Root / "edit-contracts" / contractId => EditContractsPage(contractId)
-    case Root / "requiredDocument"            => RequiredDocumentsPage()
+    case Root                         => HomePage()
+    case Root / "projects"            => ProjectsPage()
+    case Root / "users"               => UsersPage()
+    case Root / "hiwis"               => HiwisPage()
+    case Root / "paymentlevels"       => PaymentLevelsPage()
+    case Root / "salarychanges"       => SalaryChangesPage()
+    case Root / "supervisor"          => SupervisorsPage()
+    case Root / "contractSchema"      => ContractSchemasPage()
+    case Root / "contracts"           => ContractsPage()
+    case Root / "edit-contracts" / id => EditContractsPage(id)
+    case Root / "requiredDocument"    => RequiredDocumentsPage()
   }
 
   def toPath: Page => Path = {
@@ -45,7 +45,7 @@ object Routes {
     case SupervisorsPage()       => Root / "supervisor"
     case ContractSchemasPage()   => Root / "contractSchema"
     case ContractsPage()         => Root / "contracts"
-    case EditContractsPage()     => Root / "edit-contracts"
+    case EditContractsPage(id)   => Root / "edit-contracts" / id
     case RequiredDocumentsPage() => Root / "requiredDocument"
   }
 }

@@ -26,7 +26,8 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
-class EditContractsPage(using repositories: Repositories, toaster: Toaster)(contractId: String) extends Page {
+
+case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
 
   /** For now until implemented contract in URL Getter TODO!
     */
@@ -49,8 +50,8 @@ class EditContractsPage(using repositories: Repositories, toaster: Toaster)(cont
    */
   // Stackoverflow :)
 
-  def unapply(x: Int): Option[String] =
-    if (x == 0) Some("Hello, World") else None
+  // def unapply(x: Int): Option[String] =
+  //   if (x == 0) Some("Hello, World") else None
 
   private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
     UISelectAttribute(
@@ -150,7 +151,7 @@ class EditContractsPage(using repositories: Repositories, toaster: Toaster)(cont
 
   private val currentContract = Var(Option(Contract.empty.copy(contractAssociatedHiwi = Attribute.empty.set("1"))))
 
-  val currentDirectory = new java.io.File(".").getCanonicalPath
+  // val currentDirectory = new java.io.File(".").getCanonicalPath
 
   def render(using
       routing: RoutingService,
