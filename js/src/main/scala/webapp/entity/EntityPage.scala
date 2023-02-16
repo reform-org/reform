@@ -121,10 +121,10 @@ private class EntityRow[T <: Entity[T]](
                   }),
                 ),
               ), {
-                deleteModal.map {
-                  case None        =>
+                deleteModal.map(_ match {
+                  case None        => div()
                   case Some(modal) => modal.render()
-                }
+                })
               },
             ),
           )
