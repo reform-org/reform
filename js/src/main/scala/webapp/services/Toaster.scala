@@ -43,7 +43,7 @@ enum ToastType(
       )
   case Error
       extends ToastType(
-        "bg-red-100",
+        "bg-red-100 toast-error",
         "bg-red-200",
         "text-red-600",
         Some(Icons.warningPolygon("w-6 h-6 fill-red-600")),
@@ -112,7 +112,7 @@ class Toast(
 
   def render(using toaster: Toaster): VNode = {
     div(
-      cls := s"${toastType.primaryBgClass} ${toastType.textClass} shadow-md alert relative overflow-hidden w-fit",
+      cls := s"${toastType.primaryBgClass} ${toastType.textClass} toast-elem shadow-md alert relative overflow-hidden w-fit",
       onMouseEnter.foreach(_ =>
         animationRef match {
           case Some(ref) => {
