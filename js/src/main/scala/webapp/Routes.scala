@@ -20,6 +20,8 @@ import colibri.router.*
 import webapp.pages.*
 import webapp.services.Page
 import webapp.services.Toaster
+import org.scalajs.dom.window
+
 object Routes {
   def fromPath(using repositories: Repositories, toaster: Toaster): Path => Page = {
     case Root                      => HomePage()
@@ -33,6 +35,7 @@ object Routes {
     case Root / "contracts"        => ContractsPage()
     case Root / "edit-contracts"   => EditContractsPage()
     case Root / "requiredDocument" => RequiredDocumentsPage()
+    case _                         => ErrorPage()
   }
 
   def toPath: Page => Path = {
@@ -47,5 +50,6 @@ object Routes {
     case ContractsPage()         => Root / "contracts"
     case EditContractsPage()     => Root / "edit-contracts"
     case RequiredDocumentsPage() => Root / "requiredDocument"
+    case ErrorPage()             => Root / window.location.pathname.substring(1)
   }
 }
