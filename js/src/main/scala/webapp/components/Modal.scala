@@ -7,10 +7,18 @@ import rescala.default.*
 import webapp.given
 import org.scalajs.dom.{document, Element}
 
-class ModalButton(val text: String, val classes: String = "", val callback: () => Unit = () => {})
+class ModalButton(
+    val text: String,
+    val classes: String = "",
+    val callback: () => Unit = () => {},
+    val customAttributes: Seq[VMod] = Seq(),
+)
 
-class Modal(val title: String = "", val body: String = "", val buttons: Seq[ModalButton] = Seq()) {
+class Modal(val title: String, val body: VNode, val buttons: Seq[ModalButton]) {
   private val openState = Var(false)
+
+  def this(title: String = "", text: String = "", buttons: Seq[ModalButton] = Seq()) =
+    this(title, span(text), buttons)
 
   document.addEventListener(
     "click",
@@ -61,6 +69,7 @@ class Modal(val title: String = "", val body: String = "", val buttons: Seq[Moda
                   button.callback()
                   this.close()
                 }),
+                button.customAttributes,
               ),
             ),
           ),

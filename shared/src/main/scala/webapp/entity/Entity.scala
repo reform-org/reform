@@ -1,6 +1,6 @@
 package webapp.entity
 
-trait Entity[T <: Entity[T]] {
+trait Entity[T] {
   def default: T
 
   def exists: Attribute[Boolean]
@@ -8,4 +8,5 @@ trait Entity[T <: Entity[T]] {
   def identifier: Attribute[String]
 
   def withExists(exists: Boolean): T
+
 }
