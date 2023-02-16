@@ -6,7 +6,7 @@ import { Chance } from "chance";
 import { strict as assert } from "node:assert";
 
 export let seed = new Chance().integer();
-//export let seed = 7196640142163968;
+//export let seed = 483124345569280;
 export var chance = new Chance(seed);
 console.log(`The seed is: ${chance.seed}`);
 
@@ -359,6 +359,9 @@ export class Peer {
 
 	async connectTo(other: Peer) {
 		console.log(`[${this.id}, ${other.id}] connect`);
+
+		let personNames = [chance.name(), chance.name()]
+
 		let [[offerInput, submitOffer], [offer, answerInput, answerSubmit]] =
 			await Promise.all([
 				(async () => {
@@ -375,7 +378,7 @@ export class Peer {
 					let name = await driver.findElement(
 						By.css(`input[placeholder="Your name"]`),
 					);
-					await name.sendKeys("person a");
+					await name.sendKeys(personNames[0]);
 
 					let textarea = await driver.findElement(
 						By.css(`input[placeholder="Token"]`),
@@ -400,7 +403,7 @@ export class Peer {
 						until.elementLocated(By.css(`input[placeholder="Your name"]`)),
 						3000,
 					);
-					await name.sendKeys("person a");
+					await name.sendKeys(personNames[1]);
 
 					let hostButton = await driver.wait(
 						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`)),
@@ -440,9 +443,9 @@ export class Peer {
 		await answerSubmit.click();
 
 		await Promise.all(
-			[this, other].map(async (peer) => {
+			[this, other].map(async (peer, index) => {
 				await peer.driver.wait(
-					until.elementLocated(By.xpath(`.//*[text()="person a"]`)),
+					until.elementLocated(By.xpath(`.//*[text()="${personNames[index]}"]`)),
 					10000,
 				);
 				let overlay = await peer.driver.findElement(
