@@ -26,8 +26,26 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
+import webapp.repo.Synced
 
 case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
+
+  private val currentContract = repositories.contracts.getOrCreate(contractId)
+
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+      toaster: Toaster,
+  ): VNode = {
+    div(currentContract.map(currentContract => {
+      InnerEditContractsPage(currentContract).render()
+    }))
+  }
+}
+
+case class InnerEditContractsPage(contract: Synced[Contract])(using repositories: Repositories, toaster: Toaster) {
 
   /** For now until implemented contract in URL Getter TODO!
     */
@@ -149,7 +167,8 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       isRequired = true,
     )
 
-  private val currentContract = repositories.contracts.getOrCreate(contractId)
+  var currentContract = Var(Option(contract.signal.now))
+
   def render(using
       routing: RoutingService,
       repositories: Repositories,
@@ -158,50 +177,48 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       toaster: Toaster,
   ): VNode =
     navigationHeader(
-      currentContract.map(_ =>
+      div(
         div(
-          div(
-            cls := "p-1",
-            h1(cls := "text-4xl text-center", "EditContractsPage"),
-          ),
-          div(
-            form(
-              br,
-              label("CurrentContract:"),
-              label(contractId),
-              br,
-              label("AssociatedHiwi:"),
-              contractAssociatedHiwi.renderEdit("", _),
-              br,
-              label("AssociatedSupervisor:"),
-              contractAssociatedSupervisor.renderEdit("", _),
-              br,
-              label("ContractType:"),
-              contractAssociatedType.renderEdit("", _),
-              br,
-              label("StartDate:"),
-              contractStartDate.renderEdit("", _),
-              br,
-              label("EndDate:"),
-              contractEndDate.renderEdit("", _),
-              br,
-              label("HoursPerMonth:"),
-              contractHoursPerMonth.renderEdit("", _),
-              br,
-              label("AssociatedPaymentLevel:"),
-              contractAssociatedPaymentLevel.renderEdit("", _),
-              button(
-                cls := "btn",
-                idAttr := "confirmEdit",
-                "Save",
-                // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
-              ),
-              button(
-                cls := "btn",
-                idAttr := "cancelEdit",
-                "Cancel",
-                // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
-              ),
+          cls := "p-1",
+          h1(cls := "text-4xl text-center", "EditContractsPage"),
+        ),
+        div(
+          form(
+            br,
+            label("CurrentContract:"),
+            label(contract.id),
+            br,
+            label("AssociatedHiwi:"),
+            contractAssociatedHiwi.renderEdit("", currentContract),
+            br,
+            label("AssociatedSupervisor:"),
+            contractAssociatedSupervisor.renderEdit("", currentContract),
+            br,
+            label("ContractType:"),
+            contractAssociatedType.renderEdit("", currentContract),
+            br,
+            label("StartDate:"),
+            contractStartDate.renderEdit("", currentContract),
+            br,
+            label("EndDate:"),
+            contractEndDate.renderEdit("", currentContract),
+            br,
+            label("HoursPerMonth:"),
+            contractHoursPerMonth.renderEdit("", currentContract),
+            br,
+            label("AssociatedPaymentLevel:"),
+            contractAssociatedPaymentLevel.renderEdit("", currentContract),
+            button(
+              cls := "btn",
+              idAttr := "confirmEdit",
+              "Save",
+              // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
+            ),
+            button(
+              cls := "btn",
+              idAttr := "cancelEdit",
+              "Cancel",
+              // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
             ),
           ),
         ),
