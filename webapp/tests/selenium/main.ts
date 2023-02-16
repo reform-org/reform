@@ -11,12 +11,6 @@ export async function run() {
 	) {
 		let peer = await Peer.create(true);
 		await peer.driver.get("http://localhost:5173/");
-		peer.driver.executeScript(() => {
-			let styleSheet = document.createElement("style");
-			let sheet = styleSheet.sheet;
-			sheet?.insertRule(".toast-elem {display: none !important;}");
-			document.head.appendChild(styleSheet);
-		});
 		peers = [peer];
 	} else {
 		peers = [];
