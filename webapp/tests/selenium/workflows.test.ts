@@ -3,12 +3,10 @@ import { afterAll, beforeAll, describe, it } from "vitest";
 import browserstack from "browserstack-local";
 import { writeFile } from "fs/promises";
 
-let headless = true;
-
 async function startPeers(count: number) {
 	return await Promise.all(
 		[...Array(Number(count))].map(async () => {
-			let peer = await Peer.create(headless);
+			let peer = await Peer.create(process.env.CI === "true");
 			return peer;
 		}),
 	);

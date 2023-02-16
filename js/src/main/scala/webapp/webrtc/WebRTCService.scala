@@ -23,10 +23,10 @@ import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import loci.registry.*
 import loci.transmitter.RemoteRef
-import org.scalajs.dom.*
 import rescala.default.*
 import webapp.*
 import webapp.utils.Base64
+import webapp.npm.JSUtils
 
 import outwatch.*
 import outwatch.dsl.*
@@ -36,10 +36,9 @@ import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.annotation.nowarn
-import webapp.npm.JSUtils
-import webapp.BasicCodecs.*
-import loci.serializer.jsoniterScala.given
-import webapp.services.{ToastMode, ToastType, Toaster}
+
+import loci.communicator.ws.webnative.WS
+import org.scalajs.dom.RTCPeerConnection
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -71,7 +70,6 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
   private var connectionRefs = Map[String, RemoteRef]()
-  private var intervals = Map[RemoteRef, Int]()
 
   private val removeConnection = Evt[RemoteRef]()
   private val addConnection = Evt[RemoteRef]()
@@ -79,6 +77,8 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
   private val removeConnectionB = removeConnection.act(r => current[Seq[RemoteRef]].filter(b => !b.equals(r)))
 
   val connections: Signal[Seq[RemoteRef]] = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
+
+  registry.connect(WS("ws://localhost:1334/registry/")): @nowarn
 
   def registerConnection(
       connector: Connector[Connections.Protocol],
@@ -120,37 +120,4 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
     JSUtils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
-
-  private def ping(ref: RemoteRef): Unit = {
-    val remoteUpdate = registry.lookup(binding, ref)
-    remoteUpdate("pingdata").onComplete {
-      case Success(_) => console.log("update ping success")
-      case Failure(_) => console.log("update ping failure")
-    }
-  }
-
-  val binding = Binding[String => Unit]("pings")
-
-  registry.remoteJoined.monitor(remoteRef => {
-    val interval = window.setInterval(
-      () => {
-        if (remoteRef.connected) {
-          ping(remoteRef)
-        }
-      },
-      10000,
-    )
-    intervals += (remoteRef -> interval)
-  }): @nowarn("msg=discarded expression")
-
-  registry.remoteLeft.monitor(remoteRef => {
-    val connectionInfo = getInformation(remoteRef);
-    toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
-
-    removeConnection.fire(remoteRef)
-    window.clearInterval(intervals(remoteRef))
-    intervals -= remoteRef
-  }): @nowarn("msg=discarded expression")
-
-  registry.bindSbj(binding) { (_: RemoteRef, _: String) => {} }
 }

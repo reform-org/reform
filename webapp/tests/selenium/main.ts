@@ -9,7 +9,7 @@ export async function run() {
 		process.env.SELENIUM_BROWSER === "safari" ||
 		process.env.BROWSERSTACK_ACCESS_KEY
 	) {
-		let peer = await Peer.create(true);
+		let peer = await Peer.create(process.env.CI === "true");
 		await peer.driver.get("http://localhost:5173/");
 		peers = [peer];
 	} else {
@@ -39,7 +39,7 @@ export async function run() {
 			}
 			switch (action) {
 				case Actions.CREATE_PEER: {
-					let peer = await Peer.create(true);
+					let peer = await Peer.create(process.env.CI === "true");
 					await peer.driver.get("http://localhost:5173/");
 					peers.push(peer);
 					console.log(`[${peer.id}] peer created`);
@@ -149,7 +149,9 @@ export async function run() {
 			);
 		}
 
-		await Promise.allSettled(peers.map((peer) => peer.driver.quit()));
+		if (process.env.CI === "true") {
+			await Promise.allSettled(peers.map((peer) => peer.driver.quit()));
+		}
 
 		throw error;
 	}

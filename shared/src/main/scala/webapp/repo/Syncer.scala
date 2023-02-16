@@ -7,6 +7,7 @@ import rescala.default.*
 import webapp.*
 import webapp.webrtc.*
 
+// TODO FIXME integrate in ReplicationGroup
 case class Syncer[A](name: String)(using
     registry: Registry,
     dcl: DecomposeLattice[A],
