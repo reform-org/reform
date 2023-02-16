@@ -16,7 +16,6 @@ export async function run() {
 			let sheet = styleSheet.sheet;
 			sheet?.insertRule(".toast-elem {display: none !important;}");
 			document.head.appendChild(styleSheet);
-
 		});
 		peers = [peer];
 	} else {
