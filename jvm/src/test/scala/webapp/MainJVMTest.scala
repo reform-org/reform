@@ -15,7 +15,6 @@ limitations under the License.
  */
 package webapp
 
-import loci.communicator.tcp.TCP
 import loci.registry.Registry
 import utest.*
 import webapp.MainSharedTest.testRepository
@@ -25,6 +24,11 @@ import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.given_ExecutionContext
+
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.ServerConnector
+import org.eclipse.jetty.servlet.ServletContextHandler
+import loci.communicator.ws.jetty.WS
 
 object MainJVMTest extends TestSuite {
 
@@ -40,11 +44,18 @@ object MainJVMTest extends TestSuite {
     val indexedDb1: IIndexedDB = MemoryIndexedDB()
     val repositories0 = Repositories()(using registry0, indexedDb0)
     val repositories1 = Repositories()(using registry1, indexedDb1)
+    val server = new Server()
+    val connector = new ServerConnector(server)
+    connector.setPort(port)
+    val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
+    server.setHandler(context)
+    server.addConnector(connector)
     for _ <- testRepository(fun(repositories0))
     _ <- waitUntilTrue(fun(repositories0).all.map(_.length == 1))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 0))
-    _ = registry0.listen(TCP(port))
-    _ <- registry1.connect(TCP("localhost", port))
+    _ = registry0.listen(WS(context, "/registry/*"))
+    _ = server.start()
+    _ <- registry1.connect(WS(s"ws://localhost:$port/registry/"))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
     _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
     _ = registry0.terminate()

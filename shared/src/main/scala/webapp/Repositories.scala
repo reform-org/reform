@@ -4,6 +4,7 @@ import loci.registry.Registry
 import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.repo.Repository
+import webapp.webrtc.PingService
 
 case class Repositories(
     val projects: Repository[Project],
@@ -15,7 +16,9 @@ case class Repositories(
     val salaryChanges: Repository[SalaryChange],
     val requiredDocuments: Repository[RequiredDocument],
     val contracts: Repository[Contract],
-) {}
+)(using registry: Registry) {
+  val _ = PingService(using registry)
+}
 
 object Repositories {
   def apply()(using registry: Registry, indexedDb: IIndexedDB): Repositories = this(

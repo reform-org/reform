@@ -3,7 +3,15 @@
         "**/target": true
     },
     "editor.formatOnSave": true,
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "name": "SQLite",
+            "driver": "SQLite",
+            "database": "./reform.db"
+        }
+    ],
     "yaml.schemas": {
-        "https://json.schemastore.org/github-workflow.json": "file:///c%3A/Users/luke-/Desktop/Uni/BP/Reform/reform/.github/workflows/deploy.yml"
+        "https://json.schemastore.org/github-workflow.json": "file://.github/workflows/deploy.yml"
     }
 }

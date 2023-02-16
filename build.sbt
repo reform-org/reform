@@ -58,6 +58,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(
     fork := true,
     libraryDependencies ++= Seq(
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
+      "org.xerial" % "sqlite-jdbc" % "3.39.2.1",
     ),
   )
   .settings(
@@ -65,7 +67,6 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
       "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "69ab30877539712051f508bdf680134e90032e0b",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-tcp" % "69ab30877539712051f508bdf680134e90032e0b",
       "com.github.rescala-lang.REScala" %%% "rescala" % "e797c43178820482223e92264089108814c15fab",
       "com.github.rescala-lang.REScala" %%% "kofre" % "e797c43178820482223e92264089108814c15fab",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.20.7",
