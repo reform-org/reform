@@ -42,6 +42,11 @@ In another window start the web dev server with:
 npm run dev
 ```
 
+If you want to run the selenium tests you need to run:
+```bash
+VITE_SELENIUM=true npm run dev
+```
+
 To start the always-on server
 ```bash
 sbt webappJVM/run
