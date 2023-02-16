@@ -26,6 +26,12 @@ import java.util.UUID
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.annotation.nowarn
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
+import scala.collection.mutable
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+
+type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
 
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
@@ -34,6 +40,23 @@ case class Repository[A](name: String, defaultValue: A)(using
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
 ) {
+
+  def bottomEmpty = bottom.empty
+
+  def latticeMerge(left: A, right: A) = dcl.merge(left)(right)
+
+  given mapCodec: JsonValueCodec[mutable.Map[String, A]] = JsonCodecMaker.make
+
+  def encodeRepository(out: JsonWriter): Unit = {
+    var values: mutable.Map[String, A] = mutable.Map()
+    all.now.foreach(f => values += (f.id -> f.signal.now))
+    mapCodec.encodeValue(values, out)
+  }
+
+  def decodeRepository(in: JsonReader): RepoAndValues[A] = {
+    var values = mapCodec.decodeValue(in, mutable.Map.empty)
+    (this, values)
+  }
 
   private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
