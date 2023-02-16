@@ -45,31 +45,7 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
   }
 }
 
-case class InnerEditContractsPage(contract: Synced[Contract])(using repositories: Repositories, toaster: Toaster) {
-
-  /** For now until implemented contract in URL Getter TODO!
-    */
-  /*
-  private val selectedContract: UISelectAttribute[Contract, String] = UISelectAttribute(
-    null
-    null,
-    readConverter = identity,
-    writeConverter = identity,
-    placeholder = "AssociatedContract",
-    options = Repositories.contracts.all.map(list =>
-      list.map(value =>
-        new UIOption[Signal[String]](
-          value.id,
-          value.signal.map(v => v._contractAssociatedHiwi.get.getOrElse("") + " " + v._contractAssociatedSupervisor.get.getOrElse("")),
-        ),
-      ),
-    ),
-  )
-   */
-  // Stackoverflow :)
-
-  // def unapply(x: Int): Option[String] =
-  //   if (x == 0) Some("Hello, World") else None
+case class InnerEditContractsPage(contract: Synced[Contract]) {
 
   private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
     UISelectAttribute(
