@@ -37,31 +37,35 @@ class SqliteDB extends IIndexedDB {
     )
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
-    readStatement.setString(1, key);
-    val resultSet = readStatement.executeQuery();
-    val dbValue = if (resultSet.next()) {
-      Some(resultSet.getString("value"))
-    } else {
-      None
+    synchronized {
+      readStatement.setString(1, key);
+      val resultSet = readStatement.executeQuery();
+      val dbValue = if (resultSet.next()) {
+        Some(resultSet.getString("value"))
+      } else {
+        None
+      }
+      connection.commit()
+      val o = dbValue.map(readFromString(_))
+      Future.successful(o)
     }
-    connection.commit()
-    val o = dbValue.map(readFromString(_))
-    Future.successful(o)
   }
 
   override def update[T](key: String, fun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
-    readStatement.setString(1, key);
-    val resultSet = readStatement.executeQuery();
-    val dbValue = if (resultSet.next()) {
-      Some(resultSet.getString("value"))
-    } else {
-      None
+    synchronized {
+      readStatement.setString(1, key);
+      val resultSet = readStatement.executeQuery();
+      val dbValue = if (resultSet.next()) {
+        Some(resultSet.getString("value"))
+      } else {
+        None
+      }
+      val value = fun(dbValue.map(readFromString(_)))
+      writeStatement.setString(1, key)
+      writeStatement.setString(2, writeToString(value))
+      val _ = writeStatement.execute()
+      connection.commit()
+      Future.successful(value)
     }
-    val value = fun(dbValue.map(readFromString(_)))
-    writeStatement.setString(1, key)
-    writeStatement.setString(2, writeToString(value))
-    val _ = writeStatement.execute()
-    connection.commit()
-    Future.successful(value)
   }
 }
