@@ -149,10 +149,7 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       isRequired = true,
     )
 
-  private val currentContract = Var(Option(Contract.empty.copy(contractAssociatedHiwi = Attribute.empty.set("1"))))
-
-  // val currentDirectory = new java.io.File(".").getCanonicalPath
-
+  private val currentContract = repositories.contracts.getOrCreate(contractId)
   def render(using
       routing: RoutingService,
       repositories: Repositories,
@@ -161,48 +158,50 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       toaster: Toaster,
   ): VNode =
     navigationHeader(
-      div(
+      currentContract.map(_ =>
         div(
-          cls := "p-1",
-          h1(cls := "text-4xl text-center", "EditContractsPage"),
-        ),
-        div(
-          form(
-            br,
-            label("CurrentContract:"),
-            label(contractId),
-            br,
-            label("AssociatedHiwi:"),
-            contractAssociatedHiwi.renderEdit("", currentContract),
-            br,
-            label("AssociatedSupervisor:"),
-            contractAssociatedSupervisor.renderEdit("", currentContract),
-            br,
-            label("ContractType:"),
-            contractAssociatedType.renderEdit("", currentContract),
-            br,
-            label("StartDate:"),
-            contractStartDate.renderEdit("", currentContract),
-            br,
-            label("EndDate:"),
-            contractEndDate.renderEdit("", currentContract),
-            br,
-            label("HoursPerMonth:"),
-            contractHoursPerMonth.renderEdit("", currentContract),
-            br,
-            label("AssociatedPaymentLevel:"),
-            contractAssociatedPaymentLevel.renderEdit("", currentContract),
-            button(
-              cls := "btn",
-              idAttr := "confirmEdit",
-              "Edit",
-              // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
-            ),
-            button(
-              cls := "btn",
-              idAttr := "cancelEdit",
-              "Cancel",
-              // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
+          div(
+            cls := "p-1",
+            h1(cls := "text-4xl text-center", "EditContractsPage"),
+          ),
+          div(
+            form(
+              br,
+              label("CurrentContract:"),
+              label(contractId),
+              br,
+              label("AssociatedHiwi:"),
+              contractAssociatedHiwi.renderEdit("", _),
+              br,
+              label("AssociatedSupervisor:"),
+              contractAssociatedSupervisor.renderEdit("", _),
+              br,
+              label("ContractType:"),
+              contractAssociatedType.renderEdit("", _),
+              br,
+              label("StartDate:"),
+              contractStartDate.renderEdit("", _),
+              br,
+              label("EndDate:"),
+              contractEndDate.renderEdit("", _),
+              br,
+              label("HoursPerMonth:"),
+              contractHoursPerMonth.renderEdit("", _),
+              br,
+              label("AssociatedPaymentLevel:"),
+              contractAssociatedPaymentLevel.renderEdit("", _),
+              button(
+                cls := "btn",
+                idAttr := "confirmEdit",
+                "Save",
+                // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
+              ),
+              button(
+                cls := "btn",
+                idAttr := "cancelEdit",
+                "Cancel",
+                // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
+              ),
             ),
           ),
         ),

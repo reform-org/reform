@@ -70,7 +70,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       .flatten
   }
 
-  private def getOrCreate(id: String): Future[Synced[A]] = {
+  def getOrCreate(id: String): Future[Synced[A]] = {
     synchronized {
       if (cache.contains(id)) {
         cache(id)
