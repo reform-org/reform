@@ -31,12 +31,11 @@ import webapp.npm.JSUtils
 import outwatch.*
 import outwatch.dsl.*
 
-import scala.util.*
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.annotation.nowarn
-
+import webapp.services.{ToastMode, ToastType, Toaster}
 import loci.communicator.ws.webnative.WS
 import org.scalajs.dom.RTCPeerConnection
 
@@ -120,4 +119,12 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
     JSUtils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
+
+  registry.remoteLeft.monitor(remoteRef => {
+    val connectionInfo = getInformation(remoteRef);
+    toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
+
+    removeConnection.fire(remoteRef)
+  }): @nowarn("msg=discarded expression")
+
 }
