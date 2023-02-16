@@ -45,7 +45,6 @@ case class DeltaFor[A](name: String, delta: A)
   * @param bottom
   *   the neutral element of the thing to sync
   */
-@nowarn("msg=unused implicit parameter")
 class ReplicationGroup[A](name: String)(using
     registry: Registry,
     dcl: DecomposeLattice[A],
