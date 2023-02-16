@@ -7,7 +7,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 name := "Reform"
 ThisBuild / version := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.3.0-RC2"
+ThisBuild / scalaVersion := "3.2.2"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -81,7 +81,6 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       // "-Yexplicit-nulls", // breaks json macro, probably also coverage
       "-Ysafe-init",
       "-Wunused:all",
-      "-Wvalue-discard",
       "-deprecation",
       if (sys.env.get("CI") == Some("true")) "-Werror" else "",
       // "-Xcheck-macros", // breaks utest, outwatch
