@@ -10,7 +10,7 @@ import webapp.npm.SqliteDB
 @main def runServer() = {
   val registry = Registry()
   val indexedDb = SqliteDB()
-  val _ = Repositories(using registry, indexedDb)
+  val _ = Repositories()(using registry, indexedDb)
 
   val server = new Server()
   val connector = new ServerConnector(server)
