@@ -1,6 +1,6 @@
 name: Scala Selenium
 
-on: workflow_dispatch  
+on: workflow_dispatch
 
 permissions:
   contents: read
@@ -10,36 +10,37 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        map: [
-          { os: ubuntu-latest, browser: firefox },
-          { os: ubuntu-latest, browser: chrome },
-          { os: macos-latest,  browser: safari }
-        ]
+        map:
+          [
+            { os: ubuntu-latest, browser: firefox },
+            { os: ubuntu-latest, browser: chrome },
+            { os: macos-latest, browser: safari },
+          ]
 
     runs-on: ${{ matrix.map.os }}
 
     steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: true
-    - name: Set up JDK
-      uses: actions/setup-java@v3
-      with:
-        java-version: '17'
-        distribution: 'temurin'
-        cache: 'sbt'
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-        cache: 'npm'
-    - run: npm ci
-    - name: Build ScalaJS
-      run: sbt fastLinkJS
-    - name: Build JavaScript
-      run: npm run build
-    - name: Preview
-      run: npm run preview &
-    - name: Workflow tests
-      run: SELENIUM_BROWSER=${{ matrix.map.browser }} SELENIUM_REMOTE_URL=${{ secrets.SELENIUM_REMOTE_URL }} BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_ACCESS_KEY }} npm run test
-    - name: Selenium
-      run: SELENIUM_BROWSER=${{ matrix.map.browser }} SELENIUM_REMOTE_URL=${{ secrets.SELENIUM_REMOTE_URL }} BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_ACCESS_KEY }} npm run selenium
+      - uses: actions/checkout@v3
+        with:
+          submodules: true
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "sbt"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - run: npm ci
+      - name: Build ScalaJS
+        run: sbt fastLinkJS
+      - name: Build JavaScript
+        run: npm run build
+      - name: Preview
+        run: npm run preview &
+      - name: Workflow tests
+        run: SELENIUM_BROWSER=${{ matrix.map.browser }} SELENIUM_REMOTE_URL=${{ secrets.SELENIUM_REMOTE_URL }} BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_ACCESS_KEY }} npm run test
+      - name: Selenium
+        run: SELENIUM_BROWSER=${{ matrix.map.browser }} SELENIUM_REMOTE_URL=${{ secrets.SELENIUM_REMOTE_URL }} BROWSERSTACK_ACCESS_KEY=${{ secrets.BROWSERSTACK_ACCESS_KEY }} npm run selenium
