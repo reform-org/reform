@@ -193,7 +193,6 @@ class Toast(
 
 class Toaster() {
 
-  println(s"Test: $hideAllToastsExceptErrors")
   private val removeToast = Evt[Toast]()
   private val addToast = Evt[Toast]()
   private val addToastB = addToast.act(current[Seq[Toast]] :+ _)
