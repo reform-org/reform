@@ -26,9 +26,6 @@ import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.given_ExecutionContext
 
-import scala.scalajs.js.annotation.*
-
-@JSExportTopLevel("MainJVMTest")
 object MainJVMTest extends TestSuite {
 
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
@@ -86,7 +83,6 @@ object MainJVMTest extends TestSuite {
     }
   }
 
-  @JSExport
   def main(): Int = {
     val results = TestRunner.runAndPrint(
       tests,
