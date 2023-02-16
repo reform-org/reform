@@ -199,9 +199,6 @@ class IndexedDB extends IIndexedDB {
     }
   }
 
-  @nowarn("msg=unused implicit parameter")
-  given optionCodec[T](using codec: JsonValueCodec[T]): JsonValueCodec[Option[T]] = JsonCodecMaker.make
-
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
     for db <- database
     tx = db.transaction(js.Array("reform"), IDBTransactionMode.readwrite)
