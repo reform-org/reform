@@ -35,7 +35,7 @@ object Routes {
     case Root / "contracts"           => ContractsPage()
     case Root / "edit-contracts" / id => EditContractsPage(id)
     case Root / "requiredDocument"    => RequiredDocumentsPage()
-    case _                         => ErrorPage()
+    case _                            => ErrorPage()
   }
 
   def toPath: Page => Path = {
