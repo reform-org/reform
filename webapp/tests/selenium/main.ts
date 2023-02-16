@@ -13,9 +13,10 @@ export async function run() {
 		await peer.driver.get("http://localhost:5173/");
 		peer.driver.executeScript(() => {
 			let styleSheet = document.createElement("style");
-			document.head.appendChild(styleSheet);
 			let sheet = styleSheet.sheet;
-			sheet?.insertRule(".toast-elem:not(.toast-error) {display: none !important}");
+			sheet?.insertRule(".toast-elem {display: none !important;}");
+			document.head.appendChild(styleSheet);
+
 		});
 		peers = [peer];
 	} else {
