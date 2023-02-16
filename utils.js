@@ -25,3 +25,5 @@ export const downloadJson = (name, text) => {
 	elem.click();
 	document.body.removeChild(elem);
 };
+
+export const isSelenium = import.meta.env.VITE_SELENIUM == "true"

@@ -11,8 +11,7 @@ import webapp.given
 import webapp.components.Icons
 import org.scalajs.dom.HTMLHtmlElement
 import scala.annotation.nowarn
-
-val hideAllToastsExceptErrors = sys.env.getOrElse("CI", "") == "true"
+import webapp.npm.JSUtils
 
 enum ToastMode(val autodismiss: Boolean, val closeable: Boolean, val duration: Int = 0) {
   case Short extends ToastMode(true, true, 10000)
@@ -205,7 +204,7 @@ class Toaster() {
   }
 
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
-    if (hideAllToastsExceptErrors == true && style != ToastType.Error) return
+    if (JSUtils.isSelenium && style != ToastType.Error) return
     val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
   }
