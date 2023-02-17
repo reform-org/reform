@@ -2,6 +2,7 @@ package webapp.entity
 
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 import rescala.default.*
 import webapp.duplicateValuesHandler
 import webapp.given
@@ -13,18 +14,35 @@ class UIOption[NameType](
     val name: NameType,
 ) {}
 
-class UIAttribute[EntityType, AttributeType](
+abstract class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
-    val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     val readConverter: AttributeType => String,
+    val label: String,
+) {
+
+  def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+  }
+
+  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]]
+
+  def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+}
+
+class UITextAttribute[EntityType, AttributeType](
+    override val getter: EntityType => Attribute[AttributeType],
+    val setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    override val readConverter: AttributeType => String,
     val editConverter: AttributeType => String,
     val writeConverter: String => AttributeType,
-    val label: String,
+    override val label: String,
     val isRequired: Boolean,
     val fieldType: String,
     val regex: String = ".*",
     val stepSize: String = "1",
-) {
+) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
+
   private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
     entityVar.transform(
       _.map(e => {
@@ -34,10 +52,22 @@ class UIAttribute[EntityType, AttributeType](
     )
   }
 
-  def render(entity: EntityType): VNode = {
-    val attr = getter(entity)
-    td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
-  }
+  protected def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
+    input(
+      cls := "input valid:input-success bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700  dark:placeholder-gray-400 dark:text-white",
+      `type` := fieldType,
+      formId := _formId,
+      required := isRequired,
+      stepAttr := stepSize,
+      pattern := regex,
+      value := getEditString(attr),
+      onInput.value --> {
+        val evt = Evt[String]()
+        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
+        evt
+      },
+      placeholder := label,
+    )
 
   def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
     entityVar.map {
@@ -61,30 +91,21 @@ class UIAttribute[EntityType, AttributeType](
     }
   }
 
-  protected def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
-    input(
-      cls := "input valid:input-success bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700  dark:placeholder-gray-400 dark:text-white",
-      `type` := fieldType,
-      formId := _formId,
-      required := isRequired,
-      stepAttr := stepSize,
-      pattern := regex,
-      value := getEditString(attr),
-      onInput.value --> {
-        val evt = Evt[String]()
-        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
-        evt
-      },
-      placeholder := label,
-    )
-
   protected def getEditString(attr: Attribute[AttributeType]): String =
     attr.get.map(x => editConverter(x)).getOrElse("")
 
-  private def renderConflicts(attr: Attribute[AttributeType]): String =
+  protected def renderConflicts(attr: Attribute[AttributeType]): String =
     attr.getAll.map(x => readConverter(x)).mkString("/")
+}
 
-  def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+class UIReadOnlyAttribute[EntityType, AttributeType](
+    getter: EntityType => Attribute[AttributeType],
+    readConverter: AttributeType => String,
+    label: String,
+) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
+
+  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] =
+    entityVar.map(_.flatMap(entity => getter(entity).get.map(a => td(readConverter(a)))))
 }
 
 class UINumberAttribute[EntityType, AttributeType](
@@ -98,7 +119,7 @@ class UINumberAttribute[EntityType, AttributeType](
     regex: String,
     stepSize: String,
 )(implicit ordering: Ordering[AttributeType])
-    extends UIAttribute[EntityType, AttributeType](
+    extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -122,7 +143,7 @@ class UIDateAttribute[EntityType](
     label: String,
     isRequired: Boolean,
     min: String = "",
-) extends UIAttribute[EntityType, Long](
+) extends UITextAttribute[EntityType, Long](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -155,7 +176,7 @@ class UICheckboxAttribute[EntityType](
     setter: (EntityType, Attribute[Boolean]) => EntityType,
     label: String,
     isRequired: Boolean,
-) extends UIAttribute[EntityType, Boolean](
+) extends UITextAttribute[EntityType, Boolean](
       getter = getter,
       setter = setter,
       readConverter = _.toString,
@@ -193,7 +214,7 @@ class UISelectAttribute[EntityType, AttributeType](
     label: String,
     isRequired: Boolean,
     options: Signal[List[UIOption[Signal[String]]]],
-) extends UIAttribute[EntityType, AttributeType](
+) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
