@@ -301,10 +301,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
       .map(p =>
         entityRows.map(
           _.filterSignal(
-            _.value match {
-              case Existing(value) => value.signal.map(_.exists.get.get)
-              case New(value)      => Signal(true)
-            },
+            _.existingValue.mapToSignal(_.signal).map(_.exists(p)),
           )
             .mapInside(_.render),
         ),
