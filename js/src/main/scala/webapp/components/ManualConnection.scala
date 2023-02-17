@@ -14,13 +14,14 @@ import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
 import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
+import loci.transmitter.RemoteRef
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
 }
 
 private def showConnectionToken(connection: PendingConnection)(using toaster: Toaster) = {
-  connection.session.map(session =>
+  connection.session.map(session => {
     div(
       cls := "flex gap-1 mt-2",
       button(
@@ -46,8 +47,8 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
         href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
-    ),
-  )
+    )
+  })
 }
 
 private case object Init extends State {
@@ -111,7 +112,7 @@ private case class ClientAskingForHostSessionToken() extends State {
   private def connectToHost(using state: Var[State])(using webrtc: WebRTCService): Unit = {
     val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(), alias.now)
     connection.connector.set(PendingConnection.tokenAsSession(sessionToken.now).session)
-    state.set(ClientWaitingForHostConfirmation(connection, alias.now))
+    state.set(ClientWaitingForHostConfirmation(connection, PendingConnection.tokenAsSession(sessionToken.now).alias))
   }
 }
 
@@ -120,13 +121,13 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
     webrtc: WebRTCService,
 ) extends State {
   webrtc
-    .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
+    .registerConnection(connection.connector, alias, "manual", connection.connection)
     .foreach(_ => onConnected())
 
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p-1",
     span(
-      cls := "label-text text-slate-500",
+      cls := "label label-text text-slate-500",
       "Please share the code with the peer that invited you to finish the connection.",
     ),
     showConnectionToken(connection),
@@ -143,13 +144,18 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
   private val sessionTokenFromClient = Var("")
 
   webrtc
-    .registerConnection(connection.connector, connection.session.map(i => i.alias), "manual", connection.connection)
-    .foreach(_ => onConnected())
+    .registerConnection(
+      connection.connector,
+      "Anonymous",
+      "manual",
+      connection.connection,
+    )
+    .foreach(ref => onConnected(ref))
 
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p-1",
     span(
-      cls := "label-text text-slate-500",
+      cls := "label label-text text-slate-500",
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
     showConnectionToken(connection),
@@ -173,7 +179,9 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     connection.connector.set(PendingConnection.tokenAsSession(sessionTokenFromClient.now).session)
   }
 
-  private def onConnected()(using state: Var[State]): Unit = {
+  private def onConnected(ref: RemoteRef)(using state: Var[State]): Unit = {
+    println(PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
+    webrtc.setAlias(ref, PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
     state.set(Init)
   }
 }
