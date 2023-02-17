@@ -9,9 +9,11 @@ import webapp.given
 import webapp.*
 import webapp.utils.Date
 import scala.scalajs.js
-import org.scalajs.dom.document
+import org.scalajs.dom.{console, document, window}
 import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
+import org.scalajs.dom.HTMLElement
+import webapp.npm.JSUtils.createPopper
 
 class UIOption[NameType](
     val id: String,
@@ -304,11 +306,14 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
   override def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode = {
     val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
     val search = Var("")
+
+    createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+
     div(
       cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
       idAttr := id,
       div(
-        cls := "flex flex-row w-full h-full items-center pl-2",
+        cls := "multiselect-select flex flex-row w-full h-full items-center pl-2",
         div(
           cls := "flex flex-row gap-2",
           options.map(o =>
@@ -385,7 +390,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
           ),
         ),
         div(
-          cls := "multiselect-dropdown-list p-2",
+          cls := "multiselect-dropdown-list",
           options.map(option =>
             attr.getAll.map(attribute =>
               option.map(uiOption => {
@@ -393,7 +398,8 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
                   search.map(searchKey => {
                     if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
                       Some(
-                        div(
+                        outwatch.dsl.label(
+                          cls := "block w-full hover:bg-slate-50 px-2 py-0.5",
                           input(
                             tpe := "checkbox",
                             cls := "mr-2",
@@ -408,11 +414,9 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
                               )
                             }),
                           ),
-                          outwatch.dsl.label(
-                            tabIndex := 0,
-                            uiOption.name,
-                            forId := uiOption.id,
-                          ),
+                          tabIndex := 0,
+                          uiOption.name,
+                          forId := uiOption.id,
                         ),
                       )
                     } else None

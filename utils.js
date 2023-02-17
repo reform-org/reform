@@ -1,3 +1,6 @@
+import { createPopper as createPopperImpl } from '@popperjs/core';
+import { flip, preventOverflow } from '@popperjs/core/lib';
+
 export const usesTurn = async (connection) => {
 	try {
 		const stats = await connection.getStats();
@@ -18,8 +21,8 @@ export const usesTurn = async (connection) => {
 	} catch (error) {
 		// TODO FIXME potentially a firefox bug
 		// DOMException: An attempt was made to use an object that is not, or is no longer, usable
-		console.error(error)
-		return false
+		console.error(error);
+		return false;
 	}
 };
 
@@ -33,4 +36,48 @@ export const downloadJson = (name, text) => {
 	document.body.removeChild(elem);
 };
 
-export const isSelenium = import.meta.env.VITE_SELENIUM == "true"
+const waitForElement = (selector) => {
+	return new Promise(resolve => {
+		if (document.querySelector(selector)) {
+			return resolve(document.querySelector(selector));
+		}
+
+		const observer = new MutationObserver(mutations => {
+			if (document.querySelector(selector)) {
+				resolve(document.querySelector(selector));
+				observer.disconnect();
+			}
+		});
+
+		observer.observe(document.body, {
+			childList: true,
+			subtree: true
+		});
+	});
+};
+
+export const createPopper = async (trigger, element) => {
+	await Promise.all([waitForElement(trigger), waitForElement(element)]);
+	let ref = document.querySelector(trigger);
+	let popper = document.querySelector(element);
+	let popperInstance = createPopperImpl(ref, popper, {
+		modifiers: [preventOverflow, flip, {
+			name: 'computeStyles',
+			options: {
+				adaptive: false,
+			},
+		},
+			{
+				name: 'offset',
+				options: {
+					offset: ({ placement, reference, popper }) => {
+						return [0, - reference.height];
+					},
+				},
+			}],
+	});
+	await waitForElement(".page-scroll-container");
+	popperInstance.update();
+};
+
+export const isSelenium = import.meta.env.VITE_SELENIUM == "true";

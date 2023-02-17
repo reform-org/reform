@@ -24,12 +24,13 @@
     "vitest": "^0.28.4"
   },
   "dependencies": {
+    "@popperjs/core": "^2.11.6",
+    "@reform-org/idb": "^7.1.3",
     "@types/chance": "^1.1.3",
     "@types/selenium-webdriver": "^4.1.11",
     "browserstack-local": "^1.5.1",
     "chance": "^1.1.9",
     "daisyui": "^2.49.0",
-    "@reform-org/idb": "^7.1.3",
     "pdf-lib": "^1.17.1",
     "selenium-webdriver": "^4.8.0",
     "snabbdom": "github:outwatch/snabbdom#0.7.5",
