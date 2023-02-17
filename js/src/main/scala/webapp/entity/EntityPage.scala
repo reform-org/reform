@@ -60,11 +60,6 @@ private class EntityRow[T <: Entity[T]](
     case New(value)      => None
   }
 
-  def existingId = value match {
-    case Existing(value) => Some(value.id)
-    case New(value)      => None
-  }
-
   private def renderEdit: VMod = {
     val deleteModal = Var[Option[Modal]](None)
     tr(
