@@ -319,7 +319,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
             attr.getAll
               .map(s =>
                 o.filter(v => s.contains(v.id))
-                  .slice(0, showItems)
+                  .slice(0, showItems - 1)
                   .map(v =>
                     div(
                       cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center",
