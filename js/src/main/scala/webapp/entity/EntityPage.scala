@@ -271,9 +271,9 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   ): VNode = {
     navigationHeader(
       div(
-        cls := "relative overflow-x-auto shadow-md sm:rounded-lg pt-4 ", // " px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",
+        cls := "relative overflow-x-visible shadow-md sm:rounded-lg pt-4 ", // " px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",
         table(
-          cls := "w-full text-left table-auto border-collapse ", // border-separate border-spacing-y-4
+          cls := "w-full text-left table-auto border-collapse", // border-separate border-spacing-y-4
           // cls := "table-auto",
           thead(
             tr(
