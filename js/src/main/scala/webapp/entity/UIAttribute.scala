@@ -268,7 +268,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
     options: Signal[List[UIOption[Signal[String]]]],
     showItems: Int = 5,
     placeholderText: String = "Select...",
-) extends UIAttribute[EntityType, AttributeType](
+) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
