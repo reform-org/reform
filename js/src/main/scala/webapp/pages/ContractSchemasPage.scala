@@ -18,11 +18,12 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
+import rescala.default.*
 
 import ContractSchemasPage.*
 
 case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name)) {}
+    extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name, files)) {}
 
 object ContractSchemasPage {
   private val name = UIAttributeBuilder.string
@@ -31,5 +32,18 @@ object ContractSchemasPage {
     .bindAsText[ContractSchema](
       _.name,
       (s, a) => s.copy(name = a),
+    )
+
+  private def files(using repositories: Repositories): UIMultiSelectAttribute[ContractSchema, Seq[String]] =
+    UIMultiSelectAttribute(
+      _.files,
+      (p, a) => p.copy(files = a),
+      readConverter = r => r.mkString(", "),
+      writeConverter = w => w.split(", ").toSeq,
+      label = "Files",
+      options = repositories.requiredDocuments.all.map(list =>
+        list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.name.get.getOrElse("")))),
+      ),
+      isRequired = true,
     )
 }

@@ -7,6 +7,8 @@ import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.*
 import webapp.utils.Date
+import org.scalajs.dom.HTMLSelectElement
+import org.scalajs.dom.HTMLOptionElement
 
 class UIOption[NameType](
     val id: String,
@@ -226,5 +228,58 @@ class UISelectAttribute[EntityType, AttributeType](
       options.map(o =>
         o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
       ),
+    )
+}
+
+class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
+    getter: EntityType => Attribute[AttributeType],
+    setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    readConverter: AttributeType => String,
+    writeConverter: String => AttributeType,
+    label: String,
+    isRequired: Boolean,
+    options: Signal[List[UIOption[Signal[String]]]],
+) extends UIAttribute[EntityType, AttributeType](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      editConverter = _.toString,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "select",
+    ) {
+
+  val selectedOptions: Var[Seq[String]] = Var(Seq())
+
+  override def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(
+      cls := "px-6 py-0",
+      duplicateValuesHandler(
+        attr.getAll
+          .map(x => x.map(id => options.map(o => o.filter(p => p.id.equals(id)).map(v => v.name)))),
+      ),
+    )
+  }
+
+  override def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode =
+    select(
+      cls := "",
+      formId := _formId,
+      required := isRequired,
+      multiple := true,
+      size <-- options.map(o => o.size),
+      onInput.foreach(value => {
+        set(
+          value.target
+            .asInstanceOf[HTMLSelectElement]
+            .options
+            .filter(option => option.asInstanceOf[HTMLOptionElement].selected)
+            .map(option => option.asInstanceOf[HTMLOptionElement].value)
+            .asInstanceOf[AttributeType],
+        )
+      }),
+      options.map(o => attr.getAll.map(s => o.map(v => option(value := v.id, selected := s.contains(v.id), v.name)))),
     )
 }

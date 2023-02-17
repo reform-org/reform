@@ -22,7 +22,7 @@ import webapp.services.Toaster
 import RequiredDocumentsPage.*
 
 case class RequiredDocumentsPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[RequiredDocument](repositories.requiredDocuments, Seq(name, fileName, isActuallyRequired)) {}
+    extends EntityPage[RequiredDocument](repositories.requiredDocuments, Seq(name, fileName)) {}
 
 object RequiredDocumentsPage {
   private val name = UIAttributeBuilder.string
@@ -39,12 +39,5 @@ object RequiredDocumentsPage {
     .bindAsText[RequiredDocument](
       _.fileName,
       (d, a) => d.copy(fileName = a),
-    )
-
-  private val isActuallyRequired = UIAttributeBuilder.boolean
-    .withLabel("Required?")
-    .bindAsCheckbox[RequiredDocument](
-      _.isActuallyRequired,
-      (d, a) => d.copy(isActuallyRequired = a),
     )
 }

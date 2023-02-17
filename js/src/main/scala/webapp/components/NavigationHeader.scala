@@ -36,9 +36,6 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       navigationLink(ProjectsPage(), "Projects"),
     ),
     li(
-      navigationLink(UsersPage(), "Users"),
-    ),
-    li(
       a(
         cls := "btn btn-ghost normal-case	font-normal rounded-md	",
         "Settings",
