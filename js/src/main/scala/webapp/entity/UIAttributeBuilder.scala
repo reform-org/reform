@@ -40,7 +40,7 @@ case class UIAttributeBuilder[AttributeType](
   def bindAsText[EntityType](
       getter: EntityType => Attribute[AttributeType],
       setter: (EntityType, Attribute[AttributeType]) => EntityType,
-  ): UIAttribute[EntityType, AttributeType] = UIAttribute(
+  ): UIAttribute[EntityType, AttributeType] = UITextAttribute(
     getter = getter,
     setter = setter,
     readConverter = readConverter,
@@ -51,6 +51,14 @@ case class UIAttributeBuilder[AttributeType](
     regex = regex,
     stepSize = stepSize,
     fieldType = "text",
+  )
+
+  def bindReadOnly[EntityType](
+      getter: EntityType => Attribute[AttributeType],
+  ): UIAttribute[EntityType, AttributeType] = UIReadOnlyAttribute(
+    getter = getter,
+    readConverter = readConverter,
+    label = label,
   )
 
 }
