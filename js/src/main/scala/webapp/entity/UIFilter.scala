@@ -33,7 +33,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
   }
 }
 
-class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])(implicit
+class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[EntityType, AttributeType])(implicit
     ordering: Ordering[AttributeType],
 ) extends UIFilter[EntityType] {
 
@@ -93,7 +93,7 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Entit
   }
 }
 
-class UIBooleanFilter[EntityType](uiAttribute: UIAttribute[EntityType, Boolean]) extends UIFilter[EntityType] {
+class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean]) extends UIFilter[EntityType] {
 
   private val selected = Var("")
 
