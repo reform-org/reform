@@ -23,7 +23,7 @@ import ProjectsPage.*
 case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
-      Seq(name, maxHours, accountName),
+      Seq(name, maxHours, accountName, nameLength),
     ) {}
 
 object ProjectsPage {
@@ -50,4 +50,9 @@ object ProjectsPage {
       _.accountName,
       (p, a) => p.copy(accountName = a),
     )
+
+  private val nameLength = UIAttributeBuilder.int
+    .withLabel("Length of the Name")
+    .map[String](_.length, _.toString)
+    .bindReadOnly[Project](_.name)
 }
