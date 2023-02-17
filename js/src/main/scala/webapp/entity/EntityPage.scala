@@ -18,6 +18,7 @@ package webapp.entity
 import kofre.base.*
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 import rescala.default.*
 import webapp.components.navigationHeader
 import webapp.repo.Repository

@@ -236,5 +236,4 @@ case class HomePage() extends Page {
       ),
     )
   }
-
 }
