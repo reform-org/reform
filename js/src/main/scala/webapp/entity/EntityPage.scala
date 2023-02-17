@@ -31,7 +31,6 @@ import webapp.components.{Modal, ModalButton}
 import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
-
 import webapp.given_ExecutionContext
 
 private class EntityRow[T <: Entity[T]](
@@ -41,154 +40,143 @@ private class EntityRow[T <: Entity[T]](
     val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
-  def render = {
-    editingValue.map(editingNow => {
-      val res = editingNow match {
-        case Some(_) => {
-          var deleteModal: Var[Option[Modal]] = Var(None)
-          val res = Some(
-            tr(
-              cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
-              data.id := existingValue.map(v => v.id),
-              uiAttributes.map(ui => {
-                ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
-              }),
-              td(
-                cls := "py-1 space-x-1 w-1/6",
-                form(
-                  idAttr := s"form-${existingValue.map(_.id)}",
-                  onSubmit.foreach(e => {
-                    e.preventDefault()
-                    createOrUpdate()
-                  }),
-                ), {
-                  existingValue match {
-                    case Some(p) => {
-                      List(
-                        button(
-                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                          formId := s"form-${existingValue.map(_.id)}",
-                          `type` := "submit",
-                          idAttr := "add-entity-button",
-                          "Save edit",
-                        ),
-                        button(
-                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                          idAttr := "add-entity-button",
-                          "Cancel",
-                          onClick.foreach(_ => cancelEdit()),
-                        ),
-                      )
-                    }
-                    case None => {
-                      button(
-                        cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                        formId := s"form-${existingValue.map(_.id)}",
-                        `type` := "submit",
-                        idAttr := "add-entity-button",
-                        "Add Entity",
-                      )
-                    }
-                  }
-                },
-                existingValue.map(p => {
-                  val modal = new Modal(
-                    "Delete",
-                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
-                    Seq(
-                      new ModalButton(
-                        "Delete",
-                        "bg-red-600",
-                        () => {
-                          removeEntity(p)
-                          cancelEdit()
-                        },
-                      ),
-                      new ModalButton("Cancel"),
-                    ),
-                  )
-                  deleteModal.set(Some(modal))
-                  val res = {
-                    button(
-                      cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                      data.tip := "Delete",
-                      "X",
-                      onClick.foreach(_ => modal.open()),
-                    )
-                  }
-                  res
-                }),
-              ), {
-                deleteModal.map(_ match {
-                  case None        => div()
-                  case Some(modal) => modal.render()
-                })
-              },
-            ),
-          )
-          Var(res)
-        }
-        case None => {
-          val res: Signal[Option[VNode]] = existingValue match {
-            case Some(syncedEntity) => {
-              val modal = new Modal(
-                "Delete",
-                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get.getOrElse("")}\"?",
-                Seq(
-                  new ModalButton(
-                    "Delete",
-                    "bg-red-600",
-                    () => { removeEntity(syncedEntity) },
-                  ),
-                  new ModalButton("Cancel"),
+  def render: VMod =
+    editingValue.map(
+      _.map(_ => renderEdit)
+        .getOrElse(renderExistingValue),
+    )
+
+  private def renderEdit: VMod = {
+    val deleteModal = Var[Option[Modal]](None)
+    tr(
+      cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
+      data.id := existingValue.map(v => v.id),
+      uiAttributes.map(ui => {
+        ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
+      }),
+      td(
+        cls := "py-1 space-x-1 w-1/6",
+        form(
+          idAttr := s"form-${existingValue.map(_.id)}",
+          onSubmit.foreach(e => {
+            e.preventDefault()
+            createOrUpdate()
+          }),
+        ), {
+          existingValue match {
+            case Some(p) => {
+              List(
+                button(
+                  cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+                  formId := s"form-${existingValue.map(_.id)}",
+                  `type` := "submit",
+                  idAttr := "add-entity-button",
+                  "Save edit",
+                ),
+                button(
+                  cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+                  idAttr := "add-entity-button",
+                  "Cancel",
+                  onClick.foreach(_ => cancelEdit()),
                 ),
               )
-              val res = syncedEntity.signal.map(p => {
-                val res = if (p.exists.get.getOrElse(true)) {
-                  Some(
-                    tr(
-                      cls := "border-b hover:bg-violet-100 dark:hover:bg-gray-600 dark:border-gray-700", // "border-b hover:bg-gray-100 dark:hover:bg-violet-900 dark:border-violet-900",
-                      data.id := syncedEntity.id,
-                      uiAttributes.map(ui => {
-                        ui.render(p)
-                      }),
-                      td(
-                        cls := "py-1 space-x-1 w-1/6",
-                        button(
-                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                          "Edit",
-                          onClick.foreach(_ => startEditing()),
-                        ),
-                        button(
-                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                          data.tip := "Delete",
-                          "X",
-                          onClick.foreach(_ => {
-                            modal.open()
-                          }),
-                        ),
-                        modal.render(),
-                      ),
-                    ),
-                  )
-                } else {
-                  None
-                }
-                res
-              })
-              res
             }
-            case None => Var(None)
+            case None => {
+              button(
+                cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+                formId := s"form-${existingValue.map(_.id)}",
+                `type` := "submit",
+                idAttr := "add-entity-button",
+                "Add Entity",
+              )
+            }
+          }
+        },
+        existingValue.map(p => {
+          val modal = new Modal(
+            "Delete",
+            s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
+            Seq(
+              new ModalButton(
+                "Delete",
+                "bg-red-600",
+                () => {
+                  removeEntity(p)
+                  cancelEdit()
+                },
+              ),
+              new ModalButton("Cancel"),
+            ),
+          )
+          deleteModal.set(Some(modal))
+          val res = {
+            button(
+              cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+              data.tip := "Delete",
+              "X",
+              onClick.foreach(_ => modal.open()),
+            )
           }
           res
-        }
+        }),
+      ), {
+        deleteModal.map(_.map(_.render))
+      },
+    )
+  }
+
+  private def renderExistingValue: VMod = existingValue.map(renderSynced)
+
+  private def renderSynced(synced: Synced[T]): VMod = {
+    val modal = new Modal(
+      "Delete",
+      s"Do you really want to delete the entity \"${synced.signal.now.identifier.get.getOrElse("")}\"?",
+      Seq(
+        new ModalButton(
+          "Delete",
+          "bg-red-600",
+          () => removeEntity(synced),
+        ),
+        new ModalButton("Cancel"),
+      ),
+    )
+    synced.signal.map(p => {
+      val res = if (p.exists.get.getOrElse(true)) {
+        Some(
+          tr(
+            cls := "border-b hover:bg-violet-100 dark:hover:bg-gray-600 dark:border-gray-700", // "border-b hover:bg-gray-100 dark:hover:bg-violet-900 dark:border-violet-900",
+            data.id := synced.id,
+            uiAttributes.map(ui => {
+              ui.render(p)
+            }),
+            td(
+              cls := "py-1 space-x-1 w-1/6",
+              button(
+                cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+                "Edit",
+                onClick.foreach(_ => startEditing()),
+              ),
+              button(
+                cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
+                data.tip := "Delete",
+                "X",
+                onClick.foreach(_ => {
+                  modal.open()
+                }),
+              ),
+              modal.render,
+            ),
+          ),
+        )
+      } else {
+        None
       }
       res
     })
   }
 
   private def removeEntity(s: Synced[T]): Unit = {
-    s.update(p => p.get.withExists(false))
+    s.update(e => e.get.withExists(false))
       .toastOnError(ToastMode.Infinit)
   }
 
@@ -260,8 +248,6 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 
   private val filterRow = FilterRow[T](uiAttributes)
 
-  private val search = Var("")
-
   def render(using
       routing: RoutingService,
       repositories: Repositories,
@@ -285,10 +271,6 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             filterRow.render,
             renderEntities,
             newUserRow.render,
-          ),
-          input(
-            value <-- search,
-            onInput.value --> search,
           ),
         ),
       ),
