@@ -5,6 +5,7 @@ import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.repo.Repository
 import webapp.webrtc.PingService
+import webapp.entity.Document
 
 case class Repositories(
     val projects: Repository[Project],
@@ -14,7 +15,7 @@ case class Repositories(
     val contractSchemas: Repository[ContractSchema],
     val paymentLevels: Repository[PaymentLevel],
     val salaryChanges: Repository[SalaryChange],
-    val requiredDocuments: Repository[RequiredDocument],
+    val requiredDocuments: Repository[Document],
     val contracts: Repository[Contract],
 )(using registry: Registry) {
   val _ = PingService(using registry)
@@ -29,7 +30,7 @@ object Repositories {
     Repository("contract-schema", ContractSchema.empty),
     Repository("payment-level", PaymentLevel.empty),
     Repository("salary-change", SalaryChange.empty),
-    Repository("required-document", RequiredDocument.empty),
+    Repository("required-document", Document.empty),
     Repository("contracts", Contract.empty),
   )
 }

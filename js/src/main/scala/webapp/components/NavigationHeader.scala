@@ -25,6 +25,7 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
+import webapp.pages.DocumentsPage
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster)(
     classes: String,
@@ -69,7 +70,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
     ),
      */
     li(
-      navigationLink(RequiredDocumentsPage(), "Required documents"),
+      navigationLink(DocumentsPage(), "Documents"),
     ),
   )
 }
