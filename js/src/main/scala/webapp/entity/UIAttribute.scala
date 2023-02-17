@@ -8,6 +8,11 @@ import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.*
 import webapp.utils.Date
+import scala.scalajs.js
+import org.scalajs.dom.document
+import org.scalajs.dom.HTMLInputElement
+import webapp.components.Icons
+import webapp.npm.JSUtils.createPopper
 
 class UIOption[NameType](
     val id: String,
@@ -252,4 +257,178 @@ class UISelectAttribute[EntityType, AttributeType](
         o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
       ),
     )
+}
+
+class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
+    getter: EntityType => Attribute[AttributeType],
+    setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    readConverter: AttributeType => String,
+    writeConverter: String => AttributeType,
+    label: String,
+    isRequired: Boolean,
+    options: Signal[List[UIOption[Signal[String]]]],
+    showItems: Int = 5,
+    placeholderText: String = "Select...",
+) extends UITextAttribute[EntityType, AttributeType](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      editConverter = _.toString,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "select",
+    ) {
+
+  override def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(
+      cls := "px-6 py-0",
+      duplicateValuesHandler(
+        Seq(
+          div(
+            cls := "flex flex-row gap-2",
+            attr.getAll
+              .map(x =>
+                x.map(id =>
+                  options.map(o =>
+                    o.filter(p => p.id.equals(id)).map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name)),
+                  ),
+                ),
+              ),
+          ),
+        ),
+      ),
+    )
+  }
+
+  override def renderEditInput(_formId: String, attr: Attribute[AttributeType], set: AttributeType => Unit): VNode = {
+    val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
+    val search = Var("")
+
+    createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+
+    div(
+      cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
+      idAttr := id,
+      div(
+        cls := "multiselect-select flex flex-row w-full h-full items-center pl-2",
+        div(
+          cls := "flex flex-row gap-2",
+          options.map(o =>
+            attr.getAll
+              .map(s =>
+                o.filter(v => s.contains(v.id))
+                  .slice(0, showItems)
+                  .map(v =>
+                    div(
+                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center",
+                      v.name,
+                      div(
+                        Icons.close("w-4 h-4", "#64748b"),
+                        cls := "cursor-pointer",
+                        onClick.foreach(_ => {
+                          set(
+                            document
+                              .querySelectorAll(s"#$id input[type=checkbox]:checked")
+                              .map(element => element.id)
+                              .filter(id => id != v.id)
+                              .asInstanceOf[AttributeType],
+                          )
+                        }),
+                      ),
+                    ),
+                  ),
+              ),
+          ),
+          if (attr.getAll(0).size > showItems) {
+            Some(div(cls := "flex items-center justify-center text-slate-400", s"+${attr.getAll(0).size - showItems}"))
+          } else None,
+          if (attr.getAll(0).size == 0) {
+            Some(div(cls := "flex items-center justify-center text-slate-400", placeholderText))
+          } else None,
+        ),
+        outwatch.dsl.label(
+          tabIndex := 0,
+          cls := "grow relative pr-7 h-full",
+          div(cls := "absolute right-2 top-1/2 -translate-y-1/2", Icons.notch("w-4 h-4")),
+        ),
+      ),
+      div(
+        cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-slate-200",
+        input(
+          cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+          placeholder := "Search Options...",
+          onInput.value --> search,
+          value <-- search,
+        ),
+        div(
+          cls := "p-2 border-b border-slate-200",
+          input(
+            tpe := "checkbox",
+            cls := "mr-2",
+            idAttr := s"all-checkbox-$id",
+            onClick.foreach(e => {
+              if (e.target.asInstanceOf[HTMLInputElement].checked) {
+                set(
+                  document
+                    .querySelectorAll(s"#$id input[type=checkbox]")
+                    .map(element => element.id)
+                    .asInstanceOf[AttributeType],
+                )
+              } else {
+                set(Seq().asInstanceOf[AttributeType])
+              }
+
+            }),
+          ),
+          outwatch.dsl.label(
+            forId := s"all-checkbox-$id",
+            tabIndex := 0,
+            "Select All",
+          ),
+        ),
+        div(
+          cls := "multiselect-dropdown-list",
+          options.map(option =>
+            attr.getAll.map(attribute =>
+              option.map(uiOption => {
+                uiOption.name.map(name => {
+                  search.map(searchKey => {
+                    if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
+                      Some(
+                        outwatch.dsl.label(
+                          cls := "block w-full hover:bg-slate-50 px-2 py-0.5",
+                          input(
+                            tpe := "checkbox",
+                            cls := "mr-2",
+                            checked := attribute.contains(uiOption.id),
+                            idAttr := uiOption.id,
+                            onClick.foreach(_ => {
+                              set(
+                                document
+                                  .querySelectorAll(s"#$id input[type=checkbox]:checked")
+                                  .map(element => element.id)
+                                  .asInstanceOf[AttributeType],
+                              )
+                            }),
+                          ),
+                          tabIndex := 0,
+                          uiOption.name,
+                          forId := uiOption.id,
+                        ),
+                      )
+                    } else None
+                  })
+                })
+
+              }),
+            ),
+          ),
+        ),
+      ),
+      formId := _formId,
+      required := isRequired,
+    )
+  }
 }
