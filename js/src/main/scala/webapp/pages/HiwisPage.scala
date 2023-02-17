@@ -18,13 +18,14 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
+import rescala.default.*
 
 import HiwisPage.*
 
 case class HiwisPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Hiwi](
       repositories.hiwis,
-      Seq(firstName, lastName, hours, eMail, birthdate),
+      Seq(firstName, lastName, gender, eMail, birthdate),
     ) {}
 
 object HiwisPage {
@@ -44,12 +45,17 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private val hours = UIAttributeBuilder.int
-    .withLabel("Hours")
-    .require
-    .bindAsNumber[Hiwi](
-      _.hours,
-      (h, a) => h.copy(hours = a),
+  private def gender: UISelectAttribute[Hiwi, String] =
+    UISelectAttribute(
+      _.gender,
+      (p, a) => p.copy(gender = a),
+      readConverter = identity,
+      writeConverter = identity,
+      isRequired = true,
+      label = "Gender",
+      options = Signal(
+        List("not specified", "male", "female").map(gender => new UIOption[Signal[String]](gender, Signal(gender))),
+      ),
     )
 
   private val eMail = UIAttributeBuilder.string

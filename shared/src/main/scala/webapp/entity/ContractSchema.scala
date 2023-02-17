@@ -7,13 +7,14 @@ import webapp.BasicCodecs.*
 
 case class ContractSchema(
     name: Attribute[String] = Attribute.empty,
+    files: Attribute[Seq[String]] = Attribute.empty,
     exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[ContractSchema]
     derives DecomposeLattice,
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: ContractSchema = ContractSchema(Attribute.empty, Attribute(true))
+  def default: ContractSchema = ContractSchema(Attribute.empty, Attribute(Seq()), Attribute(true))
 
   def identifier: Attribute[String] = name
 

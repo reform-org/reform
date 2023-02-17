@@ -8,7 +8,7 @@ import webapp.BasicCodecs.*
 case class Hiwi(
     firstName: Attribute[String] = Attribute.empty,
     lastName: Attribute[String] = Attribute.empty,
-    hours: Attribute[Int] = Attribute.empty,
+    gender: Attribute[String] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
     birthdate: Attribute[Long] = Attribute.empty,
     exists: Attribute[Boolean] = Attribute.empty,
@@ -18,9 +18,16 @@ case class Hiwi(
 
   // empty for required fields, default for optional fields
   def default: Hiwi =
-    Hiwi(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
+    Hiwi(
+      Attribute.empty,
+      Attribute.empty,
+      Attribute.empty,
+      Attribute.empty,
+      Attribute.empty,
+      Attribute(true),
+    )
 
-  def identifier: Attribute[String] = firstName
+  def identifier: Attribute[String] = eMail
 
   def withExists(_exists: Boolean): Hiwi = {
     this.copy(exists = exists.set(_exists))
