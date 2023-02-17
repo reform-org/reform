@@ -25,7 +25,7 @@ abstract class UIAttribute[EntityType, AttributeType](
     td(cls := "px-6 py-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
-  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]]
+  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
 
   def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
 }
@@ -69,7 +69,7 @@ class UITextAttribute[EntityType, AttributeType](
       placeholder := label,
     )
 
-  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
+  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] = {
     entityVar.map {
       _.map(entity => {
         val attr = getter(entity)
@@ -88,6 +88,7 @@ class UITextAttribute[EntityType, AttributeType](
           },
         )
       })
+        .getOrElse(td(cls := "px-6 py-0"))
     }
   }
 
@@ -104,8 +105,11 @@ class UIReadOnlyAttribute[EntityType, AttributeType](
     label: String,
 ) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
 
-  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] =
-    entityVar.map(_.flatMap(entity => getter(entity).get.map(a => td(readConverter(a)))))
+  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] =
+    entityVar.map(
+      _.flatMap(entity => getter(entity).get.map(a => td(readConverter(a))))
+        .getOrElse(td(cls := "px-6 py-0")),
+    )
 }
 
 class UINumberAttribute[EntityType, AttributeType](

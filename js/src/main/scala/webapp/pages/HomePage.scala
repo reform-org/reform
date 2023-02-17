@@ -112,7 +112,7 @@ case class HomePage() extends Page {
           "Export again",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
           }),
         ),
       ),
@@ -192,7 +192,7 @@ case class HomePage() extends Page {
           "Export DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
             toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
@@ -202,7 +202,7 @@ case class HomePage() extends Page {
           "Import DB",
           onClick.foreach(_ => {
             val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
-            if (fileList.size != 0)
+            if (fileList.nonEmpty)
               fileList(0)
                 .text()
                 .toFuture
@@ -211,15 +211,13 @@ case class HomePage() extends Page {
                     value.failed.get.printStackTrace()
                     toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
                   }
-                  val json = value.getOrElse("");
-                  importIndexedDBJson(json)(using repositories).onComplete(value => {
-                    value match {
-                      case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
-                      case Failure(exception) =>
-                        toaster
-                          .make("Failed to import database! " + exception.toString(), ToastMode.Long, ToastType.Error)
-                    }
-                  })
+                  val json = value.getOrElse("")
+                  importIndexedDBJson(json)(using repositories).onComplete {
+                    case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
+                    case Failure(exception) =>
+                      toaster
+                        .make("Failed to import database! " + exception.toString, ToastMode.Long, ToastType.Error)
+                  }
                 })
           }),
         ),
@@ -228,14 +226,15 @@ case class HomePage() extends Page {
           "Delete DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${(new js.Date()).toISOString()}.json", json)
+            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
             deleteDBModal.open()
 
           }),
         ),
-        modal.render(),
-        deleteDBModal.render(),
+        modal.render,
+        deleteDBModal.render,
       ),
     )
   }
+  
 }
