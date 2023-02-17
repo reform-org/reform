@@ -36,6 +36,7 @@ import webapp.given_ExecutionContext
 
 sealed trait EntityValue[T]
 case class Existing[T](value: Synced[T]) extends EntityValue[T]
+// TODO FIXME: This should not be an Option but otherwise we need to find a generic way to set an Option and non-option Var
 case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 
 private class EntityRow[T <: Entity[T]](
