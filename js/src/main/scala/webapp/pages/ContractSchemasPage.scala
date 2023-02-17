@@ -40,7 +40,7 @@ object ContractSchemasPage {
       (p, a) => p.copy(files = a),
       readConverter = r => r.mkString(", "),
       writeConverter = w => w.split(", ").toSeq,
-      label = "Files",
+      label = "Required Documents",
       options = repositories.requiredDocuments.all.map(list =>
         list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.name.get.getOrElse("")))),
       ),
