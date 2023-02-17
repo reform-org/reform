@@ -9,10 +9,9 @@ import webapp.given
 import webapp.*
 import webapp.utils.Date
 import scala.scalajs.js
-import org.scalajs.dom.{console, document, window}
+import org.scalajs.dom.document
 import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
-import org.scalajs.dom.HTMLElement
 import webapp.npm.JSUtils.createPopper
 
 class UIOption[NameType](
