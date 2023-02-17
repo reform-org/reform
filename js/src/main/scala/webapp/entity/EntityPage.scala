@@ -34,10 +34,13 @@ import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
 import webapp.given_ExecutionContext
 
+sealed trait EntityValue[T]
+case class Existing[T](value: Synced[T]) extends EntityValue[T]
+case class New[T](value: Var[Option[T]]) extends EntityValue[T]
+
 private class EntityRow[T <: Entity[T]](
     val repository: Repository[T],
-    val existingValue: Option[Synced[T]],
-    val editingValue: Var[Option[T]],
+    val value: EntityValue[T],
     val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
@@ -46,6 +49,21 @@ private class EntityRow[T <: Entity[T]](
       _.map(_ => renderEdit)
         .getOrElse(renderExistingValue),
     )
+
+  def editingValue: Var[Option[T]] = value match {
+    case Existing(value) => value.editingValue
+    case New(value)      => value
+  }
+
+  def existingValue = value match {
+    case Existing(value) => Some(value)
+    case New(value)      => None
+  }
+
+  def existingId = value match {
+    case Existing(value) => Some(value.id)
+    case New(value)      => None
+  }
 
   private def renderEdit: VMod = {
     val deleteModal = Var[Option[Modal]](None)
@@ -238,12 +256,12 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 ) extends Page {
 
   private val newUserRow: EntityRow[T] =
-    EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
+    EntityRow[T](repository, New(Var(Some(bottom.empty.default))), uiAttributes)
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
     repository.all.map(
       _.map(syncedEntity => {
-        EntityRow[T](repository, Some(syncedEntity), Var(None), uiAttributes)
+        EntityRow[T](repository, Existing(syncedEntity), uiAttributes)
       }),
     )
 
@@ -283,7 +301,10 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
       .map(p =>
         entityRows.map(
           _.filterSignal(
-            _.existingValue.mapToSignal(_.signal).map(_.exists(p)),
+            _.value match {
+              case Existing(value) => value.signal.map(_.exists.get.get)
+              case New(value)      => Signal(true)
+            },
           )
             .mapInside(_.render),
         ),
