@@ -117,9 +117,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   def setAlias(ref: RemoteRef, alias: String): Unit = {
     connectionInfo = connectionInfo.transform((r, storedConnection) => {
-      println(storedConnection.alias)
       if (ref == r) {
-        println("should override")
         storedConnection.alias = alias
       }
       storedConnection
