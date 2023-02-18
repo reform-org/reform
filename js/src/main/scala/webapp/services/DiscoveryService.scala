@@ -183,7 +183,7 @@ class DiscoveryService {
 
         webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
-          pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
+          payload.client.user.name.asInstanceOf[String],
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.client.user.uuid.asInstanceOf[String],
@@ -214,7 +214,7 @@ class DiscoveryService {
 
         webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
-          pendingConnections(payload.id.asInstanceOf[String]).session.map(i => i.alias),
+          payload.host.user.name.asInstanceOf[String],
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.host.user.uuid.asInstanceOf[String],

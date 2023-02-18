@@ -41,7 +41,7 @@ import org.scalajs.dom.RTCPeerConnection
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
-    val alias: String,
+    var alias: String,
     val source: String = "manual",
     val uuid: String = "",
     val connectionId: String = "",
@@ -81,25 +81,26 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   def registerConnection(
       connector: Connector[Connections.Protocol],
-      alias: Future[String],
+      alias: String,
       source: String,
       connection: RTCPeerConnection,
       uuid: String = "",
       connectionId: String = "",
+      onConnected: (ref: RemoteRef) => Unit = (_) => {},
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
-        alias.onComplete(alias => {
-          connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source, uuid, connectionId))
-          connectionRefs += (connectionId -> r.get)
-          webRTCConnections += (r.get -> connection)
+        val storedConnection = StoredConnectionInformation(alias, source, uuid, connectionId)
+        connectionInfo += (r.get -> storedConnection)
+        connectionRefs += (connectionId -> r.get)
+        webRTCConnections += (r.get -> connection)
 
-          toaster.make(span(b(alias.get), " has just joined! 🚀"), ToastMode.Short, ToastType.Success)
-        })
-      })
-      .andThen(r => {
+        onConnected(r.get)
+
         addConnection.fire(r.get)
+
+        toaster.make(span(b(storedConnection.alias), " has just joined! 🚀"), ToastMode.Short, ToastType.Success)
       })
   }
 
@@ -112,6 +113,15 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   def getInformation(ref: RemoteRef): StoredConnectionInformation = {
     connectionInfo.getOrElse(ref, StoredConnectionInformation("Anonymous", "unknown"))
+  }
+
+  def setAlias(ref: RemoteRef, alias: String): Unit = {
+    connectionInfo = connectionInfo.transform((r, storedConnection) => {
+      if (ref == r) {
+        storedConnection.alias = alias
+      }
+      storedConnection
+    })
   }
 
   def getConnectionMode(ref: RemoteRef): Future[String] = {
