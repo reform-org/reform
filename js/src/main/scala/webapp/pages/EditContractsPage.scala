@@ -28,6 +28,7 @@ import webapp.webrtc.WebRTCService
 import webapp.services.{ToastMode, Toaster}
 import webapp.repo.Synced
 import webapp.utils.Futures.*
+import webapp.services.ToastType
 
 case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
 
@@ -155,8 +156,15 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
           .update(p => {
             p.getOrElse(Contract.empty).merge(editingNow.get)
           })
+          .map(value => {
+            editingValue.set(Some(value))
+            toaster.make(
+              "Contract saved!",
+              ToastMode.Short,
+              ToastType.Success,
+            )
+          })
           .toastOnError(ToastMode.Infinit)
-        editingValue.set(None)
       }
       case None => {
         repositories.contracts
