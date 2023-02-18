@@ -147,7 +147,7 @@ case class HomePage() extends Page {
             modal.open()
           }),
         ),
-        TableButton(TableButtonStyle.Default)(
+        TableButton(LightButtonStyle.Default)(
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           "Make me a boring normal toast 🍞",
           onClick.foreach(_ => {

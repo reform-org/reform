@@ -32,6 +32,7 @@ import webapp.components.{Modal, ModalButton}
 import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
+import webapp.components.common.*
 
 import webapp.components.Icons
 import webapp.given_ExecutionContext
@@ -85,23 +86,21 @@ private class EntityRow[T <: Entity[T]](
             existingValue match {
               case Some(p) => {
                 List(
-                  button(
-                    cls := "hover:bg-slate-300 bg-slate-200 text-slate-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                  TableButton(LightButtonStyle.Primary)(
                     formId := s"form-${existingValue.map(_.id)}",
                     `type` := "submit",
                     idAttr := "add-entity-button",
-                    "Save edit",
+                    "Save",
                   ),
-                  button(
-                    cls := "hover:bg-slate-300 bg-slate-200 text-slate-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                  TableButton(LightButtonStyle.Default)(
                     "Cancel",
                     onClick.foreach(_ => cancelEdit()),
                   ),
                 )
               }
               case None => {
-                button(
-                  cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                TableButton(LightButtonStyle.Primary)(
+                  // cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
                   formId := s"form-${existingValue.map(_.id)}",
                   `type` := "submit",
                   idAttr := "add-entity-button",
@@ -128,9 +127,10 @@ private class EntityRow[T <: Entity[T]](
             )
             deleteModal.set(Some(modal))
             val res = {
-              div(
+              IconButton(LightButtonStyle.Error)(
                 Icons.close("fill-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-left hover:bg-red-300 bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                cls := "tooltip tooltip-left",
+                data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               )
             }
@@ -169,14 +169,13 @@ private class EntityRow[T <: Entity[T]](
             }),
             td(
               cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
-              button(
-                cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
+              TableButton(LightButtonStyle.Primary)(
                 "Edit",
                 onClick.foreach(_ => startEditing()),
               ),
-              button(
+              IconButton(LightButtonStyle.Error)(
                 Icons.close("fill-red-600 w-4 h-4"),
-                cls := "bg-red-200 tooltip tooltip-top hover:bg-red-300 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                cls := "tooltip tooltip-top",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               ),

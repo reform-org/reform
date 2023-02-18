@@ -8,11 +8,6 @@ import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.*
 import webapp.utils.Date
-import scala.scalajs.js
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLInputElement
-import webapp.components.Icons
-import webapp.npm.JSUtils.createPopper
 import webapp.components.common.*
 
 abstract class UIAttribute[EntityType, AttributeType](
@@ -59,7 +54,7 @@ class UITextAttribute[EntityType, AttributeType](
       set: AttributeType => Unit,
       datalist: Option[String] = None,
   ): VNode =
-    Input(
+    TableInput(
       // cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
       `type` := fieldType,
       formId := _formId,
