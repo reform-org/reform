@@ -166,8 +166,8 @@ private class EntityRow[T <: Entity[T]](
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               ),
-              modal.render,
             ),
+            modal.render,
           ),
         )
       } else {
