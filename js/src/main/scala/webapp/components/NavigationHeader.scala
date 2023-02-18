@@ -70,6 +70,9 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
     ),
      */
     li(
+      navigationLink(ExtraPage(), "Extra Page"),
+    ),
+    li(
       navigationLink(DocumentsPage(), "Documents"),
     ),
   )
