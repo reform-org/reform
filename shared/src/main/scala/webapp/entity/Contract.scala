@@ -7,6 +7,7 @@ import webapp.BasicCodecs.*
 import webapp.webrtc.DeltaFor
 
 case class Contract(
+    contractAssociatedProject: Attribute[String] = Attribute.empty,
     contractAssociatedHiwi: Attribute[String] = Attribute.empty,
     contractAssociatedPaymentLevel: Attribute[String] = Attribute.empty,
     contractAssociatedSupervisor: Attribute[String] = Attribute.empty,
@@ -28,6 +29,7 @@ case class Contract(
 
   def default =
     Contract(
+      Attribute.empty,
       Attribute.empty,
       Attribute.empty,
       Attribute.empty,

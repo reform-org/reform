@@ -19,11 +19,12 @@ import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
 import ProjectsPage.*
+import webapp.utils.Seqnal.*
 
 case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
-      Seq(name, maxHours, accountName, nameLength),
+      Seq(name, maxHours, accountName, contractCount),
     ) {}
 
 object ProjectsPage {
@@ -54,5 +55,16 @@ object ProjectsPage {
   private val nameLength = UIAttributeBuilder.int
     .withLabel("Length of the Name")
     .map[String](_.length, _.toString)
+    .bindReadOnly[Project](_.name)
+
+  private def contractCount(using repositories: Repositories) = UIAttributeBuilder.int
+    .withLabel("Contract Count")
+    .map[String](
+      _ => {
+        repositories.contracts.all.
+
+      },
+      _.toString,
+    )
     .bindReadOnly[Project](_.name)
 }
