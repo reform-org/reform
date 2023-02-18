@@ -6,29 +6,28 @@ import kofre.base.*
 import webapp.BasicCodecs.*
 import webapp.entity.Attribute.given
 
-case class RequiredDocument(
+case class Document(
     name: Attribute[String] = Attribute.empty,
     fileName: Attribute[String] = Attribute.empty,
-    isActuallyRequired: Attribute[Boolean] = Attribute.empty,
     exists: Attribute[Boolean] = Attribute.empty,
-) extends Entity[RequiredDocument]
+) extends Entity[Document]
     derives DecomposeLattice,
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: RequiredDocument =
-    RequiredDocument(Attribute.default, Attribute.default, Attribute(true), Attribute(true))
+  def default: Document =
+    Document(Attribute.default, Attribute.default, Attribute(true))
 
   def identifier: Attribute[String] = name
 
-  def withExists(_exists: Boolean): RequiredDocument = {
+  def withExists(_exists: Boolean): Document = {
     this.copy(exists = exists.set(_exists))
   }
 
 }
 
-object RequiredDocument {
-  val empty: RequiredDocument = RequiredDocument()
+object Document {
+  val empty: Document = Document()
 
-  implicit val codec: JsonValueCodec[RequiredDocument] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
+  implicit val codec: JsonValueCodec[Document] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 }

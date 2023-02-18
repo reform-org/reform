@@ -18,6 +18,7 @@ package webapp.entity
 import kofre.base.*
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 import rescala.default.*
 import webapp.components.navigationHeader
 import webapp.repo.Repository
@@ -32,6 +33,7 @@ import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
 
+import webapp.components.Icons
 import webapp.given_ExecutionContext
 
 private class EntityRow[T <: Entity[T]](
@@ -41,154 +43,142 @@ private class EntityRow[T <: Entity[T]](
     val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
 )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
-  def render = {
-    editingValue.map(editingNow => {
-      val res = editingNow match {
-        case Some(_) => {
-          var deleteModal: Var[Option[Modal]] = Var(None)
-          val res = Some(
-            tr(
-              cls := "border-b  dark:border-gray-700", // "hover:bg-violet-100 dark:hover:bg-violet-900 border-b hover:bg-gray-100 dark:hover:bg-gray-600 ",
-              data.id := existingValue.map(v => v.id),
-              uiAttributes.map(ui => {
-                ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
-              }),
-              td(
-                cls := "py-1 space-x-1 w-1/6",
-                form(
-                  idAttr := s"form-${existingValue.map(_.id)}",
-                  onSubmit.foreach(e => {
-                    e.preventDefault()
-                    createOrUpdate()
-                  }),
-                ), {
-                  existingValue match {
-                    case Some(p) => {
-                      List(
-                        button(
-                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                          formId := s"form-${existingValue.map(_.id)}",
-                          `type` := "submit",
-                          idAttr := "add-entity-button",
-                          "Save edit",
-                        ),
-                        button(
-                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                          idAttr := "add-entity-button",
-                          "Cancel",
-                          onClick.foreach(_ => cancelEdit()),
-                        ),
-                      )
-                    }
-                    case None => {
-                      button(
-                        cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                        formId := s"form-${existingValue.map(_.id)}",
-                        `type` := "submit",
-                        idAttr := "add-entity-button",
-                        "Add Entity",
-                      )
-                    }
-                  }
-                },
-                existingValue.map(p => {
-                  val modal = new Modal(
-                    "Delete",
-                    s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
-                    Seq(
-                      new ModalButton(
-                        "Delete",
-                        "bg-red-600",
-                        () => {
-                          removeEntity(p)
-                          cancelEdit()
-                        },
-                      ),
-                      new ModalButton("Cancel"),
-                    ),
-                  )
-                  deleteModal.set(Some(modal))
-                  val res = {
-                    button(
-                      cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                      data.tip := "Delete",
-                      "X",
-                      onClick.foreach(_ => modal.open()),
-                    )
-                  }
-                  res
-                }),
-              ), {
-                deleteModal.map(_ match {
-                  case None        => div()
-                  case Some(modal) => modal.render()
-                })
-              },
-            ),
-          )
-          Var(res)
-        }
-        case None => {
-          val res: Signal[Option[VNode]] = existingValue match {
-            case Some(syncedEntity) => {
-              val modal = new Modal(
-                "Delete",
-                s"Do you really want to delete the entity \"${syncedEntity.signal.now.identifier.get.getOrElse("")}\"?",
-                Seq(
-                  new ModalButton(
-                    "Delete",
-                    "bg-red-600",
-                    () => { removeEntity(syncedEntity) },
+  def render: VMod =
+    editingValue.map(
+      _.map(_ => renderEdit)
+        .getOrElse(renderExistingValue),
+    )
+
+  private def renderEdit: VMod = {
+    val deleteModal = Var[Option[Modal]](None)
+    tr(
+      cls := "border-b dark:border-gray-700",
+      data.id := existingValue.map(v => v.id),
+      uiAttributes.map(ui => {
+        ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
+      }),
+      td(
+        cls := "border border-gray-300 py-1 w-1/6",
+        div(
+          cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
+          form(
+            idAttr := s"form-${existingValue.map(_.id)}",
+            onSubmit.foreach(e => {
+              e.preventDefault()
+              createOrUpdate()
+            }),
+          ), {
+            existingValue match {
+              case Some(p) => {
+                List(
+                  button(
+                    cls := "hover:bg-slate-300 bg-slate-200 text-slate-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                    formId := s"form-${existingValue.map(_.id)}",
+                    `type` := "submit",
+                    idAttr := "add-entity-button",
+                    "Save edit",
                   ),
-                  new ModalButton("Cancel"),
-                ),
-              )
-              val res = syncedEntity.signal.map(p => {
-                val res = if (p.exists.get.getOrElse(true)) {
-                  Some(
-                    tr(
-                      cls := "border-b hover:bg-violet-100 dark:hover:bg-gray-600 dark:border-gray-700", // "border-b hover:bg-gray-100 dark:hover:bg-violet-900 dark:border-violet-900",
-                      data.id := syncedEntity.id,
-                      uiAttributes.map(ui => {
-                        ui.render(p)
-                      }),
-                      td(
-                        cls := "py-1 space-x-1 w-1/6",
-                        button(
-                          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-                          "Edit",
-                          onClick.foreach(_ => startEditing()),
-                        ),
-                        button(
-                          cls := "tooltip btn btn-error btn-square p-2 h-fit min-h-10 border-0",
-                          data.tip := "Delete",
-                          "X",
-                          onClick.foreach(_ => {
-                            modal.open()
-                          }),
-                        ),
-                        modal.render(),
-                      ),
-                    ),
-                  )
-                } else {
-                  None
-                }
-                res
-              })
-              res
+                  button(
+                    cls := "hover:bg-slate-300 bg-slate-200 text-slate-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                    "Cancel",
+                    onClick.foreach(_ => cancelEdit()),
+                  ),
+                )
+              }
+              case None => {
+                button(
+                  cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                  formId := s"form-${existingValue.map(_.id)}",
+                  `type` := "submit",
+                  idAttr := "add-entity-button",
+                  "Add Entity",
+                )
+              }
             }
-            case None => Var(None)
-          }
-          res
-        }
+          },
+          existingValue.map(p => {
+            val modal = new Modal(
+              "Delete",
+              s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
+              Seq(
+                new ModalButton(
+                  "Delete",
+                  "bg-red-600",
+                  () => {
+                    removeEntity(p)
+                    cancelEdit()
+                  },
+                ),
+                new ModalButton("Cancel"),
+              ),
+            )
+            deleteModal.set(Some(modal))
+            val res = {
+              div(
+                Icons.close("fill-red-600 w-4 h-4"),
+                cls := "tooltip tooltip-left hover:bg-red-300 bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                onClick.foreach(_ => modal.open()),
+              )
+            }
+            res
+          }),
+        ),
+      ), {
+        deleteModal.map(_.map(_.render))
+      },
+    )
+  }
+
+  private def renderExistingValue: VMod = existingValue.map(renderSynced)
+
+  private def renderSynced(synced: Synced[T]): VMod = {
+    val modal = new Modal(
+      "Delete",
+      s"Do you really want to delete the entity \"${synced.signal.now.identifier.get.getOrElse("")}\"?",
+      Seq(
+        new ModalButton(
+          "Delete",
+          "bg-red-600",
+          () => removeEntity(synced),
+        ),
+        new ModalButton("Cancel"),
+      ),
+    )
+    synced.signal.map(p => {
+      val res = if (p.exists.get.getOrElse(true)) {
+        Some(
+          tr(
+            cls := "border border-gray-300 odd:bg-slate-50",
+            data.id := synced.id,
+            uiAttributes.map(ui => {
+              ui.render(p)
+            }),
+            td(
+              cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
+              button(
+                cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
+                "Edit",
+                onClick.foreach(_ => startEditing()),
+              ),
+              button(
+                Icons.close("fill-red-600 w-4 h-4"),
+                cls := "bg-red-200 tooltip tooltip-top hover:bg-red-300 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
+                data.tip := "Delete",
+                onClick.foreach(_ => modal.open()),
+              ),
+            ),
+            modal.render,
+          ),
+        )
+      } else {
+        None
       }
       res
     })
   }
 
   private def removeEntity(s: Synced[T]): Unit = {
-    s.update(p => p.get.withExists(false))
+    s.update(e => e.get.withExists(false))
       .toastOnError(ToastMode.Infinit)
   }
 
@@ -248,7 +238,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
     toaster: Toaster,
 ) extends Page {
 
-  private val newUserRow: EntityRow[T] =
+  private val addEntityRow: EntityRow[T] =
     EntityRow[T](repository, None, Var(Some(bottom.empty.default)), uiAttributes)
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
@@ -260,8 +250,6 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
 
   private val filterRow = FilterRow[T](uiAttributes)
 
-  private val search = Var("")
-
   def render(using
       routing: RoutingService,
       repositories: Repositories,
@@ -271,24 +259,27 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   ): VNode = {
     navigationHeader(
       div(
-        cls := "relative overflow-x-auto shadow-md sm:rounded-lg pt-4 ", // " px-4 py-4 items-center w-full  mx-auto my-5 bg-white rounded-lg shadow-md",
+        cls := "relative overflow-x-visible shadow-md sm:rounded-lg p-4 m-4",
         table(
-          cls := "w-full text-left table-auto border-collapse ", // border-separate border-spacing-y-4
-          // cls := "table-auto",
+          cls := "border-collapse w-full text-left table-auto",
           thead(
             tr(
-              uiAttributes.map(a => th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", a.label)),
-              th(cls := "px-6 py-0 border-b-2 dark:border-gray-500", "Stuff"),
+              uiAttributes.map(a =>
+                th(
+                  cls := "border-gray-300 border-b-2 border dark:border-gray-500 p-4 uppercase first-of-type:rounded-tl",
+                  a.label,
+                ),
+              ),
+              th(cls := "border-gray-300 border border-b-2 dark:border-gray-500 p-4 uppercase", "Actions"),
             ),
           ),
           tbody(
-            filterRow.render,
+            // filterRow.render,
             renderEntities,
-            newUserRow.render,
           ),
-          input(
-            value <-- search,
-            onInput.value --> search,
+          tfoot(
+            cls := "mt-2",
+            addEntityRow.render,
           ),
         ),
       ),
