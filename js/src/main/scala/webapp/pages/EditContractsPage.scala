@@ -148,11 +148,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     )
 
   private def createOrUpdate(): Unit = {
+    val editingNow = editingValue.now
     existingValue match {
       case Some(existing) => {
         existing
           .update(p => {
-            p.get.merge(editingValue.now.get)
+            p.getOrElse(Contract.empty).merge(editingNow.get)
           })
           .toastOnError(ToastMode.Infinit)
         editingValue.set(None)
@@ -164,7 +165,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
             editingValue.set(Some(Contract.empty.default))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.getOrElse(Contract.empty).merge(editingValue.now.get)
+              p.getOrElse(Contract.empty).merge(editingNow.get)
             })
           })
           .toastOnError(ToastMode.Infinit)
