@@ -27,6 +27,8 @@ import webapp.services.Page
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 
+import webapp.components.common.*
+
 import webapp.services.{ToastMode, ToastType, Toaster}
 import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
@@ -131,45 +133,40 @@ case class HomePage() extends Page {
       ),
     )
 
+    val multiSelectValue: Var[Seq[String]] = Var(Seq())
+    val selectValue: Var[String] = Var("")
+
     navigationHeader(
       div(
         cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
-        button(
-          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+        Button(
           idAttr := "loadPDF",
           "Fill PDF",
           onClick.foreach(_ => {
             modal.open()
           }),
         ),
-        button(
-          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-          idAttr := "makeToast",
+        TableButton(TableButtonStyle.Default)(
+          // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           "Make me a boring normal toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Default)
           }),
         ),
-        button(
-          cls := "btn btn-active btn-success p-2 h-fit min-h-10 border-0",
-          idAttr := "makeToast",
+        Button(ButtonStyle.Success)(
           "Make me a successful toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Success)
           }),
         ),
-        button(
-          cls := "btn btn-active btn-warning p-2 h-fit min-h-10 border-0",
-          idAttr := "makeToast",
+        Button(ButtonStyle.Warning)(
           "Make me a warning toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Warning)
           }),
         ),
-        button(
-          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
-          idAttr := "makeToast",
+        Button(ButtonStyle.Error)(
           "Make me an error toast 🍞",
           onClick.foreach(_ => {
             toaster.make(
@@ -179,16 +176,13 @@ case class HomePage() extends Page {
             )
           }),
         ),
-        button(
-          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
-          idAttr := "makeToast",
+        Button(ButtonStyle.Error)(
           "Make me a persistent error toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
           }),
         ),
-        button(
-          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+        Button(
           "Export DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
@@ -196,9 +190,8 @@ case class HomePage() extends Page {
             toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
-        input(tpe := "file", cls := "file-input w-full max-w-xs", idAttr := "import-file"),
-        button(
-          cls := "btn btn-active p-2 h-fit min-h-10 border-0",
+        FileInput(tpe := "file", idAttr := "import-file"),
+        Button(
           "Import DB",
           onClick.foreach(_ => {
             val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
@@ -221,8 +214,7 @@ case class HomePage() extends Page {
                 })
           }),
         ),
-        button(
-          cls := "btn btn-active btn-error p-2 h-fit min-h-10 border-0",
+        Button(ButtonStyle.Error)(
           "Delete DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
@@ -233,6 +225,17 @@ case class HomePage() extends Page {
         ),
         modal.render,
         deleteDBModal.render,
+        LabeledInput("Test")(placeholder := "test"),
+        MultiSelect(
+          Signal(List(SelectOption("test", Signal("test")), SelectOption("test2", Signal("test2")))),
+          (value) => multiSelectValue.set(value),
+          multiSelectValue,
+        ),
+        Select(
+          Signal(List(SelectOption("test3", Signal("test")), SelectOption("test4", Signal("test2")))),
+          (value) => selectValue.set(value),
+          selectValue,
+        ),
       ),
     )
   }

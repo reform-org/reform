@@ -17,6 +17,7 @@ import webapp.services.Toaster
 import webapp.given_ExecutionContext
 import scala.util.Failure
 import scala.util.Success
+import webapp.components.common.Button
 
 class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
   val offlineBanner = {
@@ -115,8 +116,7 @@ class Login() {
       discovery.token
         .map(token =>
           if (discovery.tokenIsValid(token))
-            button(
-              cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+            Button(
               "Logout",
               onClick.foreach(_ => {
                 discovery.logout()
@@ -143,8 +143,7 @@ class Login() {
                 onInput.value --> password,
                 value := "",
               ),
-              button(
-                cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+              Button(
                 "Login",
                 disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
                 onClick

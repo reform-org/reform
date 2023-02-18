@@ -27,6 +27,7 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
 import webapp.repo.Synced
+import webapp.components.common.*
 
 case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
 
@@ -56,7 +57,7 @@ case class InnerEditContractsPage(contract: Synced[Contract]) {
       label = "AssociatedHiwi",
       options = repositories.hiwis.all.map(list =>
         list.map(value =>
-          new UIOption[Signal[String]](
+          new SelectOption[Signal[String]](
             value.id,
             value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
           ),
@@ -74,7 +75,7 @@ case class InnerEditContractsPage(contract: Synced[Contract]) {
       label = "AssociatedSupervisors",
       options = repositories.supervisors.all.map(list =>
         list.map(value =>
-          new UIOption[Signal[String]](
+          new SelectOption[Signal[String]](
             value.id,
             value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
           ),
@@ -92,7 +93,7 @@ case class InnerEditContractsPage(contract: Synced[Contract]) {
       label = "ContractType",
       options = repositories.contractSchemas.all.map(list =>
         list.map(value =>
-          new UIOption[Signal[String]](
+          new SelectOption[Signal[String]](
             value.id,
             value.signal.map(v => v.name.get.getOrElse("")),
           ),
@@ -134,7 +135,7 @@ case class InnerEditContractsPage(contract: Synced[Contract]) {
       label = "AssociatedPaymentLevel",
       options = repositories.paymentLevels.all.map(list =>
         list.map(value =>
-          new UIOption[Signal[String]](
+          new SelectOption[Signal[String]](
             value.id,
             value.signal.map(v => v.title.get.getOrElse("")),
           ),

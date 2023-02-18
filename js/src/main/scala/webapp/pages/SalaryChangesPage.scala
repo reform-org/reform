@@ -19,6 +19,7 @@ import rescala.default.*
 import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
+import webapp.components.common.*
 
 import SalaryChangesPage.*
 
@@ -46,7 +47,7 @@ object SalaryChangesPage {
       writeConverter = identity,
       label = "PaymentLevel",
       options = repositories.paymentLevels.all.map(list =>
-        list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
+        list.map(value => new SelectOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
       ),
       isRequired = true,
     )
