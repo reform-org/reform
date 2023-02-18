@@ -135,7 +135,6 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
 
   private def onConnected()(using state: Var[State]): Unit = {
     state.set(ClientAskingForHostSessionToken())
-
   }
 }
 
@@ -149,6 +148,9 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       "Anonymous",
       "manual",
       connection.connection,
+      "",
+      "",
+      onConnected,
     )
     .foreach(ref => onConnected(ref))
 

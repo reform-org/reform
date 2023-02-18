@@ -86,18 +86,21 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
       connection: RTCPeerConnection,
       uuid: String = "",
       connectionId: String = "",
+      onConnected: (ref: RemoteRef) => Unit = (_) => {},
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
-        connectionInfo += (r.get -> StoredConnectionInformation(alias, source, uuid, connectionId))
+        val storedConnection = StoredConnectionInformation(alias, source, uuid, connectionId)
+        connectionInfo += (r.get -> storedConnection)
         connectionRefs += (connectionId -> r.get)
         webRTCConnections += (r.get -> connection)
 
-        toaster.make(span(b(alias), " has just joined! 🚀"), ToastMode.Short, ToastType.Success)
-      })
-      .andThen(r => {
+        onConnected(r.get)
+
         addConnection.fire(r.get)
+
+        toaster.make(span(b(storedConnection.alias), " has just joined! 🚀"), ToastMode.Short, ToastType.Success)
       })
   }
 
@@ -113,17 +116,14 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
   }
 
   def setAlias(ref: RemoteRef, alias: String): Unit = {
-    connectionInfo = connectionInfo.transform((r, storedConncetion) => {
-      println(storedConncetion.alias)
+    connectionInfo = connectionInfo.transform((r, storedConnection) => {
+      println(storedConnection.alias)
       if (ref == r) {
         println("should override")
-        storedConncetion.alias = alias
+        storedConnection.alias = alias
       }
-      storedConncetion
+      storedConnection
     })
-    // reload alias in connection drawer
-    removeConnection.fire(ref)
-    addConnection.fire(ref)
   }
 
   def getConnectionMode(ref: RemoteRef): Future[String] = {
