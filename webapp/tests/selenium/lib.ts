@@ -378,7 +378,7 @@ export class Peer {
 					let name = await driver.findElement(
 						By.css(`input[placeholder="Your name"]`),
 					);
-					await name.sendKeys(personNames[0]);
+					await name.sendKeys(personNames[1]);
 
 					let textarea = await driver.findElement(
 						By.css(`input[placeholder="Token"]`),
@@ -403,7 +403,7 @@ export class Peer {
 						until.elementLocated(By.css(`input[placeholder="Your name"]`)),
 						3000,
 					);
-					await name.sendKeys(personNames[1]);
+					await name.sendKeys(personNames[0]);
 
 					let hostButton = await driver.wait(
 						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`)),
