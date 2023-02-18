@@ -20,32 +20,37 @@ import colibri.router.*
 import webapp.pages.*
 import webapp.services.Page
 import webapp.services.Toaster
+import org.scalajs.dom.window
+import webapp.pages.DocumentsPage
+
 object Routes {
   def fromPath(using repositories: Repositories, toaster: Toaster): Path => Page = {
-    case Root                      => HomePage()
-    case Root / "projects"         => ProjectsPage()
-    case Root / "users"            => UsersPage()
-    case Root / "hiwis"            => HiwisPage()
-    case Root / "paymentlevels"    => PaymentLevelsPage()
-    case Root / "salarychanges"    => SalaryChangesPage()
-    case Root / "supervisor"       => SupervisorsPage()
-    case Root / "contractSchema"   => ContractSchemasPage()
-    case Root / "contracts"        => ContractsPage()
-    case Root / "edit-contracts"   => EditContractsPage()
-    case Root / "requiredDocument" => RequiredDocumentsPage()
+    case Root                         => HomePage()
+    case Root / "projects"            => ProjectsPage()
+    case Root / "users"               => UsersPage()
+    case Root / "hiwis"               => HiwisPage()
+    case Root / "paymentlevels"       => PaymentLevelsPage()
+    case Root / "salarychanges"       => SalaryChangesPage()
+    case Root / "supervisor"          => SupervisorsPage()
+    case Root / "contractSchema"      => ContractSchemasPage()
+    case Root / "contracts"           => ContractsPage()
+    case Root / "edit-contracts" / id => EditContractsPage(id)
+    case Root / "documents"           => DocumentsPage()
+    case _                            => ErrorPage()
   }
 
   def toPath: Page => Path = {
-    case HomePage()              => Root / ""
-    case ProjectsPage()          => Root / "projects"
-    case UsersPage()             => Root / "users"
-    case HiwisPage()             => Root / "hiwis"
-    case PaymentLevelsPage()     => Root / "paymentlevels"
-    case SalaryChangesPage()     => Root / "salarychanges"
-    case SupervisorsPage()       => Root / "supervisor"
-    case ContractSchemasPage()   => Root / "contractSchema"
-    case ContractsPage()         => Root / "contracts"
-    case EditContractsPage()     => Root / "edit-contracts"
-    case RequiredDocumentsPage() => Root / "requiredDocument"
+    case HomePage()            => Root / ""
+    case ProjectsPage()        => Root / "projects"
+    case UsersPage()           => Root / "users"
+    case HiwisPage()           => Root / "hiwis"
+    case PaymentLevelsPage()   => Root / "paymentlevels"
+    case SalaryChangesPage()   => Root / "salarychanges"
+    case SupervisorsPage()     => Root / "supervisor"
+    case ContractSchemasPage() => Root / "contractSchema"
+    case ContractsPage()       => Root / "contracts"
+    case EditContractsPage(id) => Root / "edit-contracts" / id
+    case DocumentsPage()       => Root / "documents"
+    case ErrorPage()           => Root / window.location.pathname.substring(1)
   }
 }

@@ -312,4 +312,22 @@ object Icons {
       ),
     )
   }
+
+  def notch(_cls: String = "", _color: String = "#292D32") = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      cls := _cls,
+      fill := "none",
+      path(
+        d := "M19.9201 8.94995L13.4001 15.47C12.6301 16.24 11.3701 16.24 10.6001 15.47L4.08008 8.94995",
+        stroke := _color,
+        VMod.attr("stroke-width") := "1.5",
+        VMod.attr("stroke-miterlimit") := "10",
+        VMod.attr("stroke-linecap") := "round",
+        VMod.attr("stroke-linejoin") := "round",
+      ),
+    )
+  }
 }

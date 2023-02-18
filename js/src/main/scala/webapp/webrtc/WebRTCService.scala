@@ -28,11 +28,14 @@ import webapp.*
 import webapp.utils.Base64
 import webapp.npm.JSUtils
 
+import outwatch.*
+import outwatch.dsl.*
+
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.annotation.nowarn
-
+import webapp.services.{ToastMode, ToastType, Toaster}
 import loci.communicator.ws.webnative.WS
 import org.scalajs.dom.RTCPeerConnection
 
@@ -61,7 +64,7 @@ object PendingConnection {
   def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)
 }
 
-class WebRTCService(using registry: Registry) {
+class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
@@ -91,6 +94,8 @@ class WebRTCService(using registry: Registry) {
           connectionInfo += (r.get -> StoredConnectionInformation(alias.get, source, uuid, connectionId))
           connectionRefs += (connectionId -> r.get)
           webRTCConnections += (r.get -> connection)
+
+          toaster.make(span(b(alias.get), " has just joined! 🚀"), ToastMode.Short, ToastType.Success)
         })
       })
       .andThen(r => {
@@ -114,4 +119,12 @@ class WebRTCService(using registry: Registry) {
 
     JSUtils.usesTurn(connection).map(usesTurn => if (usesTurn) "relay" else "direct")
   }
+
+  registry.remoteLeft.monitor(remoteRef => {
+    val connectionInfo = getInformation(remoteRef);
+    toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
+
+    removeConnection.fire(remoteRef)
+  }): @nowarn("msg=discarded expression")
+
 }

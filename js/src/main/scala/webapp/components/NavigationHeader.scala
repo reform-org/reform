@@ -25,6 +25,7 @@ import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
+import webapp.pages.DocumentsPage
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster)(
     classes: String,
@@ -34,9 +35,6 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
     cls := classes,
     li(
       navigationLink(ProjectsPage(), "Projects"),
-    ),
-    li(
-      navigationLink(UsersPage(), "Users"),
     ),
     li(
       a(
@@ -66,11 +64,13 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
     li(
       navigationLink(ContractsPage(), "Contracts"),
     ),
+    /*
     li(
-      navigationLink(EditContractsPage(), "Edit Contracs"),
+      navigationLink(EditContractsPage(null), "Edit Contracs"),
     ),
+     */
     li(
-      navigationLink(RequiredDocumentsPage(), "Required documents"),
+      navigationLink(DocumentsPage(), "Documents"),
     ),
   )
 }
@@ -88,7 +88,7 @@ def navigationHeader(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "drawer-content flex flex-col",
+      cls := "drawer-content flex flex-col page-scroll-container",
       div(
         cls := "navbar bg-base-100 shadow",
         div(

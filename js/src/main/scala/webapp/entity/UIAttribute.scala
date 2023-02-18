@@ -2,29 +2,52 @@ package webapp.entity
 
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 import rescala.default.*
 import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.*
 import webapp.utils.Date
+import scala.scalajs.js
+import org.scalajs.dom.document
+import org.scalajs.dom.HTMLInputElement
+import webapp.components.Icons
+import webapp.npm.JSUtils.createPopper
 
 class UIOption[NameType](
     val id: String,
     val name: NameType,
 ) {}
 
-class UIAttribute[EntityType, AttributeType](
+abstract class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
-    val setter: (EntityType, Attribute[AttributeType]) => EntityType,
     val readConverter: AttributeType => String,
+    val label: String,
+) {
+
+  def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(cls := "border border-gray-300 p-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+  }
+
+  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
+
+  def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+}
+
+class UITextAttribute[EntityType, AttributeType](
+    override val getter: EntityType => Attribute[AttributeType],
+    val setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    override val readConverter: AttributeType => String,
     val editConverter: AttributeType => String,
     val writeConverter: String => AttributeType,
-    val label: String,
+    override val label: String,
     val isRequired: Boolean,
     val fieldType: String,
     val regex: String = ".*",
     val stepSize: String = "1",
-) {
+) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
+
   private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
     entityVar.transform(
       _.map(e => {
@@ -32,38 +55,6 @@ class UIAttribute[EntityType, AttributeType](
         setter(e, attr.set(x))
       }),
     )
-  }
-
-  def render(entity: EntityType): VNode = {
-    val attr = getter(entity)
-    td(
-      cls := "border border-gray-300 p-0",
-      duplicateValuesHandler(attr.getAll.map(x => readConverter(x))),
-    )
-  }
-
-  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[Option[VNode]] = {
-    entityVar.map {
-      _.map(entity => {
-        val attr = getter(entity)
-        td(
-          cls := " border-0 px-0 py-0",
-          renderEditInput(formId, attr, x => set(entityVar, x), Some("conflicting-values")),
-          if (attr.getAll.size > 1) {
-            Some(
-              Seq(
-                dataList(
-                  idAttr := "conflicting-values",
-                  renderConflicts(attr),
-                ),
-              ),
-            )
-          } else {
-            None
-          },
-        )
-      })
-    }
   }
 
   protected def renderEditInput(
@@ -93,13 +84,49 @@ class UIAttribute[EntityType, AttributeType](
       },
     )
 
+  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] = {
+    entityVar.map {
+      _.map(entity => {
+        val attr = getter(entity)
+        td(
+          cls := " border-0 px-0 py-0",
+          renderEditInput(formId, attr, x => set(entityVar, x), Some("conflicting-values")),
+          if (attr.getAll.size > 1) {
+            Some(
+              Seq(
+                dataList(
+                  idAttr := "conflicting-values",
+                  renderConflicts(attr),
+                ),
+              ),
+            )
+          } else {
+            None
+          },
+        )
+      })
+        .getOrElse(td(cls := "px-6 py-0"))
+    }
+  }
+
   protected def getEditString(attr: Attribute[AttributeType]): String =
     attr.get.map(x => editConverter(x)).getOrElse("")
 
-  private def renderConflicts(attr: Attribute[AttributeType]): Seq[VNode] =
+  protected def renderConflicts(attr: Attribute[AttributeType]): Seq[VNode] =
     attr.getAll.map(x => option(value := readConverter(x)))
+}
 
-  def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+class UIReadOnlyAttribute[EntityType, AttributeType](
+    getter: EntityType => Attribute[AttributeType],
+    readConverter: AttributeType => String,
+    label: String,
+) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
+
+  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] =
+    entityVar.map(
+      _.flatMap(entity => getter(entity).get.map(a => td(readConverter(a))))
+        .getOrElse(td(cls := "px-6 py-0")),
+    )
 }
 
 class UINumberAttribute[EntityType, AttributeType](
@@ -113,7 +140,7 @@ class UINumberAttribute[EntityType, AttributeType](
     regex: String,
     stepSize: String,
 )(implicit ordering: Ordering[AttributeType])
-    extends UIAttribute[EntityType, AttributeType](
+    extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -137,7 +164,7 @@ class UIDateAttribute[EntityType](
     label: String,
     isRequired: Boolean,
     min: String = "",
-) extends UIAttribute[EntityType, Long](
+) extends UITextAttribute[EntityType, Long](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -175,7 +202,7 @@ class UICheckboxAttribute[EntityType](
     setter: (EntityType, Attribute[Boolean]) => EntityType,
     label: String,
     isRequired: Boolean,
-) extends UIAttribute[EntityType, Boolean](
+) extends UITextAttribute[EntityType, Boolean](
       getter = getter,
       setter = setter,
       readConverter = _.toString,
@@ -218,7 +245,7 @@ class UISelectAttribute[EntityType, AttributeType](
     label: String,
     isRequired: Boolean,
     options: Signal[List[UIOption[Signal[String]]]],
-) extends UIAttribute[EntityType, AttributeType](
+) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -257,4 +284,183 @@ class UISelectAttribute[EntityType, AttributeType](
         o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
       ),
     )
+}
+
+class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
+    getter: EntityType => Attribute[AttributeType],
+    setter: (EntityType, Attribute[AttributeType]) => EntityType,
+    readConverter: AttributeType => String,
+    writeConverter: String => AttributeType,
+    label: String,
+    isRequired: Boolean,
+    options: Signal[List[UIOption[Signal[String]]]],
+    showItems: Int = 5,
+    placeholderText: String = "Select...",
+) extends UITextAttribute[EntityType, AttributeType](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      editConverter = _.toString,
+      writeConverter = writeConverter,
+      label = label,
+      isRequired = isRequired,
+      fieldType = "select",
+    ) {
+
+  override def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(
+      cls := "px-6 py-0",
+      duplicateValuesHandler(
+        Seq(
+          div(
+            cls := "flex flex-row gap-2",
+            attr.getAll
+              .map(x =>
+                x.map(id =>
+                  options.map(o =>
+                    o.filter(p => p.id.equals(id)).map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name)),
+                  ),
+                ),
+              ),
+          ),
+        ),
+      ),
+    )
+  }
+
+  override def renderEditInput(
+      _formId: String,
+      attr: Attribute[AttributeType],
+      set: AttributeType => Unit,
+      datalist: Option[String] = None,
+  ): VNode = {
+    val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
+    val search = Var("")
+
+    createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+
+    div(
+      cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
+      idAttr := id,
+      div(
+        cls := "multiselect-select flex flex-row w-full h-full items-center pl-2",
+        div(
+          cls := "flex flex-row gap-2",
+          options.map(o =>
+            attr.getAll
+              .map(s =>
+                o.filter(v => s.contains(v.id))
+                  .slice(0, showItems - 1)
+                  .map(v =>
+                    div(
+                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center",
+                      v.name,
+                      div(
+                        Icons.close("w-4 h-4", "#64748b"),
+                        cls := "cursor-pointer",
+                        onClick.foreach(_ => {
+                          set(
+                            document
+                              .querySelectorAll(s"#$id input[type=checkbox]:checked")
+                              .map(element => element.id)
+                              .filter(id => id != v.id)
+                              .asInstanceOf[AttributeType],
+                          )
+                        }),
+                      ),
+                    ),
+                  ),
+              ),
+          ),
+          if (attr.getAll(0).size > showItems) {
+            Some(div(cls := "flex items-center justify-center text-slate-400", s"+${attr.getAll(0).size - showItems}"))
+          } else None,
+          if (attr.getAll(0).size == 0) {
+            Some(div(cls := "flex items-center justify-center text-slate-400", placeholderText))
+          } else None,
+        ),
+        outwatch.dsl.label(
+          tabIndex := 0,
+          cls := "grow relative pr-7 h-full",
+          div(cls := "absolute right-2 top-1/2 -translate-y-1/2", Icons.notch("w-4 h-4")),
+        ),
+      ),
+      div(
+        cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-slate-200",
+        input(
+          cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+          placeholder := "Search Options...",
+          onInput.value --> search,
+          value <-- search,
+        ),
+        div(
+          cls := "p-2 border-b border-slate-200",
+          input(
+            tpe := "checkbox",
+            cls := "mr-2",
+            idAttr := s"all-checkbox-$id",
+            onClick.foreach(e => {
+              if (e.target.asInstanceOf[HTMLInputElement].checked) {
+                set(
+                  document
+                    .querySelectorAll(s"#$id input[type=checkbox]")
+                    .map(element => element.id)
+                    .asInstanceOf[AttributeType],
+                )
+              } else {
+                set(Seq().asInstanceOf[AttributeType])
+              }
+
+            }),
+          ),
+          outwatch.dsl.label(
+            forId := s"all-checkbox-$id",
+            tabIndex := 0,
+            "Select All",
+          ),
+        ),
+        div(
+          cls := "multiselect-dropdown-list",
+          options.map(option =>
+            attr.getAll.map(attribute =>
+              option.map(uiOption => {
+                uiOption.name.map(name => {
+                  search.map(searchKey => {
+                    if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
+                      Some(
+                        outwatch.dsl.label(
+                          cls := "block w-full hover:bg-slate-50 px-2 py-0.5",
+                          input(
+                            tpe := "checkbox",
+                            cls := "mr-2",
+                            checked := attribute.contains(uiOption.id),
+                            idAttr := uiOption.id,
+                            onClick.foreach(_ => {
+                              set(
+                                document
+                                  .querySelectorAll(s"#$id input[type=checkbox]:checked")
+                                  .map(element => element.id)
+                                  .asInstanceOf[AttributeType],
+                              )
+                            }),
+                          ),
+                          tabIndex := 0,
+                          uiOption.name,
+                          forId := uiOption.id,
+                        ),
+                      )
+                    } else None
+                  })
+                })
+
+              }),
+            ),
+          ),
+        ),
+      ),
+      formId := _formId,
+      required := isRequired,
+    )
+  }
 }

@@ -20,6 +20,12 @@ object JSUtils {
     NativeImpl.downloadJson(name, content)
   }
 
+  def createPopper(trigger: String, element: String): Unit = {
+    NativeImpl.createPopper(trigger, element)
+  }
+
+  val isSelenium: Boolean = NativeImpl.isSelenium
+
   @js.native
   @JSImport("../../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
@@ -29,5 +35,10 @@ object JSUtils {
 
     def downloadJson(name: String, content: String): Unit =
       js.native
+
+    def createPopper(trigger: String, element: String): Unit =
+      js.native
+
+    val isSelenium: Boolean = js.native
   }
 }

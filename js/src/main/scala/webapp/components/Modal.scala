@@ -38,18 +38,18 @@ class Modal(val title: String, val body: VNode, val buttons: Seq[ModalButton]) {
     )
   }
 
-  def open() = {
+  def open(): Unit = {
     this.openState.set(true)
   }
 
-  def close() = {
+  def close(): Unit = {
     this.openState.set(false)
   }
 
-  def render(): VNode = {
+  def render: VMod = {
     div(
       div(
-        cls <-- openState.map(v => s"modal ${(if (v == true) Some("modal-open") else None).getOrElse("")}"),
+        cls <-- openState.map(v => s"modal ${(if (v) Some("modal-open") else None).getOrElse("")}"),
         div(
           cls := "modal-box",
           h3(cls := "font-bold text-xl", title),
