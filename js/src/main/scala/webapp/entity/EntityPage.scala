@@ -278,6 +278,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
             renderEntities,
           ),
           tfoot(
+            cls := "mt-2",
             addEntityRow.render,
           ),
         ),
