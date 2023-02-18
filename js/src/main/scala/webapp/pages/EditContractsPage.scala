@@ -25,12 +25,13 @@ import webapp.{*, given}
 import webapp.services.DiscoveryService
 import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
-import webapp.services.Toaster
+import webapp.services.{ToastMode, Toaster}
 import webapp.repo.Synced
+import webapp.utils.Futures.*
 
 case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
 
-  private val currentContract = repositories.contracts.getOrCreate(contractId)
+  private val existingValue = repositories.contracts.getOrCreate(contractId)
 
   def render(using
       routing: RoutingService,
@@ -39,13 +40,16 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       discovery: DiscoveryService,
       toaster: Toaster,
   ): VNode = {
-    div(currentContract.map(currentContract => {
-      InnerEditContractsPage(currentContract).render()
+    div(existingValue.map(currentContract => {
+      InnerEditContractsPage(Some(currentContract)).render()
     }))
   }
 }
 
-case class InnerEditContractsPage(contract: Synced[Contract]) {
+case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
+    toaster: Toaster,
+    repositories: Repositories,
+) {
 
   private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
     UISelectAttribute(
@@ -143,7 +147,32 @@ case class InnerEditContractsPage(contract: Synced[Contract]) {
       isRequired = true,
     )
 
-  var currentContract = Var(Option(contract.signal.now))
+  private def createOrUpdate(): Unit = {
+    existingValue match {
+      case Some(existing) => {
+        existing
+          .update(p => {
+            p.get.merge(editingValue.now.get)
+          })
+          .toastOnError(ToastMode.Infinit)
+        editingValue.set(None)
+      }
+      case None => {
+        repositories.contracts
+          .create()
+          .flatMap(entity => {
+            editingValue.set(Some(Contract.empty.default))
+            //  TODO FIXME we probably should special case initialization and not use the event
+            entity.update(p => {
+              p.getOrElse(Contract.empty).merge(editingValue.now.get)
+            })
+          })
+          .toastOnError(ToastMode.Infinit)
+      }
+    }
+  }
+
+  var editingValue = Var(Option(existingValue.get.signal.now))
 
   def render(using
       routing: RoutingService,
@@ -162,33 +191,37 @@ case class InnerEditContractsPage(contract: Synced[Contract]) {
           form(
             br,
             label("CurrentContract:"),
-            label(contract.id),
+            label(existingValue.map(p => p.id)),
             br,
             label("AssociatedHiwi:"),
-            contractAssociatedHiwi.renderEdit("", currentContract),
+            contractAssociatedHiwi.renderEdit("", editingValue),
             br,
             label("AssociatedSupervisor:"),
-            contractAssociatedSupervisor.renderEdit("", currentContract),
+            contractAssociatedSupervisor.renderEdit("", editingValue),
             br,
             label("ContractType:"),
-            contractAssociatedType.renderEdit("", currentContract),
+            contractAssociatedType.renderEdit("", editingValue),
             br,
             label("StartDate:"),
-            contractStartDate.renderEdit("", currentContract),
+            contractStartDate.renderEdit("", editingValue),
             br,
             label("EndDate:"),
-            contractEndDate.renderEdit("", currentContract),
+            contractEndDate.renderEdit("", editingValue),
             br,
             label("HoursPerMonth:"),
-            contractHoursPerMonth.renderEdit("", currentContract),
+            contractHoursPerMonth.renderEdit("", editingValue),
             br,
             label("AssociatedPaymentLevel:"),
-            contractAssociatedPaymentLevel.renderEdit("", currentContract),
+            contractAssociatedPaymentLevel.renderEdit("", editingValue),
+            onSubmit.foreach(e => {
+              e.preventDefault()
+              createOrUpdate()
+            }),
             button(
               cls := "btn",
+              `type` := "submit",
               idAttr := "confirmEdit",
               "Save",
-              // onClick.foreach(_ => cancelEdit()), TODO implement confirmEdit
             ),
             button(
               cls := "btn",
