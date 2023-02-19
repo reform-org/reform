@@ -66,8 +66,7 @@ private case object Init extends State {
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = {
     div(
       cls := "form-control w-full text-sm",
-      LabeledInput(
-        "What is your name?",
+      LabeledInput("What is your name?")(
         tpe := "text",
         placeholder := "Your name",
         onInput.value --> alias,
@@ -88,9 +87,8 @@ private case class ClientAskingForHostSessionToken() extends State {
   private val alias = Var("")
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p1",
-    LabeledInput("What is your name?", tpe := "text", placeholder := "Your name", onInput.value --> alias, value := ""),
-    LabeledInput(
-      "Please enter the code your peer has provided:",
+    LabeledInput("What is your name?")(tpe := "text", placeholder := "Your name", onInput.value --> alias, value := ""),
+    LabeledInput("Please enter the code your peer has provided:")(
       tpe := "text",
       placeholder := "Token",
       cls := "input input-bordered w-full text-sm p-2 h-fit",
@@ -157,8 +155,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
     showConnectionToken(connection),
-    LabeledInput(
-      "Please enter the code your peer has provided:",
+    LabeledInput("Please enter the code your peer has provided:")(
       tpe := "text",
       placeholder := "Token",
       value := "",

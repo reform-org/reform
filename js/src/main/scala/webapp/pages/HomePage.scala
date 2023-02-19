@@ -234,7 +234,7 @@ case class HomePage() extends Page {
         ),
         modal.render,
         deleteDBModal.render,
-        LabeledInput("Test", placeholder := "test"),
+        LabeledInput("Test")(placeholder := "test"),
         MultiSelect(
           Signal(List(SelectOption("test", Signal("test")), SelectOption("test2", Signal("test2")))),
           (value) => multiSelectValue.set(value),
