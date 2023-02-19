@@ -86,20 +86,19 @@ private class EntityRow[T <: Entity[T]](
             existingValue match {
               case Some(p) => {
                 List(
-                  TableButton(LightButtonStyle.Primary)(
+                  TableButton(
+                    LightButtonStyle.Primary,
                     formId := s"form-${existingValue.map(_.id)}",
                     `type` := "submit",
                     idAttr := "add-entity-button",
                     "Save",
                   ),
-                  TableButton(LightButtonStyle.Default)(
-                    "Cancel",
-                    onClick.foreach(_ => cancelEdit()),
-                  ),
+                  TableButton(LightButtonStyle.Default, "Cancel", onClick.foreach(_ => cancelEdit())),
                 )
               }
               case None => {
-                TableButton(LightButtonStyle.Primary)(
+                TableButton(
+                  LightButtonStyle.Primary,
                   // cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
                   formId := s"form-${existingValue.map(_.id)}",
                   `type` := "submit",
@@ -127,7 +126,8 @@ private class EntityRow[T <: Entity[T]](
             )
             deleteModal.set(Some(modal))
             val res = {
-              IconButton(LightButtonStyle.Error)(
+              IconButton(
+                LightButtonStyle.Error,
                 Icons.close("fill-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-left",
                 data.tip := "Delete",
@@ -169,11 +169,9 @@ private class EntityRow[T <: Entity[T]](
             }),
             td(
               cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
-              TableButton(LightButtonStyle.Primary)(
-                "Edit",
-                onClick.foreach(_ => startEditing()),
-              ),
-              IconButton(LightButtonStyle.Error)(
+              TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
+              IconButton(
+                LightButtonStyle.Error,
                 Icons.close("fill-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-top",
                 data.tip := "Delete",

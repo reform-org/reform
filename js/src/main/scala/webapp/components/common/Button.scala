@@ -21,47 +21,26 @@ enum LightButtonStyle(val props: VMod) {
   case Error extends LightButtonStyle(cls := "bg-red-200 hover:bg-red-300 text-red-600")
 }
 
-def Button[T <: VMod](style: ButtonStyle)(props: T*): VNode = {
-  Button(props, style.props)
-}
-
-def Button[T <: VMod](props: T*): VNode = {
-  val hasStyle = props
-    .filter(p => p.isInstanceOf[AccumAttr] && p.asInstanceOf[AccumAttr].title == "class")
-    .exists(p => p.asInstanceOf[AccumAttr].value.toString().contains("bg-"))
+def Button(style: ButtonStyle, props: VMod*): VNode = {
   button(
     cls := "btn btn-active p-2 h-fit min-h-10 mt-2 border-0 w-full",
     props,
-    if (!hasStyle) Some(ButtonStyle.Primary.props) else None,
+    style.props,
   )
 }
 
-def TableButton[T <: VMod](style: LightButtonStyle)(props: T*): VNode = {
-  TableButton(props, style.props)
-}
-
-def TableButton[T <: VMod](props: T*): VNode = {
-  val hasStyle = props
-    .filter(p => p.isInstanceOf[AccumAttr] && p.asInstanceOf[AccumAttr].title == "class")
-    .exists(p => p.asInstanceOf[AccumAttr].value.toString().contains("bg-"))
+def TableButton(style: LightButtonStyle, props: VMod*): VNode = {
   button(
     cls := "rounded px-2 py-0 h-fit uppercase font-bold text-sm",
     props,
-    if (!hasStyle) Some(LightButtonStyle.Primary.props) else None,
+    style.props,
   )
 }
 
-def IconButton[T <: VMod](style: LightButtonStyle)(props: T*): VNode = {
-  IconButton(props, style.props)
-}
-
-def IconButton[T <: VMod](props: T*): VNode = {
-  val hasStyle = props
-    .filter(p => p.isInstanceOf[AccumAttr] && p.asInstanceOf[AccumAttr].title == "class")
-    .exists(p => p.asInstanceOf[AccumAttr].value.toString().contains("bg-"))
+def IconButton(style: LightButtonStyle, props: VMod*): VNode = {
   button(
     cls := "p-0.5 h-fit w-fit cursor-pointer rounded-md",
     props,
-    if (!hasStyle) Some(LightButtonStyle.Primary.props) else None,
+    style.props,
   )
 }

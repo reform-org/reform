@@ -141,32 +141,37 @@ case class HomePage() extends Page {
         cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
         Button(
+          ButtonStyle.Primary,
           idAttr := "loadPDF",
           "Fill PDF",
           onClick.foreach(_ => {
             modal.open()
           }),
         ),
-        TableButton(LightButtonStyle.Default)(
+        TableButton(
+          LightButtonStyle.Default,
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           "Make me a boring normal toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Default)
           }),
         ),
-        Button(ButtonStyle.Success)(
+        Button(
+          ButtonStyle.Success,
           "Make me a successful toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Success)
           }),
         ),
-        Button(ButtonStyle.Warning)(
+        Button(
+          ButtonStyle.Warning,
           "Make me a warning toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Warning)
           }),
         ),
-        Button(ButtonStyle.Error)(
+        Button(
+          ButtonStyle.Error,
           "Make me an error toast 🍞",
           onClick.foreach(_ => {
             toaster.make(
@@ -176,13 +181,15 @@ case class HomePage() extends Page {
             )
           }),
         ),
-        Button(ButtonStyle.Error)(
+        Button(
+          ButtonStyle.Error,
           "Make me a persistent error toast 🍞",
           onClick.foreach(_ => {
             toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
           }),
         ),
         Button(
+          ButtonStyle.Primary,
           "Export DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
@@ -192,6 +199,7 @@ case class HomePage() extends Page {
         ),
         FileInput(tpe := "file", idAttr := "import-file"),
         Button(
+          ButtonStyle.Primary,
           "Import DB",
           onClick.foreach(_ => {
             val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
@@ -214,7 +222,8 @@ case class HomePage() extends Page {
                 })
           }),
         ),
-        Button(ButtonStyle.Error)(
+        Button(
+          ButtonStyle.Error,
           "Delete DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
