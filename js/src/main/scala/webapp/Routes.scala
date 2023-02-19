@@ -36,7 +36,6 @@ object Routes {
     case Root / "contracts"           => ContractsPage()
     case Root / "edit-contracts" / id => EditContractsPage(id)
     case Root / "documents"           => DocumentsPage()
-    case Root / "extrapage"           => ExtraPage()
     case _                            => ErrorPage()
   }
 
@@ -52,7 +51,6 @@ object Routes {
     case ContractsPage()       => Root / "contracts"
     case EditContractsPage(id) => Root / "edit-contracts" / id
     case DocumentsPage()       => Root / "documents"
-    case ExtraPage()           => Root / "extrapage"
     case ErrorPage()           => Root / window.location.pathname.substring(1)
   }
 }
