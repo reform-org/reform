@@ -45,7 +45,7 @@ case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 private class EntityRow[T <: Entity[T]](
     val repository: Repository[T],
     val value: EntityValue[T],
-    val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
+    val uiAttributes: Seq[UIBasicAttribute[T]],
 )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
   def render: VMod =
@@ -165,7 +165,7 @@ private class EntityRow[T <: Entity[T]](
             cls := "border border-gray-300 odd:bg-slate-50",
             data.id := synced.id,
             uiAttributes.map(ui => {
-              ui.render(p)
+              ui.render(synced.id, p)
             }),
             td(
               cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
@@ -228,7 +228,7 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
-private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? <: Any]]) {
+private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]) {
 
   private val filters = uiAttributes.map(_.uiFilter)
 
@@ -243,7 +243,7 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? 
 
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
+abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
     bottom: Bottom[T],
     lattice: Lattice[T],
     toaster: Toaster,

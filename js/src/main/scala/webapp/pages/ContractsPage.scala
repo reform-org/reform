@@ -36,10 +36,29 @@ private def contractAssociatedHiwi(using repositories: Repositories): UISelectAt
     isRequired = true,
   )
 
+private def contractAssociatedProject(using repositories: Repositories): UISelectAttribute[Contract, String] =
+  UISelectAttribute(
+    _.contractAssociatedProject,
+    (p, a) => p.copy(contractAssociatedProject = a),
+    readConverter = identity,
+    writeConverter = identity,
+    label = "Project",
+    options = repositories.projects.all.map(list =>
+      list.map(value =>
+        new SelectOption[Signal[String]](
+          value.id,
+          value.signal.map(v => v.name.get.getOrElse("")),
+        ),
+      ),
+    ),
+    isRequired = true,
+  )
+
 case class ContractsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Contract](
       repositories.contracts,
       Seq(
+        contractAssociatedProject,
         contractAssociatedHiwi,
       ),
     ) {}

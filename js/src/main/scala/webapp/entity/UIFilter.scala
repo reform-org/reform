@@ -4,11 +4,19 @@ import rescala.default.*
 import webapp.given
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 
 trait UIFilter[EntityType] {
   def render: VNode
 
   val predicate: Signal[EntityType => Boolean]
+}
+
+class UIFilterNothing[EntityType]() extends UIFilter[EntityType] {
+
+  def render: VNode = td()
+
+  val predicate: default.Signal[EntityType => Boolean] = Signal(_ => true)
 }
 
 class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])
