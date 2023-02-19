@@ -19,7 +19,7 @@ import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
 import rescala.default.*
-
+import webapp.components.common.*
 import HiwisPage.*
 
 case class HiwisPage()(using repositories: Repositories, toaster: Toaster)
@@ -54,7 +54,7 @@ object HiwisPage {
       isRequired = true,
       label = "Gender",
       options = Signal(
-        List("not specified", "male", "female").map(gender => new UIOption[Signal[String]](gender, Signal(gender))),
+        List("not specified", "male", "female").map(gender => new SelectOption[Signal[String]](gender, Signal(gender))),
       ),
     )
 

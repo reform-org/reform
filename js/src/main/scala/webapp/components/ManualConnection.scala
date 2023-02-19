@@ -15,6 +15,10 @@ import webapp.services.Toaster
 import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
 import loci.transmitter.RemoteRef
+import webapp.components.common.Input
+import webapp.components.common.LabeledInput
+import webapp.components.common.Button
+import webapp.components.common.ButtonStyle
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
@@ -62,16 +66,14 @@ private case object Init extends State {
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = {
     div(
       cls := "form-control w-full text-sm",
-      label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
-      input(
+      LabeledInput("What is your name?")(
         tpe := "text",
         placeholder := "Your name",
-        cls := "input input-bordered w-full text-sm p-2 h-fit",
         onInput.value --> alias,
         value := "",
       ),
-      button(
-        cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+      Button(
+        ButtonStyle.Primary,
         "Create Invitation",
         disabled <-- alias.map(_.isBlank()),
         onClick.foreach(_ => initializeHostSession),
@@ -85,24 +87,16 @@ private case class ClientAskingForHostSessionToken() extends State {
   private val alias = Var("")
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p1",
-    label(cls := "label", span(cls := "label-text text-slate-500", "What is your name?")),
-    input(
-      tpe := "text",
-      placeholder := "Your name",
-      cls := "input input-bordered w-full text-sm p-2 h-fit",
-      onInput.value --> alias,
-      value := "",
-    ),
-    label(cls := "label", span(cls := "label-text text-slate-500", "Please enter the code your peer has provided:")),
-    input(
+    LabeledInput("What is your name?")(tpe := "text", placeholder := "Your name", onInput.value --> alias, value := ""),
+    LabeledInput("Please enter the code your peer has provided:")(
       tpe := "text",
       placeholder := "Token",
       cls := "input input-bordered w-full text-sm p-2 h-fit",
       value := "",
       onInput.value --> sessionToken,
     ),
-    button(
-      cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+    Button(
+      ButtonStyle.Primary,
       "Connect",
       disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
       onClick.foreach(_ => connectToHost),
@@ -161,16 +155,14 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
     showConnectionToken(connection),
-    label(cls := "label", span(cls := "label-text text-slate-500", "Please enter the code your peer has provided:")),
-    input(
+    LabeledInput("Please enter the code your peer has provided:")(
       tpe := "text",
       placeholder := "Token",
-      cls := "input input-bordered w-full text-sm p-2 h-fit",
       value := "",
       onInput.value --> sessionTokenFromClient,
     ),
-    button(
-      cls := "btn btn-active bg-purple-600 p-2 h-fit min-h-10 mt-2 border-0 hover:bg-purple-600 w-full",
+    Button(
+      ButtonStyle.Primary,
       "Finish Connection",
       disabled <-- sessionTokenFromClient.map(_.isBlank),
       onClick.foreach(_ => confirmConnectionToClient()),

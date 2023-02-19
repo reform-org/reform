@@ -8,16 +8,7 @@ import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.*
 import webapp.utils.Date
-import scala.scalajs.js
-import org.scalajs.dom.document
-import org.scalajs.dom.HTMLInputElement
-import webapp.components.Icons
-import webapp.npm.JSUtils.createPopper
-
-class UIOption[NameType](
-    val id: String,
-    val name: NameType,
-) {}
+import webapp.components.common.*
 
 abstract class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
@@ -63,8 +54,8 @@ class UITextAttribute[EntityType, AttributeType](
       set: AttributeType => Unit,
       datalist: Option[String] = None,
   ): VNode =
-    input(
-      cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
+    TableInput(
+      // cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
       `type` := fieldType,
       formId := _formId,
       required := isRequired,
@@ -244,7 +235,7 @@ class UISelectAttribute[EntityType, AttributeType](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[List[UIOption[Signal[String]]]],
+    options: Signal[List[SelectOption[Signal[String]]]],
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -269,21 +260,19 @@ class UISelectAttribute[EntityType, AttributeType](
       attr: Attribute[AttributeType],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-  ): VNode =
-    select(
-      cls := "input valid:input-success input-ghost",
+  ): VNode = {
+    val value = Var(attr.get.getOrElse("").asInstanceOf[String])
+    Select(
+      options,
+      (v) => {
+        value.set(v.asInstanceOf[String])
+        set(v.asInstanceOf[AttributeType])
+      },
+      value,
       formId := _formId,
       required := isRequired,
-      onInput.value --> {
-        val evt = Evt[String]()
-        ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
-        evt
-      },
-      option(VMod.attr("value") := "", "Bitte wählen..."),
-      options.map(o =>
-        o.map(v => option(value := v.id, selected := attr.get.map(x => readConverter(x)).contains(v.id), v.name)),
-      ),
     )
+  }
 }
 
 class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
@@ -293,9 +282,8 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[List[UIOption[Signal[String]]]],
+    options: Signal[List[SelectOption[Signal[String]]]],
     showItems: Int = 5,
-    placeholderText: String = "Select...",
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -335,130 +323,15 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
       set: AttributeType => Unit,
       datalist: Option[String] = None,
   ): VNode = {
-    val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
-    val search = Var("")
-
-    createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
-
-    div(
-      cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
-      idAttr := id,
-      div(
-        cls := "multiselect-select flex flex-row w-full h-full items-center pl-2",
-        div(
-          cls := "flex flex-row gap-2",
-          options.map(o =>
-            attr.getAll
-              .map(s =>
-                o.filter(v => s.contains(v.id))
-                  .slice(0, showItems - 1)
-                  .map(v =>
-                    div(
-                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center",
-                      v.name,
-                      div(
-                        Icons.close("w-4 h-4", "#64748b"),
-                        cls := "cursor-pointer",
-                        onClick.foreach(_ => {
-                          set(
-                            document
-                              .querySelectorAll(s"#$id input[type=checkbox]:checked")
-                              .map(element => element.id)
-                              .filter(id => id != v.id)
-                              .asInstanceOf[AttributeType],
-                          )
-                        }),
-                      ),
-                    ),
-                  ),
-              ),
-          ),
-          if (attr.getAll(0).size > showItems) {
-            Some(div(cls := "flex items-center justify-center text-slate-400", s"+${attr.getAll(0).size - showItems}"))
-          } else None,
-          if (attr.getAll(0).size == 0) {
-            Some(div(cls := "flex items-center justify-center text-slate-400", placeholderText))
-          } else None,
-        ),
-        outwatch.dsl.label(
-          tabIndex := 0,
-          cls := "grow relative pr-7 h-full",
-          div(cls := "absolute right-2 top-1/2 -translate-y-1/2", Icons.notch("w-4 h-4")),
-        ),
-      ),
-      div(
-        cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-slate-200",
-        input(
-          cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
-          placeholder := "Search Options...",
-          onInput.value --> search,
-          value <-- search,
-        ),
-        div(
-          cls := "p-2 border-b border-slate-200",
-          input(
-            tpe := "checkbox",
-            cls := "mr-2",
-            idAttr := s"all-checkbox-$id",
-            onClick.foreach(e => {
-              if (e.target.asInstanceOf[HTMLInputElement].checked) {
-                set(
-                  document
-                    .querySelectorAll(s"#$id input[type=checkbox]")
-                    .map(element => element.id)
-                    .asInstanceOf[AttributeType],
-                )
-              } else {
-                set(Seq().asInstanceOf[AttributeType])
-              }
-
-            }),
-          ),
-          outwatch.dsl.label(
-            forId := s"all-checkbox-$id",
-            tabIndex := 0,
-            "Select All",
-          ),
-        ),
-        div(
-          cls := "multiselect-dropdown-list",
-          options.map(option =>
-            attr.getAll.map(attribute =>
-              option.map(uiOption => {
-                uiOption.name.map(name => {
-                  search.map(searchKey => {
-                    if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
-                      Some(
-                        outwatch.dsl.label(
-                          cls := "block w-full hover:bg-slate-50 px-2 py-0.5",
-                          input(
-                            tpe := "checkbox",
-                            cls := "mr-2",
-                            checked := attribute.contains(uiOption.id),
-                            idAttr := uiOption.id,
-                            onClick.foreach(_ => {
-                              set(
-                                document
-                                  .querySelectorAll(s"#$id input[type=checkbox]:checked")
-                                  .map(element => element.id)
-                                  .asInstanceOf[AttributeType],
-                              )
-                            }),
-                          ),
-                          tabIndex := 0,
-                          uiOption.name,
-                          forId := uiOption.id,
-                        ),
-                      )
-                    } else None
-                  })
-                })
-
-              }),
-            ),
-          ),
-        ),
-      ),
+    val value = Var(attr.getAll(0).asInstanceOf[Seq[String]])
+    MultiSelect(
+      options,
+      (v) => {
+        value.set(v.asInstanceOf[Seq[String]])
+        set(v.asInstanceOf[AttributeType])
+      },
+      value,
+      showItems,
       formId := _formId,
       required := isRequired,
     )

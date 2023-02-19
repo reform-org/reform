@@ -19,6 +19,7 @@ import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
 import rescala.default.*
+import webapp.components.common.*
 
 import ContractSchemasPage.*
 
@@ -42,7 +43,7 @@ object ContractSchemasPage {
       writeConverter = w => w.split(", ").toSeq,
       label = "Required Documents",
       options = repositories.requiredDocuments.all.map(list =>
-        list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.name.get.getOrElse("")))),
+        list.map(value => new SelectOption[Signal[String]](value.id, value.signal.map(v => v.name.get.getOrElse("")))),
       ),
       isRequired = true,
     )

@@ -19,6 +19,7 @@ import webapp.Repositories
 import webapp.entity.*
 import rescala.default.*
 import webapp.services.Toaster
+import webapp.components.common.*
 
 private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
   UISelectAttribute(
@@ -28,7 +29,9 @@ private def contractAssociatedHiwi(using repositories: Repositories): UISelectAt
     writeConverter = identity,
     label = "AssociatedHiwi",
     options = repositories.hiwis.all.map(list =>
-      list.map(value => new UIOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
+      list.map(value =>
+        new SelectOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse(""))),
+      ),
     ),
     isRequired = true,
   )
