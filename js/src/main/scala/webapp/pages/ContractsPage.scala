@@ -45,7 +45,7 @@ private def contractAssociatedProject(using repositories: Repositories): UISelec
     label = "Project",
     options = repositories.projects.all.map(list =>
       list.map(value =>
-        new UIOption[Signal[String]](
+        new SelectOption[Signal[String]](
           value.id,
           value.signal.map(v => v.name.get.getOrElse("")),
         ),

@@ -57,21 +57,19 @@ object ProjectsPage {
       (p, a) => p.copy(accountName = a),
     )
 
-  private val nameLength = UIAttributeBuilder.int
-    .withLabel("Length of the Name")
-    .map[String](_.length, _.toString)
-    .bindReadOnly[Project](_.name)
-
   private def contractCount(using repositories: Repositories) = new UIBasicAttribute[Project](
     label = "Contracts",
   ) {
 
     override def render(id: String, entity: Project): VNode = {
       td(
-        cls := "border border-gray-300 p-0",
-        repositories.contracts.all.mapInside(contract => {
-          contract.signal.map(_.contractAssociatedProject.get == Some(id))
-        }),
+        cls := "border border-gray-300 p-0", {
+          repositories.contracts.all
+            .map(_.map(_.signal))
+            .flatten
+            .map(contracts => contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size)
+        },
+        " Contracts",
       )
     }
 
