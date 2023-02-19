@@ -106,17 +106,34 @@ def Select(
               })
             })
           }),
-        ),
-        options.map(option =>
-          option
-            .map(uiOption => {
-              uiOption.name
-                .map(name => {
-                  search
-                    .map(searchKey => (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())))
-                })
-            }),
-        ),
+        ), {
+          val noResults = options
+            .map(option => {
+              Signal(
+                option
+                  .map(uiOption => {
+                    uiOption.name
+                      .map(name => {
+                        search
+                          .map(searchKey =>
+                            (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())),
+                          )
+                      })
+                      .flatten
+                  }),
+              ).flatten.map(options => {
+                options.count(identity) == 0
+              })
+            })
+            .flatten
+          noResults.map(noResults => {
+            if (noResults) {
+              Some(emptyState)
+            } else {
+              None
+            }
+          })
+        },
       ),
     ),
   )
