@@ -6,20 +6,29 @@ import scala.scalajs.js
 import rescala.default.*
 import webapp.npm.JSUtils.createPopper
 import webapp.given
-import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.document
+import org.scalajs.dom.HTMLElement
 
 def Select(
-    options: Signal[List[SelectOption[Signal[String]]]],
+    options: Signal[Seq[SelectOption[Signal[String]]]],
     onInput: (value: String) => Unit,
     value: Var[String],
+    searchEnabled: Boolean = true,
+    emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
   createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
+
+  def close() = {
+    val active = document.activeElement
+    if (active != null) {
+      active.asInstanceOf[HTMLElement].blur()
+    }
+  }
 
   div(
     cls := "select-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
@@ -30,7 +39,7 @@ def Select(
       options.map(o =>
         value
           .map(s => {
-            val selectedOption = o.find(v => s.contains(v.id))
+            val selectedOption = o.find(v => s == v.id)
             selectedOption match {
               case None    => div()
               case Some(v) => div(v.name)
@@ -49,15 +58,19 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-slate-200",
-      input(
-        cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
-        placeholder := "Search Options...",
-        outwatch.dsl.onInput.value --> search,
-        outwatch.dsl.value <-- search,
-      ),
+      cls := "select-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-slate-200",
+      if (searchEnabled) {
+        Some(
+          input(
+            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+            placeholder := "Search Options...",
+            outwatch.dsl.onInput.value --> search,
+            outwatch.dsl.value <-- search,
+          ),
+        )
+      } else None,
       div(
-        cls := "select-dropdown-list",
+        cls := "select-dropdown-list max-h-96 overflow-y-auto",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {
@@ -78,6 +91,7 @@ def Select(
                               .querySelector(s"#$id input[type=radio]:checked")
                               .id,
                           )
+                          close()
                         }),
                       ),
                       tabIndex := 0,
@@ -91,9 +105,40 @@ def Select(
                 } else None
               })
             })
-
           }),
-        ),
+        ), {
+          val noResults = options
+            .map(option => {
+              Signal(
+                option
+                  .map(uiOption => {
+                    uiOption.name
+                      .map(name => {
+                        search
+                          .map(searchKey =>
+                            (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())),
+                          )
+                      })
+                      .flatten
+                  }),
+              ).flatten.map(options => {
+                options.count(identity) == 0
+              })
+            })
+            .flatten
+          noResults.map(noResults => {
+            if (noResults) {
+              Some(
+                div(
+                  cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
+                  emptyState,
+                ),
+              )
+            } else {
+              None
+            }
+          })
+        },
       ),
     ),
   )

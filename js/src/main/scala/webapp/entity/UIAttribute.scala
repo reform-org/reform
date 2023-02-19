@@ -249,6 +249,7 @@ class UISelectAttribute[EntityType, AttributeType](
     label: String,
     isRequired: Boolean,
     options: Signal[List[SelectOption[Signal[String]]]],
+    searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -282,6 +283,8 @@ class UISelectAttribute[EntityType, AttributeType](
         set(v.asInstanceOf[AttributeType])
       },
       value,
+      searchEnabled,
+      span("Nothing found..."),
       formId := _formId,
       required := isRequired,
     )
@@ -297,6 +300,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
     isRequired: Boolean,
     options: Signal[List[SelectOption[Signal[String]]]],
     showItems: Int = 5,
+    searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -345,6 +349,8 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
       },
       value,
       showItems,
+      searchEnabled,
+      span("Nothing found..."),
       formId := _formId,
       required := isRequired,
     )

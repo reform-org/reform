@@ -67,14 +67,14 @@ export const createPopper = async (trigger, element) => {
 				adaptive: false,
 			},
 		},
-			{
+			/*{
 				name: 'offset',
 				options: {
 					offset: ({ placement, reference, popper }) => {
 						return [0, - reference.height];
 					},
 				},
-			}],
+			}*/],
 	});
 	await waitForElement(".page-scroll-container");
 	popperInstance.update();
