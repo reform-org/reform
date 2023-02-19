@@ -21,6 +21,7 @@ def MultiSelect(
     value: Var[Seq[String]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
+    emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
@@ -152,7 +153,39 @@ def MultiSelect(
             })
 
           }),
-        ),
+        ), {
+          val noResults = options
+            .map(option => {
+              Signal(
+                option
+                  .map(uiOption => {
+                    uiOption.name
+                      .map(name => {
+                        search
+                          .map(searchKey =>
+                            (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())),
+                          )
+                      })
+                      .flatten
+                  }),
+              ).flatten.map(options => {
+                options.count(identity) == 0
+              })
+            })
+            .flatten
+          noResults.map(noResults => {
+            if (noResults) {
+              Some(
+                div(
+                  cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
+                  emptyState,
+                ),
+              )
+            } else {
+              None
+            }
+          })
+        },
       ),
     ),
   )

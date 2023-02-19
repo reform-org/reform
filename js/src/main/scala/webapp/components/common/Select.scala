@@ -128,7 +128,12 @@ def Select(
             .flatten
           noResults.map(noResults => {
             if (noResults) {
-              Some(emptyState)
+              Some(
+                div(
+                  cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
+                  emptyState,
+                ),
+              )
             } else {
               None
             }

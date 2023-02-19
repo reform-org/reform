@@ -337,6 +337,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
       value,
       showItems,
       searchEnabled,
+      span("Nothing found..."),
       formId := _formId,
       required := isRequired,
     )
