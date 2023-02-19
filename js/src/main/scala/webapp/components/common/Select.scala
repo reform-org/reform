@@ -10,11 +10,11 @@ import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
 import org.scalajs.dom.{console, document}
 
-def Select[T <: VMod](
+def Select(
     options: Signal[List[SelectOption[Signal[String]]]],
     onInput: (value: String) => Unit,
     value: Var[String],
-    props: T*,
+    props: VMod*,
 ): VNode = {
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
