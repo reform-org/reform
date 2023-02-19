@@ -253,7 +253,7 @@ export class Peer {
 		await accountInput.sendKeys(account);
 
 		await (
-			await row.findElement(By.xpath('//button[text()="Save edit"]'))
+			await row.findElement(By.xpath('//button[text()="Save"]'))
 		).click();
 
 		let oldProject = this.projects.value.get(projectId)!;
@@ -360,7 +360,7 @@ export class Peer {
 	async connectTo(other: Peer) {
 		console.log(`[${this.id}, ${other.id}] connect`);
 
-		let personNames = [chance.name(), chance.name()]
+		let personNames = [chance.name(), chance.name()];
 
 		let [[offerInput, submitOffer], [offer, answerInput, answerSubmit]] =
 			await Promise.all([
