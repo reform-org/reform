@@ -69,7 +69,7 @@ object ProjectsPage {
             .flatten
             .map(contracts => contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size)
         },
-        " Contracts",
+        " Contract(s)",
       )
     }
 
