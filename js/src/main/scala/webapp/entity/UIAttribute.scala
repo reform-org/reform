@@ -19,20 +19,33 @@ class UIOption[NameType](
     val name: NameType,
 ) {}
 
-abstract class UIAttribute[EntityType, AttributeType](
-    val getter: EntityType => Attribute[AttributeType],
-    val readConverter: AttributeType => String,
+abstract class UIBasicAttribute[EntityType](
     val label: String,
 ) {
 
   def render(entity: EntityType): VNode = {
-    val attr = getter(entity)
-    td(cls := "border border-gray-300 p-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+    td(cls := "border border-gray-300 p-0")
   }
 
   def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
 
-  def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
+  def uiFilter: UIFilter[EntityType] = UIFilterNothing()
+}
+
+abstract class UIAttribute[EntityType, AttributeType](
+    val getter: EntityType => Attribute[AttributeType],
+    val readConverter: AttributeType => String,
+    override val label: String,
+) extends UIBasicAttribute[EntityType](label) {
+
+  override def render(entity: EntityType): VNode = {
+    val attr = getter(entity)
+    td(cls := "border border-gray-300 p-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+  }
+
+  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
+
+  override def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
 }
 
 class UITextAttribute[EntityType, AttributeType](

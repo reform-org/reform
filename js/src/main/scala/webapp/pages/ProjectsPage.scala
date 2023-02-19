@@ -24,7 +24,7 @@ import webapp.utils.Seqnal.*
 case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
-      Seq(name, maxHours, accountName, contractCount),
+      Seq(name, maxHours, accountName),
     ) {}
 
 object ProjectsPage {
@@ -56,15 +56,18 @@ object ProjectsPage {
     .withLabel("Length of the Name")
     .map[String](_.length, _.toString)
     .bindReadOnly[Project](_.name)
+  /*
+  private def contractCount(using repositories: Repositories) = UIReadOnlyAttribute(
+    label = "Contract Count",
+    getter = _ =>
+      (
+        project => {
+          repositories.contracts.all.mapInside(contract => {
+            contract.signal.map(_.contractAssociatedProject == project)
+          })
 
-  private def contractCount(using repositories: Repositories) = UIAttributeBuilder.int
-    .withLabel("Contract Count")
-    .map[String](
-      _ => {
-        repositories.contracts.all.
-
-      },
-      _.toString,
-    )
-    .bindReadOnly[Project](_.name)
+        },
+        _,
+      ),
+  )*/
 }
