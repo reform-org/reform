@@ -56,6 +56,7 @@ object HiwisPage {
       options = Signal(
         List("not specified", "male", "female").map(gender => new SelectOption[Signal[String]](gender, Signal(gender))),
       ),
+      searchEnabled = false,
     )
 
   private val eMail = UIAttributeBuilder.string

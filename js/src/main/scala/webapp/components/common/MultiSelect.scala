@@ -16,10 +16,11 @@ class SelectOption[NameType](
 ) {}
 
 def MultiSelect(
-    options: Signal[List[SelectOption[Signal[String]]]],
+    options: Signal[Seq[SelectOption[Signal[String]]]],
     onInput: (value: Seq[String]) => Unit,
     value: Var[Seq[String]],
     showItems: Int = 5,
+    searchEnabled: Boolean = true,
     props: VMod*,
 ): VNode = {
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
@@ -80,12 +81,16 @@ def MultiSelect(
     ),
     div(
       cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-slate-200",
-      input(
-        cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
-        placeholder := "Search Options...",
-        outwatch.dsl.onInput.value --> search,
-        outwatch.dsl.value <-- search,
-      ),
+      if (searchEnabled) {
+        Some(
+          input(
+            cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+            placeholder := "Search Options...",
+            outwatch.dsl.onInput.value --> search,
+            outwatch.dsl.value <-- search,
+          ),
+        )
+      } else None,
       div(
         cls := "p-2 border-b border-slate-200",
         label(
