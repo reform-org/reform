@@ -15,7 +15,7 @@ def Select(
     onInput: (value: String) => Unit,
     value: Var[String],
     searchEnabled: Boolean = true,
-    emptyState: VMod = div("Nothing found..."),
+    emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
@@ -70,7 +70,7 @@ def Select(
         )
       } else None,
       div(
-        cls := "select-dropdown-list",
+        cls := "select-dropdown-list max-h-96 overflow-y-auto",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {

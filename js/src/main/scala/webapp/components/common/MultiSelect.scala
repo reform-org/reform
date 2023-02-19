@@ -119,7 +119,7 @@ def MultiSelect(
         ),
       ),
       div(
-        cls := "multiselect-dropdown-list",
+        cls := "multiselect-dropdown-list max-h-96 overflow-y-auto",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {
