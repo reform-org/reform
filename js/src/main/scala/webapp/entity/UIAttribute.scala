@@ -23,7 +23,7 @@ abstract class UIBasicAttribute[EntityType](
     val label: String,
 ) {
 
-  def render(entity: EntityType): VNode = {
+  def render(id: String, entity: EntityType): VNode = {
     td(cls := "border border-gray-300 p-0")
   }
 
@@ -38,7 +38,7 @@ abstract class UIAttribute[EntityType, AttributeType](
     override val label: String,
 ) extends UIBasicAttribute[EntityType](label) {
 
-  override def render(entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(cls := "border border-gray-300 p-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
@@ -226,7 +226,7 @@ class UICheckboxAttribute[EntityType](
       fieldType = "checkbox",
     ) {
 
-  override def render(entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
       cls := "border border-gray-300 px-6 py-0",
@@ -269,7 +269,7 @@ class UISelectAttribute[EntityType, AttributeType](
       fieldType = "select",
     ) {
 
-  override def render(entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
       cls := "border border-gray-300 px-6 py-0",
@@ -320,7 +320,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
       fieldType = "select",
     ) {
 
-  override def render(entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
       cls := "px-6 py-0",

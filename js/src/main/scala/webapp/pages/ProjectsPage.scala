@@ -66,12 +66,15 @@ object ProjectsPage {
     label = "Contracts",
   ) {
 
-    override def render(entity: Project): VNode = {
-      div(repositories.contracts.all.mapInside(contract => {
-        contract.signal.map(_.contractAssociatedProject == entity)
-      }))
+    override def render(id: String, entity: Project): VNode = {
+      td(
+        cls := "border border-gray-300 p-0",
+        repositories.contracts.all.mapInside(contract => {
+          contract.signal.map(_.contractAssociatedProject.get == Some(id))
+        }),
+      )
     }
 
-    def renderEdit(formId: String, entityVar: Var[Option[Project]]): Signal[VNode] = Signal(div())
+    def renderEdit(formId: String, entityVar: Var[Option[Project]]): Signal[VNode] = Signal(td(cls := "px-6 py-0"))
   }
 }

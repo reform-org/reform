@@ -165,7 +165,7 @@ private class EntityRow[T <: Entity[T]](
             cls := "border border-gray-300 odd:bg-slate-50",
             data.id := synced.id,
             uiAttributes.map(ui => {
-              ui.render(p)
+              ui.render(synced.id, p)
             }),
             td(
               cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
