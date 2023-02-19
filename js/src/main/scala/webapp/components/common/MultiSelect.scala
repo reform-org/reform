@@ -52,7 +52,7 @@ def MultiSelect(
                       onClick.foreach(_ => {
                         onInput(
                           document
-                            .querySelectorAll(s"#$id input[type=checkbox]:checked")
+                            .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
                             .map(element => element.id)
                             .filter(id => id != v.id)
                             .asInstanceOf[Seq[String]],
@@ -103,7 +103,7 @@ def MultiSelect(
               if (e.target.asInstanceOf[HTMLInputElement].checked) {
                 onInput(
                   document
-                    .querySelectorAll(s"#$id input[type=checkbox]")
+                    .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id)")
                     .map(element => element.id)
                     .asInstanceOf[Seq[String]],
                 )
@@ -137,7 +137,7 @@ def MultiSelect(
                         onClick.foreach(_ => {
                           onInput(
                             document
-                              .querySelectorAll(s"#$id input[type=checkbox]:checked")
+                              .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
                               .map(element => element.id)
                               .asInstanceOf[Seq[String]],
                           )
