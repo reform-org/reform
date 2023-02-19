@@ -15,12 +15,12 @@ class SelectOption[NameType](
     val name: NameType,
 ) {}
 
-def MultiSelect[T <: VMod](
+def MultiSelect(
     options: Signal[List[SelectOption[Signal[String]]]],
     onInput: (value: Seq[String]) => Unit,
     value: Var[Seq[String]],
     showItems: Int = 5,
-    props: T*,
+    props: VMod*,
 ): VNode = {
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")

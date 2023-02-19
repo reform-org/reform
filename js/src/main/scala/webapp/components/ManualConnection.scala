@@ -18,6 +18,7 @@ import loci.transmitter.RemoteRef
 import webapp.components.common.Input
 import webapp.components.common.LabeledInput
 import webapp.components.common.Button
+import webapp.components.common.ButtonStyle
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
@@ -72,6 +73,7 @@ private case object Init extends State {
         value := "",
       ),
       Button(
+        ButtonStyle.Primary,
         "Create Invitation",
         disabled <-- alias.map(_.isBlank()),
         onClick.foreach(_ => initializeHostSession),
@@ -85,12 +87,7 @@ private case class ClientAskingForHostSessionToken() extends State {
   private val alias = Var("")
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p1",
-    LabeledInput("What is your name?")(
-      tpe := "text",
-      placeholder := "Your name",
-      onInput.value --> alias,
-      value := "",
-    ),
+    LabeledInput("What is your name?")(tpe := "text", placeholder := "Your name", onInput.value --> alias, value := ""),
     LabeledInput("Please enter the code your peer has provided:")(
       tpe := "text",
       placeholder := "Token",
@@ -99,6 +96,7 @@ private case class ClientAskingForHostSessionToken() extends State {
       onInput.value --> sessionToken,
     ),
     Button(
+      ButtonStyle.Primary,
       "Connect",
       disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
       onClick.foreach(_ => connectToHost),
@@ -164,6 +162,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       onInput.value --> sessionTokenFromClient,
     ),
     Button(
+      ButtonStyle.Primary,
       "Finish Connection",
       disabled <-- sessionTokenFromClient.map(_.isBlank),
       onClick.foreach(_ => confirmConnectionToClient()),
