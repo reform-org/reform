@@ -35,5 +35,5 @@ def FileInput(props: VMod*): VNode = {
 
 def LabeledInput(labelProps: VMod*)(props: VMod*): VMod = {
   val id = getID("input") // might not work if id attr is set
-  div(Label(label, cls := "pb-0.5", forId := id), Input(props, idAttr := id))
+  div(Label(labelProps, cls := "pb-0.5", forId := id), Input(props, idAttr := id))
 }

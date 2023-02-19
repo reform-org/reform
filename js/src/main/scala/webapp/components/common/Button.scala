@@ -3,8 +3,6 @@ package webapp.components.common
 import outwatch.*
 import outwatch.dsl.*
 
-import webapp.components.Icons
-
 enum ButtonStyle(val props: VMod) {
   case Primary extends ButtonStyle(cls := "bg-purple-400 hover:bg-purple-400 text-purple-800")
   case Default extends ButtonStyle(cls := "bg-slate-400 hover:bg-slate-400 text-slate-800")

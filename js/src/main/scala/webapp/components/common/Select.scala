@@ -6,9 +6,8 @@ import scala.scalajs.js
 import rescala.default.*
 import webapp.npm.JSUtils.createPopper
 import webapp.given
-import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.document
 
 def Select(
     options: Signal[List[SelectOption[Signal[String]]]],
@@ -30,7 +29,7 @@ def Select(
       options.map(o =>
         value
           .map(s => {
-            val selectedOption = o.find(v => s.contains(v.id))
+            val selectedOption = o.find(v => s == v.id)
             selectedOption match {
               case None    => div()
               case Some(v) => div(v.name)
