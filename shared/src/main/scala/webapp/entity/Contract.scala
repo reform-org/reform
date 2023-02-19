@@ -16,18 +16,20 @@ case class Contract(
     contractType: Attribute[String] = Attribute.empty,
     contractHoursPerMonth: Attribute[Int] = Attribute.empty,
     isDraft: Attribute[Boolean] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Contract]
     derives DecomposeLattice,
       Bottom {
 
   def identifier: Attribute[String] = contractAssociatedHiwi
 
-  def withExists(_exists: Boolean): Contract = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): Contract = {
+    this.copy(_exists = _exists.set(exists))
   }
 
-  def default =
+  override def exists: Boolean = _exists.get.getOrElse(true)
+
+  def default: Contract =
     Contract(
       Attribute.empty,
       Attribute.empty,

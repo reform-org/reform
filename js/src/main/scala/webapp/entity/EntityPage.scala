@@ -59,9 +59,9 @@ private class EntityRow[T <: Entity[T]](
     case New(value)      => value
   }
 
-  def existingValue = value match {
+  def existingValue: Option[Synced[T]] = value match {
     case Existing(value) => Some(value)
-    case New(value)      => None
+    case New(_)          => None
   }
 
   private def renderEdit: VMod = {
@@ -158,33 +158,30 @@ private class EntityRow[T <: Entity[T]](
         new ModalButton("Cancel"),
       ),
     )
-    synced.signal.map(p => {
-      val res = if (p.exists.get.getOrElse(true)) {
-        Some(
-          tr(
-            cls := "border border-gray-300 odd:bg-slate-50",
-            data.id := synced.id,
-            uiAttributes.map(ui => {
-              ui.render(synced.id, p)
-            }),
-            td(
-              cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
-              TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
-              IconButton(
-                LightButtonStyle.Error,
-                Icons.close("fill-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-top",
-                data.tip := "Delete",
-                onClick.foreach(_ => modal.open()),
-              ),
+    synced.signal.map[VMod](p => {
+      if (p.exists) {
+        tr(
+          cls := "border border-gray-300 odd:bg-slate-50",
+          data.id := synced.id,
+          uiAttributes.map(ui => {
+            ui.render(synced.id, p)
+          }),
+          td(
+            cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
+            TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
+            IconButton(
+              LightButtonStyle.Error,
+              Icons.close("fill-red-600 w-4 h-4"),
+              cls := "tooltip tooltip-top",
+              data.tip := "Delete",
+              onClick.foreach(_ => modal.open()),
             ),
-            modal.render,
           ),
+          modal.render,
         )
       } else {
         None
       }
-      res
     })
   }
 
