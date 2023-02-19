@@ -20,11 +20,16 @@ import webapp.entity.*
 import webapp.services.Toaster
 import ProjectsPage.*
 import webapp.utils.Seqnal.*
+import webapp.entity.UIBasicAttribute
+import outwatch.*
+import outwatch.dsl.*
+import webapp.{*, given}
+import rescala.default.*
 
 case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
-      Seq(name, maxHours, accountName),
+      Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
     ) {}
 
 object ProjectsPage {
@@ -56,18 +61,17 @@ object ProjectsPage {
     .withLabel("Length of the Name")
     .map[String](_.length, _.toString)
     .bindReadOnly[Project](_.name)
-  /*
-  private def contractCount(using repositories: Repositories) = UIReadOnlyAttribute(
-    label = "Contract Count",
-    getter = _ =>
-      (
-        project => {
-          repositories.contracts.all.mapInside(contract => {
-            contract.signal.map(_.contractAssociatedProject == project)
-          })
 
-        },
-        _,
-      ),
-  )*/
+  private def contractCount(using repositories: Repositories) = new UIBasicAttribute[Project](
+    label = "Contracts",
+  ) {
+
+    override def render(entity: Project): VNode = {
+      div(repositories.contracts.all.mapInside(contract => {
+        contract.signal.map(_.contractAssociatedProject == entity)
+      }))
+    }
+
+    def renderEdit(formId: String, entityVar: Var[Option[Project]]): Signal[VNode] = Signal(div())
+  }
 }

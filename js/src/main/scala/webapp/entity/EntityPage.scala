@@ -44,7 +44,7 @@ case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 private class EntityRow[T <: Entity[T]](
     val repository: Repository[T],
     val value: EntityValue[T],
-    val uiAttributes: Seq[UIAttribute[T, ? <: Any]],
+    val uiAttributes: Seq[UIBasicAttribute[T]],
 )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
 
   def render: VMod =
@@ -231,7 +231,7 @@ private class EntityRow[T <: Entity[T]](
   }
 }
 
-private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? <: Any]]) {
+private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]) {
 
   private val filters = uiAttributes.map(_.uiFilter)
 
@@ -246,7 +246,7 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIAttribute[EntityType, ? 
 
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIAttribute[T, ? <: Any]])(using
+abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
     bottom: Bottom[T],
     lattice: Lattice[T],
     toaster: Toaster,
