@@ -11,7 +11,7 @@ case class User(
     username: Attribute[String] = Attribute.empty,
     role: Attribute[String] = Attribute.empty,
     comment: Attribute[Option[String]] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[User]
     derives DecomposeLattice,
       Bottom {
@@ -21,9 +21,11 @@ case class User(
 
   def identifier: Attribute[String] = username
 
-  def withExists(_exists: Boolean): User = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): User = {
+    this.copy(_exists = _exists.set(exists))
   }
+
+  override def exists: Boolean = _exists.get.getOrElse(true)
 }
 
 object User {

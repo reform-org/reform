@@ -10,7 +10,7 @@ case class Project(
     name: Attribute[String] = Attribute.empty,
     maxHours: Attribute[Int] = Attribute.empty,
     accountName: Attribute[Option[String]] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Project]
     derives DecomposeLattice,
       Bottom {
@@ -20,10 +20,11 @@ case class Project(
 
   def identifier: Attribute[String] = name
 
-  def withExists(_exists: Boolean): Project = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): Project = {
+    this.copy(_exists = _exists.set(exists))
   }
 
+  override def exists: Boolean = _exists.get.getOrElse(true)
 }
 
 object Project {
