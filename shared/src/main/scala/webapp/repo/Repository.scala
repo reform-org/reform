@@ -59,68 +59,37 @@ case class Repository[A](name: String, defaultValue: A)(using
     (this, values)
   }
 
-  private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
+  implicit val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
   private val idSyncer = ReplicationGroup[GrowOnlySet[String]](name + "-ids")
 
-  private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
+  private val idSynced = idSyncer.sync("ids")
 
-  val ids: Signal[Set[String]] =
-    idSynced.signal.map(_.set)
+  val ids: Signal[Set[String]] = Signals.fromFuture(idSynced).map(synced => synced.signal.map(_.set)).flatten
 
-  idStorage
-    .getOrDefault("ids")
-    .map(ids => {
-      idSynced.update(_.getOrElse(GrowOnlySet.empty).union(ids))
-    }): @nowarn("msg=discarded expression")
-
-  private val valuesStorage = Storage[A](name, defaultValue)
+  implicit val valuesStorage: Storage[A] = Storage(name, defaultValue)
 
   private val valueSyncer = ReplicationGroup[A](name)
-
-  @volatile
-  private var cache: Map[String, Future[Synced[A]]] = Map.empty
-
-  def create(): Future[Synced[A]] =
-    getOrCreate(UUID.randomUUID.toString)
 
   val all: Signal[List[Synced[A]]] = {
     ids
       .map(ids => {
-        val futures = ids.toList.map(getOrCreate)
+        val futures = ids.toList.map(get)
         val future = Future.sequence(futures)
         Signals.fromFuture(future)
       })
       .flatten
   }
 
+  def get(id: String): Future[Synced[A]] = valueSyncer.sync(id)
+
+  def create(): Future[Synced[A]] = getOrCreate(UUID.randomUUID().toString())
+
   def getOrCreate(id: String): Future[Synced[A]] = {
-    synchronized {
-      if (cache.contains(id)) {
-        cache(id)
-      } else {
-        val synced = createSyncedFromRepo(id)
-        cache += (id -> synced)
-        synced
-      }
-    }
-  }
-
-  private def createSyncedFromRepo(id: String): Future[Synced[A]] =
-    valuesStorage
-      .getOrDefault(id)
-      .map(project => valueSyncer.sync(valuesStorage, id, project))
+    valueSyncer
+      .sync(id)
       .flatMap(value => {
-        idSynced.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value)
+        idSynced.flatMap(_.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value))
       })
-
-  // if we update a value:
-  // we should set the value using a future so we can return an error
-  // to set the value we should start a transaction
-  // that transaction should read the current value in storage
-  // then it should merge it with our new value
-  // and then it should write it to storage
-  // then we should probably somehow notify the other tabs
-  // that the value has been updated. these update notification
-  // could in theory come the same way that loci updates are received.
+  }
 }
