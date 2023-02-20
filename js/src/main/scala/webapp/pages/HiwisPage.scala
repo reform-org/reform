@@ -54,7 +54,7 @@ object HiwisPage {
       isRequired = true,
       label = "Gender",
       options = Signal(
-        List("not specified", "male", "female").map(gender => new SelectOption[Signal[String]](gender, Signal(gender))),
+        List("not specified", "male", "female").map(gender => new SelectOption(gender, Signal(gender))),
       ),
       searchEnabled = false,
     )

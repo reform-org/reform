@@ -29,9 +29,7 @@ private def contractAssociatedHiwi(using repositories: Repositories): UISelectAt
     writeConverter = identity,
     label = "AssociatedHiwi",
     options = repositories.hiwis.all.map(list =>
-      list.map(value =>
-        new SelectOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse(""))),
-      ),
+      list.map(value => new SelectOption(value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
     ),
     isRequired = true,
   )
@@ -45,7 +43,7 @@ private def contractAssociatedProject(using repositories: Repositories): UISelec
     label = "Project",
     options = repositories.projects.all.map(list =>
       list.map(value =>
-        new SelectOption[Signal[String]](
+        new SelectOption(
           value.id,
           value.signal.map(v => v.name.get.getOrElse("")),
         ),
