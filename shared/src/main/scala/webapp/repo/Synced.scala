@@ -8,6 +8,7 @@ case class Synced[A](private val storage: Storage[A], id: String, private val va
 
   val editingValue: Var[Option[A]] = Var(None)
 
+  // TODO FIXME remove Option here?
   def update(f: Option[A] => A): Future[A] = {
     storage
       .update(id, f)
