@@ -22,8 +22,9 @@ import webapp.services.Toaster
 import webapp.components.common.*
 
 import SalaryChangesPage.*
+import webapp.services.RoutingService
 
-case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster)
+case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[SalaryChange](
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),

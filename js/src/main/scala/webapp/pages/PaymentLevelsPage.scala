@@ -20,8 +20,9 @@ import webapp.entity.*
 import webapp.services.Toaster
 
 import PaymentLevelsPage.*
+import webapp.services.RoutingService
 
-case class PaymentLevelsPage()(using repositories: Repositories, toaster: Toaster)
+case class PaymentLevelsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
 
 object PaymentLevelsPage {

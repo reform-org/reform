@@ -45,11 +45,27 @@ case class Existing[T](value: Synced[T], editingValue: Var[Option[T]] = Var[Opti
 // TODO FIXME: This should not be an Option but otherwise we need to find a generic way to set an Option and non-option Var
 case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 
+abstract class EntityRowBuilder[T <: Entity[T]] {
+  def construct(
+      repository: Repository[T],
+      value: EntityValue[T],
+      uiAttributes: Seq[UIBasicAttribute[T]],
+  )(using
+      bottom: Bottom[T],
+      lattice: Lattice[T],
+      toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
+  ): EntityRow[T]
+}
+
 class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
   def construct(repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
       bottom: Bottom[T],
       lattice: Lattice[T],
       toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
   ): EntityRow[T] = EntityRow[T](repository, value, uiAttributes)
 }
 
@@ -57,7 +73,13 @@ class EntityRow[T <: Entity[T]](
     val repository: Repository[T],
     val value: EntityValue[T],
     val uiAttributes: Seq[UIBasicAttribute[T]],
-)(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
+)(using
+    bottom: Bottom[T],
+    lattice: Lattice[T],
+    toaster: Toaster,
+    routing: RoutingService,
+    repositories: Repositories,
+) {
 
   def render: VMod =
     editingValue.map(
@@ -230,7 +252,7 @@ class EntityRow[T <: Entity[T]](
     }
   }
 
-  private def startEditing(): Unit = {
+  protected def startEditing(): Unit = {
     editingValue.set(Some(existingValue.get.signal.now))
   }
 }
@@ -250,14 +272,6 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityTyp
 
 }
 
-abstract class EntityRowBuilder[T <: Entity[T]] {
-  def construct(
-      repository: Repository[T],
-      value: EntityValue[T],
-      uiAttributes: Seq[UIBasicAttribute[T]],
-  )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster): EntityRow[T]
-}
-
 abstract class EntityPage[T <: Entity[T]](
     repository: Repository[T],
     uiAttributes: Seq[UIBasicAttribute[T]],
@@ -266,6 +280,8 @@ abstract class EntityPage[T <: Entity[T]](
     bottom: Bottom[T],
     lattice: Lattice[T],
     toaster: Toaster,
+    routing: RoutingService,
+    repositories: Repositories,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =

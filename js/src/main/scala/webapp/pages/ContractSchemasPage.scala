@@ -22,8 +22,9 @@ import rescala.default.*
 import webapp.components.common.*
 
 import ContractSchemasPage.*
+import webapp.services.RoutingService
 
-case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster)
+case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[ContractSchema](
       repositories.contractSchemas,
       Seq(name, files),

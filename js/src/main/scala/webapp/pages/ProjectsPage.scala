@@ -25,8 +25,9 @@ import outwatch.*
 import outwatch.dsl.*
 import webapp.{*, given}
 import rescala.default.*
+import webapp.services.RoutingService
 
-case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
+case class ProjectsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Project](
       repositories.projects,
       Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),

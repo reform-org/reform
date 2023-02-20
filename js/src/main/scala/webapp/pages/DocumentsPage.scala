@@ -22,7 +22,8 @@ import webapp.services.Toaster
 import DocumentsPage.*
 
 import webapp.entity.Document
-case class DocumentsPage()(using repositories: Repositories, toaster: Toaster)
+import webapp.services.RoutingService
+case class DocumentsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Document](repositories.requiredDocuments, Seq(name, fileName), DefaultEntityRow()) {}
 
 object DocumentsPage {
