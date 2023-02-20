@@ -23,7 +23,7 @@ import webapp.services.Toaster
 import SupervisorsPage.*
 
 case class SupervisorsPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail)) {}
+    extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail), DefaultEntityRow()) {}
 
 object SupervisorsPage {
   private val firstName = UIAttributeBuilder.string

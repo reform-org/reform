@@ -45,7 +45,15 @@ case class Existing[T](value: Synced[T], editingValue: Var[Option[T]] = Var[Opti
 // TODO FIXME: This should not be an Option but otherwise we need to find a generic way to set an Option and non-option Var
 case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 
-private class EntityRow[T <: Entity[T]](
+class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
+  def construct(repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+      bottom: Bottom[T],
+      lattice: Lattice[T],
+      toaster: Toaster,
+  ): EntityRow[T] = EntityRow[T](repository, value, uiAttributes)
+}
+
+class EntityRow[T <: Entity[T]](
     val repository: Repository[T],
     val value: EntityValue[T],
     val uiAttributes: Seq[UIBasicAttribute[T]],
@@ -242,14 +250,26 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityTyp
 
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+abstract class EntityRowBuilder[T <: Entity[T]] {
+  def construct(
+      repository: Repository[T],
+      value: EntityValue[T],
+      uiAttributes: Seq[UIBasicAttribute[T]],
+  )(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster): EntityRow[T]
+}
+
+abstract class EntityPage[T <: Entity[T]](
+    repository: Repository[T],
+    uiAttributes: Seq[UIBasicAttribute[T]],
+    entityRowContructor: EntityRowBuilder[T],
+)(using
     bottom: Bottom[T],
     lattice: Lattice[T],
     toaster: Toaster,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =
-    EntityRow[T](repository, New(Var(Some(bottom.empty.default))), uiAttributes)
+    entityRowContructor.construct(repository, New(Var(Some(bottom.empty.default))), uiAttributes)
 
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
@@ -257,7 +277,7 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
     repository.all.map(
       _.map(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing(syncedEntity))
-        EntityRow[T](repository, existing, uiAttributes)
+        entityRowContructor.construct(repository, existing, uiAttributes)
       }),
     )
 

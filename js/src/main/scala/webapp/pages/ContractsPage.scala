@@ -61,4 +61,5 @@ case class ContractsPage()(using repositories: Repositories, toaster: Toaster)
         contractAssociatedProject,
         contractAssociatedHiwi,
       ),
+      DefaultEntityRow(),
     ) {}

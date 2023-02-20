@@ -24,7 +24,11 @@ import webapp.components.common.*
 import ContractSchemasPage.*
 
 case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name, files)) {}
+    extends EntityPage[ContractSchema](
+      repositories.contractSchemas,
+      Seq(name, files),
+      DefaultEntityRow(),
+    ) {}
 
 object ContractSchemasPage {
   private val name = UIAttributeBuilder.string

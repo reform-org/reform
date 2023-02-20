@@ -23,7 +23,7 @@ import DocumentsPage.*
 
 import webapp.entity.Document
 case class DocumentsPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[Document](repositories.requiredDocuments, Seq(name, fileName)) {}
+    extends EntityPage[Document](repositories.requiredDocuments, Seq(name, fileName), DefaultEntityRow()) {}
 
 object DocumentsPage {
   private val name = UIAttributeBuilder.string

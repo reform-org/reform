@@ -30,6 +30,7 @@ case class ProjectsPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Project](
       repositories.projects,
       Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
+      DefaultEntityRow(),
     ) {}
 
 object ProjectsPage {

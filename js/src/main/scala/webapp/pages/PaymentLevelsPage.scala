@@ -22,7 +22,7 @@ import webapp.services.Toaster
 import PaymentLevelsPage.*
 
 case class PaymentLevelsPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title)) {}
+    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
 
 object PaymentLevelsPage {
   private val title = UIAttributeBuilder.string

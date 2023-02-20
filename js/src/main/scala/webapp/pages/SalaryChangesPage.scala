@@ -27,6 +27,7 @@ case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaste
     extends EntityPage[SalaryChange](
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
+      DefaultEntityRow(),
     ) {}
 
 object SalaryChangesPage {

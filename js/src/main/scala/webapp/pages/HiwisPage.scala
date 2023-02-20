@@ -26,6 +26,7 @@ case class HiwisPage()(using repositories: Repositories, toaster: Toaster)
     extends EntityPage[Hiwi](
       repositories.hiwis,
       Seq(firstName, lastName, gender, eMail, birthdate),
+      DefaultEntityRow(),
     ) {}
 
 object HiwisPage {
