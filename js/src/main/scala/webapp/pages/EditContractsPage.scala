@@ -31,7 +31,11 @@ import webapp.components.common.*
 import webapp.utils.Futures.*
 import webapp.services.ToastType
 
-case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
+case class EditContractsPage(contractId: String)(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+) extends Page {
 
   private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
 
@@ -68,6 +72,7 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
 case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     toaster: Toaster,
     repositories: Repositories,
+    routing: RoutingService,
 ) {
 
   private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
@@ -182,6 +187,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               ToastType.Success,
             )
           })
+          .map(value => {
+            routing.to(ContractsPage())
+          })
           .toastOnError(ToastMode.Infinit)
       }
       case None => {
@@ -194,9 +202,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               p.getOrElse(Contract.empty).merge(editingNow.get)
             })
           })
+          .map(value => {
+            routing.to(ContractsPage())
+          })
           .toastOnError(ToastMode.Infinit)
       }
     }
+  }
+
+  private def cancelEdit(): Unit = {
+    routing.to(ContractsPage())
   }
 
   var editingValue = Var(Option(existingValue.get.signal.now))
@@ -250,12 +265,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               idAttr := "confirmEdit",
               "Save",
             ),
-            button(
-              cls := "btn",
-              idAttr := "cancelEdit",
-              "Cancel",
-              // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
-            ),
+            TableButton(LightButtonStyle.Default, "Cancel", onClick.foreach(_ => cancelEdit())),
           ),
         ),
       ),
