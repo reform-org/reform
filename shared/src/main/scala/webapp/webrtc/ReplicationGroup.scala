@@ -24,12 +24,14 @@ import loci.registry.Registry
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.core.Disconnectable
+import rescala.default.*
 
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.util.*
 import webapp.repo.Synced
 import scala.annotation.nowarn
+import webapp.repo.Storage
 
 /** @param name
   *   The name/type of the thing to sync
@@ -51,6 +53,14 @@ class ReplicationGroup[A](name: String)(using
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
 ) {
+
+  def sync(storage: Storage[A], id: String, value: A): Synced[A] = {
+    var synced = Synced(storage, id, Var(value))
+
+    distributeDeltaRDT(id, synced)
+
+    synced
+  }
 
   given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 

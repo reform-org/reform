@@ -30,6 +30,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import webapp.webrtc.ReplicationGroup
 
 type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
 
@@ -60,7 +61,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
 
-  private val idSyncer = Syncer[GrowOnlySet[String]](name + "-ids")
+  private val idSyncer = ReplicationGroup[GrowOnlySet[String]](name + "-ids")
 
   private val idSynced = idSyncer.sync(idStorage, "ids", GrowOnlySet.empty)
 
@@ -75,7 +76,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valuesStorage = Storage[A](name, defaultValue)
 
-  private val valueSyncer = Syncer[A](name)
+  private val valueSyncer = ReplicationGroup[A](name)
 
   @volatile
   private var cache: Map[String, Future[Synced[A]]] = Map.empty
