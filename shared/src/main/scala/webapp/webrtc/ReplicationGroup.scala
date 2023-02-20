@@ -24,12 +24,14 @@ import loci.registry.Registry
 import loci.serializer.jsoniterScala.given
 import loci.transmitter.*
 import rescala.core.Disconnectable
+import rescala.default.*
 
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 import scala.util.*
 import webapp.repo.Synced
 import scala.annotation.nowarn
+import webapp.repo.Storage
 
 /** @param name
   *   The name/type of the thing to sync
@@ -50,59 +52,51 @@ class ReplicationGroup[A](name: String)(using
     dcl: DecomposeLattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
+    storage: Storage[A],
 ) {
+
+  @volatile
+  private var cache: Map[String, Future[Synced[A]]] = Map.empty
+
+  def sync(id: String): Future[Synced[A]] = {
+    synchronized {
+      if (cache.contains(id)) {
+        cache(id)
+      } else {
+        val synced = storage
+          .getOrDefault(id)
+          .map(value => {
+            var synced = Synced(storage, id, Var(value))
+            distributeDeltaRDT(id, synced)
+            synced
+          })
+        cache = cache + (id -> synced)
+        synced
+      }
+    }
+  }
 
   given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
 
   given IdenticallyTransmittable[DeltaFor[A]] = IdenticallyTransmittable()
   given IdenticallyTransmittable[A] = IdenticallyTransmittable()
 
-  given magicCodec: JsonValueCodec[Tuple2[Option[Option[A]], Option[String]]] = JsonCodecMaker.make
+  given magicCodec: JsonValueCodec[Tuple2[Option[A], Option[String]]] = JsonCodecMaker.make
 
-  private val binding = Binding[DeltaFor[A] => Future[Option[A]]](name)
+  private val binding = Binding[DeltaFor[A] => Future[A]](name)
 
-  /** Map from concrete thing to handle to the event handler for that.
-    */
-  @volatile
-  private var localListeners: Map[String, Synced[A]] = Map.empty
+  registry.bindSbj(binding)((remoteRef: RemoteRef, payload: DeltaFor[A]) =>
+    sync(payload.name).flatMap(_.update(v => v.getOrElse(bottom.empty).merge(payload.delta))),
+  )
 
-  /** Map from the concrete thing to handle to a map of remote ids and the thing to sync.
-    */
-  private var unhandled: Map[String, Map[String, A]] = Map.empty
-
-  registry.bindSbj(binding) { (remoteRef: RemoteRef, payload: DeltaFor[A]) =>
-    val result: Future[Option[A]] = synchronized { localListeners.get(payload.name) } match {
-      case Some(handler) => { handler.update(v => v.getOrElse(bottom.empty).merge(payload.delta)).map(Some(_)) }
-      case None =>
-        unhandled = unhandled.updatedWith(payload.name) { current =>
-          current.merge(Some(Map(remoteRef.toString -> payload.delta)))
-        }
-        Future.successful(None)
-    }
-    result
-  }
-
-  // TODO FIXME integrate all this unhandled thing into the repository in such a way that the values are lazily loaded then.
   def distributeDeltaRDT(
       name: String,
       synced: Synced[A],
   ): Unit = {
-    synchronized {
-      require(!localListeners.contains(name), s"already registered a RDT with name $name")
-      localListeners = localListeners.updated(name, synced)
-    }
-
     // observe changes to send them to every remote
     var observers = Map[RemoteRef, Disconnectable]()
     // store data that needs to be resent to a remote
     var resendBuffer = Map[RemoteRef, A]()
-
-    // if there is unhandled data for this concrete thing then fire delta events for that as soon as it's registered
-    unhandled.get(name) match {
-      case None =>
-      case Some(changes) =>
-        changes.map((_, v) => synced.update(value => value.getOrElse(bottom.empty).merge(v))): @nowarn // TODO FIXME
-    }
 
     def registerRemote(remoteRef: RemoteRef): Unit = {
       // Lookup method to send data to remote

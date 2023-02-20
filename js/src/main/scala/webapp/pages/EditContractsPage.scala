@@ -33,7 +33,7 @@ import webapp.services.ToastType
 
 case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
 
-  private val existingValue = repositories.contracts.getOrCreate(contractId)
+  private val existingValue = repositories.contracts.get(contractId)
 
   def render(using
       routing: RoutingService,

@@ -24,7 +24,7 @@ class PingService(using registry: Registry) {
     }
     val remoteUpdate = registry.lookup(binding, ref)
     remoteUpdate("pingdata").onComplete {
-      case Success(_) => println("update ping success")
+      case Success(_) => {}
       case Failure(_) => println("update ping failure")
     }
   }
