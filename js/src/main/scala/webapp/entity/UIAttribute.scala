@@ -248,7 +248,7 @@ class UISelectAttribute[EntityType, AttributeType](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[List[SelectOption[Signal[String]]]],
+    options: Signal[List[SelectOption]],
     searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
@@ -298,7 +298,7 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[List[SelectOption[Signal[String]]]],
+    options: Signal[List[MultiSelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](

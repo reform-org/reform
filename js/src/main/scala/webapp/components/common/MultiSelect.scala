@@ -10,13 +10,17 @@ import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
 import org.scalajs.dom.document
 
-class SelectOption[NameType](
+class MultiSelectOption(
     val id: String,
-    val name: NameType,
-) {}
+    val name: Signal[String],
+) {
+  def render: VNode = {
+    span(name)
+  }
+}
 
 def MultiSelect(
-    options: Signal[Seq[SelectOption[Signal[String]]]],
+    options: Signal[Seq[MultiSelectOption]],
     onInput: (value: Seq[String]) => Unit,
     value: Var[Seq[String]],
     showItems: Int = 5,
@@ -144,7 +148,7 @@ def MultiSelect(
                         }),
                       ),
                       tabIndex := 0,
-                      uiOption.name,
+                      uiOption.render,
                       forId := uiOption.id,
                     ),
                   )
