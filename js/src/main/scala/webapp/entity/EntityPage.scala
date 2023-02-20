@@ -227,6 +227,8 @@ class EntityRow[T <: Entity[T]](
     editingValue.set(None)
   }
 
+  protected def afterCreated(id: String): Unit = {}
+
   private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
     existingValue match {
@@ -243,10 +245,13 @@ class EntityRow[T <: Entity[T]](
           .create()
           .flatMap(entity => {
             editingValue.set(Some(bottom.empty.default))
-            entity.update(p => {
-              p.getOrElse(bottom.empty).merge(editingNow.get)
-            })
+            entity
+              .update(p => {
+                p.getOrElse(bottom.empty).merge(editingNow.get)
+              })
+              .map(_ => entity)
           })
+          .map(value => { afterCreated(value.id); value })
           .toastOnError(ToastMode.Infinit)
       }
     }

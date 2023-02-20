@@ -70,6 +70,8 @@ class DetailPageEntityRow[T <: Entity[T]](
       case New(value)                    => {}
     }
   }
+
+  override protected def afterCreated(id: String): Unit = routing.to(EditContractsPage(id))
 }
 
 class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
