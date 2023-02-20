@@ -210,7 +210,6 @@ private class EntityRow[T <: Entity[T]](
           .create()
           .flatMap(entity => {
             editingValue.set(Some(bottom.empty.default))
-            //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
               p.getOrElse(bottom.empty).merge(editingNow.get)
             })

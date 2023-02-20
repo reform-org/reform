@@ -37,7 +37,7 @@ object MainJVMTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
-  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T], port: Int) = {
+  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T], port: Int): Unit = {
     val registry0 = Registry()
     val registry1 = Registry()
     val indexedDb0: IIndexedDB = MemoryIndexedDB()
@@ -52,7 +52,7 @@ object MainJVMTest extends TestSuite {
     server.addConnector(connector)
     for _ <- testRepository(fun(repositories0))
     _ <- waitUntilTrue(fun(repositories0).all.map(_.length == 1))
-    _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 0))
+    _ <- waitUntilTrue(fun(repositories1).all.map(_.isEmpty))
     _ = registry0.listen(WS(context, "/registry/*"))
     _ = server.start()
     _ <- registry1.connect(WS(s"ws://localhost:$port/registry/"))
