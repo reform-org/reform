@@ -15,6 +15,7 @@ limitations under the License.
  */
 package webapp.entity
 
+import scala.collection.mutable
 import kofre.base.*
 import outwatch.*
 import outwatch.dsl.*
@@ -33,12 +34,14 @@ import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
 import webapp.components.common.*
-
 import webapp.components.Icons
 import webapp.given_ExecutionContext
 
+import scala.collection.mutable
+
 sealed trait EntityValue[T]
-case class Existing[T](value: Synced[T]) extends EntityValue[T]
+case class Existing[T](value: Synced[T], editingValue: Var[Option[T]] = Var[Option[T]](None)) extends EntityValue[T]
+
 // TODO FIXME: This should not be an Option but otherwise we need to find a generic way to set an Option and non-option Var
 case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 
@@ -55,13 +58,13 @@ private class EntityRow[T <: Entity[T]](
     )
 
   def editingValue: Var[Option[T]] = value match {
-    case Existing(value) => value.editingValue
-    case New(value)      => value
+    case Existing(_, editingValue) => editingValue
+    case New(value)                => value
   }
 
-  def existingValue = value match {
-    case Existing(value) => Some(value)
-    case New(value)      => None
+  def existingValue: Option[Synced[T]] = value match {
+    case Existing(value, _) => Some(value)
+    case New(_)             => None
   }
 
   private def renderEdit: VMod = {
@@ -158,33 +161,30 @@ private class EntityRow[T <: Entity[T]](
         new ModalButton("Cancel"),
       ),
     )
-    synced.signal.map(p => {
-      val res = if (p.exists.get.getOrElse(true)) {
-        Some(
-          tr(
-            cls := "border border-gray-300 odd:bg-slate-50",
-            data.id := synced.id,
-            uiAttributes.map(ui => {
-              ui.render(synced.id, p)
-            }),
-            td(
-              cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
-              TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
-              IconButton(
-                LightButtonStyle.Error,
-                Icons.close("fill-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-top",
-                data.tip := "Delete",
-                onClick.foreach(_ => modal.open()),
-              ),
+    synced.signal.map[VMod](p => {
+      if (p.exists) {
+        tr(
+          cls := "border border-gray-300 odd:bg-slate-50",
+          data.id := synced.id,
+          uiAttributes.map(ui => {
+            ui.render(synced.id, p)
+          }),
+          td(
+            cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
+            TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
+            IconButton(
+              LightButtonStyle.Error,
+              Icons.close("fill-red-600 w-4 h-4"),
+              cls := "tooltip tooltip-top",
+              data.tip := "Delete",
+              onClick.foreach(_ => modal.open()),
             ),
-            modal.render,
           ),
+          modal.render,
         )
       } else {
         None
       }
-      res
     })
   }
 
@@ -213,7 +213,6 @@ private class EntityRow[T <: Entity[T]](
           .create()
           .flatMap(entity => {
             editingValue.set(Some(bottom.empty.default))
-            //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
               p.getOrElse(bottom.empty).merge(editingNow.get)
             })
@@ -252,10 +251,13 @@ abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttribute
   private val addEntityRow: EntityRow[T] =
     EntityRow[T](repository, New(Var(Some(bottom.empty.default))), uiAttributes)
 
+  private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
+
   private val entityRows: Signal[Seq[EntityRow[T]]] =
     repository.all.map(
       _.map(syncedEntity => {
-        EntityRow[T](repository, Existing(syncedEntity), uiAttributes)
+        val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing(syncedEntity))
+        EntityRow[T](repository, existing, uiAttributes)
       }),
     )
 

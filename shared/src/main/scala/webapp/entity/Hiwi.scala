@@ -11,7 +11,7 @@ case class Hiwi(
     gender: Attribute[String] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
     birthdate: Attribute[Long] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Hiwi]
     derives DecomposeLattice,
       Bottom {
@@ -29,10 +29,11 @@ case class Hiwi(
 
   def identifier: Attribute[String] = eMail
 
-  def withExists(_exists: Boolean): Hiwi = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): Hiwi = {
+    this.copy(_exists = _exists.set(exists))
   }
 
+  override def exists: Boolean = _exists.get.getOrElse(true)
 }
 
 object Hiwi {

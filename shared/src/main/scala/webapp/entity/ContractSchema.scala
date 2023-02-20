@@ -8,7 +8,7 @@ import webapp.BasicCodecs.*
 case class ContractSchema(
     name: Attribute[String] = Attribute.empty,
     files: Attribute[Seq[String]] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[ContractSchema]
     derives DecomposeLattice,
       Bottom {
@@ -18,9 +18,11 @@ case class ContractSchema(
 
   def identifier: Attribute[String] = name
 
-  def withExists(_exists: Boolean): ContractSchema = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): ContractSchema = {
+    this.copy(_exists = _exists.set(exists))
   }
+
+  override def exists: Boolean = _exists.get.getOrElse(true)
 
 }
 

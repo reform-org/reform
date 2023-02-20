@@ -1,8 +1,40 @@
 package webapp.utils
 
+import rescala.core.Disconnectable
 import rescala.default.*
+import webapp.given_ExecutionContext
+import scala.concurrent.*
+import scala.annotation.nowarn
 
 object Seqnal {
+
+  implicit class SignalOps[T](self: Signal[T]) {
+
+    def toFuture: Future[T] = {
+      val promise = Promise[T]()
+      val disconnectable: Disconnectable = self.observe(v => {
+        promise.success(v): @nowarn("msg=discarded expression")
+      })
+      promise.future.map(v => {
+        disconnectable.disconnect()
+        v
+      })
+    }
+
+    def waitUntil(pred: T => Boolean): Future[T] = {
+      val promise = Promise[T]()
+      val disconnectable: Disconnectable = self.observe(v => {
+        if (pred(v)) {
+          promise.success(v): @nowarn("msg=discarded expression")
+        }
+      })
+      promise.future.map(v => {
+        disconnectable.disconnect()
+        v
+      })
+    }
+
+  }
 
   implicit class SeqOfSignalOps[T](self: Seq[Signal[T]]) {
 

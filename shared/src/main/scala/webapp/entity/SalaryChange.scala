@@ -10,7 +10,7 @@ case class SalaryChange(
     value: Attribute[BigDecimal] = Attribute.empty,
     paymentLevel: Attribute[String] = Attribute.empty,
     fromDate: Attribute[Long] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[SalaryChange]
     derives DecomposeLattice,
       Bottom {
@@ -20,9 +20,11 @@ case class SalaryChange(
 
   def identifier: Attribute[String] = paymentLevel
 
-  def withExists(_exists: Boolean): SalaryChange = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): SalaryChange = {
+    this.copy(_exists = _exists.set(exists))
   }
+
+  override def exists: Boolean = _exists.get.getOrElse(true)
 }
 
 object SalaryChange {

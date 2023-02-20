@@ -7,7 +7,7 @@ import webapp.BasicCodecs.*
 
 case class PaymentLevel(
     title: Attribute[String] = Attribute.empty,
-    exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[PaymentLevel]
     derives DecomposeLattice,
       Bottom {
@@ -17,10 +17,11 @@ case class PaymentLevel(
 
   def identifier: Attribute[String] = title
 
-  def withExists(_exists: Boolean): PaymentLevel = {
-    this.copy(exists = exists.set(_exists))
+  def withExists(exists: Boolean): PaymentLevel = {
+    this.copy(_exists = _exists.set(exists))
   }
 
+  override def exists: Boolean = _exists.get.getOrElse(true)
 }
 
 object PaymentLevel {
