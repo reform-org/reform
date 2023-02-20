@@ -18,17 +18,18 @@ package webapp
 import loci.registry.Registry
 import utest.*
 import webapp.MainSharedTest.testRepository
-import webapp.MainSharedTest.waitUntilTrue
 import webapp.entity.*
 import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.given_ExecutionContext
-
+import webapp.utils.Seqnal.*
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
 import loci.communicator.ws.jetty.WS
+
+import scala.concurrent.Future
 
 object MainJVMTest extends TestSuite {
 
@@ -37,7 +38,7 @@ object MainJVMTest extends TestSuite {
     () // Return unit to prevent warning due to discarding value
   }
 
-  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T], port: Int): Unit = {
+  def testSyncing[T <: Entity[T]](fun: Repositories => Repository[T], port: Int): Future[Unit] = {
     val registry0 = Registry()
     val registry1 = Registry()
     val indexedDb0: IIndexedDB = MemoryIndexedDB()
@@ -51,13 +52,12 @@ object MainJVMTest extends TestSuite {
     server.setHandler(context)
     server.addConnector(connector)
     for _ <- testRepository(fun(repositories0))
-    _ <- waitUntilTrue(fun(repositories0).all.map(_.length == 1))
-    _ <- waitUntilTrue(fun(repositories1).all.map(_.isEmpty))
+    _ <- fun(repositories0).all.waitUntil(_.length == 1)
+    _ <- fun(repositories1).all.waitUntil(_.isEmpty)
     _ = registry0.listen(WS(context, "/registry/*"))
     _ = server.start()
     _ <- registry1.connect(WS(s"ws://localhost:$port/registry/"))
-    _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
-    _ <- waitUntilTrue(fun(repositories1).all.map(_.length == 1))
+    _ <- fun(repositories1).all.waitUntil(_.length == 1)
     _ = registry0.terminate()
     _ = registry1.terminate()
     yield ()

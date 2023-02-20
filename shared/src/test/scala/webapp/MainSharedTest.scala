@@ -22,6 +22,7 @@ import webapp.npm.IIndexedDB
 import webapp.npm.MemoryIndexedDB
 import webapp.repo.Repository
 import webapp.repo.Synced
+import webapp.utils.Seqnal.*
 import scala.concurrent.Future
 
 import webapp.given_ExecutionContext
@@ -31,30 +32,6 @@ import rescala.core.Disconnectable
 import scala.annotation.nowarn
 
 object MainSharedTest extends TestSuite {
-
-  def signalToFuture[T](signal: Signal[T]): Unit = {
-    val promise = Promise[T]()
-    val disconnectable: Disconnectable = signal.observe(v => {
-      promise.success(v): @nowarn("msg=discarded expression")
-    })
-    promise.future.map(v => {
-      disconnectable.disconnect()
-      v
-    })
-  }
-
-  def waitUntilTrue(signal: Signal[Boolean]): Future[Unit] = {
-    val promise = Promise[Unit]()
-    val disconnectable: Disconnectable = signal.observe(v => {
-      if (v) {
-        promise.success(()): @nowarn("msg=discarded expression")
-      }
-    })
-    promise.future.map(v => {
-      disconnectable.disconnect()
-      v
-    })
-  }
 
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
     val _ = evaluateForSideEffectOnly
@@ -69,12 +46,11 @@ object MainSharedTest extends TestSuite {
   }
 
   def testRepository[T <: Entity[T]](repository: Repository[T]): Future[Unit] = {
-    assert(repository.all.now.length == 0)
+    assert(repository.all.now.isEmpty)
     for _ <- repository
       .create()
       .map(value => testE(value))
-    _ <- waitUntilTrue(repository.all.map(_.length == 1))
-    _ <- waitUntilTrue(repository.all.map(_.length == 1))
+    _ <- repository.all.waitUntil(_.length == 1)
     yield ()
   }
 
