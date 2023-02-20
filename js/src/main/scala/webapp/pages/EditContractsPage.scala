@@ -33,7 +33,7 @@ import webapp.services.ToastType
 
 case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
 
-  private val existingValue = repositories.contracts.get(contractId)
+  private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
 
   def render(using
       routing: RoutingService,
@@ -42,9 +42,26 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       discovery: DiscoveryService,
       toaster: Toaster,
   ): VNode = {
-    div(existingValue.map(currentContract => {
-      InnerEditContractsPage(Some(currentContract)).render()
-    }))
+    div(
+      existingValue
+        .map(currentContract => {
+          val result: VMod = currentContract match {
+            case Some(currentContract) =>
+              InnerEditContractsPage(Some(currentContract)).render()
+            case None =>
+              navigationHeader(
+                div(
+                  div(
+                    cls := "p-1",
+                    h1(cls := "text-4xl text-center", "EditContractsPage"),
+                  ),
+                  h2("Contract not found"),
+                ),
+              )
+          }
+          result
+        }),
+    )
   }
 }
 
