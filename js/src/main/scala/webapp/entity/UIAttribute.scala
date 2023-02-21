@@ -98,15 +98,16 @@ class UITextAttribute[EntityType, AttributeType](
         val (editStart, entityVar) = editing
         entityVar.map(entity => {
           val attr = getter(entity)
+          val editStartAttr = getter(editStart)
           td(
             cls := " border-0 px-0 py-0",
             renderEditInput(formId, attr, x => set(entityVar, x), Some(s"$formId-conflicting-values")),
-            if (attr.getAll.size > 1) {
+            if (editStartAttr.getAll.size > 1) {
               Some(
                 Seq(
                   dataList(
                     idAttr := s"$formId-conflicting-values",
-                    renderConflicts(attr),
+                    renderConflicts(editStartAttr),
                   ),
                 ),
               )
