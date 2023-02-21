@@ -40,16 +40,16 @@ object ContractSchemasPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def files(using repositories: Repositories): UIMultiSelectAttribute[ContractSchema] =
+  private def files(using repositories: Repositories): UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
-      .select(
+      .multiSelect(
         repositories.requiredDocuments.all.map(list =>
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),
       )
       .withLabel("Required Documents")
       .require
-      .bindAsMultiSelect(
+      .bindAsMultiSelect[ContractSchema](
         _.files,
         (c, a) => c.copy(files = a),
       )

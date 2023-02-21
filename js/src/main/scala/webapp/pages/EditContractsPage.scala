@@ -17,6 +17,7 @@ package webapp.pages
 
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default
 import rescala.default.*
 import webapp.components.navigationHeader
 import webapp.services.Page
@@ -75,59 +76,54 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing: RoutingService,
 ) {
 
-  private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
-    UISelectAttribute(
-      _.contractAssociatedHiwi,
-      (p, a) => p.copy(contractAssociatedHiwi = a),
-      readConverter = identity,
-      writeConverter = identity,
-      label = "AssociatedHiwi",
-      options = repositories.hiwis.all.map(list =>
-        list.map(value =>
-          new SelectOption(
-            value.id,
-            value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
+  private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.hiwis.all.map(list =>
+          list.map(value =>
+            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
           ),
         ),
-      ),
-      isRequired = true,
-    )
+      )
+      .withLabel("Associated Hiwi")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedHiwi,
+        (p, a) => p.copy(contractAssociatedHiwi = a),
+      )
+  }
 
-  private def contractAssociatedSupervisor(using repositories: Repositories): UISelectAttribute[Contract, String] =
-    UISelectAttribute(
-      _.contractAssociatedSupervisor,
-      (p, a) => p.copy(contractAssociatedSupervisor = a),
-      readConverter = identity,
-      writeConverter = identity,
-      label = "AssociatedSupervisors",
-      options = repositories.supervisors.all.map(list =>
-        list.map(value =>
-          new SelectOption(
-            value.id,
-            value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
+  private def contractAssociatedSupervisor(using repositories: Repositories): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        options = repositories.supervisors.all.map(list =>
+          list.map(value =>
+            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
           ),
         ),
-      ),
-      isRequired = true,
-    )
+      )
+      .withLabel("Associated Supervisors")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedSupervisor,
+        (p, a) => p.copy(contractAssociatedSupervisor = a),
+      )
+  }
 
-  private def contractAssociatedType(using repositories: Repositories): UISelectAttribute[Contract, String] =
-    UISelectAttribute(
-      _.contractType,
-      (p, a) => p.copy(contractType = a),
-      readConverter = identity,
-      writeConverter = identity,
-      label = "ContractType",
-      options = repositories.contractSchemas.all.map(list =>
-        list.map(value =>
-          new SelectOption(
-            value.id,
-            value.signal.map(v => v.name.get.getOrElse("")),
-          ),
+  private def contractAssociatedType(using repositories: Repositories): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.contractSchemas.all.map(list =>
+          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
-      ),
-      isRequired = true,
-    )
+      )
+      .withLabel("Contract Type")
+      .require
+      .bindAsSelect(
+        _.contractType,
+        (p, a) => p.copy(contractType = a),
+      )
+  }
 
   private val contractStartDate = UIAttributeBuilder.date
     .withLabel("Start Date")
@@ -153,23 +149,20 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       (h, a) => h.copy(contractHoursPerMonth = a),
     )
 
-  private def contractAssociatedPaymentLevel(using repositories: Repositories): UISelectAttribute[Contract, String] =
-    UISelectAttribute(
-      _.contractType,
-      (p, a) => p.copy(contractType = a),
-      readConverter = identity,
-      writeConverter = identity,
-      label = "AssociatedPaymentLevel",
-      options = repositories.paymentLevels.all.map(list =>
-        list.map(value =>
-          new SelectOption(
-            value.id,
-            value.signal.map(v => v.title.get.getOrElse("")),
-          ),
+  private def contractAssociatedPaymentLevel(using repositories: Repositories): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.paymentLevels.all.map(list =>
+          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
         ),
-      ),
-      isRequired = true,
-    )
+      )
+      .withLabel("Associated PaymentLevel")
+      .require
+      .bindAsSelect(
+        _.contractType,
+        (p, a) => p.copy(contractType = a),
+      )
+  }
 
   private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
@@ -214,7 +207,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing.to(ContractsPage())
   }
 
-  var editingValue = Var(Option(existingValue.get.signal.now))
+  var editingValue: Var[Option[Contract]] = Var(Option(existingValue.get.signal.now))
 
   def render(using
       routing: RoutingService,

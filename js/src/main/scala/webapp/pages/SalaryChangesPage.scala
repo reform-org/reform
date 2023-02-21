@@ -40,19 +40,20 @@ object SalaryChangesPage {
       (s, a) => s.copy(value = a),
     )
 
-  private def salaryChangePaymentLevel(using repositories: Repositories): UISelectAttribute[SalaryChange, String] =
-    UISelectAttribute(
-      _.paymentLevel,
-      (p, a) => p.copy(paymentLevel = a),
-      // readConverter = str => Repositories.paymentLevels.all.map(list => list.filter(paymentLevel => paymentLevel.id == str).map(value => value.signal.map(v => v._title.get.getOrElse("")))),
-      readConverter = identity,
-      writeConverter = identity,
-      label = "PaymentLevel",
-      options = repositories.paymentLevels.all.map(list =>
-        list.map(value => new SelectOption(value.id, value.signal.map(v => v.title.get.getOrElse("")))),
-      ),
-      isRequired = true,
-    )
+  private def salaryChangePaymentLevel(using repositories: Repositories): UIAttribute[SalaryChange, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.paymentLevels.all.map(list =>
+          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
+        ),
+      )
+      .withLabel("Payment Level")
+      .require
+      .bindAsSelect(
+        _.paymentLevel,
+        (p, a) => p.copy(paymentLevel = a),
+      )
+  }
 
   private val salaryChangeFromDate = UIAttributeBuilder.date
     .withLabel("From")

@@ -248,7 +248,7 @@ class UISelectAttribute[EntityType, AttributeType](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[List[SelectOption]],
+    options: Signal[Seq[SelectOption]],
     searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
