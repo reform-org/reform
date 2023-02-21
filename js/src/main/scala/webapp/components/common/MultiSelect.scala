@@ -8,7 +8,9 @@ import webapp.npm.JSUtils.createPopper
 import webapp.given
 import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
-import org.scalajs.dom.document
+import org.scalajs.dom.{console, document}
+import org.scalajs.dom.HTMLElement
+import scala.annotation.nowarn
 
 class MultiSelectOption(
     val id: String,
@@ -33,8 +35,28 @@ def MultiSelect(
 
   createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
 
+  def updateSelectAll: Unit = {
+    val checkAll = document
+      .querySelector(s"#$id input[type=checkbox]#all-checkbox-$id")
+      .asInstanceOf[HTMLInputElement]
+    if (checkAll != null) {
+      if (
+        document
+          .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):not(:checked)")
+          .size > 0
+      ) {
+        checkAll.indeterminate = true
+      } else {
+        checkAll.checked = true
+      }
+    }
+
+  }
+
+  value.observe(_ => updateSelectAll): @nowarn
+
   div(
-    cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
+    cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9",
     props,
     idAttr := id,
     div(
@@ -57,7 +79,13 @@ def MultiSelect(
                         onInput(
                           document
                             .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                            .map(element => element.id)
+                            .map(element =>
+                              element
+                                .asInstanceOf[HTMLElement]
+                                .dataset
+                                .get("id")
+                                .getOrElse(""),
+                            )
                             .filter(id => id != v.id)
                             .asInstanceOf[Seq[String]],
                         )
@@ -99,8 +127,8 @@ def MultiSelect(
       div(
         cls := "p-2 border-b border-slate-200",
         label(
-          input(
-            tpe := "checkbox",
+          Checkbox(
+            CheckboxStyle.Default,
             cls := "mr-2",
             idAttr := s"all-checkbox-$id",
             onClick.foreach(e => {
@@ -108,7 +136,13 @@ def MultiSelect(
                 onInput(
                   document
                     .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id)")
-                    .map(element => element.id)
+                    .map(element =>
+                      element
+                        .asInstanceOf[HTMLElement]
+                        .dataset
+                        .get("id")
+                        .getOrElse(""),
+                    )
                     .asInstanceOf[Seq[String]],
                 )
               } else {
@@ -118,13 +152,13 @@ def MultiSelect(
             }),
           ),
           forId := s"all-checkbox-$id",
-          cls := "w-full block",
+          cls := "w-full block flex items-center",
           tabIndex := 0,
           "Select All",
         ),
       ),
       div(
-        cls := "multiselect-dropdown-list max-h-96 overflow-y-auto",
+        cls := "multiselect-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {
@@ -132,24 +166,31 @@ def MultiSelect(
                 if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
                   Some(
                     label(
-                      cls := "block w-full hover:bg-slate-50 px-2 py-0.5",
-                      input(
-                        tpe := "checkbox",
+                      cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center",
+                      Checkbox(
+                        CheckboxStyle.Default,
                         cls := "mr-2",
                         checked <-- value.map(i => i.contains(uiOption.id)),
-                        idAttr := uiOption.id,
+                        idAttr := s"$id-${uiOption.id}",
+                        VMod.attr("data-id") := uiOption.id,
                         onClick.foreach(_ => {
                           onInput(
                             document
                               .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                              .map(element => element.id)
+                              .map(element =>
+                                element
+                                  .asInstanceOf[HTMLElement]
+                                  .dataset
+                                  .get("id")
+                                  .getOrElse(""),
+                              )
                               .asInstanceOf[Seq[String]],
                           )
                         }),
                       ),
                       tabIndex := 0,
                       uiOption.render,
-                      forId := uiOption.id,
+                      forId := s"$id-${uiOption.id}",
                     ),
                   )
                 } else None

@@ -26,6 +26,7 @@ import webapp.services.RoutingService
 
 case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[ContractSchema](
+      "Contract schemas",
       repositories.contractSchemas,
       Seq(name, files),
       DefaultEntityRow(),

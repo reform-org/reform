@@ -100,14 +100,14 @@ class EntityRow[T <: Entity[T]](
   private def renderEdit: VMod = {
     val deleteModal = Var[Option[Modal]](None)
     tr(
-      cls := "border-b dark:border-gray-700",
+      cls := "border border-gray-300 dark:border-gray-700",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
       uiAttributes.map(ui => {
         ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
       }),
       td(
-        cls := "border border-gray-300 py-1 w-1/6",
+        cls := "border border-gray-300 py-1 min-w-[175px] max-w-[175px] mx-auto",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -182,7 +182,11 @@ class EntityRow[T <: Entity[T]](
   private def renderSynced(synced: Synced[T]): VMod = {
     val modal = new Modal(
       "Delete",
-      s"Do you really want to delete the entity \"${synced.signal.now.identifier.get.getOrElse("")}\"?",
+      span(
+        "Do you really want to delete the entity \"",
+        synced.signal.map(value => value.identifier.get.getOrElse("")),
+        "\"?",
+      ),
       Seq(
         new ModalButton(
           "Delete",
@@ -195,6 +199,7 @@ class EntityRow[T <: Entity[T]](
     synced.signal.map[VMod](p => {
       if (p.exists) {
         tr(
+          onDblClick.foreach(e => startEditing()),
           cls := "border border-gray-300 odd:bg-slate-50",
           data.id := synced.id,
           key := synced.id,
@@ -202,7 +207,7 @@ class EntityRow[T <: Entity[T]](
             ui.render(synced.id, p)
           }),
           td(
-            cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center",
+            cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center min-w-[175px] max-w-[175px] mx-auto",
             TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
             IconButton(
               LightButtonStyle.Error,
@@ -264,7 +269,7 @@ class EntityRow[T <: Entity[T]](
   }
 }
 
-private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]) {
+private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]) {
 
   private val filters = uiAttributes.map(_.uiFilter)
 
@@ -280,6 +285,7 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityTyp
 }
 
 abstract class EntityPage[T <: Entity[T]](
+    title: String,
     repository: Repository[T],
     uiAttributes: Seq[UIBasicAttribute[T]],
     entityRowContructor: EntityRowBuilder[T],
@@ -304,7 +310,7 @@ abstract class EntityPage[T <: Entity[T]](
       }),
     )
 
-  private val filterRow = FilterRow[T](uiAttributes)
+  private val filter = Filter[T](uiAttributes)
 
   def render(using
       routing: RoutingService,
@@ -315,27 +321,37 @@ abstract class EntityPage[T <: Entity[T]](
   ): VNode = {
     navigationHeader(
       div(
-        cls := "relative overflow-x-visible shadow-md sm:rounded-lg p-4 m-4",
-        table(
-          cls := "border-collapse w-full text-left table-auto",
-          thead(
-            tr(
-              uiAttributes.map(a =>
+        cls := "overflow-x-auto min-h-fit h-[200vh]",
+        h1(cls := "text-3xl mt-4 text-center", title),
+        filter.render,
+        div(
+          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible min-w-[95%]",
+          table(
+            cls := "w-full text-left table-auto border-collapse",
+            thead(
+              tr(
+                uiAttributes.map(a =>
+                  th(
+                    cls := "border-gray-300 border-b-2 border dark:border-gray-500 px-4 py-2 uppercase ",
+                    a.label,
+                  ),
+                ),
                 th(
-                  cls := "border-gray-300 border-b-2 border dark:border-gray-500 p-4 uppercase first-of-type:rounded-tl",
-                  a.label,
+                  cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center",
+                  "Actions",
                 ),
               ),
-              th(cls := "border-gray-300 border border-b-2 dark:border-gray-500 p-4 uppercase", "Actions"),
             ),
-          ),
-          tbody(
-            // filterRow.render,
-            renderEntities,
-          ),
-          tfoot(
-            cls := "mt-2",
-            addEntityRow.render,
+            tbody(
+              renderEntities,
+            ),
+            tfoot(
+              tr(
+                cls := "h-4",
+              ),
+              cls := "",
+              addEntityRow.render,
+            ),
           ),
         ),
       ),
@@ -343,7 +359,7 @@ abstract class EntityPage[T <: Entity[T]](
   }
 
   private def renderEntities = {
-    filterRow.predicate
+    filter.predicate
       .map(p =>
         entityRows.map(
           _.filterSignal(

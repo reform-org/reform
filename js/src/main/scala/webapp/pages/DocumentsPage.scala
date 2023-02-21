@@ -24,7 +24,12 @@ import DocumentsPage.*
 import webapp.entity.Document
 import webapp.services.RoutingService
 case class DocumentsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[Document](repositories.requiredDocuments, Seq(name, fileName), DefaultEntityRow()) {}
+    extends EntityPage[Document](
+      "Documents",
+      repositories.requiredDocuments,
+      Seq(name, fileName),
+      DefaultEntityRow(),
+    ) {}
 
 object DocumentsPage {
   private val name = UIAttributeBuilder.string

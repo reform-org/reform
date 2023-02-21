@@ -23,7 +23,7 @@ import webapp.services.Toaster
 import webapp.services.RoutingService
 
 case class UsersPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[User](repositories.users, Seq(username, role, comment), DefaultEntityRow()) {}
+    extends EntityPage[User]("Users", repositories.users, Seq(username, role, comment), DefaultEntityRow()) {}
 
 object UsersPage {
   private val username = UIAttributeBuilder.string

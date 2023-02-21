@@ -15,7 +15,7 @@ abstract class UIBasicAttribute[EntityType](
 ) {
 
   def render(id: String, entity: EntityType): VNode = {
-    td(cls := "border border-gray-300 px-4")
+    td(cls := "border border-gray-300 px-4 min-w-[200px]")
   }
 
   def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
@@ -31,7 +31,10 @@ abstract class UIAttribute[EntityType, AttributeType](
 
   override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
-    td(cls := "border border-gray-300 p-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
+    td(
+      cls := "border border-gray-300 p-0 min-w-[200px]",
+      duplicateValuesHandler(attr.getAll.map(x => readConverter(x))),
+    )
   }
 
   override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
@@ -66,7 +69,7 @@ class UITextAttribute[EntityType, AttributeType](
       attr: Attribute[AttributeType],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-  ): VNode =
+  ): VMod =
     TableInput(
       // cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
       `type` := fieldType,
@@ -93,7 +96,7 @@ class UITextAttribute[EntityType, AttributeType](
       _.map(entity => {
         val attr = getter(entity)
         td(
-          cls := " border-0 px-0 py-0",
+          cls := " border-0 px-0 py-0 min-w-[200px]",
           renderEditInput(formId, attr, x => set(entityVar, x), Some("conflicting-values")),
           if (attr.getAll.size > 1) {
             Some(
@@ -109,7 +112,7 @@ class UITextAttribute[EntityType, AttributeType](
           },
         )
       })
-        .getOrElse(td(cls := "px-6 py-0"))
+        .getOrElse(td(cls := "px-4 py-0"))
     }
   }
 
@@ -129,7 +132,7 @@ class UIReadOnlyAttribute[EntityType, AttributeType](
   override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] =
     entityVar.map(
       _.flatMap(entity => getter(entity).get.map(a => td(readConverter(a))))
-        .getOrElse(td(cls := "px-6 py-0")),
+        .getOrElse(td(cls := "px-4 py-0")),
     )
 }
 
@@ -184,7 +187,7 @@ class UIDateAttribute[EntityType](
       attr: Attribute[Long],
       set: Long => Unit,
       datalist: Option[String] = None,
-  ): VNode = input(
+  ): VMod = TableInput(
     cls := "input valid:input-success",
     `type` := "date",
     formId := _formId,
@@ -220,7 +223,7 @@ class UICheckboxAttribute[EntityType](
   override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
-      cls := "border border-gray-300 px-6 py-0",
+      cls := "border border-gray-300 px-4 py-0",
       duplicateValuesHandler(attr.getAll.map(if (_) "Yes" else "No")),
     )
   }
@@ -230,9 +233,9 @@ class UICheckboxAttribute[EntityType](
       attr: Attribute[Boolean],
       set: Boolean => Unit,
       datalist: Option[String] = None,
-  ): VNode = input(
+  ): VMod = Checkbox(
+    CheckboxStyle.Default,
     cls := "input valid:input-success",
-    `type` := "checkbox",
     formId := _formId,
     checked := attr.get.getOrElse(false),
     onClick.foreach(_ => set(!attr.get.getOrElse(false))),
@@ -248,7 +251,7 @@ class UISelectAttribute[EntityType, AttributeType](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[Seq[SelectOption]],
+    val options: Signal[Seq[SelectOption]],
     searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
@@ -264,17 +267,19 @@ class UISelectAttribute[EntityType, AttributeType](
   override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
-      cls := "border border-gray-300 px-6 py-0",
+      cls := "border border-gray-300 px-4 py-0 min-w-[200px]",
       duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
     )
   }
+
+  override def uiFilter: UIFilter[EntityType] = UISelectFilter(this)
 
   override def renderEditInput(
       _formId: String,
       attr: Attribute[AttributeType],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-  ): VNode = {
+  ): VMod = {
     val value = Var(attr.get.getOrElse("").asInstanceOf[String])
     Select(
       options,
@@ -298,7 +303,7 @@ class UIMultiSelectAttribute[EntityType](
     writeConverter: String => Seq[String],
     label: String,
     isRequired: Boolean,
-    options: Signal[Seq[MultiSelectOption]],
+    val options: Signal[Seq[MultiSelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, Seq[String]](
@@ -315,11 +320,11 @@ class UIMultiSelectAttribute[EntityType](
   override def render(id: String, entity: EntityType): VNode = {
     val attr = getter(entity)
     td(
-      cls := "px-6 py-0",
+      cls := "border border-gray-300 p-0 min-w-[350px] max-w-[350px]",
       duplicateValuesHandler(
         Seq(
           div(
-            cls := "flex flex-row gap-2",
+            cls := "flex flex-row gap-2 flex-wrap",
             attr.getAll
               .map(x =>
                 x.map(id =>
@@ -334,25 +339,31 @@ class UIMultiSelectAttribute[EntityType](
     )
   }
 
+  override def uiFilter: UIFilter[EntityType] = UIMultiSelectFilter(this)
+
   override def renderEditInput(
       _formId: String,
       attr: Attribute[Seq[String]],
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
-  ): VNode = {
+  ): VMod = {
     val value = Var(attr.getAll.head)
-    MultiSelect(
-      options,
-      v => {
-        value.set(v.asInstanceOf[Seq[String]])
-        set(v)
-      },
-      value,
-      showItems,
-      searchEnabled,
-      span("Nothing found..."),
-      formId := _formId,
-      required := isRequired,
+    Seq(
+      MultiSelect(
+        options,
+        v => {
+          value.set(v.asInstanceOf[Seq[String]])
+          set(v)
+        },
+        value,
+        showItems,
+        searchEnabled,
+        span("Nothing found..."),
+        formId := _formId,
+        required := isRequired,
+      ),
+      cls := "min-w-[350px] max-w-[350px]",
     )
+
   }
 }

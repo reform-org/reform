@@ -7,7 +7,7 @@ import rescala.default.*
 import webapp.npm.JSUtils.createPopper
 import webapp.given
 import webapp.components.Icons
-import org.scalajs.dom.document
+import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 
 class SelectOption(
@@ -43,7 +43,7 @@ def Select(
   }
 
   div(
-    cls := "select-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
+    cls := "select-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9",
     props,
     idAttr := id,
     div(
@@ -82,7 +82,7 @@ def Select(
         )
       } else None,
       div(
-        cls := "select-dropdown-list max-h-96 overflow-y-auto",
+        cls := "select-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {
@@ -95,20 +95,24 @@ def Select(
                         tpe := "radio",
                         cls := "hidden peer",
                         checked <-- value.map(i => i.contains(uiOption.id)),
-                        idAttr := uiOption.id,
+                        idAttr := s"$id-${uiOption.id}",
+                        VMod.attr("data-id") := uiOption.id,
                         VMod.attr("name") := id,
                         onClick.foreach(_ => {
                           onInput(
                             document
                               .querySelector(s"#$id input[type=radio]:checked")
-                              .id,
+                              .asInstanceOf[HTMLElement]
+                              .dataset
+                              .get("id")
+                              .getOrElse(""),
                           )
                           close()
                         }),
                       ),
                       tabIndex := 0,
                       uiOption.render,
-                      forId := uiOption.id,
+                      forId := s"$id-${uiOption.id}",
                     ),
                   )
                 } else None

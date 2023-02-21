@@ -14,7 +14,7 @@ class ModalButton(
     val customAttributes: Seq[VMod] = Seq(),
 )
 
-class Modal(val title: String, val body: VNode, val buttons: Seq[ModalButton]) {
+class Modal(val title: VMod, val body: VMod, val buttons: Seq[ModalButton]) {
   private val openState = Var(false)
 
   def this(title: String = "", text: String = "", buttons: Seq[ModalButton] = Seq()) =

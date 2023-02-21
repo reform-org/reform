@@ -97,16 +97,15 @@ case class HomePage() extends Page {
           "!!!",
         ),
         div(
-          input(
-            tpe := "checkbox",
-            idAttr := "export-success",
-            cls := "mr-2",
-            onClick.foreach(_ => deleteButtonActive.transform(!_)),
-          ),
-          label(
+          LabeledCheckbox(
             forId := "export-success",
             cls := "text-slate-600",
             "I have verified that the export has downloaded correctly ",
+          )(
+            CheckboxStyle.Default,
+            idAttr := "export-success",
+            cls := "mr-2",
+            onClick.foreach(_ => deleteButtonActive.transform(!_)),
           ),
         ),
         div(
@@ -140,6 +139,11 @@ case class HomePage() extends Page {
       div(
         cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
+        LabeledCheckbox("Testbox1")(CheckboxStyle.Primary),
+        Checkbox(CheckboxStyle.Default),
+        Checkbox(CheckboxStyle.Success),
+        Checkbox(CheckboxStyle.Warning),
+        Checkbox(CheckboxStyle.Error),
         Button(
           ButtonStyle.Primary,
           idAttr := "loadPDF",
