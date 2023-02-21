@@ -102,6 +102,7 @@ class EntityRow[T <: Entity[T]](
     tr(
       cls := "border-b dark:border-gray-700",
       data.id := existingValue.map(v => v.id),
+      key := existingValue.map(v => v.id).getOrElse("new"),
       uiAttributes.map(ui => {
         ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
       }),
@@ -196,6 +197,7 @@ class EntityRow[T <: Entity[T]](
         tr(
           cls := "border border-gray-300 odd:bg-slate-50",
           data.id := synced.id,
+          key := synced.id,
           uiAttributes.map(ui => {
             ui.render(synced.id, p)
           }),
