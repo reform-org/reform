@@ -300,7 +300,7 @@ abstract class EntityPage[T <: Entity[T]](
     repository.all.map(
       _.map(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing(syncedEntity))
-        EntityRow[T](repository, existing, uiAttributes)
+        entityRowContructor.construct(repository, existing, uiAttributes)
       }),
     )
 
