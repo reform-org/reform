@@ -75,6 +75,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     repositories: Repositories,
     routing: RoutingService,
 ) {
+  val startEditEntity = existingValue.map(_.signal.now)
 
   private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
     UIAttributeBuilder
@@ -165,15 +166,15 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
   }
 
   private def createOrUpdate(): Unit = {
-    val editingNow = editingValue.now
+    val editingNow = editingValue.now.get._2.now
     existingValue match {
       case Some(existing) => {
         existing
           .update(p => {
-            p.getOrElse(Contract.empty).merge(editingNow.get)
+            p.getOrElse(Contract.empty).merge(editingNow)
           })
           .map(value => {
-            editingValue.set(Some(value))
+            editingValue.set(None)
             toaster.make(
               "Contract saved!",
               ToastMode.Short,
@@ -189,10 +190,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
         repositories.contracts
           .create()
           .flatMap(entity => {
-            editingValue.set(Some(Contract.empty.default))
+            editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.getOrElse(Contract.empty).merge(editingNow.get)
+              p.getOrElse(Contract.empty).merge(editingNow)
             })
           })
           .map(value => {
@@ -207,7 +208,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing.to(ContractsPage())
   }
 
-  var editingValue: Var[Option[Contract]] = Var(Option(existingValue.get.signal.now))
+  var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
+    Option(existingValue.get.signal.now, Var(existingValue.get.signal.now)),
+  )
 
   def render(using
       routing: RoutingService,
