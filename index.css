@@ -12,3 +12,11 @@
 .font-roboto {
     font-family: 'Roboto', serif;
 }
+
+.drawer-toggle~.drawer-side {
+    visibility: hidden;
+}
+
+.drawer-toggle:checked~.drawer-side {
+    visibility: visible;
+}

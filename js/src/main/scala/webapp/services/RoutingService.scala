@@ -38,12 +38,6 @@ trait Page {
   ): VNode
 }
 
-class RoutingState(
-    // if canReturn is true then the page will show in mobile mode
-    // an go back arrow in the top left corner
-    val canReturn: Boolean,
-) extends js.Object
-
 class RoutingService(using repositories: Repositories, toaster: Toaster) {
   given RoutingService = this;
 
@@ -59,8 +53,9 @@ class RoutingService(using repositories: Repositories, toaster: Toaster) {
     page.map(_.render)
 
   def to(newPage: Page, preventReturn: Boolean = false) = {
-    window.history.pushState(RoutingState(!preventReturn), "", linkPath(newPage))
+    window.history.pushState(null, "", linkPath(newPage))
     page.set(newPage)
+    document.activeElement.asInstanceOf[HTMLElement].blur()
   }
 
   def link(newPage: Page) =
@@ -72,14 +67,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster) {
   def back() =
     window.history.back()
 
-  def state =
-    window.history.state.asInstanceOf[RoutingState]
+  window.history.replaceState(null, "", linkPath(page.now))
 
-  // Ensure initial path is correctly set
-  // Example: for path "/counter" and pattern "counter/{number=0}" the
-  //          url should be "/counter/0" and not "/counter"
-  window.history.replaceState(RoutingState(false), "", linkPath(page.now))
-
-  // Change path when url changes by user action
   window.onpopstate = _ => page.set(Routes.fromPath(Path(window.location.pathname)))
 }
