@@ -84,7 +84,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       label = "AssociatedHiwi",
       options = repositories.hiwis.all.map(list =>
         list.map(value =>
-          new SelectOption[Signal[String]](
+          new SelectOption(
             value.id,
             value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
           ),
@@ -102,7 +102,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       label = "AssociatedSupervisors",
       options = repositories.supervisors.all.map(list =>
         list.map(value =>
-          new SelectOption[Signal[String]](
+          new SelectOption(
             value.id,
             value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
           ),
@@ -120,7 +120,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       label = "ContractType",
       options = repositories.contractSchemas.all.map(list =>
         list.map(value =>
-          new SelectOption[Signal[String]](
+          new SelectOption(
             value.id,
             value.signal.map(v => v.name.get.getOrElse("")),
           ),
@@ -162,7 +162,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       label = "AssociatedPaymentLevel",
       options = repositories.paymentLevels.all.map(list =>
         list.map(value =>
-          new SelectOption[Signal[String]](
+          new SelectOption(
             value.id,
             value.signal.map(v => v.title.get.getOrElse("")),
           ),
