@@ -3,6 +3,10 @@ package webapp.entity
 import webapp.utils.Date
 
 import webapp.utils.Money.*
+import webapp.utils.Seqnal.*
+import rescala.default.*
+
+import webapp.components.common.*
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -13,6 +17,7 @@ case class UIAttributeBuilder[AttributeType](
     stepSize: String = "1",
     regex: String = ".*",
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
+    options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
 ) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
@@ -83,6 +88,10 @@ object UIAttributeBuilder {
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
+  def select(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[Seq[String]] =
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").toSeq)
+      .copy(options = options)
+
   implicit class BindToInt[AttributeType](self: UIAttributeBuilder[AttributeType])(implicit
       ordering: Ordering[AttributeType],
   ) {
@@ -127,5 +136,22 @@ object UIAttributeBuilder {
       label = self.label,
       isRequired = self.isRequired,
     )
+  }
+
+  implicit class BindToString(self: UIAttributeBuilder[Seq[String]]) {
+    def bindAsMultiSelect[EntityType](
+        getter: EntityType => Attribute[Seq[String]],
+        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+    ): UIMultiSelectAttribute[EntityType] =
+      UIMultiSelectAttribute(
+        getter,
+        setter,
+        readConverter = self.readConverter,
+        writeConverter = self.writeConverter,
+        label = self.label,
+        options = self.options.mapInside { case (k, v) => MultiSelectOption(k, v) },
+        isRequired = self.isRequired,
+      )
+
   }
 }
