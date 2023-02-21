@@ -82,7 +82,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   // TODO FIXME make this private and create a public getOption
-  def get(id: String): Future[Synced[A]] = valueSyncer.sync(id)
+  private def get(id: String): Future[Synced[A]] = valueSyncer.sync(id)
 
   def create(): Future[Synced[A]] = getOrCreate(UUID.randomUUID().toString())
 

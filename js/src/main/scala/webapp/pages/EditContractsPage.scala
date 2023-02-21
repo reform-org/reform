@@ -31,9 +31,13 @@ import webapp.components.common.*
 import webapp.utils.Futures.*
 import webapp.services.ToastType
 
-case class EditContractsPage(contractId: String)(using repositories: Repositories, toaster: Toaster) extends Page {
+case class EditContractsPage(contractId: String)(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+) extends Page {
 
-  private val existingValue = repositories.contracts.get(contractId)
+  private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
 
   def render(using
       routing: RoutingService,
@@ -42,15 +46,33 @@ case class EditContractsPage(contractId: String)(using repositories: Repositorie
       discovery: DiscoveryService,
       toaster: Toaster,
   ): VNode = {
-    div(existingValue.map(currentContract => {
-      InnerEditContractsPage(Some(currentContract)).render()
-    }))
+    div(
+      existingValue
+        .map(currentContract => {
+          val result: VMod = currentContract match {
+            case Some(currentContract) =>
+              InnerEditContractsPage(Some(currentContract)).render()
+            case None =>
+              navigationHeader(
+                div(
+                  div(
+                    cls := "p-1",
+                    h1(cls := "text-4xl text-center", "EditContractsPage"),
+                  ),
+                  h2("Contract not found"),
+                ),
+              )
+          }
+          result
+        }),
+    )
   }
 }
 
 case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     toaster: Toaster,
     repositories: Repositories,
+    routing: RoutingService,
 ) {
 
   private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
@@ -165,6 +187,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               ToastType.Success,
             )
           })
+          .map(value => {
+            routing.to(ContractsPage())
+          })
           .toastOnError(ToastMode.Infinit)
       }
       case None => {
@@ -177,9 +202,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               p.getOrElse(Contract.empty).merge(editingNow.get)
             })
           })
+          .map(value => {
+            routing.to(ContractsPage())
+          })
           .toastOnError(ToastMode.Infinit)
       }
     }
+  }
+
+  private def cancelEdit(): Unit = {
+    routing.to(ContractsPage())
   }
 
   var editingValue = Var(Option(existingValue.get.signal.now))
@@ -233,12 +265,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               idAttr := "confirmEdit",
               "Save",
             ),
-            button(
-              cls := "btn",
-              idAttr := "cancelEdit",
-              "Cancel",
-              // onClick.foreach(_ => cancelEdit()), TODO implement cancelEdit
-            ),
+            TableButton(LightButtonStyle.Default, "Cancel", onClick.foreach(_ => cancelEdit())),
           ),
         ),
       ),

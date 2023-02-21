@@ -45,7 +45,9 @@ class RoutingState(
 ) extends js.Object
 
 class RoutingService(using repositories: Repositories, toaster: Toaster) {
-  private val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
+  given RoutingService = this;
+
+  private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
 
   def render(using
       routing: RoutingService,
