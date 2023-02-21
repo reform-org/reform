@@ -47,19 +47,21 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private def gender: UISelectAttribute[Hiwi, String] =
-    UISelectAttribute(
-      _.gender,
-      (p, a) => p.copy(gender = a),
-      readConverter = identity,
-      writeConverter = identity,
-      isRequired = true,
-      label = "Gender",
-      options = Signal(
-        List("not specified", "male", "female").map(gender => new SelectOption(gender, Signal(gender))),
-      ),
-      searchEnabled = false,
-    )
+  private def gender: UIAttribute[Hiwi, String] = {
+    UIAttributeBuilder
+      .select(
+        Signal(
+          List("not specified", "male", "female").map(gender => gender -> Signal(gender)),
+        ),
+      )
+      .withLabel("Gender")
+      .require
+      .disableSearch
+      .bindAsSelect(
+        _.gender,
+        (p, a) => p.copy(gender = a),
+      )
+  }
 
   private val eMail = UIAttributeBuilder.string
     .withLabel("Email")

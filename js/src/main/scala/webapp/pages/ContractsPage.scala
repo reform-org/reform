@@ -25,36 +25,33 @@ import kofre.base.Bottom
 import kofre.base.Lattice
 import webapp.services.RoutingService
 
-private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
-  UISelectAttribute(
-    _.contractAssociatedHiwi,
-    (p, a) => p.copy(contractAssociatedHiwi = a),
-    readConverter = identity,
-    writeConverter = identity,
-    label = "AssociatedHiwi",
-    options = repositories.hiwis.all.map(list =>
-      list.map(value => new SelectOption(value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
-    ),
-    isRequired = true,
-  )
-
-private def contractAssociatedProject(using repositories: Repositories): UISelectAttribute[Contract, String] =
-  UISelectAttribute(
-    _.contractAssociatedProject,
-    (p, a) => p.copy(contractAssociatedProject = a),
-    readConverter = identity,
-    writeConverter = identity,
-    label = "Project",
-    options = repositories.projects.all.map(list =>
-      list.map(value =>
-        new SelectOption(
-          value.id,
-          value.signal.map(v => v.name.get.getOrElse("")),
-        ),
+private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
+  UIAttributeBuilder
+    .select(
+      repositories.hiwis.all.map(list =>
+        list.map(value => value.id -> value.signal.map(v => v.firstName.get.getOrElse(""))),
       ),
-    ),
-    isRequired = true,
-  )
+    )
+    .withLabel("Associated Hiwi")
+    .require
+    .bindAsSelect(
+      _.contractAssociatedHiwi,
+      (p, a) => p.copy(contractAssociatedHiwi = a),
+    )
+}
+
+private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
+  UIAttributeBuilder
+    .select(
+      repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
+    )
+    .withLabel("Project")
+    .require
+    .bindAsSelect(
+      _.contractAssociatedProject,
+      (p, a) => p.copy(contractAssociatedProject = a),
+    )
+}
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],

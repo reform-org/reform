@@ -3,6 +3,10 @@ package webapp.entity
 import webapp.utils.Date
 
 import webapp.utils.Money.*
+import webapp.utils.Seqnal.*
+import rescala.default.*
+
+import webapp.components.common.*
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -13,6 +17,8 @@ case class UIAttributeBuilder[AttributeType](
     stepSize: String = "1",
     regex: String = ".*",
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
+    options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
+    searchEnabled: Boolean = true,
 ) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
@@ -24,6 +30,8 @@ case class UIAttributeBuilder[AttributeType](
   def withStep(step: String): UIAttributeBuilder[AttributeType] = copy(stepSize = step)
 
   def withRegex(regex: String): UIAttributeBuilder[AttributeType] = copy(regex = regex)
+
+  def disableSearch: UIAttributeBuilder[AttributeType] = copy(searchEnabled = false)
 
   def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] =
     map(_.getOrElse(default), Some(_))
@@ -83,6 +91,13 @@ object UIAttributeBuilder {
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
+  def select(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[String] =
+    string.copy(options = options)
+
+  def multiSelect(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[Seq[String]] =
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").toSeq)
+      .copy(options = options)
+
   implicit class BindToInt[AttributeType](self: UIAttributeBuilder[AttributeType])(implicit
       ordering: Ordering[AttributeType],
   ) {
@@ -127,5 +142,42 @@ object UIAttributeBuilder {
       label = self.label,
       isRequired = self.isRequired,
     )
+  }
+
+  implicit class BindToSeqOfString(self: UIAttributeBuilder[Seq[String]]) {
+
+    def bindAsMultiSelect[EntityType](
+        getter: EntityType => Attribute[Seq[String]],
+        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+    ): UIAttribute[EntityType, Seq[String]] =
+      UIMultiSelectAttribute(
+        getter,
+        setter,
+        readConverter = self.readConverter,
+        writeConverter = self.writeConverter,
+        label = self.label,
+        options = self.options.mapInside { case (k, v) => MultiSelectOption(k, v) },
+        isRequired = self.isRequired,
+        searchEnabled = self.searchEnabled,
+      )
+  }
+
+  implicit class BindToString(self: UIAttributeBuilder[String]) {
+
+    def bindAsSelect[EntityType](
+        getter: EntityType => Attribute[String],
+        setter: (EntityType, Attribute[String]) => EntityType,
+    ): UIAttribute[EntityType, String] =
+      UISelectAttribute(
+        getter,
+        setter,
+        readConverter = self.readConverter,
+        writeConverter = self.writeConverter,
+        label = self.label,
+        options = self.options.mapInside { case (k, v) => SelectOption(k, v) },
+        isRequired = self.isRequired,
+        searchEnabled = self.searchEnabled,
+      )
+
   }
 }

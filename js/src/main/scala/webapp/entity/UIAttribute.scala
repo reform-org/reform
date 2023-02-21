@@ -82,7 +82,7 @@ class UITextAttribute[EntityType, AttributeType](
       },
       placeholder := label, {
         datalist match {
-          case None        => {}
+          case None        =>
           case Some(value) => listId := value
         }
       },
@@ -248,7 +248,7 @@ class UISelectAttribute[EntityType, AttributeType](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    options: Signal[List[SelectOption]],
+    options: Signal[Seq[SelectOption]],
     searchEnabled: Boolean = true,
 ) extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
@@ -278,7 +278,7 @@ class UISelectAttribute[EntityType, AttributeType](
     val value = Var(attr.get.getOrElse("").asInstanceOf[String])
     Select(
       options,
-      (v) => {
+      v => {
         value.set(v.asInstanceOf[String])
         set(v.asInstanceOf[AttributeType])
       },
@@ -291,17 +291,17 @@ class UISelectAttribute[EntityType, AttributeType](
   }
 }
 
-class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
-    getter: EntityType => Attribute[AttributeType],
-    setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    readConverter: AttributeType => String,
-    writeConverter: String => AttributeType,
+class UIMultiSelectAttribute[EntityType](
+    getter: EntityType => Attribute[Seq[String]],
+    setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+    readConverter: Seq[String] => String,
+    writeConverter: String => Seq[String],
     label: String,
     isRequired: Boolean,
-    options: Signal[List[MultiSelectOption]],
+    options: Signal[Seq[MultiSelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
-) extends UITextAttribute[EntityType, AttributeType](
+) extends UITextAttribute[EntityType, Seq[String]](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -336,16 +336,16 @@ class UIMultiSelectAttribute[EntityType, AttributeType <: Seq[?]](
 
   override def renderEditInput(
       _formId: String,
-      attr: Attribute[AttributeType],
-      set: AttributeType => Unit,
+      attr: Attribute[Seq[String]],
+      set: Seq[String] => Unit,
       datalist: Option[String] = None,
   ): VNode = {
-    val value = Var(attr.getAll(0).asInstanceOf[Seq[String]])
+    val value = Var(attr.getAll.head)
     MultiSelect(
       options,
-      (v) => {
+      v => {
         value.set(v.asInstanceOf[Seq[String]])
-        set(v.asInstanceOf[AttributeType])
+        set(v)
       },
       value,
       showItems,
