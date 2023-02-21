@@ -10,8 +10,20 @@ import webapp.components.Icons
 import org.scalajs.dom.document
 import org.scalajs.dom.HTMLElement
 
+class SelectOption(
+    val id: String,
+    val name: Signal[String],
+) {
+  def render: VNode = {
+    div(
+      cls := "peer-checked:bg-blue-400 peer-checked:text-white px-2 py-0.5",
+      name,
+    )
+  }
+}
+
 def Select(
-    options: Signal[Seq[SelectOption[Signal[String]]]],
+    options: Signal[Seq[SelectOption]],
     onInput: (value: String) => Unit,
     value: Var[String],
     searchEnabled: Boolean = true,
@@ -95,10 +107,7 @@ def Select(
                         }),
                       ),
                       tabIndex := 0,
-                      div(
-                        cls := "peer-checked:bg-blue-400 peer-checked:text-white px-2 py-0.5",
-                        uiOption.name,
-                      ),
+                      uiOption.render,
                       forId := uiOption.id,
                     ),
                   )

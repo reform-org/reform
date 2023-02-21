@@ -22,9 +22,14 @@ import rescala.default.*
 import webapp.components.common.*
 
 import ContractSchemasPage.*
+import webapp.services.RoutingService
 
-case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster)
-    extends EntityPage[ContractSchema](repositories.contractSchemas, Seq(name, files)) {}
+case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
+    extends EntityPage[ContractSchema](
+      repositories.contractSchemas,
+      Seq(name, files),
+      DefaultEntityRow(),
+    ) {}
 
 object ContractSchemasPage {
   private val name = UIAttributeBuilder.string
@@ -43,7 +48,7 @@ object ContractSchemasPage {
       writeConverter = w => w.split(", ").toSeq,
       label = "Required Documents",
       options = repositories.requiredDocuments.all.map(list =>
-        list.map(value => new SelectOption[Signal[String]](value.id, value.signal.map(v => v.name.get.getOrElse("")))),
+        list.map(value => new MultiSelectOption(value.id, value.signal.map(v => v.name.get.getOrElse("")))),
       ),
       isRequired = true,
     )

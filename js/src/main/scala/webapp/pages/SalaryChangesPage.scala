@@ -22,11 +22,13 @@ import webapp.services.Toaster
 import webapp.components.common.*
 
 import SalaryChangesPage.*
+import webapp.services.RoutingService
 
-case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster)
+case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[SalaryChange](
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
+      DefaultEntityRow(),
     ) {}
 
 object SalaryChangesPage {
@@ -47,7 +49,7 @@ object SalaryChangesPage {
       writeConverter = identity,
       label = "PaymentLevel",
       options = repositories.paymentLevels.all.map(list =>
-        list.map(value => new SelectOption[Signal[String]](value.id, value.signal.map(v => v.title.get.getOrElse("")))),
+        list.map(value => new SelectOption(value.id, value.signal.map(v => v.title.get.getOrElse("")))),
       ),
       isRequired = true,
     )

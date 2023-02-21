@@ -45,11 +45,41 @@ case class Existing[T](value: Synced[T], editingValue: Var[Option[T]] = Var[Opti
 // TODO FIXME: This should not be an Option but otherwise we need to find a generic way to set an Option and non-option Var
 case class New[T](value: Var[Option[T]]) extends EntityValue[T]
 
-private class EntityRow[T <: Entity[T]](
+abstract class EntityRowBuilder[T <: Entity[T]] {
+  def construct(
+      repository: Repository[T],
+      value: EntityValue[T],
+      uiAttributes: Seq[UIBasicAttribute[T]],
+  )(using
+      bottom: Bottom[T],
+      lattice: Lattice[T],
+      toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
+  ): EntityRow[T]
+}
+
+class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
+  def construct(repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+      bottom: Bottom[T],
+      lattice: Lattice[T],
+      toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
+  ): EntityRow[T] = EntityRow[T](repository, value, uiAttributes)
+}
+
+class EntityRow[T <: Entity[T]](
     val repository: Repository[T],
     val value: EntityValue[T],
     val uiAttributes: Seq[UIBasicAttribute[T]],
-)(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster) {
+)(using
+    bottom: Bottom[T],
+    lattice: Lattice[T],
+    toaster: Toaster,
+    routing: RoutingService,
+    repositories: Repositories,
+) {
 
   def render: VMod =
     editingValue.map(
@@ -197,6 +227,8 @@ private class EntityRow[T <: Entity[T]](
     editingValue.set(None)
   }
 
+  protected def afterCreated(id: String): Unit = {}
+
   private def createOrUpdate(): Unit = {
     val editingNow = editingValue.now
     existingValue match {
@@ -213,16 +245,19 @@ private class EntityRow[T <: Entity[T]](
           .create()
           .flatMap(entity => {
             editingValue.set(Some(bottom.empty.default))
-            entity.update(p => {
-              p.getOrElse(bottom.empty).merge(editingNow.get)
-            })
+            entity
+              .update(p => {
+                p.getOrElse(bottom.empty).merge(editingNow.get)
+              })
+              .map(_ => entity)
           })
+          .map(value => { afterCreated(value.id); value })
           .toastOnError(ToastMode.Infinit)
       }
     }
   }
 
-  private def startEditing(): Unit = {
+  protected def startEditing(): Unit = {
     editingValue.set(Some(existingValue.get.signal.now))
   }
 }
@@ -242,14 +277,20 @@ private class FilterRow[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityTyp
 
 }
 
-abstract class EntityPage[T <: Entity[T]](repository: Repository[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+abstract class EntityPage[T <: Entity[T]](
+    repository: Repository[T],
+    uiAttributes: Seq[UIBasicAttribute[T]],
+    entityRowContructor: EntityRowBuilder[T],
+)(using
     bottom: Bottom[T],
     lattice: Lattice[T],
     toaster: Toaster,
+    routing: RoutingService,
+    repositories: Repositories,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =
-    EntityRow[T](repository, New(Var(Some(bottom.empty.default))), uiAttributes)
+    entityRowContructor.construct(repository, New(Var(Some(bottom.empty.default))), uiAttributes)
 
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 

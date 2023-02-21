@@ -20,6 +20,10 @@ import webapp.entity.*
 import rescala.default.*
 import webapp.services.Toaster
 import webapp.components.common.*
+import webapp.repo.Repository
+import kofre.base.Bottom
+import kofre.base.Lattice
+import webapp.services.RoutingService
 
 private def contractAssociatedHiwi(using repositories: Repositories): UISelectAttribute[Contract, String] =
   UISelectAttribute(
@@ -29,9 +33,7 @@ private def contractAssociatedHiwi(using repositories: Repositories): UISelectAt
     writeConverter = identity,
     label = "AssociatedHiwi",
     options = repositories.hiwis.all.map(list =>
-      list.map(value =>
-        new SelectOption[Signal[String]](value.id, value.signal.map(v => v.firstName.get.getOrElse(""))),
-      ),
+      list.map(value => new SelectOption(value.id, value.signal.map(v => v.firstName.get.getOrElse("")))),
     ),
     isRequired = true,
   )
@@ -45,7 +47,7 @@ private def contractAssociatedProject(using repositories: Repositories): UISelec
     label = "Project",
     options = repositories.projects.all.map(list =>
       list.map(value =>
-        new SelectOption[Signal[String]](
+        new SelectOption(
           value.id,
           value.signal.map(v => v.name.get.getOrElse("")),
         ),
@@ -54,11 +56,38 @@ private def contractAssociatedProject(using repositories: Repositories): UISelec
     isRequired = true,
   )
 
-case class ContractsPage()(using repositories: Repositories, toaster: Toaster)
+class DetailPageEntityRow[T <: Entity[T]](
+    override val repository: Repository[T],
+    override val value: EntityValue[T],
+    override val uiAttributes: Seq[UIBasicAttribute[T]],
+)(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster, routing: RoutingService, repositories: Repositories)
+    extends EntityRow[T](repository, value, uiAttributes) {
+  override protected def startEditing(): Unit = {
+    value match {
+      case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
+      case New(value)                    => {}
+    }
+  }
+
+  override protected def afterCreated(id: String): Unit = routing.to(EditContractsPage(id))
+}
+
+class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
+  def construct(repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+      bottom: Bottom[T],
+      lattice: Lattice[T],
+      toaster: Toaster,
+      routing: RoutingService,
+      repositories: Repositories,
+  ): EntityRow[T] = DetailPageEntityRow(repository, value, uiAttributes)
+}
+
+case class ContractsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Contract](
       repositories.contracts,
       Seq(
         contractAssociatedProject,
         contractAssociatedHiwi,
       ),
+      DetailPageEntityRowBuilder(),
     ) {}

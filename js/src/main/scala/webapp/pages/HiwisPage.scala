@@ -21,11 +21,13 @@ import webapp.services.Toaster
 import rescala.default.*
 import webapp.components.common.*
 import HiwisPage.*
+import webapp.services.RoutingService
 
-case class HiwisPage()(using repositories: Repositories, toaster: Toaster)
+case class HiwisPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Hiwi](
       repositories.hiwis,
       Seq(firstName, lastName, gender, eMail, birthdate),
+      DefaultEntityRow(),
     ) {}
 
 object HiwisPage {
@@ -54,7 +56,7 @@ object HiwisPage {
       isRequired = true,
       label = "Gender",
       options = Signal(
-        List("not specified", "male", "female").map(gender => new SelectOption[Signal[String]](gender, Signal(gender))),
+        List("not specified", "male", "female").map(gender => new SelectOption(gender, Signal(gender))),
       ),
       searchEnabled = false,
     )
