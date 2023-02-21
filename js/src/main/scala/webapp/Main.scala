@@ -28,6 +28,8 @@ import webapp.services.*
 import webapp.BasicCodecs.*
 import webapp.utils.Futures.*
 import webapp.given_ExecutionContext
+import org.scalajs.dom.window
+import scalajs.js.DynamicImplicits.truthValue
 
 import scala.scalajs.js
 
@@ -51,6 +53,23 @@ object Main {
             ToastMode.Persistent,
             ToastType.Error,
           )
+        } else {
+          if (js.Dynamic.global.navigator.storage && js.Dynamic.global.navigator.storage.persist) {
+            window.navigator.storage
+              .persist()
+              .toFuture
+              .map(result => {
+                if (result) {
+                  println("Persistent storage!")
+                } else {
+                  // TODO find out when chrome will grant this (probably on user interaction)
+                  println("No persistent storage! Your data may get lost. Please allow the permission.")
+                }
+              })
+              .toastOnError()
+          } else {
+            println("No persistent storage API available!")
+          }
         }
       })
 
