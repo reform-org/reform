@@ -99,19 +99,20 @@ class EntityRow[T <: Entity[T]](
 
   private def renderEdit: VMod = {
     val deleteModal = Var[Option[Modal]](None)
+    val id = s"form-${existingValue.map(_.id).getOrElse("new")}"
     tr(
       cls := "border-b dark:border-gray-700",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
       uiAttributes.map(ui => {
-        ui.renderEdit(s"form-${existingValue.map(_.id)}", editingValue)
+        ui.renderEdit(id, editingValue)
       }),
       td(
         cls := "border border-gray-300 py-1 w-1/6",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
-            idAttr := s"form-${existingValue.map(_.id)}",
+            idAttr := id,
             onSubmit.foreach(e => {
               e.preventDefault()
               createOrUpdate()
@@ -122,7 +123,7 @@ class EntityRow[T <: Entity[T]](
                 List(
                   TableButton(
                     LightButtonStyle.Primary,
-                    formId := s"form-${existingValue.map(_.id)}",
+                    formId := id,
                     `type` := "submit",
                     idAttr := "add-entity-button",
                     "Save",
@@ -133,8 +134,7 @@ class EntityRow[T <: Entity[T]](
               case None => {
                 TableButton(
                   LightButtonStyle.Primary,
-                  // cls := "bg-purple-200 hover:bg-purple-300 text-purple-600 rounded px-2 py-0 h-fit uppercase font-bold",
-                  formId := s"form-${existingValue.map(_.id)}",
+                  formId := id,
                   `type` := "submit",
                   idAttr := "add-entity-button",
                   "Add Entity",
