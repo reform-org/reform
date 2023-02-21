@@ -40,10 +40,11 @@ import webapp.given_ExecutionContext
 import scala.collection.mutable
 
 sealed trait EntityValue[T]
-case class Existing[T](value: Synced[T], editingValue: Var[Option[T]] = Var[Option[T]](None)) extends EntityValue[T]
+case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
+    extends EntityValue[T]
 
-// TODO FIXME: This should not be an Option but otherwise we need to find a generic way to set an Option and non-option Var
-case class New[T](value: Var[Option[T]]) extends EntityValue[T]
+// TODO FIXME the type here is unecessarily complex because the Var types need to be the same
+case class New[T](value: Var[Option[(T, Var[T])]]) extends EntityValue[T]
 
 abstract class EntityRowBuilder[T <: Entity[T]] {
   def construct(
@@ -87,7 +88,7 @@ class EntityRow[T <: Entity[T]](
         .getOrElse(renderExistingValue),
     )
 
-  def editingValue: Var[Option[T]] = value match {
+  def editingValue: Var[Option[(T, Var[T])]] = value match {
     case Existing(_, editingValue) => editingValue
     case New(value)                => value
   }
@@ -232,12 +233,12 @@ class EntityRow[T <: Entity[T]](
   protected def afterCreated(id: String): Unit = {}
 
   private def createOrUpdate(): Unit = {
-    val editingNow = editingValue.now
+    val editingNow = editingValue.now.get._2.now
     existingValue match {
       case Some(existing) => {
         existing
           .update(p => {
-            p.get.merge(editingNow.get)
+            p.get.merge(editingNow)
           })
           .toastOnError(ToastMode.Infinit)
         editingValue.set(None)
@@ -246,10 +247,10 @@ class EntityRow[T <: Entity[T]](
         repository
           .create()
           .flatMap(entity => {
-            editingValue.set(Some(bottom.empty.default))
+            editingValue.set(Some((bottom.empty.default, Var(bottom.empty.default))))
             entity
               .update(p => {
-                p.getOrElse(bottom.empty).merge(editingNow.get)
+                p.getOrElse(bottom.empty).merge(editingNow)
               })
               .map(_ => entity)
           })
@@ -260,7 +261,7 @@ class EntityRow[T <: Entity[T]](
   }
 
   protected def startEditing(): Unit = {
-    editingValue.set(Some(existingValue.get.signal.now))
+    editingValue.set(Some((existingValue.get.signal.now, Var(existingValue.get.signal.now))))
   }
 }
 
@@ -292,14 +293,18 @@ abstract class EntityPage[T <: Entity[T]](
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =
-    entityRowContructor.construct(repository, New(Var(Some(bottom.empty.default))), uiAttributes)
+    entityRowContructor.construct(
+      repository,
+      New(Var(Some((bottom.empty.default, Var(bottom.empty.default))))),
+      uiAttributes,
+    )
 
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
     repository.all.map(
       _.map(syncedEntity => {
-        val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing(syncedEntity))
+        val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
         EntityRow[T](repository, existing, uiAttributes)
       }),
     )

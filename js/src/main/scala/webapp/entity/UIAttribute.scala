@@ -14,11 +14,11 @@ abstract class UIBasicAttribute[EntityType](
     val label: String,
 ) {
 
-  def render(id: String, entity: EntityType): VNode = {
+  def render(id: String, entity: EntityType): VMod = {
     td(cls := "border border-gray-300 p-0")
   }
 
-  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
+  def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]]): VMod
 
   def uiFilter: UIFilter[EntityType] = UIFilterNothing()
 }
@@ -29,12 +29,15 @@ abstract class UIAttribute[EntityType, AttributeType](
     override val label: String,
 ) extends UIBasicAttribute[EntityType](label) {
 
-  override def render(id: String, entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     td(cls := "border border-gray-300 p-0", duplicateValuesHandler(attr.getAll.map(x => readConverter(x))))
   }
 
-  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]
+  override def renderEdit(
+      formId: String,
+      editing: Var[Option[(EntityType, Var[EntityType])]],
+  ): VMod
 
   override def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
 }
@@ -52,13 +55,11 @@ class UITextAttribute[EntityType, AttributeType](
     val stepSize: String = "1",
 ) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
 
-  private def set(entityVar: Var[Option[EntityType]], x: AttributeType): Unit = {
-    entityVar.transform(
-      _.map(e => {
-        val attr = getter(e)
-        setter(e, attr.set(x))
-      }),
-    )
+  private def set(entityVar: Var[EntityType], x: AttributeType): Unit = {
+    entityVar.transform(e => {
+      val attr = getter(e)
+      setter(e, attr.set(x))
+    })
   }
 
   protected def renderEditInput(
@@ -66,7 +67,7 @@ class UITextAttribute[EntityType, AttributeType](
       attr: Attribute[AttributeType],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-  ): VNode =
+  ): VMod =
     TableInput(
       // cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
       `type` := fieldType,
@@ -88,35 +89,40 @@ class UITextAttribute[EntityType, AttributeType](
       },
     )
 
-  def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] = {
-    entityVar.map {
-      _.map(entity => {
-        val attr = getter(entity)
-        td(
-          cls := " border-0 px-0 py-0",
-          renderEditInput(formId, attr, x => set(entityVar, x), Some(s"$formId-conflicting-values")),
-          if (attr.getAll.size > 1) {
-            Some(
-              Seq(
-                dataList(
-                  idAttr := s"$formId-conflicting-values",
-                  renderConflicts(attr),
+  def renderEdit(
+      formId: String,
+      editing: Var[Option[(EntityType, Var[EntityType])]],
+  ): VMod = {
+    editing.map(
+      _.map(editing => {
+        val (editStart, entityVar) = editing
+        entityVar.map(entity => {
+          val attr = getter(entity)
+          td(
+            cls := " border-0 px-0 py-0",
+            renderEditInput(formId, attr, x => set(entityVar, x), Some(s"$formId-conflicting-values")),
+            if (attr.getAll.size > 1) {
+              Some(
+                Seq(
+                  dataList(
+                    idAttr := s"$formId-conflicting-values",
+                    renderConflicts(attr),
+                  ),
                 ),
-              ),
-            )
-          } else {
-            None
-          },
-        )
-      })
-        .getOrElse(td(cls := "px-6 py-0"))
-    }
+              )
+            } else {
+              None
+            },
+          )
+        })
+      }),
+    )
   }
 
   protected def getEditString(attr: Attribute[AttributeType]): String =
     attr.get.map(x => editConverter(x)).getOrElse("")
 
-  protected def renderConflicts(attr: Attribute[AttributeType]): Seq[VNode] =
+  protected def renderConflicts(attr: Attribute[AttributeType]): VMod =
     attr.getAll.map(x => option(value := readConverter(x)))
 }
 
@@ -126,11 +132,15 @@ class UIReadOnlyAttribute[EntityType, AttributeType](
     label: String,
 ) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
 
-  override def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode] =
-    entityVar.map(
-      _.flatMap(entity => getter(entity).get.map(a => td(readConverter(a))))
-        .getOrElse(td(cls := "px-6 py-0")),
-    )
+  override def renderEdit(
+      formId: String,
+      editing: Var[Option[(EntityType, Var[EntityType])]],
+  ): VMod = {
+    editing.map(_.map(editing => {
+      val (startEditEntity, entityVar) = editing
+      entityVar.map(entity => getter(entity).get.map(a => td(readConverter(a))))
+    }))
+  }
 }
 
 class UINumberAttribute[EntityType, AttributeType](
@@ -184,7 +194,7 @@ class UIDateAttribute[EntityType](
       attr: Attribute[Long],
       set: Long => Unit,
       datalist: Option[String] = None,
-  ): VNode = input(
+  ): VMod = input(
     cls := "input valid:input-success",
     `type` := "date",
     formId := _formId,
@@ -217,7 +227,7 @@ class UICheckboxAttribute[EntityType](
       fieldType = "checkbox",
     ) {
 
-  override def render(id: String, entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     td(
       cls := "border border-gray-300 px-6 py-0",
@@ -230,7 +240,7 @@ class UICheckboxAttribute[EntityType](
       attr: Attribute[Boolean],
       set: Boolean => Unit,
       datalist: Option[String] = None,
-  ): VNode = input(
+  ): VMod = input(
     cls := "input valid:input-success",
     `type` := "checkbox",
     formId := _formId,
@@ -261,7 +271,7 @@ class UISelectAttribute[EntityType, AttributeType](
       fieldType = "select",
     ) {
 
-  override def render(id: String, entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     td(
       cls := "border border-gray-300 px-6 py-0",
@@ -274,7 +284,7 @@ class UISelectAttribute[EntityType, AttributeType](
       attr: Attribute[AttributeType],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-  ): VNode = {
+  ): VMod = {
     val value = Var(attr.get.getOrElse("").asInstanceOf[String])
     Select(
       options,
@@ -312,7 +322,7 @@ class UIMultiSelectAttribute[EntityType](
       fieldType = "select",
     ) {
 
-  override def render(id: String, entity: EntityType): VNode = {
+  override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     td(
       cls := "px-6 py-0",
@@ -339,7 +349,7 @@ class UIMultiSelectAttribute[EntityType](
       attr: Attribute[Seq[String]],
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
-  ): VNode = {
+  ): VMod = {
     val value = Var(attr.getAll.head)
     MultiSelect(
       options,
