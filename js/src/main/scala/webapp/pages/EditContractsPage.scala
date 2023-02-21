@@ -226,35 +226,49 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
           h1(cls := "text-4xl text-center", "EditContractsPage"),
         ),
         div(
+          p("Editing Contract:"),
+          label(existingValue.map(p => p.id)),
           form(
-            br,
-            label("CurrentContract:"),
-            label(existingValue.map(p => p.id)),
-            br,
-            label("AssociatedHiwi:"),
-            contractAssociatedHiwi.renderEdit("", editingValue),
-            br,
-            label("AssociatedSupervisor:"),
-            contractAssociatedSupervisor.renderEdit("", editingValue),
-            br,
-            label("ContractType:"),
-            contractAssociatedType.renderEdit("", editingValue),
-            br,
-            label("StartDate:"),
-            contractStartDate.renderEdit("", editingValue),
-            br,
-            label("EndDate:"),
-            contractEndDate.renderEdit("", editingValue),
-            br,
-            label("HoursPerMonth:"),
-            contractHoursPerMonth.renderEdit("", editingValue),
-            br,
-            label("AssociatedPaymentLevel:"),
-            contractAssociatedPaymentLevel.renderEdit("", editingValue),
-            onSubmit.foreach(e => {
-              e.preventDefault()
-              createOrUpdate()
-            }),
+            p("Basic information"),
+            div(
+              div(
+                label("Hiwi:"),
+                contractAssociatedHiwi.renderEdit("", editingValue),
+                label("Hiwi has a degree"),
+                input(`type` := "checkbox"),
+                br,
+                label("Supervisor:"),
+                contractAssociatedSupervisor.renderEdit("", editingValue),
+              ),
+              div(
+                label("Start date:"),
+                contractStartDate.renderEdit("", editingValue),
+                p("Duration"),
+                label("End date:"),
+                contractEndDate.renderEdit("", editingValue),
+                // Todo Warning
+              ),
+              div(
+                p("Monthly base salary: 1.500€; with bonus: 1.800€"),
+                p("Total Hours: 160h"),
+                label("Hours per month:"),
+                contractHoursPerMonth.renderEdit("", editingValue),
+                label("Payment level:"),
+                contractAssociatedPaymentLevel.renderEdit("", editingValue),
+                onSubmit.foreach(e => {
+                  e.preventDefault()
+                  createOrUpdate()
+                }),
+              ),
+            ),
+            p("Select project"),
+            div(
+            ),
+            p("ContractType:"),
+            div(
+              label("ContractType:"),
+              contractAssociatedType.renderEdit("", editingValue),
+            ),
             button(
               cls := "btn",
               `type` := "submit",
