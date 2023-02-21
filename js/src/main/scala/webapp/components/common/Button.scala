@@ -29,7 +29,7 @@ def Button(style: ButtonStyle, props: VMod*): VNode = {
 
 def TableButton(style: LightButtonStyle, props: VMod*): VNode = {
   button(
-    cls := "rounded px-2 py-0 h-fit uppercase font-bold text-sm",
+    cls := "rounded px-2 py-1 h-fit uppercase font-bold text-sm",
     props,
     style.props,
   )

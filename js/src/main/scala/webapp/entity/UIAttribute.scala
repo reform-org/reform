@@ -15,7 +15,7 @@ abstract class UIBasicAttribute[EntityType](
 ) {
 
   def render(id: String, entity: EntityType): VNode = {
-    td(cls := "border border-gray-300 p-0")
+    td(cls := "border border-gray-300 px-4")
   }
 
   def renderEdit(formId: String, entityVar: Var[Option[EntityType]]): Signal[VNode]

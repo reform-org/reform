@@ -65,7 +65,7 @@ object ProjectsPage {
 
     override def render(id: String, entity: Project): VNode = {
       td(
-        cls := "border border-gray-300 p-0", {
+        cls := "border border-gray-300 px-4", {
           repositories.contracts.all
             .map(_.map(_.signal))
             .flatten
