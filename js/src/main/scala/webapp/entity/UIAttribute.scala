@@ -94,12 +94,12 @@ class UITextAttribute[EntityType, AttributeType](
         val attr = getter(entity)
         td(
           cls := " border-0 px-0 py-0",
-          renderEditInput(formId, attr, x => set(entityVar, x), Some("conflicting-values")),
+          renderEditInput(formId, attr, x => set(entityVar, x), Some(s"$formId-conflicting-values")),
           if (attr.getAll.size > 1) {
             Some(
               Seq(
                 dataList(
-                  idAttr := "conflicting-values",
+                  idAttr := s"$formId-conflicting-values",
                   renderConflicts(attr),
                 ),
               ),
