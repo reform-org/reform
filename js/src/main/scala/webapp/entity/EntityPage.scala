@@ -102,14 +102,14 @@ class EntityRow[T <: Entity[T]](
     val deleteModal = Var[Option[Modal]](None)
     val id = s"form-${existingValue.map(_.id).getOrElse("new")}"
     tr(
-      cls := "border border-gray-300 dark:border-gray-700",
+      cls := "",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
       uiAttributes.map(ui => {
-        ui.renderEdit(id, editingValue)
+        td(cls := "p-0", ui.renderEdit(id, editingValue))
       }),
       td(
-        cls := "border border-gray-300 py-1 min-w-[175px] max-w-[175px] mx-auto",
+        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 z-1 bg-white border-x border-b border-gray-300",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -201,21 +201,33 @@ class EntityRow[T <: Entity[T]](
       if (p.exists) {
         tr(
           onDblClick.foreach(e => startEditing()),
-          cls := "border border-gray-300 odd:bg-slate-50",
+          cls := "odd:bg-slate-50",
           data.id := synced.id,
           key := synced.id,
           uiAttributes.map(ui => {
-            ui.render(synced.id, p)
+            td(
+              cls := "border-b border-l border-gray-300 p-0",
+              cls := {
+                ui.width match {
+                  case None    => "min-w-[200px]"
+                  case Some(v) => s"max-w-[$v] min-w-[$v]"
+                }
+              },
+              ui.render(synced.id, p),
+            )
           }),
           td(
-            cls := "py-1 px-4 flex flex-row items-center gap-2 justify-center min-w-[175px] max-w-[175px] mx-auto",
-            TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
-            IconButton(
-              LightButtonStyle.Error,
-              Icons.close("fill-red-600 w-4 h-4"),
-              cls := "tooltip tooltip-top",
-              data.tip := "Delete",
-              onClick.foreach(_ => modal.open()),
+            cls := "min-w-[185px] max-w-[185px] sticky right-0 z-1 bg-white border-x border-b border-gray-300",
+            div(
+              cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
+              TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
+              IconButton(
+                LightButtonStyle.Error,
+                Icons.close("fill-red-600 w-4 h-4"),
+                cls := "tooltip tooltip-top",
+                data.tip := "Delete",
+                onClick.foreach(_ => modal.open()),
+              ),
             ),
           ),
           modal.render,
@@ -326,36 +338,38 @@ abstract class EntityPage[T <: Entity[T]](
   ): VNode = {
     navigationHeader(
       div(
-        cls := "overflow-x-auto min-h-fit h-[200vh]",
         h1(cls := "text-3xl mt-4 text-center", title),
         filter.render,
         div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible min-w-[95%]",
-          table(
-            cls := "w-full text-left table-auto border-collapse",
-            thead(
-              tr(
-                uiAttributes.map(a =>
+          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          div(
+            cls := "overflow-x-auto custom-scrollbar",
+            table(
+              cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
+              thead(
+                tr(
+                  uiAttributes.map(a =>
+                    th(
+                      cls := "border-gray-300 border-b-2 border-t border-l dark:border-gray-500 px-4 py-2 uppercase",
+                      a.label,
+                    ),
+                  ),
                   th(
-                    cls := "border-gray-300 border-b-2 border dark:border-gray-500 px-4 py-2 uppercase ",
-                    a.label,
+                    cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 z-1 bg-white min-w-[185px] max-w-[185px]",
+                    "Actions",
                   ),
                 ),
-                th(
-                  cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center",
-                  "Actions",
+              ),
+              tbody(
+                renderEntities,
+              ),
+              tfoot(
+                tr(
+                  cls := "h-4",
                 ),
+                cls := "",
+                addEntityRow.render,
               ),
-            ),
-            tbody(
-              renderEntities,
-            ),
-            tfoot(
-              tr(
-                cls := "h-4",
-              ),
-              cls := "",
-              addEntityRow.render,
             ),
           ),
         ),

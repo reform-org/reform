@@ -43,7 +43,7 @@ def Select(
   }
 
   div(
-    cls := "select-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9",
+    cls := "select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
     props,
     idAttr := id,
     div(
@@ -70,11 +70,11 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-slate-200",
+      cls := "select-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-gray-300",
       if (searchEnabled) {
         Some(
           input(
-            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300",
             placeholder := "Search Options...",
             outwatch.dsl.onInput.value --> search,
             outwatch.dsl.value <-- search,

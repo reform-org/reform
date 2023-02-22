@@ -61,7 +61,7 @@ def MultiSelect(
   value.observe(v => updateSelectAll(v)): @nowarn
 
   div(
-    cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9",
+    cls := "multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
     props,
     idAttr := id,
     div(
@@ -118,11 +118,11 @@ def MultiSelect(
       ),
     ),
     div(
-      cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-slate-200",
+      cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-gray-300",
       if (searchEnabled) {
         Some(
           input(
-            cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+            cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300",
             placeholder := "Search Options...",
             outwatch.dsl.onInput.value --> search,
             outwatch.dsl.value <-- search,
@@ -130,7 +130,7 @@ def MultiSelect(
         )
       } else None,
       div(
-        cls := "p-2 border-b border-slate-200",
+        cls := "p-2 border-b border-gray-300",
         label(
           Checkbox(
             CheckboxStyle.Default,

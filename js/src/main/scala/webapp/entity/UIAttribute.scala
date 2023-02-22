@@ -12,10 +12,11 @@ import webapp.components.common.*
 
 abstract class UIBasicAttribute[EntityType](
     val label: String,
+    val width: Option[String] = None,
 ) {
 
   def render(id: String, entity: EntityType): VMod = {
-    td(cls := "border border-gray-300 px-4 min-w-[200px]")
+    div()
   }
 
   def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]]): VMod
@@ -27,12 +28,12 @@ abstract class UIAttribute[EntityType, AttributeType](
     val getter: EntityType => Attribute[AttributeType],
     val readConverter: AttributeType => String,
     override val label: String,
+    override val width: Option[String] = None,
 ) extends UIBasicAttribute[EntityType](label) {
 
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
-    td(
-      cls := "border border-gray-300 p-0 min-w-[200px]",
+    div(
       duplicateValuesHandler(attr.getAll.map(x => readConverter(x))),
     )
   }
@@ -54,6 +55,7 @@ class UITextAttribute[EntityType, AttributeType](
     override val label: String,
     val isRequired: Boolean,
     val fieldType: String,
+    override val width: Option[String] = None,
     val regex: String = ".*",
     val stepSize: String = "1",
 ) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
@@ -102,8 +104,7 @@ class UITextAttribute[EntityType, AttributeType](
         entityVar.map(entity => {
           val attr = getter(entity)
           val editStartAttr = getter(editStart)
-          td(
-            cls := "border-0 px-0 py-0 min-w-[200px]",
+          div(
             renderEditInput(formId, attr, x => set(entityVar, x), Some(s"$formId-conflicting-values")),
             if (editStartAttr.getAll.size > 1) {
               Some(
@@ -142,7 +143,7 @@ class UIReadOnlyAttribute[EntityType, AttributeType](
   ): VMod = {
     editing.map(_.map(editing => {
       val (startEditEntity, entityVar) = editing
-      entityVar.map(entity => getter(entity).get.map(a => td(readConverter(a))))
+      entityVar.map(entity => getter(entity).get.map(a => div(readConverter(a))))
     }))
   }
 }
@@ -167,6 +168,7 @@ class UINumberAttribute[EntityType, AttributeType](
       label = label,
       isRequired = isRequired,
       regex = regex,
+      width = None,
       stepSize = stepSize,
       fieldType = "number",
     ) {
@@ -189,6 +191,7 @@ class UIDateAttribute[EntityType](
       writeConverter = writeConverter,
       editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
       label = label,
+      width = None,
       isRequired = isRequired,
       fieldType = "date",
     ) {
@@ -227,14 +230,14 @@ class UICheckboxAttribute[EntityType](
       editConverter = _.toString,
       writeConverter = _.toBoolean,
       label = label,
+      width = None,
       isRequired = isRequired,
       fieldType = "checkbox",
     ) {
 
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
-    td(
-      cls := "border border-gray-300 px-4 py-0",
+    div(
       duplicateValuesHandler(attr.getAll.map(if (_) "Yes" else "No")),
     )
   }
@@ -270,14 +273,14 @@ class UISelectAttribute[EntityType, AttributeType](
       editConverter = _.toString,
       writeConverter = writeConverter,
       label = label,
+      width = Some("200px"),
       isRequired = isRequired,
       fieldType = "select",
     ) {
 
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
-    td(
-      cls := "border border-gray-300 px-4 py-0 min-w-[200px]",
+    div(
       duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
     )
   }
@@ -323,14 +326,14 @@ class UIMultiSelectAttribute[EntityType](
       editConverter = _.toString,
       writeConverter = writeConverter,
       label = label,
+      width = Some("350px"),
       isRequired = isRequired,
       fieldType = "select",
     ) {
 
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
-    td(
-      cls := "border border-gray-300 p-0 min-w-[350px] max-w-[350px]",
+    div(
       duplicateValuesHandler(
         Seq(
           div(
