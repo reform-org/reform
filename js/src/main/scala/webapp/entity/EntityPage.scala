@@ -402,7 +402,7 @@ abstract class EntityPage[T <: Entity[T]](
   }
 
   private def renderEntities = {
-    filterRow.predicate
+    filter.predicate
       .map(pred =>
         entityRows.map(
           _.filterSignal(_.value match {
