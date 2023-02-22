@@ -64,7 +64,7 @@ object ProjectsPage {
     label = "Contracts",
   ) {
 
-    override def render(id: String, entity: Project): VNode = {
+    override def render(id: String, entity: Project): VMod = {
       td(
         cls := "border border-gray-300 px-4 min-w-[200px]", {
           repositories.contracts.all
@@ -76,6 +76,8 @@ object ProjectsPage {
       )
     }
 
-    def renderEdit(formId: String, entityVar: Var[Option[Project]]): Signal[VNode] = Signal(td(cls := "px-6 py-0"))
+    def renderEdit(formId: String, editing: Var[Option[(Project, Var[Project])]]): VMod = Signal(
+      td(cls := "px-6 py-0"),
+    )
   }
 }
