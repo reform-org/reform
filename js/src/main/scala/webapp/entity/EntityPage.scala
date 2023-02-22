@@ -402,12 +402,13 @@ abstract class EntityPage[T <: Entity[T]](
   }
 
   private def renderEntities = {
-    filter.predicate
-      .map(p =>
+    filterRow.predicate
+      .map(pred =>
         entityRows.map(
-          _.filterSignal(
-            _.existingValue.mapToSignal(_.signal).map(_.exists(p)),
-          )
+          _.filterSignal(_.value match {
+            case New(_)             => Signal(false)
+            case Existing(value, _) => value.signal.map(pred)
+          })
             .mapInside(_.render),
         ),
       )
