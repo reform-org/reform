@@ -335,7 +335,7 @@ abstract class EntityPage[T <: Entity[T]](
             ),
           ),
           tbody(
-            // filterRow.render,
+            filterRow.render,
             renderEntities,
           ),
           tfoot(
@@ -348,6 +348,16 @@ abstract class EntityPage[T <: Entity[T]](
   }
 
   private def renderEntities = {
-    entityRows.map(_.map(_.render))
+    filterRow.predicate
+      .map(pred =>
+        entityRows.map(
+          _.filterSignal(_.value match {
+            case New(_)             => Signal(false)
+            case Existing(value, _) => value.signal.map(pred)
+          })
+            .mapInside(_.render),
+        ),
+      )
+      .flatten
   }
 }
