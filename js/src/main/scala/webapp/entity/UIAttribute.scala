@@ -92,7 +92,7 @@ class UITextAttribute[EntityType, AttributeType](
       },
     )
 
-def renderEdit(
+  def renderEdit(
       formId: String,
       editing: Var[Option[(EntityType, Var[EntityType])]],
   ): VMod = {
