@@ -30,6 +30,8 @@ def MultiSelect(
     emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
+  val dropdownOpen = Var(false)
+
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
@@ -62,10 +64,14 @@ def MultiSelect(
 
   div(
     cls := "multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
+    cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
     idAttr := id,
     div(
       cls := "multiselect-select flex flex-row w-full h-full items-center pl-2",
+      onClick.foreach(e => {
+        dropdownOpen.transform(!_)
+      }),
       div(
         cls := "flex flex-row gap-2",
         options.map(o =>

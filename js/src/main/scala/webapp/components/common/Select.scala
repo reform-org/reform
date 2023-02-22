@@ -30,6 +30,8 @@ def Select(
     emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
+  val dropdownOpen = Var(false)
+
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
@@ -44,10 +46,14 @@ def Select(
 
   div(
     cls := "select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
+    cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
     idAttr := id,
     div(
       cls := "select-select flex flex-row w-full h-full items-center pl-2",
+      onClick.foreach(e => {
+        dropdownOpen.transform(!_)
+      }),
       options.map(o =>
         value
           .map(s => {

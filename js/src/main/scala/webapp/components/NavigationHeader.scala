@@ -26,6 +26,7 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
 import webapp.pages.DocumentsPage
+import rescala.default.*
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster)(
     classes: String,
@@ -84,6 +85,7 @@ def navigationHeader(
     discovery: DiscoveryService,
     toaster: Toaster,
 ) = {
+  val dropdownOpen = Var(false)
   div(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
@@ -95,11 +97,15 @@ def navigationHeader(
           cls := "flex-none",
           div(
             cls := "dropdown",
+            cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
             label(
               tabIndex := 0,
               idAttr := "dropdown-button",
               cls := "btn btn-ghost lg:hidden",
               Icons.hamburger("h-5 w-5"),
+              onClick.foreach(e => {
+                dropdownOpen.transform(!_)
+              }),
             ),
             navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
           ),
