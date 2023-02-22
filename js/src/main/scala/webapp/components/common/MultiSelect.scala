@@ -35,25 +35,30 @@ def MultiSelect(
 
   createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
 
-  def updateSelectAll: Unit = {
-    val checkAll = document
+  def updateSelectAll(value: Seq[String]): Unit = {
+    val selectAll = document
       .querySelector(s"#$id input[type=checkbox]#all-checkbox-$id")
       .asInstanceOf[HTMLInputElement]
-    if (checkAll != null) {
-      if (
-        document
-          .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):not(:checked)")
-          .size > 0
-      ) {
-        checkAll.indeterminate = true
-      } else {
-        checkAll.checked = true
+
+    options.map(options => {
+      if (selectAll != null) {
+        val uncheckedOptions = options.size - value.size
+
+        if (uncheckedOptions == 0) {
+          selectAll.checked = true
+          selectAll.indeterminate = false
+        } else if (uncheckedOptions == options.size) {
+          selectAll.checked = false
+          selectAll.indeterminate = false
+        } else {
+          selectAll.indeterminate = true
+        }
       }
-    }
+    }): @nowarn
 
   }
 
-  value.observe(_ => updateSelectAll): @nowarn
+  value.observe(v => updateSelectAll(v)): @nowarn
 
   div(
     cls := "multiselect-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9",
