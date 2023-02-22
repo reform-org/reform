@@ -62,6 +62,7 @@ export const createPopper = async (trigger, element) => {
 	const cleanup = autoUpdate(referenceEl, floatingEl, () => {
 		computePosition(referenceEl, floatingEl).then(({ x, y }) => {
 			Object.assign(floatingEl.style, {
+				position: `absolute`,
 				left: `${x}px`,
 				top: `${y}px`,
 			});
