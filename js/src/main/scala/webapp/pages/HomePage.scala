@@ -153,7 +153,7 @@ case class HomePage() extends Page {
           }),
         ),
         TableButton(
-          LightButtonStyle.Default,
+          ButtonStyle.LightDefault,
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           "Make me a boring normal toast 🍞",
           onClick.foreach(_ => {

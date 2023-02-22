@@ -123,18 +123,18 @@ class EntityRow[T <: Entity[T]](
               case Some(p) => {
                 List(
                   TableButton(
-                    LightButtonStyle.Primary,
+                    ButtonStyle.LightPrimary,
                     formId := id,
                     `type` := "submit",
                     idAttr := "add-entity-button",
                     "Save",
                   ),
-                  TableButton(LightButtonStyle.Default, "Cancel", onClick.foreach(_ => cancelEdit())),
+                  TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
                 )
               }
               case None => {
                 TableButton(
-                  LightButtonStyle.Primary,
+                  ButtonStyle.LightPrimary,
                   formId := id,
                   `type` := "submit",
                   idAttr := "add-entity-button",
@@ -162,7 +162,7 @@ class EntityRow[T <: Entity[T]](
             deleteModal.set(Some(modal))
             val res = {
               IconButton(
-                LightButtonStyle.Error,
+                ButtonStyle.LightError,
                 Icons.close("fill-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-left",
                 data.tip := "Delete",
@@ -220,9 +220,9 @@ class EntityRow[T <: Entity[T]](
             cls := "min-w-[185px] max-w-[185px] sticky right-0 z-1 bg-white border-x border-b border-gray-300",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
-              TableButton(LightButtonStyle.Primary, "Edit", onClick.foreach(_ => startEditing())),
+              TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
               IconButton(
-                LightButtonStyle.Error,
+                ButtonStyle.LightError,
                 Icons.close("fill-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-top",
                 data.tip := "Delete",
@@ -339,9 +339,33 @@ abstract class EntityPage[T <: Entity[T]](
     navigationHeader(
       div(
         h1(cls := "text-3xl mt-4 text-center", title),
-        filter.render,
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          div(
+            cls := "flex flex-row gap-2 items-center mb-4",
+            div(
+              cls := "dropdown",
+              Button(
+                ButtonStyle.LightDefault,
+                tabIndex := 0,
+                "Filter",
+                div(cls := "ml-3 badge", "0"),
+                Icons.filter("ml-1 w-6 h-6", "#49556a"),
+                cls := "mt-0",
+              ),
+              ul(
+                cls := "dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52",
+                filter.render,
+              ),
+            ),
+            div(
+              renderEntities.flatten.map(filtered => filtered.length),
+              " / ",
+              entityRows
+                .map(entityRows => entityRows.length),
+              " Entities",
+            ),
+          ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
             table(

@@ -261,7 +261,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               idAttr := "confirmEdit",
               "Save",
             ),
-            TableButton(LightButtonStyle.Default, "Cancel", onClick.foreach(_ => cancelEdit())),
+            TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
           ),
         ),
       ),
