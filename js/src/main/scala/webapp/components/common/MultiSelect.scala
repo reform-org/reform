@@ -33,7 +33,7 @@ def MultiSelect(
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
-  createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+  // createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
 
   def updateSelectAll(value: Seq[String]): Unit = {
     val selectAll = document
