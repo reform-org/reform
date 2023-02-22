@@ -118,7 +118,7 @@ def MultiSelect(
       ),
     ),
     div(
-      cls := "multiselect-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-gray-300",
+      cls := "multiselect-dropdown-list-wrapper bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(

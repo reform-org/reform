@@ -43,7 +43,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
         Icons.expand("w-4 h-4"),
       ),
       ul(
-        cls := "p-2 bg-base-100 focus:bg-slate-200 z-10 shadow-lg rounded-md",
+        cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10]",
         li(
           navigationLink(PaymentLevelsPage(), "Payment levels"),
         ),

@@ -70,7 +70,7 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-gray-300",
+      cls := "select-dropdown-list-wrapper bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(

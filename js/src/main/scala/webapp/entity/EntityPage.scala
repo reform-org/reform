@@ -109,7 +109,7 @@ class EntityRow[T <: Entity[T]](
         td(cls := "p-0", ui.renderEdit(id, editingValue))
       }),
       td(
-        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 z-1 bg-white border-x border-b border-gray-300",
+        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -217,7 +217,7 @@ class EntityRow[T <: Entity[T]](
             )
           }),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 z-1 bg-white border-x border-b border-gray-300",
+            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
@@ -379,7 +379,7 @@ abstract class EntityPage[T <: Entity[T]](
                     ),
                   ),
                   th(
-                    cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 z-1 bg-white min-w-[185px] max-w-[185px]",
+                    cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
                     "Actions",
                   ),
                 ),
