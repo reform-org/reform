@@ -35,7 +35,7 @@ def Select(
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
-  // createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
+  createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
 
   def close() = {
     val active = document.activeElement

@@ -1,5 +1,4 @@
-import { createPopper as createPopperImpl } from '@popperjs/core';
-import { flip, preventOverflow } from '@popperjs/core/lib';
+import { computePosition, autoUpdate } from '@floating-ui/dom';
 
 export const usesTurn = async (connection) => {
 	try {
@@ -58,26 +57,17 @@ const waitForElement = (selector) => {
 
 export const createPopper = async (trigger, element) => {
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
-	let ref = document.querySelector(trigger);
-	let popper = document.querySelector(element);
-	let popperInstance = createPopperImpl(ref, popper, {
-		modifiers: [preventOverflow, flip, {
-			name: 'computeStyles',
-			options: {
-				adaptive: false,
-			},
-		},
-			/*{
-				name: 'offset',
-				options: {
-					offset: ({ placement, reference, popper }) => {
-						return [0, - reference.height];
-					},
-				},
-			}*/],
+	let referenceEl = document.querySelector(trigger);
+	let floatingEl = document.querySelector(element);
+	const cleanup = autoUpdate(referenceEl, floatingEl, () => {
+		computePosition(referenceEl, floatingEl).then(({ x, y }) => {
+			Object.assign(floatingEl.style, {
+				left: `${x}px`,
+				top: `${y}px`,
+			});
+		});
 	});
-	await waitForElement(".page-scroll-container");
-	popperInstance.update();
+	// TODO FIXME call cleanup
 };
 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
