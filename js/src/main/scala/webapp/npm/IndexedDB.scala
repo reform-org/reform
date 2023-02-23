@@ -12,6 +12,11 @@ import scala.annotation.nowarn
 import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom.IDBVersionChangeEvent
 
+import org.scalajs.dom.window
+import scalajs.js.DynamicImplicits.truthValue
+import webapp.utils.Futures.*
+import webapp.services.Toaster
+
 // manually extracted from scalablytyped
 
 trait StObject extends js.Object
@@ -173,7 +178,7 @@ object IDBTransactionMode {
     "versionchange".asInstanceOf[stdStrings.versionchange]
 }
 
-class IndexedDB extends IIndexedDB {
+class IndexedDB(using toaster: Toaster) extends IIndexedDB {
 
   val database =
     mod
@@ -186,6 +191,25 @@ class IndexedDB extends IIndexedDB {
           }),
       )
       .toFuture
+
+  def requestPersistentStorage: Unit = {
+    if (js.Dynamic.global.navigator.storage && js.Dynamic.global.navigator.storage.persist) {
+      window.navigator.storage
+        .persist()
+        .toFuture
+        .map(result => {
+          if (result) {
+            println("Persistent storage!")
+          } else {
+            // TODO find out when chrome will grant this (probably on user interaction)
+            println("No persistent storage! Your data may get lost. Please allow the permission.")
+          }
+        })
+        .toastOnError()
+    } else {
+      println("No persistent storage API available!")
+    }
+  }
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     for db <- database
