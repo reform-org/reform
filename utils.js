@@ -1,5 +1,6 @@
 import { createPopper as createPopperImpl } from '@popperjs/core';
 import { flip, preventOverflow } from '@popperjs/core/lib';
+import { DateTime } from 'luxon';
 
 export const usesTurn = async (connection) => {
 	try {
@@ -121,3 +122,13 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 };
 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
+
+export const toGermanDate = (/** @type {number} */ input) => {
+	return DateTime.fromMillis(input).setLocale("de").toLocaleString(DateTime.DATE_SHORT)
+}
+
+export const DateTimeFromISO = DateTime.fromISO
+
+export const toYYYYMMDD = (input) => {
+	return DateTime.toISODate(input)
+}

@@ -1,12 +1,11 @@
 package webapp.entity
 
-import webapp.utils.Date
-
 import webapp.utils.Money.*
 import webapp.utils.Seqnal.*
 import rescala.default.*
 
 import webapp.components.common.*
+import webapp.npm.JSUtils
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -76,8 +75,8 @@ object UIAttributeBuilder {
   val string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
   val date: UIAttributeBuilder[Long] = UIAttributeBuilder(
-    Date.epochDayToDate(_, "dd.MM.yyyy"),
-    writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
+    JSUtils.toGermanDate(_),
+    writeConverter = JSUtils.DateTimeFromISO(_),
   )
 
   val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)

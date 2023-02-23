@@ -30,6 +30,12 @@ object JSUtils {
 
   val isSelenium: Boolean = NativeImpl.isSelenium
 
+  val toGermanDate = NativeImpl.toGermanDate
+
+  val DateTimeFromISO = NativeImpl.DateTimeFromISO
+
+  val toYYYYMMDD = NativeImpl.toYYYYMMDD
+
   @js.native
   @JSImport("../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
@@ -47,5 +53,11 @@ object JSUtils {
       js.native
 
     val isSelenium: Boolean = js.native
+
+    def toGermanDate(input: Long): String = js.native
+
+    def toYYYYMMDD(input: Long): String = js.native
+
+    def DateTimeFromISO(input: String): Long = js.native
   }
 }
