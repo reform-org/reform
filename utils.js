@@ -80,22 +80,15 @@ export const createPopper = async (trigger, element, placement) => {
 		modifiers: [preventOverflow, flip, {
 			name: 'computeStyles',
 			options: {
-				adaptive: true,
+				adaptive: false,
 				roundOffsets: ({ x, y }) => {
-					if (placement === "bottom-start") return { x: 0, y };
+					if (placement === "bottom-start") x = 0;
+					// y = ref.getBoundingClientRect().height;
+					// console.log(y);
 					return { x, y };
 				},
 			},
-		},
-			/*{
-				name: 'offset',
-				options: {
-					offset: ({ placement, reference, popper }) => {
-						if (placement === "bottom-start") return [-popper.left, 0];
-						return [0, 0];
-					},
-				},
-			}*/],
+		}],
 	}
 	);
 	popperInstances.push(popperInstance);
