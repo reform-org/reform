@@ -25,6 +25,7 @@ import rescala.default.*
 import webapp.*
 
 import webapp.webrtc.WebRTCService
+import webapp.npm.JSUtils.cleanPopper
 
 import scala.scalajs.js
 import webapp.npm.IIndexedDB
@@ -53,9 +54,15 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   ): Signal[VNode] =
     page.map(_.render)
 
-  def to(newPage: Page, preventReturn: Boolean = false) = {
-    window.history.pushState(null, "", linkPath(newPage))
-    page.set(newPage)
+  def to(newPage: Page, preventReturn: Boolean = false, newTab: Boolean = false) = {
+    if (newTab) {
+      window.open(linkPath(newPage), "_blank").focus();
+    } else {
+      window.history.pushState(null, "", linkPath(newPage))
+      cleanPopper()
+      page.set(newPage)
+    }
+
     document.activeElement.asInstanceOf[HTMLElement].blur()
   }
 

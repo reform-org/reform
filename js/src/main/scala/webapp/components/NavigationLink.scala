@@ -30,7 +30,11 @@ def navigationLink(using routing: RoutingService)(page: Page, label: String): VN
     onClick.foreach(e => {
       e.preventDefault()
       e.target.asInstanceOf[HTMLElement].blur()
-      routing.to(page, true)
+      if (e.ctrlKey) {
+        routing.to(page, true, true)
+      } else {
+        routing.to(page, true)
+      }
     }),
     href := routing.linkPath(page),
   )

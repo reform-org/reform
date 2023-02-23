@@ -330,4 +330,35 @@ object Icons {
       ),
     )
   }
+
+  def filter(_cls: String = "", _color: String = "") = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      cls := _cls,
+      fill := "none",
+      path(
+        d := "M4 7H20",
+        stroke := _color,
+        VMod.attr("stroke-width") := "2",
+        VMod.attr("stroke-linecap") := "round",
+        VMod.attr("stroke-linejoin") := "round",
+      ),
+      path(
+        d := "M7 12L17 12",
+        stroke := _color,
+        VMod.attr("stroke-width") := "2",
+        VMod.attr("stroke-linecap") := "round",
+        VMod.attr("stroke-linejoin") := "round",
+      ),
+      path(
+        d := "M11 17H13",
+        stroke := _color,
+        VMod.attr("stroke-width") := "2",
+        VMod.attr("stroke-linecap") := "round",
+        VMod.attr("stroke-linejoin") := "round",
+      ),
+    )
+  }
 }

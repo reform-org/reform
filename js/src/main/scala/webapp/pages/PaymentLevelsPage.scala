@@ -28,7 +28,7 @@ case class PaymentLevelsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
-) extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
+) extends EntityPage[PaymentLevel]("Payment Levels", repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
 
 object PaymentLevelsPage {
   private val title = UIAttributeBuilder.string

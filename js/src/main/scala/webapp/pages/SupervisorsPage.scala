@@ -29,7 +29,12 @@ case class SupervisorsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
-) extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail), DefaultEntityRow()) {}
+) extends EntityPage[Supervisor](
+      "Supervisors",
+      repositories.supervisors,
+      Seq(firstName, lastName, eMail),
+      DefaultEntityRow(),
+    ) {}
 
 object SupervisorsPage {
   private val firstName = UIAttributeBuilder.string

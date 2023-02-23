@@ -31,6 +31,7 @@ case class SalaryChangesPage()(using
     routing: RoutingService,
     indexeddb: IIndexedDB,
 ) extends EntityPage[SalaryChange](
+      "Salary Changes",
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
       DefaultEntityRow(),

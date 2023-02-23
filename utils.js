@@ -56,28 +56,68 @@ const waitForElement = (selector) => {
 	});
 };
 
-export const createPopper = async (trigger, element) => {
+const popperInstances = [];
+const popperIntervals = [];
+
+export const cleanPopper = async () => {
+	for (let popperInstance of popperInstances) {
+		popperInstance.destroy();
+	}
+
+	for (let i of popperIntervals) {
+		clearInterval(i);
+	}
+};
+
+const sameWidth = {
+	name: "sameWidth",
+	enabled: true,
+	phase: "beforeWrite",
+	requires: ["computeStyles"],
+	fn: ({ state }) => {
+		state.styles.popper.width = `${state.rects.reference.width}px`;
+	},
+	effect: ({ state }) => {
+		state.elements.popper.style.width = `${state.elements.reference.offsetWidth
+			}px`;
+	}
+};
+
+export const createPopper = async (trigger, element, placement, sameWidthAsRef) => {
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	let ref = document.querySelector(trigger);
 	let popper = document.querySelector(element);
-	let popperInstance = createPopperImpl(ref, popper, {
-		modifiers: [preventOverflow, flip, {
+
+	document.addEventListener("click", e => {
+		if (!ref || !popper || !ref.parentNode) return;
+		if (!(e.target.isSameNode(ref) || e.target.isSameNode(popper) || ref.contains(e.target) || popper.contains(e.target)) && ref.parentNode.classList.contains("dropdown-open")) {
+			ref.click();
+		}
+	});
+
+	const modifiers = [
+		preventOverflow,
+		flip,
+		{
 			name: 'computeStyles',
 			options: {
 				adaptive: false,
 			},
 		},
-			/*{
-				name: 'offset',
-				options: {
-					offset: ({ placement, reference, popper }) => {
-						return [0, - reference.height];
-					},
-				},
-			}*/],
+	];
+
+	if (sameWidthAsRef) modifiers.push(sameWidth);
+
+	let popperInstance = createPopperImpl(ref, popper, {
+		placement,
+		strategy: 'fixed',
+		modifiers
 	});
-	await waitForElement(".page-scroll-container");
-	popperInstance.update();
+
+	popperInstances.push(popperInstance);
+	popperIntervals.push(setInterval(function () {
+		popperInstance.forceUpdate();
+	}, 100));
 };
 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";

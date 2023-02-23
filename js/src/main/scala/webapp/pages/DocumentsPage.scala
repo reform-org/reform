@@ -29,7 +29,12 @@ case class DocumentsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
-) extends EntityPage[Document](repositories.requiredDocuments, Seq(name, fileName), DefaultEntityRow()) {}
+) extends EntityPage[Document](
+      "Documents",
+      repositories.requiredDocuments,
+      Seq(name, fileName),
+      DefaultEntityRow(),
+    ) {}
 
 object DocumentsPage {
   private val name = UIAttributeBuilder.string

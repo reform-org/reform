@@ -31,6 +31,7 @@ case class ContractSchemasPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[ContractSchema](
+      "Contract schemas",
       repositories.contractSchemas,
       Seq(name, files),
       DefaultEntityRow(),

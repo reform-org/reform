@@ -7,7 +7,7 @@ import rescala.default.*
 import webapp.npm.JSUtils.createPopper
 import webapp.given
 import webapp.components.Icons
-import org.scalajs.dom.document
+import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 
 class SelectOption(
@@ -25,29 +25,32 @@ class SelectOption(
 def Select(
     options: Signal[Seq[SelectOption]],
     onInput: (value: String) => Unit,
-    value: Var[String],
+    value: Signal[String],
     searchEnabled: Boolean = true,
     emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
+  val dropdownOpen = Var(false)
+
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
   createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
 
   def close() = {
-    val active = document.activeElement
-    if (active != null) {
-      active.asInstanceOf[HTMLElement].blur()
-    }
+    document.querySelector(s"#$id .select-select").asInstanceOf[HTMLElement].click()
   }
 
   div(
-    cls := "select-dropdown dropdown bg-slate-50 border border-slate-200 relative w-full h-9 rounded",
+    cls := "select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
+    cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
     idAttr := id,
     div(
       cls := "select-select flex flex-row w-full h-full items-center pl-2",
+      onClick.foreach(e => {
+        dropdownOpen.transform(!_)
+      }),
       options.map(o =>
         value
           .map(s => {
@@ -70,11 +73,11 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper z-100 bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-slate-200",
+      cls := "select-dropdown-list-wrapper bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(
-            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-slate-200",
+            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300",
             placeholder := "Search Options...",
             outwatch.dsl.onInput.value --> search,
             outwatch.dsl.value <-- search,
@@ -82,7 +85,7 @@ def Select(
         )
       } else None,
       div(
-        cls := "select-dropdown-list max-h-96 overflow-y-auto",
+        cls := "select-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto custom-scrollbar",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {
@@ -95,20 +98,24 @@ def Select(
                         tpe := "radio",
                         cls := "hidden peer",
                         checked <-- value.map(i => i.contains(uiOption.id)),
-                        idAttr := uiOption.id,
+                        idAttr := s"$id-${uiOption.id}",
+                        VMod.attr("data-id") := uiOption.id,
                         VMod.attr("name") := id,
                         onClick.foreach(_ => {
                           onInput(
                             document
                               .querySelector(s"#$id input[type=radio]:checked")
-                              .id,
+                              .asInstanceOf[HTMLElement]
+                              .dataset
+                              .get("id")
+                              .getOrElse(""),
                           )
                           close()
                         }),
                       ),
                       tabIndex := 0,
                       uiOption.render,
-                      forId := uiOption.id,
+                      forId := s"$id-${uiOption.id}",
                     ),
                   )
                 } else None

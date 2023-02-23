@@ -93,6 +93,7 @@ case class ContractsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
+      "Contract",
       repositories.contracts,
       Seq(
         contractAssociatedProject,
