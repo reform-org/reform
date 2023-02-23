@@ -77,6 +77,7 @@ export const createPopper = async (trigger, element, placement) => {
 
 	let popperInstance = createPopperImpl(ref, popper, {
 		placement,
+		strategy: 'fixed',
 		modifiers: [preventOverflow, flip, {
 			name: 'computeStyles',
 			options: {
