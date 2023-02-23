@@ -109,7 +109,7 @@ class EntityRow[T <: Entity[T]](
         td(cls := "p-0", ui.renderEdit(id, editingValue))
       }),
       td(
-        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 z-1 bg-white border-x border-b border-gray-300",
+        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -217,7 +217,7 @@ class EntityRow[T <: Entity[T]](
             )
           }),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 z-1 bg-white border-x border-b border-gray-300",
+            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
@@ -336,6 +336,7 @@ abstract class EntityPage[T <: Entity[T]](
       discovery: DiscoveryService,
       toaster: Toaster,
   ): VNode = {
+    val filterDropdownOpen = Var(false)
     navigationHeader(
       div(
         h1(cls := "text-3xl mt-4 text-center", title),
@@ -345,6 +346,7 @@ abstract class EntityPage[T <: Entity[T]](
             cls := "flex flex-row gap-2 items-center mb-4",
             div(
               cls := "dropdown",
+              cls <-- filterDropdownOpen.map(if (_) Some("dropdown-open") else None),
               Button(
                 ButtonStyle.LightDefault,
                 tabIndex := 0,
@@ -352,6 +354,9 @@ abstract class EntityPage[T <: Entity[T]](
                 div(cls := "ml-3 badge", "0"),
                 Icons.filter("ml-1 w-6 h-6", "#49556a"),
                 cls := "mt-0",
+                onClick.foreach(e => {
+                  filterDropdownOpen.transform(!_)
+                }),
               ),
               ul(
                 cls := "dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52",
@@ -379,7 +384,7 @@ abstract class EntityPage[T <: Entity[T]](
                     ),
                   ),
                   th(
-                    cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 z-1 bg-white min-w-[185px] max-w-[185px]",
+                    cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
                     "Actions",
                   ),
                 ),

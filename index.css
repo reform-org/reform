@@ -55,3 +55,19 @@ tfoot td {
     border-radius: 10px;
     border: 3px solid #ffffff;
 }
+
+/* https://github.com/saadeghi/daisyui/issues/872 */
+.dropdown.dropdown-open .dropdown-content,
+.dropdown:not(.dropdown-open)>.dropdown-content,
+.dropdown:not(.dropdown-hover):focus>.dropdown-content,
+.dropdown:not(.dropdown-hover):focus-within>.dropdown-content {
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.dropdown.dropdown-open>.dropdown-content,
+.dropdown.dropdown-open:focus>.dropdown-content,
+.dropdown.dropdown-open:focus-within>.dropdown-content {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
