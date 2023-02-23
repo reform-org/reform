@@ -22,9 +22,14 @@ import webapp.services.Toaster
 
 import SupervisorsPage.*
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
-case class SupervisorsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail), DefaultEntityRow()) {}
+case class SupervisorsPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexedb: IIndexedDB,
+) extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail), DefaultEntityRow()) {}
 
 object SupervisorsPage {
   private val firstName = UIAttributeBuilder.string

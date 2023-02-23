@@ -38,6 +38,7 @@ import webapp.components.Icons
 import webapp.given_ExecutionContext
 
 import scala.collection.mutable
+import webapp.npm.IIndexedDB
 
 sealed trait EntityValue[T]
 case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
@@ -57,6 +58,7 @@ abstract class EntityRowBuilder[T <: Entity[T]] {
       toaster: Toaster,
       routing: RoutingService,
       repositories: Repositories,
+      indexedb: IIndexedDB,
   ): EntityRow[T]
 }
 
@@ -67,6 +69,7 @@ class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
       toaster: Toaster,
       routing: RoutingService,
       repositories: Repositories,
+      indexedb: IIndexedDB,
   ): EntityRow[T] = EntityRow[T](repository, value, uiAttributes)
 }
 
@@ -80,6 +83,7 @@ class EntityRow[T <: Entity[T]](
     toaster: Toaster,
     routing: RoutingService,
     repositories: Repositories,
+    indexedb: IIndexedDB,
 ) {
 
   def render: VMod =
@@ -222,6 +226,8 @@ class EntityRow[T <: Entity[T]](
   }
 
   private def removeEntity(s: Synced[T]): Unit = {
+    indexedb.requestPersistentStorage
+
     s.update(e => e.get.withExists(false))
       .toastOnError(ToastMode.Infinit)
   }
@@ -290,6 +296,7 @@ abstract class EntityPage[T <: Entity[T]](
     toaster: Toaster,
     routing: RoutingService,
     repositories: Repositories,
+    indexedb: IIndexedDB,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =

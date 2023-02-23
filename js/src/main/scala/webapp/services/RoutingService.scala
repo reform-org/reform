@@ -27,6 +27,7 @@ import webapp.*
 import webapp.webrtc.WebRTCService
 
 import scala.scalajs.js
+import webapp.npm.IIndexedDB
 
 trait Page {
   def render(using
@@ -38,7 +39,7 @@ trait Page {
   ): VNode
 }
 
-class RoutingService(using repositories: Repositories, toaster: Toaster) {
+class RoutingService(using repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB) {
   given RoutingService = this;
 
   private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))

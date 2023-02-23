@@ -13,9 +13,10 @@ import scala.scalajs.js.annotation.JSImport
 import org.scalajs.dom.IDBVersionChangeEvent
 
 import org.scalajs.dom.window
-import scalajs.js.DynamicImplicits.truthValue
 import webapp.utils.Futures.*
 import webapp.services.Toaster
+import webapp.services.ToastMode
+import webapp.services.ToastType
 
 // manually extracted from scalablytyped
 
@@ -192,22 +193,42 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
       )
       .toFuture
 
+  var requestedPersistentStorage = false
+
   def requestPersistentStorage: Unit = {
-    if (js.Dynamic.global.navigator.storage && js.Dynamic.global.navigator.storage.persist) {
-      window.navigator.storage
-        .persist()
-        .toFuture
-        .map(result => {
-          if (result) {
-            println("Persistent storage!")
-          } else {
-            // TODO find out when chrome will grant this (probably on user interaction)
-            println("No persistent storage! Your data may get lost. Please allow the permission.")
-          }
-        })
-        .toastOnError()
-    } else {
-      println("No persistent storage API available!")
+    if (!requestedPersistentStorage) {
+      println("request persistent storage")
+      requestedPersistentStorage = true;
+      if (
+        !(!(js.Dynamic.global.navigator.storage))
+          .asInstanceOf[Boolean] && (!(!js.Dynamic.global.navigator.storage.persist)).asInstanceOf[Boolean]
+      ) {
+        window.navigator.storage
+          .persist()
+          .toFuture
+          .map(result => {
+            if (result) {
+              toaster.make(
+                "Your data will be safely stored in your browser. Please don't delete site data.",
+                ToastMode.Long,
+                ToastType.Success,
+              )
+            } else {
+              toaster.make(
+                "No persistent storage! Your data may get lost. Please allow the permission if the browser asks you.",
+                ToastMode.Persistent,
+                ToastType.Error,
+              )
+            }
+          })
+          .toastOnError()
+      } else {
+        toaster.make(
+          "No persistent storage API available! Your data can't be safely stored in your browser. Maybe you access this page over an insecure connection?",
+          ToastMode.Persistent,
+          ToastType.Error,
+        )
+      }
     }
   }
 

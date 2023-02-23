@@ -22,9 +22,14 @@ import rescala.default.*
 import webapp.components.common.*
 import HiwisPage.*
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
-case class HiwisPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[Hiwi](
+case class HiwisPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexedb: IIndexedDB,
+) extends EntityPage[Hiwi](
       repositories.hiwis,
       Seq(firstName, lastName, gender, eMail, birthdate),
       DefaultEntityRow(),

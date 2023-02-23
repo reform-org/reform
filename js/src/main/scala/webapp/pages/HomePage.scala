@@ -41,7 +41,7 @@ import rescala.default.*
 import scala.util.Success
 import scala.util.Failure
 
-case class HomePage() extends Page {
+case class HomePage()(using indexeddb: IIndexedDB) extends Page {
 
   def render(using
       routing: RoutingService,

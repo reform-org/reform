@@ -26,9 +26,14 @@ import outwatch.dsl.*
 import webapp.{*, given}
 import rescala.default.*
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
-case class ProjectsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[Project](
+case class ProjectsPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexedb: IIndexedDB,
+) extends EntityPage[Project](
       repositories.projects,
       Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
       DefaultEntityRow(),

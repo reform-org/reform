@@ -3,7 +3,7 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 /** @type {import('vitest/config').UserConfig} */
 export default {
 	plugins: [
-		//basicSsl()
+		basicSsl()
 	],
 	test: {
 		environment: "jsdom",

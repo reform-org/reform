@@ -26,8 +26,9 @@ import webapp.services.RoutingService
 import webapp.webrtc.WebRTCService
 import webapp.services.Toaster
 import webapp.pages.DocumentsPage
+import webapp.npm.IIndexedDB
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster)(
+def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB)(
     classes: String,
 ) = {
   ul(
@@ -83,6 +84,7 @@ def navigationHeader(
     webrtc: WebRTCService,
     discovery: DiscoveryService,
     toaster: Toaster,
+    indexeddb: IIndexedDB,
 ) = {
   div(
     cls := "drawer drawer-end",
