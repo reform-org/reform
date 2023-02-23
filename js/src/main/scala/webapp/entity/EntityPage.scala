@@ -372,7 +372,7 @@ abstract class EntityPage[T <: Entity[T]](
             ),
           ),
           div(
-            cls := "overflow-x-auto custom-scrollbar",
+            cls := "overflow-visible custom-scrollbar",
             table(
               cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
               thead(
