@@ -24,6 +24,7 @@ import webapp.repo.Repository
 import kofre.base.Bottom
 import kofre.base.Lattice
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
 private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
   UIAttributeBuilder
@@ -57,8 +58,14 @@ class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
     override val value: EntityValue[T],
     override val uiAttributes: Seq[UIBasicAttribute[T]],
-)(using bottom: Bottom[T], lattice: Lattice[T], toaster: Toaster, routing: RoutingService, repositories: Repositories)
-    extends EntityRow[T](repository, value, uiAttributes) {
+)(using
+    bottom: Bottom[T],
+    lattice: Lattice[T],
+    toaster: Toaster,
+    routing: RoutingService,
+    repositories: Repositories,
+    indexedb: IIndexedDB,
+) extends EntityRow[T](repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
       case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
@@ -76,11 +83,16 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
       toaster: Toaster,
       routing: RoutingService,
       repositories: Repositories,
+      indexedb: IIndexedDB,
   ): EntityRow[T] = DetailPageEntityRow(repository, value, uiAttributes)
 }
 
-case class ContractsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[Contract](
+case class ContractsPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexedb: IIndexedDB,
+) extends EntityPage[Contract](
       "Contract",
       repositories.contracts,
       Seq(

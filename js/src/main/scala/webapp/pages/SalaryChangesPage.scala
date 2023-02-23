@@ -20,12 +20,17 @@ import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
 import webapp.components.common.*
+import webapp.npm.IIndexedDB
 
 import SalaryChangesPage.*
 import webapp.services.RoutingService
 
-case class SalaryChangesPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[SalaryChange](
+case class SalaryChangesPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexeddb: IIndexedDB,
+) extends EntityPage[SalaryChange](
       "Salary Changes",
       repositories.salaryChanges,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),

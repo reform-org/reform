@@ -7,8 +7,9 @@ import outwatch.dsl.*
 import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
+import webapp.npm.IIndexedDB
 
-case class ErrorPage() extends Page {
+case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
 
   def render(using
       routing: RoutingService,
