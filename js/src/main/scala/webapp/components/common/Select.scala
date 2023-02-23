@@ -25,7 +25,7 @@ class SelectOption(
 def Select(
     options: Signal[Seq[SelectOption]],
     onInput: (value: String) => Unit,
-    value: Var[String],
+    value: Signal[String],
     searchEnabled: Boolean = true,
     emptyState: VMod = span("Nothing found..."),
     props: VMod*,

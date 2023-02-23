@@ -24,7 +24,7 @@ class MultiSelectOption(
 def MultiSelect(
     options: Signal[Seq[MultiSelectOption]],
     onInput: (value: Seq[String]) => Unit,
-    value: Var[Seq[String]],
+    value: Signal[Seq[String]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
     emptyState: VMod = span("Nothing found..."),

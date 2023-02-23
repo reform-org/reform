@@ -69,7 +69,7 @@ class UITextAttribute[EntityType, AttributeType](
 
   protected def renderEditInput(
       _formId: String,
-      attr: Attribute[AttributeType],
+      attr: Signal[Attribute[AttributeType]],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
   ): VMod =
@@ -80,7 +80,7 @@ class UITextAttribute[EntityType, AttributeType](
       required := isRequired,
       stepAttr := stepSize,
       pattern := regex,
-      value := getEditString(attr),
+      value <-- attr.map(getEditString(_)),
       onInput.value --> {
         val evt = Evt[String]()
         ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
@@ -101,25 +101,27 @@ class UITextAttribute[EntityType, AttributeType](
     editing.map(
       _.map(editing => {
         val (editStart, entityVar) = editing
-        entityVar.map(entity => {
-          val attr = getter(entity)
-          val editStartAttr = getter(editStart)
-          div(
-            renderEditInput(formId, attr, x => set(entityVar, x), Some(s"$formId-conflicting-values")),
-            if (editStartAttr.getAll.size > 1) {
-              Some(
-                Seq(
-                  dataList(
-                    idAttr := s"$formId-conflicting-values",
-                    renderConflicts(editStartAttr),
-                  ),
+        val editStartAttr = getter(editStart)
+        div(
+          renderEditInput(
+            formId,
+            entityVar.map(getter(_)),
+            x => set(entityVar, x),
+            Some(s"$formId-conflicting-values"),
+          ),
+          if (editStartAttr.getAll.size > 1) {
+            Some(
+              Seq(
+                dataList(
+                  idAttr := s"$formId-conflicting-values",
+                  renderConflicts(editStartAttr),
                 ),
-              )
-            } else {
-              None
-            },
-          )
-        })
+              ),
+            )
+          } else {
+            None
+          },
+        )
       }),
     )
   }
@@ -198,7 +200,7 @@ class UIDateAttribute[EntityType](
 
   override def renderEditInput(
       _formId: String,
-      attr: Attribute[Long],
+      attr: Signal[Attribute[Long]],
       set: Long => Unit,
       datalist: Option[String] = None,
   ): VMod = TableInput(
@@ -207,7 +209,7 @@ class UIDateAttribute[EntityType](
     formId := _formId,
     required := isRequired,
     minAttr := min,
-    value := getEditString(attr),
+    value <-- attr.map(getEditString(_)),
     onInput.value --> {
       val evt = Evt[String]()
       ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
@@ -244,14 +246,14 @@ class UICheckboxAttribute[EntityType](
 
   override def renderEditInput(
       _formId: String,
-      attr: Attribute[Boolean],
+      attr: Signal[Attribute[Boolean]],
       set: Boolean => Unit,
       datalist: Option[String] = None,
   ): VMod = Checkbox(
     CheckboxStyle.Default,
     formId := _formId,
-    checked := attr.get.getOrElse(false),
-    onClick.foreach(_ => set(!attr.get.getOrElse(false))),
+    checked <-- attr.map(_.get.getOrElse(false)),
+    onClick.foreach(_ => set(!attr.now.get.getOrElse(false))),
   )
 
   override def uiFilter: UIFilter[EntityType] = UIBooleanFilter(this)
@@ -289,18 +291,16 @@ class UISelectAttribute[EntityType, AttributeType](
 
   override def renderEditInput(
       _formId: String,
-      attr: Attribute[AttributeType],
+      attr: Signal[Attribute[AttributeType]],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
   ): VMod = {
-    val value = Var(attr.get.getOrElse("").asInstanceOf[String])
     Select(
       options,
       v => {
-        value.set(v.asInstanceOf[String])
-        set(v.asInstanceOf[AttributeType])
+        set(writeConverter(v))
       },
-      value,
+      attr.map(getEditString(_)),
       searchEnabled,
       span("Nothing found..."),
       formId := _formId,
@@ -356,19 +356,17 @@ class UIMultiSelectAttribute[EntityType](
 
   override def renderEditInput(
       _formId: String,
-      attr: Attribute[Seq[String]],
+      attr: Signal[Attribute[Seq[String]]],
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
   ): VMod = {
-    val value = Var(attr.getAll.head)
     Seq(
       MultiSelect(
         options,
         v => {
-          value.set(v.asInstanceOf[Seq[String]])
           set(v)
         },
-        value,
+        attr.map(_.get.getOrElse(Seq())),
         showItems,
         searchEnabled,
         span("Nothing found..."),
