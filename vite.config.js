@@ -1,5 +1,10 @@
+import { VitePWA } from 'vite-plugin-pwa'
+
 /** @type {import('vitest/config').UserConfig} */
 export default {
+	plugins: [
+		VitePWA({ registerType: 'autoUpdate' })
+	],
 	test: {
 		environment: "jsdom",
 		testTimeout: 300000,
