@@ -31,6 +31,7 @@ import webapp.repo.Synced
 import webapp.components.common.*
 import webapp.utils.Futures.*
 import webapp.services.ToastType
+import scala.scalajs.js.Date
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -243,23 +244,53 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               div(
                 label("Start date:"),
                 contractStartDate.renderEdit("", editingValue),
-                p("Duration"),
+                p(
+                  editingValue.map(p =>
+                    p.get._2.map(v => {
+                      if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
+                        "Duration in days: " + (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                          .getOrElse(0L)).toString()
+                      else ""
+                    }),
+                  ),
+                  editingValue.map(p =>
+                    p.get._2.map(v => {
+                      if (
+                        v.contractStartDate.get.getOrElse(0L) - (Date
+                          .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
+                      ) "Start date is in the past"
+                      else ""
+
+                    }),
+                  ),
+                ),
                 label("End date:"),
                 contractEndDate.renderEdit("", editingValue),
+                p(
+                  editingValue.map(p =>
+                    p.get._2.map(v => {
+                      if (
+                        v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                          .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
+                      ) "End date is in the past or before start date"
+                      else ""
+
+                    }),
+                  ),
+                ),
                 // Todo Warning
               ),
               div(
-                p("Monthly base salary: 1.500€; with bonus: 1.800€"),
-                p("Total Hours: 160h"),
                 label("Hours per month:"),
                 contractHoursPerMonth.renderEdit("", editingValue),
                 label("Payment level:"),
                 contractAssociatedPaymentLevel.renderEdit("", editingValue),
-                onSubmit.foreach(e => {
-                  e.preventDefault()
-                  createOrUpdate()
-                }),
+                // TODO calculation of monthly base salary and total hours
               ),
+              onSubmit.foreach(e => {
+                e.preventDefault()
+                createOrUpdate()
+              }),
             ),
             p("Select project"),
             div(
