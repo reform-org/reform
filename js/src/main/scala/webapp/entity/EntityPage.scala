@@ -36,6 +36,7 @@ import webapp.utils.Seqnal.*
 import webapp.components.common.*
 import webapp.components.Icons
 import webapp.given_ExecutionContext
+import webapp.npm.JSUtils.createPopper
 
 import scala.collection.mutable
 
@@ -337,6 +338,9 @@ abstract class EntityPage[T <: Entity[T]](
       toaster: Toaster,
   ): VNode = {
     val filterDropdownOpen = Var(false)
+
+    createPopper(s"#filter-btn", s"#filter-dropdown", "bottom-start")
+
     navigationHeader(
       div(
         h1(cls := "text-3xl mt-4 text-center", title),
@@ -351,15 +355,17 @@ abstract class EntityPage[T <: Entity[T]](
                 ButtonStyle.LightDefault,
                 tabIndex := 0,
                 "Filter",
+                idAttr := "filter-btn",
                 div(cls := "ml-3 badge", "0"),
                 Icons.filter("ml-1 w-6 h-6", "#49556a"),
-                cls := "mt-0",
+                cls := "!mt-0",
                 onClick.foreach(e => {
                   filterDropdownOpen.transform(!_)
                 }),
               ),
               ul(
-                cls := "dropdown-content menu p-2 shadow-lg bg-base-100 rounded-box w-52",
+                idAttr := "filter-dropdown",
+                cls := "dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-96",
                 filter.render,
               ),
             ),
@@ -372,7 +378,7 @@ abstract class EntityPage[T <: Entity[T]](
             ),
           ),
           div(
-            cls := "overflow-visible custom-scrollbar",
+            cls := "overflow-x-auto custom-scrollbar",
             table(
               cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
               thead(

@@ -25,6 +25,7 @@ import rescala.default.*
 import webapp.*
 
 import webapp.webrtc.WebRTCService
+import webapp.npm.JSUtils.cleanPopper
 
 import scala.scalajs.js
 
@@ -57,6 +58,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster) {
       window.open(linkPath(newPage), "_blank").focus();
     } else {
       window.history.pushState(null, "", linkPath(newPage))
+      cleanPopper()
       page.set(newPage)
     }
 

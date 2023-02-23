@@ -56,29 +56,49 @@ const waitForElement = (selector) => {
 	});
 };
 
-export const createPopper = async (trigger, element) => {
+const popperInstances = [];
+
+export const cleanPopper = async () => {
+	for (let popperInstance of popperInstances) {
+		popperInstance.destroy();
+	}
+};
+
+export const createPopper = async (trigger, element, placement) => {
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	let ref = document.querySelector(trigger);
-	console.log(ref, ref.getBoundingClientRect().height);
 	let popper = document.querySelector(element);
+
+	document.addEventListener("click", e => {
+		if (!(e.target.isSameNode(ref) || e.target.isSameNode(popper) || ref.contains(e.target) || popper.contains(e.target)) && ref.parentNode.classList.contains("dropdown-open")) {
+			ref.click();
+		}
+	});
+
 	let popperInstance = createPopperImpl(ref, popper, {
+		placement,
 		modifiers: [preventOverflow, flip, {
 			name: 'computeStyles',
 			options: {
-				adaptive: false,
+				adaptive: true,
+				roundOffsets: ({ x, y }) => {
+					if (placement === "bottom-start") return { x: 0, y };
+					return { x, y };
+				},
 			},
 		},
 			/*{
 				name: 'offset',
 				options: {
 					offset: ({ placement, reference, popper }) => {
-						console.log(reference.height);
-						return [0, - reference.height];
+						if (placement === "bottom-start") return [-popper.left, 0];
+						return [0, 0];
 					},
 				},
 			}*/],
 	}
 	);
+	popperInstances.push(popperInstance);
 	await waitForElement(".page-scroll-container");
 	popperInstance.update();
 };
