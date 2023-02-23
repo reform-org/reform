@@ -216,8 +216,8 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
             } else {
               toaster.make(
                 "No persistent storage! Your data may get lost. Please allow the permission if the browser asks you.",
-                ToastMode.Persistent,
-                ToastType.Error,
+                ToastMode.Long,
+                ToastType.Warning,
               )
             }
           })
@@ -225,8 +225,8 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
       } else {
         toaster.make(
           "No persistent storage API available! Your data can't be safely stored in your browser. Maybe you access this page over an insecure connection?",
-          ToastMode.Persistent,
-          ToastType.Error,
+          ToastMode.Long,
+          ToastType.Warning,
         )
       }
     }
