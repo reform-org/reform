@@ -15,5 +15,8 @@ export default {
 	preview: {
 		port: 5173,
 	},
+	build: {
+		sourcemap: true
+	},
 	clearScreen: false,
 };
