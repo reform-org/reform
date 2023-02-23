@@ -23,9 +23,15 @@ import webapp.services.Toaster
 import org.scalajs.dom.window
 import webapp.pages.DocumentsPage
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
 object Routes {
-  def fromPath(using repositories: Repositories, toaster: Toaster, routing: RoutingService): Path => Page = {
+  def fromPath(using
+      repositories: Repositories,
+      toaster: Toaster,
+      routing: RoutingService,
+      indexedb: IIndexedDB,
+  ): Path => Page = {
     case Root                         => HomePage()
     case Root / "projects"            => ProjectsPage()
     case Root / "users"               => UsersPage()

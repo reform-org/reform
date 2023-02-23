@@ -32,6 +32,7 @@ import scala.util.*
 import webapp.repo.Synced
 import scala.annotation.nowarn
 import webapp.repo.Storage
+import webapp.npm.IIndexedDB
 
 /** @param name
   *   The name/type of the thing to sync
@@ -53,6 +54,7 @@ class ReplicationGroup[A](name: String)(using
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
     storage: Storage[A],
+    indexeddb: IIndexedDB,
 ) {
 
   @volatile
@@ -85,9 +87,13 @@ class ReplicationGroup[A](name: String)(using
 
   private val binding = Binding[DeltaFor[A] => Future[A]](name)
 
-  registry.bindSbj(binding)((remoteRef: RemoteRef, payload: DeltaFor[A]) =>
-    sync(payload.name).flatMap(_.update(v => v.getOrElse(bottom.empty).merge(payload.delta))),
-  )
+  registry.bindSbj(binding)((remoteRef: RemoteRef, payload: DeltaFor[A]) => {
+    println(payload.name)
+    if (payload.name != "ids") {
+      indexeddb.requestPersistentStorage
+    }
+    sync(payload.name).flatMap(_.update(v => v.getOrElse(bottom.empty).merge(payload.delta)))
+  })
 
   def distributeDeltaRDT(
       name: String,

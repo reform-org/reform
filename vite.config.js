@@ -1,5 +1,7 @@
 import { VitePWA } from 'vite-plugin-pwa'
 
+import basicSsl from '@vitejs/plugin-basic-ssl'
+
 /** @type {import('vitest/config').UserConfig} */
 export default {
 	plugins: [
@@ -36,7 +38,8 @@ export default {
 				"background_color": "#ffffff",
 				"display": "standalone"
 			}
-		})
+		}),
+		//basicSsl()
 	],
 	build: {
 		sourcemap: true,

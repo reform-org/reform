@@ -4,6 +4,7 @@ module.exports = {
 	theme: {
 		minHeight: {
 			10: "2.5rem",
+			9: "2.25rem",
 		},
 		extend: {},
 	},

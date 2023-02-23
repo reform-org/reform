@@ -23,9 +23,15 @@ import webapp.components.common.*
 
 import ContractSchemasPage.*
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
-case class ContractSchemasPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[ContractSchema](
+case class ContractSchemasPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexedb: IIndexedDB,
+) extends EntityPage[ContractSchema](
+      "Contract schemas",
       repositories.contractSchemas,
       Seq(name, files),
       DefaultEntityRow(),

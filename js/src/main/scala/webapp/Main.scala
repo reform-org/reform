@@ -47,7 +47,7 @@ object Main {
       .onComplete(value => {
         if (value.isFailure) {
           toaster.make(
-            "Failed to write into the storage. Your Browser does not support IndexedDB!",
+            "Application unusable because storage is not available. Your Browser does not support IndexedDB! Private tabs in Firefox don't work.",
             ToastMode.Persistent,
             ToastType.Error,
           )

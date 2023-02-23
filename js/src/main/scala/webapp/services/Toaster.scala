@@ -142,7 +142,7 @@ class Toast(
           None
       },
       div(
-        cls := s"z-50 flex flex-row items-start !mt-0 ${if (!toastMode.autodismiss) "!w-full" else ""}",
+        cls := s"flex flex-row items-start !mt-0 !z-[50] ${if (!toastMode.autodismiss) "!w-full" else ""}",
         div(
           cls := "shrink-0",
           toastType.icon match {

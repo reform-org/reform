@@ -36,6 +36,8 @@ class SqliteDB extends IIndexedDB {
       "INSERT INTO reform (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value;",
     )
 
+  def requestPersistentStorage: Unit = {}
+
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     synchronized {
       readStatement.setString(1, key);
