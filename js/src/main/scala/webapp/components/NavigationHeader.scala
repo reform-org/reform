@@ -121,7 +121,7 @@ def navigationHeader(
             onClick.foreach(e => {
               e.preventDefault()
               e.target.asInstanceOf[HTMLElement].blur()
-              routing.to(HomePage(), true)
+              routing.to(HomePage())
             }),
           ),
         ),

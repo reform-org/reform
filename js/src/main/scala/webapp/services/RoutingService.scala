@@ -54,7 +54,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   ): Signal[VNode] =
     page.map(_.render)
 
-  def to(newPage: Page, preventReturn: Boolean = false, newTab: Boolean = false) = {
+  def to(newPage: Page, newTab: Boolean = false) = {
     if (newTab) {
       window.open(linkPath(newPage), "_blank").focus();
     } else {
