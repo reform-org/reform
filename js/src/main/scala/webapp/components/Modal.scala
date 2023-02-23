@@ -6,10 +6,11 @@ import outwatch.dsl.*
 import rescala.default.*
 import webapp.given
 import org.scalajs.dom.{document, Element}
+import webapp.components.common.*
 
 class ModalButton(
     val text: String,
-    val classes: String = "",
+    val style: ButtonStyle = ButtonStyle.Default,
     val callback: () => Unit = () => {},
     val customAttributes: Seq[VMod] = Seq(),
 )
@@ -30,10 +31,9 @@ class Modal(val title: VMod, val body: VMod, val buttons: Seq[ModalButton]) {
   )
 
   def button(): VNode = {
-    input(
-      tpe := "button",
-      cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-      value := "test",
+    Button(
+      ButtonStyle.Default,
+      "Open Modal",
       onClick.foreach(_ => this.openState.set(true)),
     )
   }
@@ -62,8 +62,8 @@ class Modal(val title: VMod, val body: VMod, val buttons: Seq[ModalButton]) {
           div(
             cls := "modal-action flex flex-row",
             buttons.map(button =>
-              label(
-                cls := s"btn btn-active p-2 h-fit min-h-10 border-0 ${button.classes}",
+              Button(
+                button.style,
                 button.text,
                 onClick.foreach(_ => {
                   button.callback()

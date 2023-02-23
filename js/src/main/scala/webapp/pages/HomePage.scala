@@ -56,7 +56,7 @@ case class HomePage() extends Page {
       Seq(
         new ModalButton(
           "Yay!",
-          "bg-purple-600",
+          ButtonStyle.Primary,
           () => {
             document.getElementById("loadPDF").classList.add("loading")
             PDF
@@ -120,7 +120,7 @@ case class HomePage() extends Page {
       Seq(
         new ModalButton(
           "Delete",
-          "bg-red-600",
+          ButtonStyle.Error,
           () => {
             val _ = window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform")
           },

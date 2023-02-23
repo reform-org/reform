@@ -124,7 +124,7 @@ def MultiSelect(
       ),
     ),
     div(
-      cls := "multiselect-dropdown-list-wrapper bg-white dropdown-content shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+      cls := "multiselect-dropdown-list-wrapper bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(
@@ -169,7 +169,7 @@ def MultiSelect(
         ),
       ),
       div(
-        cls := "multiselect-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto",
+        cls := "multiselect-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto custom-scrollbar",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {

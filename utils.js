@@ -57,10 +57,15 @@ const waitForElement = (selector) => {
 };
 
 const popperInstances = [];
+const popperIntervals = [];
 
 export const cleanPopper = async () => {
 	for (let popperInstance of popperInstances) {
 		popperInstance.destroy();
+	}
+
+	for (let i of popperIntervals) {
+		clearInterval(i);
 	}
 };
 
@@ -96,12 +101,6 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 			name: 'computeStyles',
 			options: {
 				adaptive: false,
-				// roundOffsets: ({ x, y }) => {
-				// 	if (placement === "bottom-start") x = 0;
-				// 	// y = ref.getBoundingClientRect().height;
-				// 	// console.log(y);
-				// 	return { x, y };
-				// },
 			},
 		},
 	];
@@ -115,8 +114,9 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 	});
 
 	popperInstances.push(popperInstance);
-	await waitForElement(".page-scroll-container");
-	popperInstance.update();
+	popperIntervals.push(setInterval(function () {
+		popperInstance.forceUpdate();
+	}, 100));
 };
 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";

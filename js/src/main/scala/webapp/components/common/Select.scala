@@ -38,10 +38,7 @@ def Select(
   createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
 
   def close() = {
-    val active = document.activeElement
-    if (active != null) {
-      active.asInstanceOf[HTMLElement].blur()
-    }
+    document.querySelector(s"#$id .select-select").asInstanceOf[HTMLElement].click()
   }
 
   div(
@@ -76,7 +73,7 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper bg-white dropdown-content shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+      cls := "select-dropdown-list-wrapper bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(
@@ -88,7 +85,7 @@ def Select(
         )
       } else None,
       div(
-        cls := "select-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto",
+        cls := "select-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto custom-scrollbar",
         options.map(option =>
           option.map(uiOption => {
             uiOption.name.map(name => {

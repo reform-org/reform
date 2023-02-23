@@ -151,7 +151,7 @@ class EntityRow[T <: Entity[T]](
               Seq(
                 new ModalButton(
                   "Delete",
-                  "bg-red-600",
+                  ButtonStyle.Error,
                   () => {
                     removeEntity(p)
                     cancelEdit()
@@ -192,7 +192,7 @@ class EntityRow[T <: Entity[T]](
       Seq(
         new ModalButton(
           "Delete",
-          "bg-red-600",
+          ButtonStyle.Error,
           () => removeEntity(synced),
         ),
         new ModalButton("Cancel"),
@@ -208,17 +208,15 @@ class EntityRow[T <: Entity[T]](
           uiAttributes.map(ui => {
             td(
               cls := "border-b border-l border-gray-300 p-0",
-              cls := {
-                ui.width match {
-                  case None    => "min-w-[200px]"
-                  case Some(v) => s"max-w-[$v] min-w-[$v]"
-                }
-              },
+              cls := (ui.width match {
+                case None    => "min-w-[200px]"
+                case Some(v) => s"max-w-[$v] min-w-[$v]"
+              }),
               ui.render(synced.id, p),
             )
           }),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
+            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white border-l border-r border-b border-gray-300 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),

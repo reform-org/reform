@@ -375,7 +375,6 @@ class UIMultiSelectAttribute[EntityType](
         formId := _formId,
         required := isRequired,
       ),
-      cls := "min-w-[350px] max-w-[350px]",
     )
 
   }
