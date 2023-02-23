@@ -174,7 +174,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       .withLabel("Associated PaymentLevel")
       .require
       .bindAsSelect(
-        _.contractType,
+        _.contractAssociatedPaymentLevel,
         (p, a) => p.copy(contractType = a),
       )
   }
