@@ -3,7 +3,12 @@ import { VitePWA } from 'vite-plugin-pwa'
 /** @type {import('vitest/config').UserConfig} */
 export default {
 	plugins: [
-		VitePWA({ registerType: 'autoUpdate' })
+		VitePWA({
+			registerType: 'autoUpdate',
+			devOptions: {
+				enabled: true
+			}
+		})
 	],
 	test: {
 		environment: "jsdom",
