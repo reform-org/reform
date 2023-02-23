@@ -6,7 +6,7 @@
   "scripts": {
     "sbt:dev": "sbt ~fastLinkJS",
     "dev": "vite",
-    "build": "vite build",
+    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build",
     "preview": "vite preview",
     "test": "vitest",
     "spawn-test-instances": "node --loader ts-node/esm webapp/tests/selenium/spawn-test-instances.ts",
