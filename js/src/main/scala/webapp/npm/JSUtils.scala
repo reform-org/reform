@@ -36,6 +36,8 @@ object JSUtils {
 
   val toYYYYMMDD = NativeImpl.toYYYYMMDD
 
+  val toMoneyString = NativeImpl.toMoneyString
+
   @js.native
   @JSImport("../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
@@ -59,5 +61,7 @@ object JSUtils {
     def toYYYYMMDD(input: Long): String = js.native
 
     def DateTimeFromISO(input: String): Long = js.native
+
+    def toMoneyString(input: BigDecimal): String = js.native
   }
 }

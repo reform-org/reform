@@ -132,3 +132,12 @@ export const DateTimeFromISO = DateTime.fromISO
 export const toYYYYMMDD = (input) => {
 	return DateTime.toISODate(input)
 }
+
+const formatter = new Intl.NumberFormat('de-DE', {
+	style: 'currency',
+	currency: 'EUR'
+});
+
+export const toMoneyString = (input) => {
+	return formatter.format(input);
+}

@@ -1,6 +1,5 @@
 package webapp.entity
 
-import webapp.utils.Money.*
 import webapp.utils.Seqnal.*
 import rescala.default.*
 
@@ -86,7 +85,7 @@ object UIAttributeBuilder {
   val boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
 
   val money: UIAttributeBuilder[BigDecimal] =
-    UIAttributeBuilder[BigDecimal](_.toMoneyString, BigDecimal(_), editConverter = _.toString)
+    UIAttributeBuilder[BigDecimal](JSUtils.toMoneyString(_), BigDecimal(_), editConverter = _.toString)
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
