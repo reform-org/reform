@@ -249,6 +249,13 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           (value) => selectValue.set(value),
           selectValue,
         ),
+        Button(
+          ButtonStyle.Default,
+          "Test",
+          onClick.foreach(_ => {
+            routing.to(this, false, collection.mutable.Map(("test" -> "works")))
+          }),
+        ),
       ),
     )
   }

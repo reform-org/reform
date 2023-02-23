@@ -33,7 +33,7 @@ def navigationLink(using routing: RoutingService)(page: Page, label: String): VN
       if (e.ctrlKey) {
         routing.to(page, true)
       } else {
-        routing.to(page)
+        routing.to(page, false)
       }
     }),
     href := routing.linkPath(page),
