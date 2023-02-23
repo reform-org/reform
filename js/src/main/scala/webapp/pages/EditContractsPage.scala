@@ -248,8 +248,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               div(
                 label("Hiwi:"),
                 contractAssociatedHiwi.renderEdit("", editingValue),
-                label("Hiwi has a degree"),
-                input(`type` := "checkbox"),
                 br,
                 label("Supervisor:"),
                 contractAssociatedSupervisor.renderEdit("", editingValue),
@@ -302,10 +300,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                 p("Monthly base salary: 1.500€; with bonus: 1.800€"),
                 p("Total Hours: 160h"),
               ),
-              onSubmit.foreach(e => {
-                e.preventDefault()
-                createOrUpdate()
-              }),
             ),
             // Select Project Field
             p("Select project"),
@@ -328,6 +322,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               "Save",
             ),
             TableButton(LightButtonStyle.Default, "Cancel", onClick.foreach(_ => cancelEdit())),
+            onSubmit.foreach(e => {
+              e.preventDefault()
+              createOrUpdate()
+            }),
           ),
         ),
       ),
