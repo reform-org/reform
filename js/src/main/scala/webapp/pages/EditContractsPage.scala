@@ -78,6 +78,19 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
 ) {
   val startEditEntity = existingValue.map(_.signal.now)
 
+  private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
+      )
+      .withLabel("Project")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedProject,
+        (p, a) => p.copy(contractAssociatedProject = a),
+      )
+  }
+
   private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -286,17 +299,25 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                 label("Payment level:"),
                 contractAssociatedPaymentLevel.renderEdit("", editingValue),
                 // TODO calculation of monthly base salary and total hours
+                p("Monthly base salary: 1.500€; with bonus: 1.800€"),
+                p("Total Hours: 160h"),
               ),
               onSubmit.foreach(e => {
                 e.preventDefault()
                 createOrUpdate()
               }),
             ),
+            // Select Project Field
             p("Select project"),
             div(
+              label("Project:"),
+              contractAssociatedProject.renderEdit("", editingValue),
             ),
+            // Contract Type Field
             p("ContractType:"),
             div(
+              // TODO active contract checking
+              p("Hiwi did not have an active contract ..."),
               label("ContractType:"),
               contractAssociatedType.renderEdit("", editingValue),
             ),
