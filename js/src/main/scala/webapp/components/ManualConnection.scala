@@ -74,6 +74,7 @@ private case object Init extends State {
       ),
       Button(
         ButtonStyle.Primary,
+        cls := "w-full",
         "Create Invitation",
         disabled <-- alias.map(_.isBlank()),
         onClick.foreach(_ => initializeHostSession),
@@ -98,6 +99,7 @@ private case class ClientAskingForHostSessionToken() extends State {
     Button(
       ButtonStyle.Primary,
       "Connect",
+      cls := "w-full",
       disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
       onClick.foreach(_ => connectToHost),
     ),
@@ -164,6 +166,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     Button(
       ButtonStyle.Primary,
       "Finish Connection",
+      cls := "w-full",
       disabled <-- sessionTokenFromClient.map(_.isBlank),
       onClick.foreach(_ => confirmConnectionToClient()),
     ),

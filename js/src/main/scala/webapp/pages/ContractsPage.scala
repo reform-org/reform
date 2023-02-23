@@ -81,6 +81,7 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
 
 case class ContractsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Contract](
+      "Contract",
       repositories.contracts,
       Seq(
         contractAssociatedProject,

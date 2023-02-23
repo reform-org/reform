@@ -56,7 +56,7 @@ case class HomePage() extends Page {
       Seq(
         new ModalButton(
           "Yay!",
-          "bg-purple-600",
+          ButtonStyle.Primary,
           () => {
             document.getElementById("loadPDF").classList.add("loading")
             PDF
@@ -97,16 +97,15 @@ case class HomePage() extends Page {
           "!!!",
         ),
         div(
-          input(
-            tpe := "checkbox",
-            idAttr := "export-success",
-            cls := "mr-2",
-            onClick.foreach(_ => deleteButtonActive.transform(!_)),
-          ),
-          label(
+          LabeledCheckbox(
             forId := "export-success",
             cls := "text-slate-600",
             "I have verified that the export has downloaded correctly ",
+          )(
+            CheckboxStyle.Default,
+            idAttr := "export-success",
+            cls := "mr-2",
+            onClick.foreach(_ => deleteButtonActive.transform(!_)),
           ),
         ),
         div(
@@ -121,7 +120,7 @@ case class HomePage() extends Page {
       Seq(
         new ModalButton(
           "Delete",
-          "bg-red-600",
+          ButtonStyle.Error,
           () => {
             val _ = window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform")
           },
@@ -140,6 +139,11 @@ case class HomePage() extends Page {
       div(
         cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
+        LabeledCheckbox("Testbox1")(CheckboxStyle.Primary),
+        Checkbox(CheckboxStyle.Default),
+        Checkbox(CheckboxStyle.Success),
+        Checkbox(CheckboxStyle.Warning),
+        Checkbox(CheckboxStyle.Error),
         Button(
           ButtonStyle.Primary,
           idAttr := "loadPDF",
@@ -149,7 +153,7 @@ case class HomePage() extends Page {
           }),
         ),
         TableButton(
-          LightButtonStyle.Default,
+          ButtonStyle.LightDefault,
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           "Make me a boring normal toast 🍞",
           onClick.foreach(_ => {

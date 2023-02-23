@@ -23,7 +23,7 @@ import PaymentLevelsPage.*
 import webapp.services.RoutingService
 
 case class PaymentLevelsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
+    extends EntityPage[PaymentLevel]("Payment Levels", repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
 
 object PaymentLevelsPage {
   private val title = UIAttributeBuilder.string

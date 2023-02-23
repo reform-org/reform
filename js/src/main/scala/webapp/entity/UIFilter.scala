@@ -5,6 +5,7 @@ import webapp.given
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default
+import webapp.components.common.*
 
 trait UIFilter[EntityType] {
   def render: VNode
@@ -25,8 +26,9 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
   private val search = Var("")
 
   def render: VNode = {
-    td(
-      input(
+    div(
+      uiAttribute.label,
+      Input(
         placeholder := "Filter here",
         value <-- search,
         onInput.value --> search,
@@ -50,14 +52,15 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
   private val max = Var("")
 
   def render: VNode = {
-    td(
-      input(
+    div(
+      uiAttribute.label,
+      Input(
         placeholder := "Minimum value",
         `type` := uiAttribute.fieldType,
         value <-- min,
         onInput.value --> min,
       ),
-      input(
+      Input(
         placeholder := "Maximum value",
         `type` := uiAttribute.fieldType,
         value <-- max,
@@ -101,19 +104,102 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
   }
 }
 
+class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[EntityType, AttributeType])
+    extends UIFilter[EntityType] {
+
+  private val selectValue: Var[Seq[String]] = Var(Seq())
+
+  def render: VNode = {
+    div(
+      uiAttribute.label,
+      MultiSelect(
+        uiAttribute.options.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
+        (value) => selectValue.set(value),
+        selectValue,
+        5,
+        true,
+        span("Nothing found..."),
+        cls := "rounded-md",
+      ),
+    )
+  }
+
+  val predicate: Signal[EntityType => Boolean] = {
+    selectValue.map(s => e => s.size == 0 || uiAttribute.getter(e).get.exists(a => s.contains(a)))
+  }
+}
+
+class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[EntityType]) extends UIFilter[EntityType] {
+
+  private val selectValue: Var[Seq[String]] = Var(Seq())
+  private val mode: Var[String] = Var("")
+
+  def render: VNode = {
+    div(
+      uiAttribute.label,
+      Select(
+        Signal(
+          Seq(
+            SelectOption("or", Signal("Contains at least one")),
+            SelectOption("and", Signal("Contains all")),
+            SelectOption("exact", Signal("Exact match")),
+          ),
+        ),
+        (value) => mode.set(value),
+        mode,
+        false,
+        span("Nothing found..."),
+        cls := "rounded-md",
+      ),
+      MultiSelect(
+        uiAttribute.options,
+        (value) => selectValue.set(value),
+        selectValue,
+        5,
+        true,
+        span("Nothing found..."),
+        cls := "rounded-md",
+      ),
+    )
+  }
+
+  val predicate: Signal[EntityType => Boolean] = {
+    mode
+      .map(mode =>
+        selectValue
+          .map(s =>
+            (e: EntityType) =>
+              s.size == 0 || uiAttribute
+                .getter(e)
+                .get
+                .exists(a => {
+                  var res = false;
+                  if (mode == "or") {
+                    res = s.toSet.intersect(a.toSet).size > 0
+                  } else if (mode == "and") {
+                    res = s.toSet.intersect(a.toSet).size >= s.toSet.size
+                  } else if (mode == "exact") {
+                    res = s.toSet.intersect(a.toSet).size == s.toSet.size && a.toSet.size == s.toSet.size
+                  }
+                  res
+                }),
+          ),
+      )
+      .flatten
+  }
+}
+
 class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean]) extends UIFilter[EntityType] {
 
   private val selected = Var("")
 
   def render: VNode = {
-    td(
-      select(
-        cls := "input valid:input-success",
-        onInput.value --> selected,
-        option(value := "both", "Both"),
-        option(value := "true", "Yes"),
-        option(value := "false", "No"),
-      ),
+    select(
+      cls := "input valid:input-success",
+      onInput.value --> selected,
+      option(value := "both", "Both"),
+      option(value := "true", "Yes"),
+      option(value := "false", "No"),
     )
   }
 

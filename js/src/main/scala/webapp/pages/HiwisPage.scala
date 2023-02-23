@@ -25,6 +25,7 @@ import webapp.services.RoutingService
 
 case class HiwisPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Hiwi](
+      "Hiwis",
       repositories.hiwis,
       Seq(firstName, lastName, gender, eMail, birthdate),
       DefaultEntityRow(),

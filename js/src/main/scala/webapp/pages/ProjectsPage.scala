@@ -29,6 +29,7 @@ import webapp.services.RoutingService
 
 case class ProjectsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
     extends EntityPage[Project](
+      "Projects",
       repositories.projects,
       Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
       DefaultEntityRow(),
@@ -64,8 +65,8 @@ object ProjectsPage {
   ) {
 
     override def render(id: String, entity: Project): VMod = {
-      td(
-        cls := "border border-gray-300 p-0", {
+      div(
+        cls := " px-4", {
           repositories.contracts.all
             .map(_.map(_.signal))
             .flatten
@@ -76,7 +77,7 @@ object ProjectsPage {
     }
 
     def renderEdit(formId: String, editing: Var[Option[(Project, Var[Project])]]): VMod = Signal(
-      td(cls := "px-6 py-0"),
+      div(),
     )
   }
 }

@@ -24,7 +24,12 @@ import SupervisorsPage.*
 import webapp.services.RoutingService
 
 case class SupervisorsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[Supervisor](repositories.supervisors, Seq(firstName, lastName, eMail), DefaultEntityRow()) {}
+    extends EntityPage[Supervisor](
+      "Supervisors",
+      repositories.supervisors,
+      Seq(firstName, lastName, eMail),
+      DefaultEntityRow(),
+    ) {}
 
 object SupervisorsPage {
   private val firstName = UIAttributeBuilder.string
