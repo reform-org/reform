@@ -339,7 +339,7 @@ abstract class EntityPage[T <: Entity[T]](
   ): VNode = {
     val filterDropdownOpen = Var(false)
 
-    createPopper(s"#filter-btn", s"#filter-dropdown", "bottom-start")
+    createPopper(s"#filter-btn", s"#filter-dropdown", "bottom-start", false)
 
     navigationHeader(
       div(

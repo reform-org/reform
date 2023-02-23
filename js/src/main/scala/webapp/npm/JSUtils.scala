@@ -20,8 +20,8 @@ object JSUtils {
     NativeImpl.downloadJson(name, content)
   }
 
-  def createPopper(trigger: String, element: String, placement: String = "bottom"): Unit = {
-    NativeImpl.createPopper(trigger, element, placement)
+  def createPopper(trigger: String, element: String, placement: String = "bottom", sameWidth: Boolean = true): Unit = {
+    NativeImpl.createPopper(trigger, element, placement, sameWidth)
   }
 
   def cleanPopper(): Unit = {
@@ -40,7 +40,7 @@ object JSUtils {
     def downloadJson(name: String, content: String): Unit =
       js.native
 
-    def createPopper(trigger: String, element: String, placement: String): Unit =
+    def createPopper(trigger: String, element: String, placement: String, sameWidth: Boolean): Unit =
       js.native
 
     def cleanPopper(): Unit =

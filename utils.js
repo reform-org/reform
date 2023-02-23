@@ -64,7 +64,21 @@ export const cleanPopper = async () => {
 	}
 };
 
-export const createPopper = async (trigger, element, placement) => {
+const sameWidth = {
+	name: "sameWidth",
+	enabled: true,
+	phase: "beforeWrite",
+	requires: ["computeStyles"],
+	fn: ({ state }) => {
+		state.styles.popper.width = `${state.rects.reference.width}px`;
+	},
+	effect: ({ state }) => {
+		state.elements.popper.style.width = `${state.elements.reference.offsetWidth
+			}px`;
+	}
+};
+
+export const createPopper = async (trigger, element, placement, sameWidthAsRef) => {
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	let ref = document.querySelector(trigger);
 	let popper = document.querySelector(element);
@@ -75,23 +89,31 @@ export const createPopper = async (trigger, element, placement) => {
 		}
 	});
 
-	let popperInstance = createPopperImpl(ref, popper, {
-		placement,
-		strategy: 'fixed',
-		modifiers: [preventOverflow, flip, {
+	const modifiers = [
+		preventOverflow,
+		flip,
+		{
 			name: 'computeStyles',
 			options: {
 				adaptive: false,
-				roundOffsets: ({ x, y }) => {
-					if (placement === "bottom-start") x = 0;
-					// y = ref.getBoundingClientRect().height;
-					// console.log(y);
-					return { x, y };
-				},
+				// roundOffsets: ({ x, y }) => {
+				// 	if (placement === "bottom-start") x = 0;
+				// 	// y = ref.getBoundingClientRect().height;
+				// 	// console.log(y);
+				// 	return { x, y };
+				// },
 			},
-		}],
-	}
-	);
+		},
+	];
+
+	if (sameWidthAsRef) modifiers.push(sameWidth);
+
+	let popperInstance = createPopperImpl(ref, popper, {
+		placement,
+		strategy: 'fixed',
+		modifiers
+	});
+
 	popperInstances.push(popperInstance);
 	await waitForElement(".page-scroll-container");
 	popperInstance.update();
