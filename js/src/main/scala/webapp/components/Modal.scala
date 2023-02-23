@@ -69,6 +69,7 @@ class Modal(val title: VMod, val body: VMod, val buttons: Seq[ModalButton]) {
                   button.callback()
                   this.close()
                 }),
+                cls := "w-fit",
                 button.customAttributes,
               ),
             ),
