@@ -17,8 +17,7 @@ import webapp.services.Toaster
 import webapp.given_ExecutionContext
 import scala.util.Failure
 import scala.util.Success
-import webapp.components.common.Button
-import webapp.components.common.ButtonStyle
+import webapp.components.common.*
 
 class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
   val offlineBanner = {
@@ -94,9 +93,9 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
       label(
         cls := "label cursor-pointer",
         span(cls := "label-text", "Autoconnect"),
-        input(
-          tpe := "checkbox",
-          cls := "toggle toggle-sm bg-purple-600 border-purple-600",
+        Checkbox(
+          CheckboxStyle.Primary,
+          cls := "checkbox-sm",
           checked := Settings.get[Boolean]("autoconnect").getOrElse(false),
           onClick.foreach(e => discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)),
         ),
@@ -123,6 +122,7 @@ class Login() {
               onClick.foreach(_ => {
                 discovery.logout()
               }),
+              cls := "w-full",
             )
           else
             div(
@@ -148,6 +148,7 @@ class Login() {
               Button(
                 ButtonStyle.Primary,
                 "Login",
+                cls := "w-full",
                 disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
                 onClick
                   .foreach(_ =>

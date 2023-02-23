@@ -20,3 +20,54 @@
 .drawer-toggle:checked~.drawer-side {
     visibility: visible;
 }
+
+.table-fixed-height td {
+    min-height: 39px;
+}
+
+tr.odd\:bg-slate-50:nth-child(odd) td {
+    background-color: #f8fafc;
+}
+
+tfoot td {
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+.custom-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: #e3e8f0 #ffffff;
+}
+
+/* Chrome, Edge, and Safari */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 16px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #ffffff;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #e3e8f0;
+    border-radius: 10px;
+    border: 3px solid #ffffff;
+}
+
+/* https://github.com/saadeghi/daisyui/issues/872 */
+.dropdown.dropdown-open .dropdown-content,
+.dropdown:not(.dropdown-open)>.dropdown-content,
+.dropdown:not(.dropdown-hover):focus>.dropdown-content,
+.dropdown:not(.dropdown-hover):focus-within>.dropdown-content {
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.dropdown.dropdown-open>.dropdown-content,
+.dropdown.dropdown-open:focus>.dropdown-content,
+.dropdown.dropdown-open:focus-within>.dropdown-content {
+    visibility: visible !important;
+    opacity: 1 !important;
+}

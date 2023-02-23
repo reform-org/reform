@@ -21,9 +21,14 @@ import webapp.services.Toaster
 
 import PaymentLevelsPage.*
 import webapp.services.RoutingService
+import webapp.npm.IIndexedDB
 
-case class PaymentLevelsPage()(using repositories: Repositories, toaster: Toaster, routing: RoutingService)
-    extends EntityPage[PaymentLevel](repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
+case class PaymentLevelsPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexedb: IIndexedDB,
+) extends EntityPage[PaymentLevel]("Payment Levels", repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
 
 object PaymentLevelsPage {
   private val title = UIAttributeBuilder.string

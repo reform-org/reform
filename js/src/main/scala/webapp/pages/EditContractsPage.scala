@@ -32,11 +32,13 @@ import webapp.components.common.*
 import webapp.utils.Futures.*
 import webapp.services.ToastType
 import scala.scalajs.js.Date
+import webapp.npm.IIndexedDB
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
+    indexeddb: IIndexedDB,
 ) extends Page {
 
   private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
@@ -75,6 +77,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     toaster: Toaster,
     repositories: Repositories,
     routing: RoutingService,
+    indexeddb: IIndexedDB,
 ) {
   val startEditEntity = existingValue.map(_.signal.now)
 
@@ -180,6 +183,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
   }
 
   private def createOrUpdate(): Unit = {
+    indexeddb.requestPersistentStorage
+
     val editingNow = editingValue.now.get._2.now
     existingValue match {
       case Some(existing) => {
