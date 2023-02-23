@@ -89,6 +89,7 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 	let popper = document.querySelector(element);
 
 	document.addEventListener("click", e => {
+		if (!ref || !popper || !ref.parentNode) return;
 		if (!(e.target.isSameNode(ref) || e.target.isSameNode(popper) || ref.contains(e.target) || popper.contains(e.target)) && ref.parentNode.classList.contains("dropdown-open")) {
 			ref.click();
 		}
