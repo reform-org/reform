@@ -44,7 +44,7 @@ object PDF {
   }
 
   @js.native
-  @JSImport("../../../../pdf.js", JSImport.Namespace)
+  @JSImport("../../../pdf.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
 
     def fillPDF(inputFileURI: String, outputFileName: String, fields: js.Array[js.Object]): js.Promise[String] =
