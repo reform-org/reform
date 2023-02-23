@@ -193,7 +193,7 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
       )
       .toFuture
 
-  var requestedPersistentStorage = !JSUtils.isSelenium
+  var requestedPersistentStorage = JSUtils.isSelenium
 
   def requestPersistentStorage: Unit = {
     if (!requestedPersistentStorage) {
