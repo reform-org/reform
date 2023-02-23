@@ -208,25 +208,17 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
           .toFuture
           .map(result => {
             if (result) {
-              toaster.make(
-                "Your data will be safely stored in your browser. Please don't delete site data.",
-                ToastMode.Long,
-                ToastType.Success,
-              )
+              println("Your data will be safely stored in your browser. Please don't delete site data.")
             } else {
-              toaster.make(
+              println(
                 "No persistent storage! Your data may get lost. Please allow the permission if the browser asks you.",
-                ToastMode.Long,
-                ToastType.Warning,
               )
             }
           })
           .toastOnError()
       } else {
-        toaster.make(
+        println(
           "No persistent storage API available! Your data can't be safely stored in your browser. Maybe you access this page over an insecure connection?",
-          ToastMode.Long,
-          ToastType.Warning,
         )
       }
     }
