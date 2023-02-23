@@ -6,9 +6,6 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 export default {
 	plugins: [
 		VitePWA({
-			devOptions: {
-				enabled: true
-			},
 			workbox: {
 				maximumFileSizeToCacheInBytes: 10 * 1000 * 1000
 			},
