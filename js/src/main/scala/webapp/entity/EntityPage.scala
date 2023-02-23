@@ -239,6 +239,8 @@ class EntityRow[T <: Entity[T]](
   protected def afterCreated(id: String): Unit = {}
 
   private def createOrUpdate(): Unit = {
+    indexedb.requestPersistentStorage
+
     val editingNow = editingValue.now.get._2.now
     existingValue match {
       case Some(existing) => {

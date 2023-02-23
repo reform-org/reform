@@ -169,6 +169,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
   }
 
   private def createOrUpdate(): Unit = {
+    indexeddb.requestPersistentStorage
+
     val editingNow = editingValue.now.get._2.now
     existingValue match {
       case Some(existing) => {
