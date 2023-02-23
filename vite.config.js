@@ -1,9 +1,11 @@
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import { visualizer } from "rollup-plugin-visualizer";
 
 /** @type {import('vitest/config').UserConfig} */
 export default {
 	plugins: [
-		//basicSsl()
+		//basicSsl(),
+		visualizer()
 	],
 	test: {
 		environment: "jsdom",
