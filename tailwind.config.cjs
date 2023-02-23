@@ -1,6 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-	content: ["./index.html", "./js/target/scala-*/webapp-fastopt/**/*.js", "./js/target/scala-*/webapp-opt/**/*.js"],
+	content: ["./index.html", "./js/target/webapp/**/*.js"],
 	theme: {
 		minHeight: {
 			10: "2.5rem",
