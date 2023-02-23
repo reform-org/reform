@@ -85,7 +85,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing: RoutingService,
     indexeddb: IIndexedDB,
 ) {
-  val startEditEntity = existingValue.map(_.signal.now)
+  val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
   private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
     UIAttributeBuilder
@@ -313,7 +313,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                       p.get._2.map(v => {
                         if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
                           (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                            .getOrElse(0L)).toString() + " days"
+                            .getOrElse(0L)).toString + " days"
                         else ""
                       }),
                     ),
