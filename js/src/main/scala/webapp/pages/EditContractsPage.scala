@@ -179,7 +179,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       .require
       .bindAsSelect(
         _.contractAssociatedPaymentLevel,
-        (p, a) => p.copy(contractType = a),
+        (p, a) => p.copy(contractAssociatedPaymentLevel = a),
       )
   }
 
@@ -243,7 +243,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       div(
         div(
           cls := "p-1",
-          h1(cls := "text-4xl text-center", "EditContractsPage"),
+          h1(cls := "text-3xl mt-4 text-center", "EditContractsPage"),
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
@@ -278,19 +278,21 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     cls := "basis-2/5",
                     label(cls := "font-bold", "Start date:"),
                     contractStartDate.renderEdit("", editingValue),
-                    p(
-                      cls := "bg-yellow-100 text-yellow-600",
-                      // Some(Icons.warningTriangle("w-6 h-6", "#ca8a04")),
-                      editingValue.map(p =>
-                        p.get._2.map(v => {
-                          if (
-                            v.contractStartDate.get.getOrElse(0L) - (Date
-                              .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
-                          ) "Start date is in the past"
-                          else ""
-
-                        }),
-                      ),
+                    editingValue.map(p =>
+                      p.get._2.map(v => {
+                        if (
+                          v.contractStartDate.get.getOrElse(0L) - (Date
+                            .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
+                        ) {
+                          Some(
+                            dsl.p(
+                              cls := "bg-yellow-100 text-yellow-600 flex flex-row",
+                              Icons.warningTriangle("w-6 h-6", "#ca8a04"),
+                              "Start date is in the past",
+                            ),
+                          )
+                        } else None
+                      }),
                     ),
                   ),
                   div(
