@@ -256,6 +256,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             routing.to(this, false, Map(("test" -> "works")))
           }),
         ),
+        routing.queryParameters.map(params => params.toString),
       ),
     )
   }

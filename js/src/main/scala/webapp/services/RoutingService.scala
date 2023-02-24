@@ -48,6 +48,8 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   private lazy val query =
     Var[Map[String, String | Seq[String]]](decodeQueryParameters(window.location.search))
 
+  val queryParameters = query.map(identity)
+
   def render(using
       routing: RoutingService,
       repositories: Repositories,
