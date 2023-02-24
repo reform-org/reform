@@ -29,6 +29,7 @@ import webapp.npm.JSUtils.cleanPopper
 
 import scala.scalajs.js
 import webapp.npm.IIndexedDB
+import scala.annotation.nowarn
 
 trait Page {
   def render(using
@@ -85,17 +86,17 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
           val value = if (kv.length >= 2) kv(1) else ""
           if (kv(0).matches(".*\\[\\]$")) {
             val key = kv(0).replace("[]", "")
-            if (!res.contains(key)) res += (key -> Seq(value))
+            if (!res.contains(key)) res += (key -> Seq(value)): @nowarn
             else {
               val oldVal = res.get(key).getOrElse(Seq())
               oldVal match {
-                case oldVal: Seq[String] => res += (key -> (oldVal :+ value))
+                case oldVal: Seq[String] => res += (key -> (oldVal :+ value)): @nowarn
                 case _                   => {}
               }
 
             }
           } else {
-            res += (kv(0) -> (value))
+            res += (kv(0) -> (value)): @nowarn
           }
         }
       })
@@ -131,14 +132,14 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
 
   query.map(query => {
     window.history.replaceState(null, "", linkPath(page.now, query))
-  })
+  }): @nowarn
 
   window.onpopstate = _ => {
     page.set(Routes.fromPath(Path(window.location.pathname)))
     query.set(decodeQueryParameters(window.location.search))
   }
 
-  query.observe(t => page.map(page => linkPath(page, t)))
-  query.observe(t => println(t))
+  query.observe(t => page.map(page => linkPath(page, t))): @nowarn
+  query.observe(t => println(t)): @nowarn
 
 }
