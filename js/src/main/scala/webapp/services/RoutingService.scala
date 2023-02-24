@@ -124,7 +124,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
       res = "?" + entries.mkString("&")
     }
 
-    res
+    "[\\?,&][^\\?,&]*=$|[\\?,&]$|[\\?,&][^\\?,&]*=(?=[\\?,&])".r.replaceAllIn(res, "")
   }
 
   def getQueryParameterAsString(key: String): Signal[String] = query.map(query =>
@@ -135,7 +135,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   )
 
   def getQueryParameterAsSeq(key: String): Signal[Seq[String]] = query.map(query =>
-    query.get(key).getOrElse("") match {
+    query.get(key).getOrElse(Seq()) match {
       case v: String      => Seq(v)
       case v: Seq[String] => v
     },
