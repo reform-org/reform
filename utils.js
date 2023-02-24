@@ -124,13 +124,18 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
 
 export const toGermanDate = (/** @type {number} */ input) => {
+	console.log("toYYYYMMDD", input)
 	return DateTime.fromMillis(Number(input)).setLocale("de").toLocaleString(DateTime.DATE_SHORT)
 }
 
-export const DateTimeFromISO = DateTime.fromISO
+export const DateTimeFromISO = (/** @type {string} */ input) => {
+	console.log("DateTimeFromISO", input)
+	return DateTime.fromISO(input).toMillis().toString()
+}
 
 export const toYYYYMMDD = (input) => {
-	return DateTime.toISODate(input)
+	console.log("toYYYYMMDD", input)
+	return DateTime.fromMillis(Number(input)).toISODate()
 }
 
 const formatter = new Intl.NumberFormat('de-DE', {

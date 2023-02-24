@@ -30,11 +30,11 @@ object JSUtils {
 
   val isSelenium: Boolean = NativeImpl.isSelenium
 
-  val toGermanDate = NativeImpl.toGermanDate
+  def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
 
-  val DateTimeFromISO = NativeImpl.DateTimeFromISO
+  def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
 
-  val toYYYYMMDD = NativeImpl.toYYYYMMDD
+  def toYYYYMMDD(input: Long) = NativeImpl.toYYYYMMDD(input.toString())
 
   val toMoneyString = NativeImpl.toMoneyString
 
@@ -56,11 +56,11 @@ object JSUtils {
 
     val isSelenium: Boolean = js.native
 
-    def toGermanDate(input: Long): String = js.native
+    def toGermanDate(input: String): String = js.native
 
-    def toYYYYMMDD(input: Long): String = js.native
+    def toYYYYMMDD(input: String): String = js.native
 
-    def DateTimeFromISO(input: String): Long = js.native
+    def DateTimeFromISO(input: String): String = js.native
 
     def toMoneyString(input: BigDecimal): String = js.native
   }
