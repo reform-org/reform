@@ -253,7 +253,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           ButtonStyle.Default,
           "Test",
           onClick.foreach(_ => {
-            routing.to(this, false, collection.mutable.Map(("test" -> "works")))
+            routing.to(this, false, Map(("test" -> "works")))
           }),
         ),
       ),

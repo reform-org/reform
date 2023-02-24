@@ -46,7 +46,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
 
   private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
   private lazy val query =
-    Var[collection.mutable.Map[String, String | Seq[String]]](decodeQueryParameters(window.location.search))
+    Var[Map[String, String | Seq[String]]](decodeQueryParameters(window.location.search))
 
   def render(using
       routing: RoutingService,
@@ -60,7 +60,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   def to(
       newPage: Page,
       newTab: Boolean = false,
-      queryParams: collection.mutable.Map[String, String | Seq[String]] = collection.mutable.Map(),
+      queryParams: Map[String, String | Seq[String]] = Map(),
   ) = {
     if (newTab) {
       window.open(linkPath(newPage, queryParams), "_blank").focus();
@@ -74,8 +74,8 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     document.activeElement.asInstanceOf[HTMLElement].blur()
   }
 
-  def decodeQueryParameters(query: String): collection.mutable.Map[String, String | Seq[String]] = {
-    var res: collection.mutable.Map[String, String | Seq[String]] = collection.mutable.Map()
+  def decodeQueryParameters(query: String): Map[String, String | Seq[String]] = {
+    var res: Map[String, String | Seq[String]] = Map()
     if (query.isBlank() || !query.startsWith("?")) return res
     query
       .substring(1)
@@ -86,17 +86,17 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
           val value = if (kv.length >= 2) kv(1) else ""
           if (kv(0).matches(".*\\[\\]$")) {
             val key = kv(0).replace("[]", "")
-            if (!res.contains(key)) res += (key -> Seq(value)): @nowarn
+            if (!res.contains(key)) res += (key -> Seq(value))
             else {
               val oldVal = res.get(key).getOrElse(Seq())
               oldVal match {
-                case oldVal: Seq[String] => res += (key -> (oldVal :+ value)): @nowarn
+                case oldVal: Seq[String] => res += (key -> (oldVal :+ value))
                 case _                   => {}
               }
 
             }
           } else {
-            res += (kv(0) -> (value)): @nowarn
+            res += (kv(0) -> (value))
           }
         }
       })
@@ -104,7 +104,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     res
   }
 
-  def encodeQueryParameters(map: collection.mutable.Map[String, String | Seq[String]]) = {
+  def encodeQueryParameters(map: Map[String, String | Seq[String]]) = {
     var res = ""
     if (map.size != 0) {
       var entries: Seq[String] = Seq()
@@ -124,7 +124,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 
-  def linkPath(newPage: Page, query: collection.mutable.Map[String, String | Seq[String]] = collection.mutable.Map()) =
+  def linkPath(newPage: Page, query: Map[String, String | Seq[String]] = Map()) =
     Routes.toPath(newPage).pathString + encodeQueryParameters(query)
 
   def back() =
