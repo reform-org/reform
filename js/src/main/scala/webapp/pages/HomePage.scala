@@ -259,7 +259,9 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           LabeledInput("Update QueryParameter")(
             placeholder := "test",
             value := params.get("input").getOrElse("").asInstanceOf[String],
-            onInput.foreach(a => println(a.value)),
+            onInput.foreach(a =>
+              routing.to(this, false, params + ("input" -> a.target.asInstanceOf[HTMLInputElement].value), true),
+            ),
           )
         }),
         routing.queryParameters.map(params => params.toString),

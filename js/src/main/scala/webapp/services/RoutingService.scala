@@ -63,6 +63,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
       newPage: Page,
       newTab: Boolean = false,
       queryParams: Map[String, String | Seq[String]] = Map(),
+      keepFocus: Boolean = false,
   ) = {
     if (newTab) {
       window.open(linkPath(newPage, queryParams), "_blank").focus();
@@ -73,7 +74,9 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
       query.set(queryParams)
     }
 
-    document.activeElement.asInstanceOf[HTMLElement].blur()
+    if (!keepFocus) {
+      document.activeElement.asInstanceOf[HTMLElement].blur()
+    }
   }
 
   def decodeQueryParameters(query: String): Map[String, String | Seq[String]] = {
