@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+	darkMode: 'class',
 	content: ["./index.html", "./js/target/scala-*/webapp-fastopt/**/*.js"],
 	theme: {
 		minHeight: {

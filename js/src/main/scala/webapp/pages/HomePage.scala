@@ -134,16 +134,28 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
 
     val multiSelectValue: Var[Seq[String]] = Var(Seq())
     val selectValue: Var[String] = Var("")
+    val theme: Var[String] = Var(Settings.get[String]("theme").getOrElse(""))
 
     navigationHeader(
       div(
         cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
-        LabeledCheckbox("Testbox1")(CheckboxStyle.Primary),
-        Checkbox(CheckboxStyle.Default),
-        Checkbox(CheckboxStyle.Success),
-        Checkbox(CheckboxStyle.Warning),
-        Checkbox(CheckboxStyle.Error),
+        Select(
+          Signal(
+            Seq(
+              SelectOption("dark", Signal("DarkMogk®")),
+              SelectOption("light", Signal("LightMogk®")),
+              SelectOption("default", Signal("Use Browser Preferences")),
+            ),
+          ),
+          (value) => {
+            theme.set(value)
+            Settings.set("theme", value)
+            useTheme
+          },
+          theme,
+          false,
+        ),
         Button(
           ButtonStyle.Primary,
           idAttr := "loadPDF",

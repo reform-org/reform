@@ -2,6 +2,7 @@ package webapp
 
 import outwatch.*
 import outwatch.dsl.*
+import org.scalajs.dom.{document, window}
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
@@ -38,4 +39,18 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
       res
     },
   )
+}
+
+def useTheme = {
+  if (
+    Settings
+      .get[String]("theme")
+      .getOrElse("") == "dark" || (Settings.get[String]("theme").getOrElse("default") == "default" && window
+      .matchMedia("prefers-color-scheme: dark)")
+      .matches)
+  ) {
+    document.documentElement.classList.add("dark")
+  } else {
+    document.documentElement.classList.remove("dark")
+  }
 }
