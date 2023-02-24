@@ -31,7 +31,7 @@ case class UsersPage()(using
 ) extends EntityPage[User]("Users", repositories.users, Seq(username, role, comment), DefaultEntityRow()) {}
 
 object UsersPage {
-  private val username = UIAttributeBuilder.string
+  private def username(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Username")
     .require
     .bindAsText[User](
@@ -39,7 +39,7 @@ object UsersPage {
       (u, a) => u.copy(username = a),
     )
 
-  private val role = UIAttributeBuilder.string
+  private def role(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Role")
     .require
     .bindAsText[User](
@@ -47,7 +47,7 @@ object UsersPage {
       (u, a) => u.copy(role = a),
     )
 
-  private val comment = UIAttributeBuilder.string
+  private def comment(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Comment")
     .withDefaultValue("")
     .bindAsText[User](

@@ -54,3 +54,7 @@ def useTheme = {
     document.documentElement.classList.remove("dark")
   }
 }
+
+def toQueryParameterName(in: String) = {
+  "[\\W]".r.replaceAllIn(in.toLowerCase(), "_")
+}
