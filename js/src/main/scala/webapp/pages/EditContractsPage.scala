@@ -312,18 +312,21 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     cls := "basis-2/5",
                     label(cls := "font-bold", "End date:"),
                     contractEndDate.renderEdit("", editingValue),
-                    p(
-                      cls := "bg-yellow-100 text-yellow-600",
-                      editingValue.map(p =>
-                        p.get._2.map(v => {
-                          if (
-                            v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                              .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
-                          ) "End date is in the past or before start date"
-                          else ""
-
-                        }),
-                      ),
+                    editingValue.map(p =>
+                      p.get._2.map(v => {
+                        if (
+                          v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                            .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
+                        ) {
+                          Some(
+                            dsl.p(
+                              cls := "bg-yellow-100 text-yellow-600 flex flex-row",
+                              Icons.warningTriangle("w-6 h-6", "#ca8a04"),
+                              "End date is in the past or before start date",
+                            ),
+                          )
+                        } else None
+                      }),
                     ),
                   ),
                   // Todo Warning
