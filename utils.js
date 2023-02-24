@@ -125,7 +125,7 @@ export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
 
 export const toGermanDate = (/** @type {number} */ input) => {
 	console.log("toYYYYMMDD", input)
-	return DateTime.fromMillis(Number(input)).setLocale("de").toLocaleString(DateTime.DATE_SHORT)
+	return DateTime.fromMillis(Number(input)).setLocale("de").toFormat("dd.LL.yyyy")
 }
 
 export const DateTimeFromISO = (/** @type {string} */ input) => {
