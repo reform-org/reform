@@ -31,6 +31,7 @@ import webapp.repo.Synced
 import webapp.components.common.*
 import webapp.utils.Futures.*
 import webapp.services.ToastType
+import scala.scalajs.js.Date
 import webapp.npm.IIndexedDB
 
 case class EditContractsPage(contractId: String)(using
@@ -79,6 +80,19 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     indexeddb: IIndexedDB,
 ) {
   val startEditEntity = existingValue.map(_.signal.now)
+
+  private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
+      )
+      .withLabel("Project")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedProject,
+        (p, a) => p.copy(contractAssociatedProject = a),
+      )
+  }
 
   private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
     UIAttributeBuilder
@@ -163,7 +177,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       .withLabel("Associated PaymentLevel")
       .require
       .bindAsSelect(
-        _.contractType,
+        _.contractAssociatedPaymentLevel,
         (p, a) => p.copy(contractType = a),
       )
   }
@@ -231,35 +245,81 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
           h1(cls := "text-4xl text-center", "EditContractsPage"),
         ),
         div(
+          p("Editing Contract:"),
+          label(existingValue.map(p => p.id)),
           form(
-            br,
-            label("CurrentContract:"),
-            label(existingValue.map(p => p.id)),
-            br,
-            label("AssociatedHiwi:"),
-            contractAssociatedHiwi.renderEdit("", editingValue),
-            br,
-            label("AssociatedSupervisor:"),
-            contractAssociatedSupervisor.renderEdit("", editingValue),
-            br,
-            label("ContractType:"),
-            contractAssociatedType.renderEdit("", editingValue),
-            br,
-            label("StartDate:"),
-            contractStartDate.renderEdit("", editingValue),
-            br,
-            label("EndDate:"),
-            contractEndDate.renderEdit("", editingValue),
-            br,
-            label("HoursPerMonth:"),
-            contractHoursPerMonth.renderEdit("", editingValue),
-            br,
-            label("AssociatedPaymentLevel:"),
-            contractAssociatedPaymentLevel.renderEdit("", editingValue),
-            onSubmit.foreach(e => {
-              e.preventDefault()
-              createOrUpdate()
-            }),
+            p("Basic information"),
+            div(
+              div(
+                label("Hiwi:"),
+                contractAssociatedHiwi.renderEdit("", editingValue),
+                br,
+                label("Supervisor:"),
+                contractAssociatedSupervisor.renderEdit("", editingValue),
+              ),
+              div(
+                label("Start date:"),
+                contractStartDate.renderEdit("", editingValue),
+                p(
+                  editingValue.map(p =>
+                    p.get._2.map(v => {
+                      if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
+                        "Duration in days: " + (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                          .getOrElse(0L)).toString()
+                      else ""
+                    }),
+                  ),
+                  editingValue.map(p =>
+                    p.get._2.map(v => {
+                      if (
+                        v.contractStartDate.get.getOrElse(0L) - (Date
+                          .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
+                      ) "Start date is in the past"
+                      else ""
+
+                    }),
+                  ),
+                ),
+                label("End date:"),
+                contractEndDate.renderEdit("", editingValue),
+                p(
+                  editingValue.map(p =>
+                    p.get._2.map(v => {
+                      if (
+                        v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                          .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
+                      ) "End date is in the past or before start date"
+                      else ""
+
+                    }),
+                  ),
+                ),
+                // Todo Warning
+              ),
+              div(
+                label("Hours per month:"),
+                contractHoursPerMonth.renderEdit("", editingValue),
+                label("Payment level:"),
+                contractAssociatedPaymentLevel.renderEdit("", editingValue),
+                // TODO calculation of monthly base salary and total hours
+                p("Monthly base salary: 1.500€; with bonus: 1.800€"),
+                p("Total Hours: 160h"),
+              ),
+            ),
+            // Select Project Field
+            p("Select project"),
+            div(
+              label("Project:"),
+              contractAssociatedProject.renderEdit("", editingValue),
+            ),
+            // Contract Type Field
+            p("ContractType:"),
+            div(
+              // TODO active contract checking
+              p("Hiwi did not have an active contract ..."),
+              label("ContractType:"),
+              contractAssociatedType.renderEdit("", editingValue),
+            ),
             button(
               cls := "btn",
               `type` := "submit",
@@ -267,6 +327,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               "Save",
             ),
             TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+            onSubmit.foreach(e => {
+              e.preventDefault()
+              createOrUpdate()
+            }),
           ),
         ),
       ),
