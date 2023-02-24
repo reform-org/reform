@@ -142,6 +142,5 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   }
 
   query.observe(t => page.map(page => linkPath(page, t))): @nowarn
-  query.observe(t => println(t)): @nowarn
 
 }
