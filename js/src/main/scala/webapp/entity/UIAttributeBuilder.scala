@@ -4,6 +4,7 @@ import webapp.utils.Seqnal.*
 import rescala.default.*
 
 import webapp.components.common.*
+import webapp.services.RoutingService
 import webapp.npm.JSUtils
 
 case class UIAttributeBuilder[AttributeType](
@@ -17,7 +18,7 @@ case class UIAttributeBuilder[AttributeType](
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
     options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
     searchEnabled: Boolean = true,
-) {
+)(using routing: RoutingService) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
 
@@ -71,28 +72,32 @@ case class UIAttributeBuilder[AttributeType](
 
 object UIAttributeBuilder {
 
-  val string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
+  def string(using routing: RoutingService): UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
-  val date: UIAttributeBuilder[Long] = UIAttributeBuilder(
+  def date(using routing: RoutingService): UIAttributeBuilder[Long] = UIAttributeBuilder(
     JSUtils.toGermanDate(_),
     writeConverter = JSUtils.DateTimeFromISO(_),
   )
 
-  val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
+  def int(using routing: RoutingService): UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
 
-  val float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
+  def float(using routing: RoutingService): UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
 
-  val boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
+  def boolean(using routing: RoutingService): UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
 
-  val money: UIAttributeBuilder[BigDecimal] =
+  def money(using routing: RoutingService): UIAttributeBuilder[BigDecimal] =
     UIAttributeBuilder[BigDecimal](JSUtils.toMoneyString(_), BigDecimal(_), editConverter = _.toString)
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
-  def select(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[String] =
+  def select(options: Signal[Seq[(String, Signal[String])]])(using
+      routing: RoutingService,
+  ): UIAttributeBuilder[String] =
     string.copy(options = options)
 
-  def multiSelect(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[Seq[String]] =
+  def multiSelect(
+      options: Signal[Seq[(String, Signal[String])]],
+  )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").toSeq)
       .copy(options = options)
 
@@ -102,7 +107,7 @@ object UIAttributeBuilder {
     def bindAsNumber[EntityType](
         getter: EntityType => Attribute[AttributeType],
         setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    ): UIAttribute[EntityType, AttributeType] = UINumberAttribute(
+    )(using routing: RoutingService): UIAttribute[EntityType, AttributeType] = UINumberAttribute(
       getter = getter,
       setter = setter,
       readConverter = self.readConverter,
@@ -119,7 +124,7 @@ object UIAttributeBuilder {
     def bindAsDatePicker[EntityType](
         getter: EntityType => Attribute[Long],
         setter: (EntityType, Attribute[Long]) => EntityType,
-    ): UIAttribute[EntityType, Long] = UIDateAttribute(
+    )(using routing: RoutingService): UIAttribute[EntityType, Long] = UIDateAttribute(
       getter = getter,
       setter = setter,
       readConverter = self.readConverter,
@@ -134,7 +139,7 @@ object UIAttributeBuilder {
     def bindAsCheckbox[EntityType](
         getter: EntityType => Attribute[Boolean],
         setter: (EntityType, Attribute[Boolean]) => EntityType,
-    ): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
+    )(using routing: RoutingService): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
       getter = getter,
       setter = setter,
       label = self.label,
@@ -147,7 +152,7 @@ object UIAttributeBuilder {
     def bindAsMultiSelect[EntityType](
         getter: EntityType => Attribute[Seq[String]],
         setter: (EntityType, Attribute[Seq[String]]) => EntityType,
-    ): UIAttribute[EntityType, Seq[String]] =
+    )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
       UIMultiSelectAttribute(
         getter,
         setter,
@@ -165,7 +170,7 @@ object UIAttributeBuilder {
     def bindAsSelect[EntityType](
         getter: EntityType => Attribute[String],
         setter: (EntityType, Attribute[String]) => EntityType,
-    ): UIAttribute[EntityType, String] =
+    )(using routing: RoutingService): UIAttribute[EntityType, String] =
       UISelectAttribute(
         getter,
         setter,

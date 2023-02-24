@@ -9,6 +9,7 @@ import webapp.given
 import webapp.*
 import webapp.components.common.*
 import webapp.npm.JSUtils
+import webapp.services.RoutingService
 
 abstract class UIBasicAttribute[EntityType](
     val label: String,
@@ -29,7 +30,8 @@ abstract class UIAttribute[EntityType, AttributeType](
     val readConverter: AttributeType => String,
     override val label: String,
     override val width: Option[String] = None,
-) extends UIBasicAttribute[EntityType](label) {
+)(using routing: RoutingService)
+    extends UIBasicAttribute[EntityType](label) {
 
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
@@ -58,7 +60,8 @@ class UITextAttribute[EntityType, AttributeType](
     override val width: Option[String] = None,
     val regex: String = ".*",
     val stepSize: String = "1",
-) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
+)(using routing: RoutingService)
+    extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
 
   private def set(entityVar: Var[EntityType], x: AttributeType): Unit = {
     entityVar.transform(e => {
@@ -137,7 +140,8 @@ class UIReadOnlyAttribute[EntityType, AttributeType](
     getter: EntityType => Attribute[AttributeType],
     readConverter: AttributeType => String,
     label: String,
-) extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
+)(using routing: RoutingService)
+    extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
 
   override def renderEdit(
       formId: String,
@@ -160,7 +164,7 @@ class UINumberAttribute[EntityType, AttributeType](
     isRequired: Boolean,
     regex: String,
     stepSize: String,
-)(implicit ordering: Ordering[AttributeType])
+)(using routing: RoutingService)(implicit ordering: Ordering[AttributeType])
     extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -186,7 +190,8 @@ class UIDateAttribute[EntityType](
     label: String,
     isRequired: Boolean,
     min: String = "",
-) extends UITextAttribute[EntityType, Long](
+)(using routing: RoutingService)
+    extends UITextAttribute[EntityType, Long](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -225,7 +230,8 @@ class UICheckboxAttribute[EntityType](
     setter: (EntityType, Attribute[Boolean]) => EntityType,
     label: String,
     isRequired: Boolean,
-) extends UITextAttribute[EntityType, Boolean](
+)(using routing: RoutingService)
+    extends UITextAttribute[EntityType, Boolean](
       getter = getter,
       setter = setter,
       readConverter = _.toString,
@@ -268,7 +274,8 @@ class UISelectAttribute[EntityType, AttributeType](
     isRequired: Boolean,
     val options: Signal[Seq[SelectOption]],
     searchEnabled: Boolean = true,
-) extends UITextAttribute[EntityType, AttributeType](
+)(using routing: RoutingService)
+    extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
       readConverter = readConverter,
@@ -319,7 +326,8 @@ class UIMultiSelectAttribute[EntityType](
     val options: Signal[Seq[MultiSelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
-) extends UITextAttribute[EntityType, Seq[String]](
+)(using routing: RoutingService)
+    extends UITextAttribute[EntityType, Seq[String]](
       getter = getter,
       setter = setter,
       readConverter = readConverter,

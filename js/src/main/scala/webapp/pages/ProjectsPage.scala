@@ -41,7 +41,7 @@ case class ProjectsPage()(using
     ) {}
 
 object ProjectsPage {
-  private val name = UIAttributeBuilder.string
+  private def name(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Name")
     .require
     .bindAsText[Project](
@@ -49,7 +49,7 @@ object ProjectsPage {
       (p, a) => p.copy(name = a),
     )
 
-  private val maxHours = UIAttributeBuilder.int
+  private def maxHours(using routing: RoutingService) = UIAttributeBuilder.int
     .withLabel("Max Hours")
     .require
     .bindAsNumber[Project](
@@ -57,7 +57,7 @@ object ProjectsPage {
       (p, a) => p.copy(maxHours = a),
     )
 
-  private val accountName = UIAttributeBuilder.string
+  private def accountName(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Account")
     .withDefaultValue("")
     .bindAsText[Project](
