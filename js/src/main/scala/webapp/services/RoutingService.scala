@@ -81,8 +81,9 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
 
   def decodeQueryParameters(query: String): Map[String, String | Seq[String]] = {
     var res: Map[String, String | Seq[String]] = Map()
-    if (query.isBlank() || !query.startsWith("?")) return res
-    query
+    val decodedQuery = js.URIUtils.decodeURI(query)
+    if (decodedQuery.isBlank() || !decodedQuery.startsWith("?")) return res
+    decodedQuery
       .substring(1)
       .split("&")
       .foreach(param => {
