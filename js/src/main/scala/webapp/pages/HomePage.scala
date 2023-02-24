@@ -238,7 +238,6 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
         ),
         modal.render,
         deleteDBModal.render,
-        LabeledInput("Test")(placeholder := "test"),
         MultiSelect(
           Signal(List(MultiSelectOption("test", Signal("test")), MultiSelectOption("test2", Signal("test2")))),
           (value) => multiSelectValue.set(value),
@@ -256,6 +255,13 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             routing.to(this, false, Map(("test" -> "works")))
           }),
         ),
+        routing.queryParameters.map(params => {
+          LabeledInput("Update QueryParameter")(
+            placeholder := "test",
+            value := params.get("input").getOrElse("").asInstanceOf[String],
+            onInput.foreach(a => println(a.value)),
+          )
+        }),
         routing.queryParameters.map(params => params.toString),
       ),
     )
