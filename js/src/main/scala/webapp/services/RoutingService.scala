@@ -127,6 +127,28 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     res
   }
 
+  def getQueryParameterAsString(key: String): Signal[String] = query.map(query =>
+    query.get(key).getOrElse("") match {
+      case v: String      => v
+      case v: Seq[String] => v.mkString
+    },
+  )
+
+  def getQueryParameterAsSeq(key: String): Signal[Seq[String]] = query.map(query =>
+    query.get(key).getOrElse("") match {
+      case v: String      => Seq(v)
+      case v: Seq[String] => v
+    },
+  )
+
+  def setQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    query.set(newParams)
+  }
+
+  def updateQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    query.transform(_ ++ newParams)
+  }
+
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 

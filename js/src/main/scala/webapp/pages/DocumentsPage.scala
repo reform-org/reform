@@ -37,7 +37,7 @@ case class DocumentsPage()(using
     ) {}
 
 object DocumentsPage {
-  private val name = UIAttributeBuilder.string
+  private def name(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Name")
     .require
     .bindAsText[Document](
@@ -45,7 +45,7 @@ object DocumentsPage {
       (d, a) => d.copy(name = a),
     )
 
-  private val fileName = UIAttributeBuilder.string
+  private def fileName(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("File Name")
     .require
     .bindAsText[Document](

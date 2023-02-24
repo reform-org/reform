@@ -255,16 +255,15 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             routing.to(this, false, Map(("test" -> "works")))
           }),
         ),
-        routing.queryParameters.map(params => {
-          LabeledInput("Update QueryParameter")(
-            placeholder := "test",
-            value := (params.get("input").getOrElse("") match {
-              case v: String      => v
-              case v: Seq[String] => v.mkString
-            }),
-            onInput.value.foreach(v => routing.to(this, false, params + ("input" -> v), true)),
-          )
-        }),
+        routing
+          .getQueryParameterAsString("input")
+          .map(input => {
+            LabeledInput("Update QueryParameter")(
+              placeholder := "test",
+              value := input,
+              onInput.value.foreach(v => routing.updateQueryParameters(Map(("input" -> v)))),
+            )
+          }),
         routing.queryParameters.map(params => params.toString),
       ),
     )

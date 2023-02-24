@@ -6,6 +6,8 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import webapp.components.common.*
+import webapp.toQueryParameterName
+import webapp.services.RoutingService
 
 trait UIFilter[EntityType] {
   def render: VNode
@@ -20,18 +22,20 @@ class UIFilterNothing[EntityType]() extends UIFilter[EntityType] {
   val predicate: default.Signal[EntityType => Boolean] = Signal(_ => true)
 }
 
-class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])
-    extends UIFilter[EntityType] {
+class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])(using
+    routing: RoutingService,
+) extends UIFilter[EntityType] {
 
   private val search = Var("")
+  private val name = toQueryParameterName(uiAttribute.label)
 
   def render: VNode = {
     div(
       uiAttribute.label,
       Input(
         placeholder := "Filter here",
-        value <-- search,
-        onInput.value --> search,
+        value <-- routing.getQueryParameterAsString(name),
+        onInput.value.foreach(v => routing.updateQueryParameters(Map((name -> v)))),
       ),
     )
   }
@@ -43,13 +47,16 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
   }
 }
 
-class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[EntityType, AttributeType])(implicit
+class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[EntityType, AttributeType])(using
+    routing: RoutingService,
+)(implicit
     ordering: Ordering[AttributeType],
 ) extends UIFilter[EntityType] {
 
   private val min = Var("")
 
   private val max = Var("")
+  private val name = toQueryParameterName(uiAttribute.label)
 
   def render: VNode = {
     div(
@@ -104,10 +111,12 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
   }
 }
 
-class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[EntityType, AttributeType])
-    extends UIFilter[EntityType] {
+class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[EntityType, AttributeType])(using
+    routing: RoutingService,
+) extends UIFilter[EntityType] {
 
   private val selectValue: Var[Seq[String]] = Var(Seq())
+  private val name = toQueryParameterName(uiAttribute.label)
 
   def render: VNode = {
     div(
@@ -129,10 +138,13 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
   }
 }
 
-class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[EntityType]) extends UIFilter[EntityType] {
+class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[EntityType])(using
+    routing: RoutingService,
+) extends UIFilter[EntityType] {
 
   private val selectValue: Var[Seq[String]] = Var(Seq())
   private val mode: Var[String] = Var("")
+  private val name = toQueryParameterName(uiAttribute.label)
 
   def render: VNode = {
     div(
@@ -189,9 +201,12 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
   }
 }
 
-class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean]) extends UIFilter[EntityType] {
+class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean])(using
+    routing: RoutingService,
+) extends UIFilter[EntityType] {
 
   private val selected = Var("")
+  private val name = toQueryParameterName(uiAttribute.label)
 
   def render: VNode = {
     select(
