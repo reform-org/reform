@@ -39,3 +39,7 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
     },
   )
 }
+
+def toQueryParameterName(in: String) = {
+  "[\\W]".r.replaceAllIn(in.toLowerCase(), "_")
+}

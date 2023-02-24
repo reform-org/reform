@@ -38,7 +38,7 @@ case class ContractSchemasPage()(using
     ) {}
 
 object ContractSchemasPage {
-  private val name = UIAttributeBuilder.string
+  private def name(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Name")
     .require
     .bindAsText[ContractSchema](
@@ -46,7 +46,10 @@ object ContractSchemasPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def files(using repositories: Repositories): UIAttribute[ContractSchema, Seq[String]] =
+  private def files(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
       .multiSelect(
         repositories.requiredDocuments.all.map(list =>
