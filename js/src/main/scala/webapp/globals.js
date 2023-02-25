@@ -8,4 +8,4 @@ export const discoveryServerWebsocketURL = import.meta.env.VITE_DISCOVERY_SERVER
 
 export const turnServerURL = import.meta.env.VITE_TURN_SERVER || "turn:lukasschreiber.com:41720"
 
-export const alwaysOnlinePeerURL = import.meta.env.VITE_ALWAYS_ONLINE_PEER_URL
+export const alwaysOnlinePeerURL = import.meta.env.VITE_ALWAYS_ONLINE_PEER_URL || "localhost:1334"
