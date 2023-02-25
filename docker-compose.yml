@@ -39,9 +39,8 @@ services:
       context: https://github.com/reform-org/reform_discovery.git#deployment
     volumes:
       - reform_discovery:/app/data
-    environment:
-      - JWT_KEY=sdfsdfsdfweffw
-      - TURN_SECRET=sdfdsfwefwefwefsgsdgf
+    env_file:
+      - .env
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-discovery.rule=Host(`discovery.localhost`)"
@@ -55,15 +54,21 @@ services:
     networks:
       - traefik_default
   # https://doc.traefik.io/traefik/routing/providers/docker/
+  # turnutils_uclient -t -x -y localhost
   coturn:
     image: coturn/coturn
-    command: --min-port=49160 --max-port=49200
+    environment:
+      - DETECT_EXTERNAL_IP=yes
+      - DETECT_RELAY_IP=yes
+      - DETECT_EXTERNAL_IPV6=yes
+      - DETECT_RELAY_IPV6=yes
+    command: --min-port=49160 --max-port=49170 --realm=turn.localhost # --use-auth-secret --static-auth-secret=${TURN_SECRET}
     ports:
       - "3478:3478"
       - "3478:3478/udp"
       - "5349:5349"
       - "5349:5349/udp"
-      - "49160-49200:49160-49200/udp"
+      - "49160-49170:49160-49170/udp"
       #labels:
       #  - "traefik.tcp.routers.coturn-3478.rule=HostSNI(`turn.localhost`)"
       #  - "traefik.tcp.routers.coturn-3478.service=coturn-3478"
