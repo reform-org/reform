@@ -57,12 +57,13 @@ services:
   # https://doc.traefik.io/traefik/routing/providers/docker/
   coturn:
     image: coturn/coturn
+    command: --min-port=49160 --max-port=49200
     ports:
       - "3478:3478"
       - "3478:3478/udp"
       - "5349:5349"
       - "5349:5349/udp"
-      - "49152-65535:49152-65535/udp"
+      - "49160-49200:49160-49200/udp"
       #labels:
       #  - "traefik.tcp.routers.coturn-3478.rule=HostSNI(`turn.localhost`)"
       #  - "traefik.tcp.routers.coturn-3478.service=coturn-3478"
