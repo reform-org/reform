@@ -2,6 +2,7 @@ package webapp
 
 import outwatch.*
 import outwatch.dsl.*
+import org.scalajs.dom.{document, window}
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
@@ -42,4 +43,8 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
 
 def toQueryParameterName(in: String) = {
   "[\\W]".r.replaceAllIn(in.toLowerCase(), "_")
+}
+
+def remToPx(rem: Float): Float = {
+  rem * "^\\d*".r.findFirstIn(window.getComputedStyle(document.documentElement).fontSize).getOrElse("16").toFloat
 }
