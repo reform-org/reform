@@ -50,6 +50,6 @@ def remToPx(rem: Float): Float = {
 }
 
 def escapeCSVString(in: String): String = {
-  if (!"""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isEmpty) s"\"$in\""
+  if (!"""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isEmpty) s"\"${in.replaceAll("\"", "\"\"")}\""
   else in
 }
