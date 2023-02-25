@@ -2,8 +2,7 @@ version: "3.9"
 services:
   reform:
     build:
-      dockerfile: Dockerfile
-      context: .
+      dockerfile: Dockerfile-frontend
     volumes:
       - ./templates:/etc/nginx/templates
     environment:
@@ -13,6 +12,13 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.reform.rule=Host(`reform.localhost`)"
       - "traefik.http.routers.reform.entrypoints=web"
+  reform-always-online-peer:
+    build:
+      dockerfile: Dockerfile-always-online-peer
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.reform-always-online-peer.rule=Host(`reform-always-online-peer.localhost`)"
+      - "traefik.http.routers.reform-always-online-peer.entrypoints=web"
   # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/#docker-compose-basic-example
   traefik:
     image: "traefik:v2.9"
