@@ -1,0 +1,17 @@
+!*
+js
+jvm
+shared
+project
+public
+build.sbt
+index.css
+index.html
+package-lock.json
+package.json
+pdf.js
+postcss.config.cjs
+tailwind.config.cjs
+tsconfig.json
+utils.js
+vite.config.js

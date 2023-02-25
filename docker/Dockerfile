@@ -1,0 +1,13 @@
+FROM sbtscala/scala-sbt:eclipse-temurin-jammy-19.0.1_10_1.8.2_3.2.2 AS sbt
+WORKDIR /app
+COPY . .
+RUN sbt fullLinkJS
+
+FROM node AS npm
+WORKDIR /app
+COPY --from=sbt /app /app
+RUN npm ci
+RUN npm run build
+
+FROM nginx
+COPY --from=npm /app/dist /app/dist
