@@ -4,6 +4,10 @@ networks:
   traefik_default:
     external: true
 
+volumes:
+  reform_discovery:
+
+
 services:
   reform:
     build:
@@ -33,6 +37,8 @@ services:
   reform-discovery:
     build:
       context: https://github.com/reform-org/reform_discovery.git#deployment
+    volumes:
+      - reform_discovery:/app/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-discovery.rule=Host(`discovery.localhost`)"
