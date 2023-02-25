@@ -86,6 +86,13 @@ sbt webappJS/test
 
 ## Deployment
 
+Using docker-compose (or e.g. podman):
+```
+docker compose --project-name traefik --file docker-compose-local-traefik.yml up --detach --remove-orphans
+docker compose --project-name reform --file docker-compose.yml up --detach --remove-orphans
+
+```
+
 ```bash
 # netlify
 #curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt fastLinkJS && npm ci && npm run build
