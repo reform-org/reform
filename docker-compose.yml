@@ -57,23 +57,25 @@ services:
   # https://doc.traefik.io/traefik/routing/providers/docker/
   coturn:
     image: coturn/coturn
-    #ports:
-    #- "3478:3478"
-    #- "3478:3478/udp"
-    #- "5349:5349"
-    #- "5349:5349/udp"
-    #- "49152-65535:49152-65535/udp"
-    #labels:
-    #  - "traefik.tcp.routers.coturn-3478.rule=HostSNI(`turn.localhost`)"
-    #  - "traefik.tcp.routers.coturn-3478.service=coturn-3478"
-    #  - "traefik.tcp.services.coturn-3478.loadbalancer.server.port=3478"
-    #  - "traefik.udp.routers.coturn-3478.entrypoints=udp"
-    #  - "traefik.udp.routers.coturn-3478.service=coturn-3478"
-    #  - "traefik.udp.services.coturn-3478.loadbalancer.server.port=3478"
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "5349:5349"
+      - "5349:5349/udp"
+      - "49152-65535:49152-65535/udp"
+      #labels:
+      #  - "traefik.tcp.routers.coturn-3478.rule=HostSNI(`turn.localhost`)"
+      #  - "traefik.tcp.routers.coturn-3478.service=coturn-3478"
+      #  - "traefik.tcp.services.coturn-3478.loadbalancer.server.port=3478"
+      #  - "traefik.udp.routers.coturn-3478.entrypoints=udp"
+      #  - "traefik.udp.routers.coturn-3478.service=coturn-3478"
+      #  - "traefik.udp.services.coturn-3478.loadbalancer.server.port=3478"
 
-    #  - "traefik.tcp.routers.coturn-5349.rule=HostSNI(`turn.localhost`)"
-    #  - "traefik.tcp.routers.coturn-5349.service=coturn-5349"
-    #  - "traefik.tcp.services.coturn-5349.loadbalancer.server.port=5349"
-    #  - "traefik.udp.routers.coturn-5349.entrypoints=udp"
-    #  - "traefik.udp.routers.coturn-5349.service=coturn-5349"
-    #  - "traefik.udp.services.coturn-5349.loadbalancer.server.port=5349"
+      #  - "traefik.tcp.routers.coturn-5349.rule=HostSNI(`turn.localhost`)"
+      #  - "traefik.tcp.routers.coturn-5349.service=coturn-5349"
+      #  - "traefik.tcp.services.coturn-5349.loadbalancer.server.port=5349"
+      #  - "traefik.udp.routers.coturn-5349.entrypoints=udp"
+      #  - "traefik.udp.routers.coturn-5349.service=coturn-5349"
+      #  - "traefik.udp.services.coturn-5349.loadbalancer.server.port=5349"
+      #networks:
+      #  - traefik_default

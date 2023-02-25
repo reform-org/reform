@@ -165,8 +165,8 @@ class DiscoveryService {
           iceServers = js.Array(
             new RTCIceServer {
               urls = Globals.turnServerURL;
-              username = payload.host.turn.username.asInstanceOf[String];
-              credential = payload.host.turn.credential.asInstanceOf[String];
+              // username = payload.host.turn.username.asInstanceOf[String];
+              // credential = payload.host.turn.credential.asInstanceOf[String];
             },
           );
         }
@@ -194,8 +194,8 @@ class DiscoveryService {
         val config = new RTCConfiguration {
           iceServers = js.Array(new RTCIceServer {
             urls = Globals.turnServerURL;
-            username = payload.client.turn.username.asInstanceOf[String];
-            credential = payload.client.turn.credential.asInstanceOf[String];
+            // username = payload.client.turn.username.asInstanceOf[String];
+            // credential = payload.client.turn.credential.asInstanceOf[String];
           });
         }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
