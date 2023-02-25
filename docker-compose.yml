@@ -40,7 +40,7 @@ services:
     volumes:
       - reform_discovery:/app/data
     env_file:
-      - .env
+      - .env-test
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-discovery.rule=Host(`discovery.localhost`)"
