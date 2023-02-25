@@ -90,7 +90,7 @@ Using docker-compose (or e.g. podman):
 ```
 docker compose --project-name traefik --file docker-compose-local-traefik.yml up --remove-orphans --detach
 docker compose --project-name reform --file docker-compose.yml up --build --remove-orphans --detach
-
+docker compose --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
 ```
 
 ```bash

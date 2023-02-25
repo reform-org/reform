@@ -10,11 +10,11 @@ services:
       dockerfile: Dockerfile-frontend
       args:
         VITE_ALWAYS_ONLINE_PEER_URL: "${VITE_ALWAYS_ONLINE_PEER_URL}"
+        VITE_DISCOVERY_SERVER_URL: "${VITE_DISCOVERY_SERVER_URL}"
+        VITE_DISCOVERY_SERVER_WEBSOCKET_URL: "${VITE_DISCOVERY_SERVER_WEBSOCKET_URL}"
+        VITE_TURN_SERVER: "${VITE_TURN_SERVER}"
     volumes:
       - ./docker/templates:/etc/nginx/templates
-    environment:
-      - NGINX_HOST=foobar.com
-      - NGINX_PORT=80
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform.rule=Host(`reform.localhost`)"
@@ -28,6 +28,21 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-always-online-peer.rule=Host(`${VITE_ALWAYS_ONLINE_PEER_URL}`)"
       - "traefik.http.routers.reform-always-online-peer.entrypoints=web"
+    networks:
+      - traefik_default
+  reform-discovery:
+    build:
+      context: https://github.com/reform-org/reform_discovery.git#deployment
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.reform-discovery.rule=Host(`discovery.localhost`)"
+      - "traefik.http.routers.reform-discovery.entrypoints=web"
+      - "traefik.http.routers.reform-discovery.service=reform-discovery"
+      - "traefik.http.services.reform-discovery.loadbalancer.server.port=3000"
+      - "traefik.http.routers.reform-discovery-ws.rule=Host(`ws.discovery.localhost`)"
+      - "traefik.http.routers.reform-discovery-ws.entrypoints=web"
+      - "traefik.http.routers.reform-discovery-ws.service=reform-discovery-ws"
+      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=7071"
     networks:
       - traefik_default
   #coturn:
