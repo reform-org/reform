@@ -11,6 +11,10 @@ services:
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web.address=:80"
+      #- "--entrypoints.tcp-3478.address=:3478"
+      #- "--entrypoints.udp-3478.address=:3478/udp"
+      #- "--entrypoints.tcp-5349.address=:5349"
+      #- "--entrypoints.udp-5349.address=:5349/udp"
     ports:
       - "80:80"
       - "8080:8080"
