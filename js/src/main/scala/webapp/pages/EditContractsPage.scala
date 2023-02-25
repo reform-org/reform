@@ -426,7 +426,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                   createOrUpdate()
                 }),
               ),
-              TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+              Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
             ),
           ),
         ),
