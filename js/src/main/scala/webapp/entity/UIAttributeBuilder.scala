@@ -1,13 +1,11 @@
 package webapp.entity
 
-import webapp.utils.Date
-
-import webapp.utils.Money.*
 import webapp.utils.Seqnal.*
 import rescala.default.*
 
 import webapp.components.common.*
 import webapp.services.RoutingService
+import webapp.npm.JSUtils
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -77,8 +75,8 @@ object UIAttributeBuilder {
   def string(using routing: RoutingService): UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
   def date(using routing: RoutingService): UIAttributeBuilder[Long] = UIAttributeBuilder(
-    Date.epochDayToDate(_, "dd.MM.yyyy"),
-    writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
+    JSUtils.toGermanDate(_),
+    writeConverter = JSUtils.DateTimeFromISO(_),
   )
 
   def int(using routing: RoutingService): UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
@@ -88,7 +86,7 @@ object UIAttributeBuilder {
   def boolean(using routing: RoutingService): UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
 
   def money(using routing: RoutingService): UIAttributeBuilder[BigDecimal] =
-    UIAttributeBuilder[BigDecimal](_.toMoneyString, BigDecimal(_), editConverter = _.toString)
+    UIAttributeBuilder[BigDecimal](JSUtils.toMoneyString(_), BigDecimal(_), editConverter = _.toString)
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 

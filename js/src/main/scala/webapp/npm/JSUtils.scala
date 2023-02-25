@@ -30,8 +30,16 @@ object JSUtils {
 
   val isSelenium: Boolean = NativeImpl.isSelenium
 
+  def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
+
+  def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
+
+  def toYYYYMMDD(input: Long) = NativeImpl.toYYYYMMDD(input.toString())
+
+  val toMoneyString = NativeImpl.toMoneyString
+
   @js.native
-  @JSImport("../../../../utils.js", JSImport.Namespace)
+  @JSImport("../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
 
     def usesTurn(connection: js.Object): js.Promise[Boolean] =
@@ -47,5 +55,13 @@ object JSUtils {
       js.native
 
     val isSelenium: Boolean = js.native
+
+    def toGermanDate(input: String): String = js.native
+
+    def toYYYYMMDD(input: String): String = js.native
+
+    def DateTimeFromISO(input: String): String = js.native
+
+    def toMoneyString(input: BigDecimal): String = js.native
   }
 }
