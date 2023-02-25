@@ -228,6 +228,17 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing.to(ContractsPage())
   }
 
+  private def editStep(number: String, title: String, props: VMod*): VNode = {
+    div(
+      cls := "border rounded-2xl m-4 border-purple-200",
+      div(
+        cls := "bg-purple-200 p-4 rounded-t-2xl",
+        p("STEP " + number + ": " + title),
+      ),
+      props,
+    )
+  }
+
   var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
     Option(existingValue.get.signal.now, Var(existingValue.get.signal.now)),
   )
@@ -243,19 +254,15 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       div(
         div(
           cls := "p-1",
-          h1(cls := "text-3xl mt-4 text-center", "EditContractsPage"),
+          h1(cls := "text-3xl mt-4 text-center", "Edit Contract"),
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
-          p("Editing Contract:"),
-          label(existingValue.map(p => p.id)),
+          p(cls := "pl-4", "Editing Contract: ", label(existingValue.map(p => p.id))),
           form(
-            div(
-              cls := "border rounded-2xl m-4 border-purple-200",
-              div(
-                cls := "bg-purple-200 p-4 rounded-t-2xl",
-                p("STEP 1 : Basic information"),
-              ),
+            editStep(
+              "1",
+              "Basic information",
               div(
                 cls := "p-4 space-y-4",
                 div(
@@ -349,13 +356,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                 ),
               ),
             ),
+
             // Select Project Field
-            div(
-              cls := "border rounded-2xl m-4 border-purple-200",
-              div(
-                cls := "bg-purple-200 p-4 rounded-t-2xl",
-                p("STEP 1b : Select project"),
-              ),
+            editStep(
+              "1b",
+              "Select project",
               div(
                 cls := "flex p-4 space-x-4",
                 div(
@@ -382,12 +387,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               ),
             ),
             // Contract Type Field
-            div(
-              cls := "border rounded-2xl m-4 border-purple-200",
-              div(
-                cls := "bg-purple-200 p-4 rounded-t-2xl",
-                p("STEP 2 : Contract type"),
-              ),
+            editStep(
+              "2",
+              "Contract type",
               div(
                 cls := "p-4",
                 // TODO active contract checking
@@ -397,40 +399,35 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               ),
             ),
             // Contract Requirements
-            div(
-              cls := "border rounded-2xl m-4 border-purple-200",
-              div(
-                cls := "bg-purple-200 p-4 rounded-t-2xl",
-                p("STEP 3a : Contract requirements - reminder mail"),
-              ),
+            editStep(
+              "3a",
+              "Contract requirements - reminder mail",
               div(
                 cls := "p-4",
                 "Send a reminder e-mail to Hiwi",
               ),
             ),
             // Check requirements
-            div(
-              cls := "border rounded-2xl m-4 border-purple-200",
-              div(
-                cls := "bg-purple-200 p-4 rounded-t-2xl",
-                p("STEP 3 : Check requirements"),
-              ),
+            editStep(
+              "3",
+              "Check requirements",
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
               ),
             ),
-            button(
-              cls := "btn",
-              `type` := "submit",
-              idAttr := "confirmEdit",
-              "Save",
+            div(
+              cls := "pl-8 space-x-4",
+              Button(
+                ButtonStyle.LightPrimary,
+                "Save",
+                onClick.foreach(e => {
+                  e.preventDefault()
+                  createOrUpdate()
+                }),
+              ),
+              TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
             ),
-            TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
-            onSubmit.foreach(e => {
-              e.preventDefault()
-              createOrUpdate()
-            }),
           ),
         ),
       ),
