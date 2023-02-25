@@ -8,6 +8,8 @@ services:
   reform:
     build:
       dockerfile: Dockerfile-frontend
+      args:
+        VITE_ALWAYS_ONLINE_PEER_URL: $VITE_ALWAYS_ONLINE_PEER_URL
     volumes:
       - ./docker/templates:/etc/nginx/templates
     environment:
@@ -24,7 +26,7 @@ services:
       dockerfile: Dockerfile-always-online-peer
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-always-online-peer.rule=Host(`reform-always-online-peer.localhost`)"
+      - "traefik.http.routers.reform-always-online-peer.rule=Host(`${VITE_ALWAYS_ONLINE_PEER_URL}`)"
       - "traefik.http.routers.reform-always-online-peer.entrypoints=web"
     networks:
       - traefik_default
