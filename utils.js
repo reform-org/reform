@@ -27,9 +27,9 @@ export const usesTurn = async (connection) => {
 	}
 };
 
-export const downloadJson = (name, text) => {
+export const downloadFile = (name, text, type) => {
 	const elem = document.createElement("a");
-	elem.setAttribute("href", `data:text/json;charset=utf-8,${encodeURIComponent(text)}`);
+	elem.setAttribute("href", `${type};charset=utf-8,${encodeURIComponent(text)}`);
 	elem.setAttribute("download", name);
 	elem.style.display = "none";
 	document.body.appendChild(elem);
@@ -124,16 +124,16 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
 
 export const toGermanDate = (/** @type {number} */ input) => {
-	return DateTime.fromMillis(Number(input)).setLocale("de").toFormat("dd.LL.yyyy")
-}
+	return DateTime.fromMillis(Number(input)).setLocale("de").toFormat("dd.LL.yyyy");
+};
 
 export const DateTimeFromISO = (/** @type {string} */ input) => {
-	return DateTime.fromISO(input).toMillis().toString()
-}
+	return DateTime.fromISO(input).toMillis().toString();
+};
 
 export const toYYYYMMDD = (input) => {
-	return DateTime.fromMillis(Number(input)).toISODate()
-}
+	return DateTime.fromMillis(Number(input)).toISODate();
+};
 
 const formatter = new Intl.NumberFormat('de-DE', {
 	style: 'currency',
@@ -142,4 +142,4 @@ const formatter = new Intl.NumberFormat('de-DE', {
 
 export const toMoneyString = (input) => {
 	return formatter.format(input);
-}
+};

@@ -48,3 +48,8 @@ def toQueryParameterName(in: String) = {
 def remToPx(rem: Float): Float = {
   rem * "^\\d*".r.findFirstIn(window.getComputedStyle(document.documentElement).fontSize).getOrElse("16").toFloat
 }
+
+def escapeCSVString(in: String): String = {
+  if (!"""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isEmpty) s"\"$in\""
+  else in
+}
