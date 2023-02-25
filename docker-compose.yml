@@ -1,4 +1,9 @@
 version: "3.9"
+
+networks:
+  traefik_default:
+    external: true
+
 services:
   reform:
     build:
@@ -12,6 +17,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.reform.rule=Host(`reform.localhost`)"
       - "traefik.http.routers.reform.entrypoints=web"
+    networks:
+      - traefik_default
   reform-always-online-peer:
     build:
       dockerfile: Dockerfile-always-online-peer
@@ -19,6 +26,8 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-always-online-peer.rule=Host(`reform-always-online-peer.localhost`)"
       - "traefik.http.routers.reform-always-online-peer.entrypoints=web"
+    networks:
+      - traefik_default
   #coturn:
   #  image: coturn/coturn
   #  ports:
