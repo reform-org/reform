@@ -1,6 +1,5 @@
 *
-!/js/
-!/js/target/scala-3.2.2/webapp-fastopt
+!/js/src
 !/jvm/src
 !/shared/src
 !/project/build.properties

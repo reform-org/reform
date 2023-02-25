@@ -7,3 +7,4 @@ FROM eclipse-temurin:19.0.1_10-jre AS java
 WORKDIR /app
 COPY --from=sbt /app/jvm/target/scala-3.2.2/webapp_3-0.1.0-SNAPSHOT.jar /app/webapp_3-0.1.0-SNAPSHOT.jar
 CMD ["java", "-jar", "/app/webapp_3-0.1.0-SNAPSHOT.jar"]
+

@@ -19,6 +19,14 @@ services:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-always-online-peer.rule=Host(`reform-always-online-peer.localhost`)"
       - "traefik.http.routers.reform-always-online-peer.entrypoints=web"
+  #coturn:
+  #  image: coturn/coturn
+  #  ports:
+  #    - "3478:3478"
+  #    - "3478:3478/udp"
+  #    - "5349:5349"
+  #    - "5349:5349/udp"
+  #    - "49152-65535:49152-65535/udp"
   # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/#docker-compose-basic-example
   traefik:
     image: "traefik:v2.9"
@@ -34,7 +42,6 @@ services:
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
-
   whoami:
     image: "traefik/whoami"
     labels:
