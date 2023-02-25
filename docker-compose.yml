@@ -6,6 +6,7 @@ networks:
 
 volumes:
   reform_discovery:
+  reform_always_online_peer:
 
 
 services:
@@ -28,6 +29,8 @@ services:
   reform-always-online-peer:
     build:
       dockerfile: Dockerfile-always-online-peer
+    volumes:
+      - reform_always_online_peer:/app/data
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-always-online-peer.rule=Host(`${VITE_ALWAYS_ONLINE_PEER_URL}`)"
@@ -62,7 +65,7 @@ services:
       - DETECT_RELAY_IP=yes
       - DETECT_EXTERNAL_IPV6=yes
       - DETECT_RELAY_IPV6=yes
-    command: --verbose --min-port=49160 --max-port=49170 --realm=turn.localhost--no-multicast-peers --no-tls --no-dtls --use-auth-secret --static-auth-secret=${TURN_SECRET}
+    command: "--verbose --min-port=49160 --max-port=49170 --realm=selfmade4u.de --fingerprint --no-cli --no-multicast-peers --no-tls --no-dtls --use-auth-secret --static-auth-secret=${TURN_SECRET}"
     ports:
       - "3478:3478"
       - "3478:3478/udp"
