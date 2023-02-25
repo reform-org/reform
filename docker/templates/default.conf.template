@@ -1,16 +1,18 @@
 server {
-  server_name  localhost;
-  listen       80;
-         
+  listen 80 default_server;
+  listen [::]:80 default_server;
+
+  root   /app/dist/;
+
   location /static {
     expires max;
-    root   /app/dist;
+    root   /app/dist/;
     try_files /favicon.ico =404;
   }
 
   location / {
     expires epoch;
-    root   /app/dist;
+    root   /app/dist/;
     try_files /index.html =404;
   }
 }

@@ -4,7 +4,7 @@ services:
     build:
       dockerfile: Dockerfile-frontend
     volumes:
-      - ./templates:/etc/nginx/templates
+      - ./docker/templates:/etc/nginx/templates
     environment:
       - NGINX_HOST=foobar.com
       - NGINX_PORT=80
