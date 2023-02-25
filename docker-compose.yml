@@ -62,7 +62,7 @@ services:
       - DETECT_RELAY_IP=yes
       - DETECT_EXTERNAL_IPV6=yes
       - DETECT_RELAY_IPV6=yes
-    command: --min-port=49160 --max-port=49170 --realm=turn.localhost # --use-auth-secret --static-auth-secret=${TURN_SECRET}
+    command: --min-port=49160 --max-port=49170 --realm=turn.localhost --use-auth-secret --static-auth-secret=${TURN_SECRET}
     ports:
       - "3478:3478"
       - "3478:3478/udp"
