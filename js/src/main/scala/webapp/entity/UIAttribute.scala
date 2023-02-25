@@ -7,8 +7,8 @@ import rescala.default.*
 import webapp.duplicateValuesHandler
 import webapp.given
 import webapp.*
-import webapp.utils.Date
 import webapp.components.common.*
+import webapp.npm.JSUtils
 import webapp.services.RoutingService
 
 abstract class UIBasicAttribute[EntityType](
@@ -196,7 +196,7 @@ class UIDateAttribute[EntityType](
       setter = setter,
       readConverter = readConverter,
       writeConverter = writeConverter,
-      editConverter = Date.epochDayToDate(_, "yyyy-MM-dd"),
+      editConverter = JSUtils.toYYYYMMDD(_),
       label = label,
       width = None,
       isRequired = isRequired,
