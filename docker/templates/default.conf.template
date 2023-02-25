@@ -4,15 +4,13 @@ server {
 
   root   /app/dist/;
 
-  location /static {
+  location /assets {
     expires max;
-    root   /app/dist/;
-    try_files /favicon.ico =404;
+    try_files $uri =404;
   }
 
   location / {
     expires epoch;
-    root   /app/dist/;
-    try_files /index.html =404;
+    try_files $uri /index.html =404;
   }
 }
