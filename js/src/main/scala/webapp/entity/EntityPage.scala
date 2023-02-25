@@ -40,6 +40,8 @@ import webapp.npm.JSUtils.createPopper
 
 import scala.collection.mutable
 import webapp.npm.IIndexedDB
+import scala.annotation.nowarn
+import webapp.npm.JSUtils.downloadFile
 
 sealed trait EntityValue[T]
 case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
@@ -407,6 +409,7 @@ abstract class EntityPage[T <: Entity[T]](
                 .map(entityRows => entityRows.length),
               " Entities",
             ),
+            Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView)),
           ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
@@ -447,6 +450,60 @@ abstract class EntityPage[T <: Entity[T]](
         ),
       ),
     )
+  }
+
+  private def exportView = {
+    var csvHeader: Seq[String] = Seq()
+    var csvData: Seq[String] = Seq()
+
+    filter.predicate
+      .map(pred =>
+        entityRows.map(
+          _.filterSignal(_.value match {
+            case New(_)             => Signal(false)
+            case Existing(value, _) => value.signal.map(pred)
+          }),
+        ),
+      )
+      .flatten
+      .flatten
+      .map(data => {
+        data.foreach(row => {
+          row.value match {
+            case New(_) => {}
+            case Existing(value, _) =>
+              value.signal.map(value => {
+                var csvRow: Seq[String] = Seq()
+                var selectedHeaders: Seq[String] = Seq()
+                routing
+                  .getQueryParameterAsSeq("columns")
+                  .map(columns =>
+                    row.uiAttributes
+                      .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
+                      .foreach(attr => {
+                        selectedHeaders = selectedHeaders :+ attr.label
+                        attr match {
+                          case attr: UIAttribute[?, ?] => {
+                            if (value.exists) {
+                              val a = attr.getter(value)
+                              csvRow = csvRow :+ a.getAll.map(x => attr.readConverter(x)).mkString(", ")
+                            }
+                          }
+                          case _ => {}
+                        }
+                      }),
+                  ): @nowarn
+
+                if (csvHeader.size == 0) csvHeader = selectedHeaders
+                if (csvRow.size > 0)
+                  csvData = csvData :+ csvRow.map(escapeCSVString).mkString(",")
+              })
+          }
+        })
+      }): @nowarn
+
+    val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
+    downloadFile(s"$title.csv", csvString, "data:text/csv")
   }
 
   private def renderEntities = {
