@@ -34,7 +34,7 @@ import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
 import webapp.utils.Futures.*
 import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
-import webapp.npm.JSUtils.downloadJson
+import webapp.npm.JSUtils.downloadFile
 import org.scalajs.dom.HTMLInputElement
 import rescala.default.*
 
@@ -116,7 +116,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           "Export again",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
           }),
         ),
       ),
@@ -200,7 +200,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           "Export DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
             toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
@@ -234,7 +234,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           "Delete DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
             deleteDBModal.open()
 
           }),

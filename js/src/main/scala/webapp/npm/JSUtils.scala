@@ -16,8 +16,8 @@ object JSUtils {
     promise.toFuture
   }
 
-  def downloadJson(name: String, content: String): Unit = {
-    NativeImpl.downloadJson(name, content)
+  def downloadFile(name: String, content: String, tpe: String): Unit = {
+    NativeImpl.downloadFile(name, content, tpe)
   }
 
   def createPopper(trigger: String, element: String, placement: String = "bottom", sameWidth: Boolean = true): Unit = {
@@ -43,7 +43,7 @@ object JSUtils {
     def usesTurn(connection: js.Object): js.Promise[Boolean] =
       js.native
 
-    def downloadJson(name: String, content: String): Unit =
+    def downloadFile(name: String, content: String, tpe: String): Unit =
       js.native
 
     def createPopper(trigger: String, element: String, placement: String, sameWidth: Boolean): Unit =
