@@ -48,6 +48,24 @@ abstract class UIAttribute[EntityType, AttributeType](
   override def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
 }
 
+class UIReadOnlyAttribute[EntityType, T](
+    val getter: (String, EntityType) => Signal[T],
+    val readConverter: T => String,
+    override val label: String,
+    override val width: Option[String] = None,
+)(using renderMagic: Render[T])
+    extends UIBasicAttribute[EntityType](label, width) {
+  override def render(id: String, entity: EntityType): VMod = {
+    div(cls := "px-4", getter(id, entity))
+  }
+
+  override def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]]): VMod = {
+    div()
+  }
+
+  override def uiFilter: UIFilter[EntityType] = UIFilterNothing()
+}
+
 class UITextAttribute[EntityType, AttributeType](
     override val getter: EntityType => Attribute[AttributeType],
     val setter: (EntityType, Attribute[AttributeType]) => EntityType,
@@ -134,24 +152,6 @@ class UITextAttribute[EntityType, AttributeType](
 
   protected def renderConflicts(attr: Attribute[AttributeType]): VMod =
     attr.getAll.map(x => option(value := readConverter(x)))
-}
-
-class UIReadOnlyAttribute[EntityType, AttributeType](
-    getter: EntityType => Attribute[AttributeType],
-    readConverter: AttributeType => String,
-    label: String,
-)(using routing: RoutingService)
-    extends UIAttribute[EntityType, AttributeType](getter = getter, readConverter = readConverter, label = label) {
-
-  override def renderEdit(
-      formId: String,
-      editing: Var[Option[(EntityType, Var[EntityType])]],
-  ): VMod = {
-    editing.map(_.map(editing => {
-      val (startEditEntity, entityVar) = editing
-      entityVar.map(entity => getter(entity).get.map(a => div(readConverter(a))))
-    }))
-  }
 }
 
 class UINumberAttribute[EntityType, AttributeType](
