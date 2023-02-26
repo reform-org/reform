@@ -36,6 +36,8 @@ services:
   reform-always-online-peer:
     build:
       dockerfile: Dockerfile-always-online-peer
+      args:
+        VITE_ALWAYS_ONLINE_PEER_PORT: $VITE_ALWAYS_ONLINE_PEER_PORT
     volumes:
       - reform_always_online_peer:/app/data
     env_file:
