@@ -20,6 +20,9 @@ services:
       #- "--entrypoints.udp-5349.address=:5349/udp"
     ports:
       - "$VITE_SERVER_PORT:$VITE_SERVER_PORT"
+      - "$VITE_DISCOVERY_SERVER_PORT:$VITE_DISCOVERY_SERVER_PORT"
+      - "$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT:$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
+      - "$VITE_ALWAYS_ONLINE_PEER_PORT:$VITE_ALWAYS_ONLINE_PEER_PORT"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
