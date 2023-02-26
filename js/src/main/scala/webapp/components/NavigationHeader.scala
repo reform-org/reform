@@ -45,7 +45,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
         icons.Expand(cls := "w-4 h-4"),
       ),
       ul(
-        cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10]",
+        cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10] dark:bg-gray-700",
         li(
           navigationLink(PaymentLevelsPage(), "Payment levels"),
         ),
@@ -92,9 +92,9 @@ def navigationHeader(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "drawer-content flex flex-col page-scroll-container overflow-x-hidden dark:bg-gray-800",
+      cls := "drawer-content flex flex-col page-scroll-container overflow-x-hidden dark:bg-gray-600 dark:text-gray-200",
       div(
-        cls := "navbar bg-base-100 shadow",
+        cls := "navbar bg-base-100 shadow dark:bg-gray-700",
         div(
           cls := "flex-none",
           div(
@@ -109,7 +109,9 @@ def navigationHeader(
                 dropdownOpen.transform(!_)
               }),
             ),
-            navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+            navigationMenu(
+              "menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 dark:bg-gray-700",
+            ),
           ),
         ),
         div(
@@ -145,7 +147,7 @@ def navigationHeader(
           ),
         ),
       ),
-      content,
+      div(cls := "p-4", content),
     ),
     div(
       cls := "drawer-side",

@@ -27,7 +27,13 @@ enum ToastType(
     val icon: Option[VNode],
     val copyable: Boolean = false,
 ) {
-  case Default extends ToastType("bg-white", "bg-slate-100", "", Some(icons.Info(cls := "w-6 h-6 text-slate-600")))
+  case Default
+      extends ToastType(
+        "bg-white dark:bg-gray-600 dark:text-gray-200",
+        "bg-slate-100 dark:bg-gray-700",
+        "",
+        Some(icons.Info(cls := "w-6 h-6 text-slate-600 dark:text-gray-200")),
+      )
   case Success
       extends ToastType(
         "bg-green-100",

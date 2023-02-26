@@ -29,16 +29,24 @@ tr.odd\:bg-slate-50:nth-child(odd) td {
     background-color: #f8fafc;
 }
 
+.dark tr.odd\:dark\:bg-gray-600:nth-child(odd) td {
+    background-color: #394152;
+}
+
 tfoot td {
     border-top-width: 1px;
     border-bottom-width: 1px;
+}
+
+.dark .checkbox {
+    --chkbg: 219 13% 35% !important;
 }
 
 /* ===== Scrollbar CSS ===== */
 /* Firefox */
 .custom-scrollbar {
     scrollbar-width: auto;
-    scrollbar-color: #e3e8f0 #ffffff;
+    scrollbar-color: #e3e8f0 rgba(0, 0, 0, 0);
 }
 
 /* Chrome, Edge, and Safari */
@@ -47,14 +55,23 @@ tfoot td {
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-    background: #ffffff;
+    background: rgba(0, 0, 0, 0);
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
     background-color: #e3e8f0;
     border-radius: 10px;
-    border: 3px solid #ffffff;
+    border: 3px solid rgba(0, 0, 0, 0);
 }
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #3a4153;
+}
+
+.dark .custom-scrollbar {
+    scrollbar-color: #3a4153 rgba(0, 0, 0, 0);
+}
+
 
 /* https://github.com/saadeghi/daisyui/issues/872 */
 .dropdown.dropdown-open .dropdown-content,
