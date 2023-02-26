@@ -6,7 +6,7 @@ import scala.scalajs.js
 import rescala.default.*
 import webapp.npm.JSUtils.createPopper
 import webapp.given
-import webapp.components.Icons
+import webapp.components.icons
 import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 
@@ -69,7 +69,7 @@ def Select(
       label(
         tabIndex := 0,
         cls := "grow relative pr-7 h-full",
-        div(cls := "absolute right-2 top-1/2 -translate-y-1/2", Icons.notch("w-4 h-4")),
+        div(cls := "absolute right-2 top-1/2 -translate-y-1/2", icons.Notch(cls := "w-4 h-4")),
       ),
     ),
     div(
