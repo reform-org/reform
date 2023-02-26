@@ -77,7 +77,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   val connections: Signal[Seq[RemoteRef]] = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
 
-  registry.connect(WS(s"ws://${Globals.alwaysOnlinePeerURL}/registry/")): @nowarn
+  registry.connect(WS(s"ws://${Globals.VITE_ALWAYS_ONLINE_PEER_URL}/registry/")): @nowarn
 
   def registerConnection(
       connector: Connector[Connections.Protocol],

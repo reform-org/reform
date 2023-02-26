@@ -194,7 +194,7 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
       )
       .toFuture
 
-  var requestedPersistentStorage = Globals.isSelenium
+  var requestedPersistentStorage = Globals.VITE_SELENIUM
 
   def requestPersistentStorage: Unit = {
     if (!requestedPersistentStorage) {
