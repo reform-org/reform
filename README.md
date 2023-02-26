@@ -88,9 +88,9 @@ sbt webappJS/test
 
 Using docker-compose (or e.g. podman):
 ```
-docker compose --env-file .env-test --project-name traefik --file docker-compose-local-traefik.yml up --build --remove-orphans
-docker compose --env-file .env-test --project-name reform --file docker-compose.yml up --build --remove-orphans
-docker compose --env-file .env-test --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
+docker compose --env-file test.env --project-name traefik --file docker-compose-local-traefik.yml up --build --remove-orphans
+docker compose --env-file test.env --project-name reform --file docker-compose.yml up --build --remove-orphans
+docker compose --env-file test.env --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
 ```
 
 The application should now be available on http://reform.localhost

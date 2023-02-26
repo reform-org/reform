@@ -14,18 +14,23 @@ services:
     build:
       dockerfile: Dockerfile-frontend
       args:
-        VITE_ALWAYS_ONLINE_PEER_URL: "${VITE_ALWAYS_ONLINE_PEER_URL}"
+        VITE_ALWAYS_ONLINE_PEER_PROTOCOL: $VITE_ALWAYS_ONLINE_PEER_PROTOCOL
+        VITE_ALWAYS_ONLINE_PEER_HOST: $VITE_ALWAYS_ONLINE_PEER_HOST
+        VITE_ALWAYS_ONLINE_PEER_PORT: $VITE_ALWAYS_ONLINE_PEER_PORT
         VITE_DISCOVERY_SERVER_PROTOCOL: $VITE_DISCOVERY_SERVER_PROTOCOL
-        VITE_DISCOVERY_SERVER_HOST: "${VITE_DISCOVERY_SERVER_HOST}"
+        VITE_DISCOVERY_SERVER_HOST: $VITE_DISCOVERY_SERVER_HOST
         VITE_DISCOVERY_SERVER_PORT: $VITE_DISCOVERY_SERVER_PORT
-        VITE_DISCOVERY_SERVER_WEBSOCKET_URL: "${VITE_DISCOVERY_SERVER_WEBSOCKET_URL}"
-        VITE_TURN_SERVER: "${VITE_TURN_SERVER}"
+        VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL: $VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL
+        VITE_DISCOVERY_SERVER_WEBSOCKET_HOST: $VITE_DISCOVERY_SERVER_WEBSOCKET_HOST
+        VITE_DISCOVERY_SERVER_WEBSOCKET_PORT: $VITE_DISCOVERY_SERVER_WEBSOCKET_PORT
+        VITE_TURN_SERVER_HOST: $VITE_TURN_SERVER_HOST
+        VITE_TURN_SERVER_PORT: $VITE_TURN_SERVER_PORT
     volumes:
       - ./docker/templates:/etc/nginx/templates
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform.rule=Host(`reform.localhost`)"
-      - "traefik.http.routers.reform.entrypoints=web"
+      - "traefik.http.routers.reform.rule=Host(`$VITE_SERVER_HOST`)"
+      - "traefik.http.routers.reform.entrypoints=web-$VITE_SERVER_PORT"
     networks:
       - traefik_default
   reform-always-online-peer:
@@ -35,8 +40,8 @@ services:
       - reform_always_online_peer:/app/data
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-always-online-peer.rule=Host(`${VITE_ALWAYS_ONLINE_PEER_URL}`)"
-      - "traefik.http.routers.reform-always-online-peer.entrypoints=web"
+      - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`)"
+      - "traefik.http.routers.reform-always-online-peer.entrypoints=web-$VITE_ALWAYS_ONLINE_PEER_PORT"
     networks:
       - traefik_default
   reform-discovery:
@@ -45,17 +50,17 @@ services:
     volumes:
       - reform_discovery:/app/data
     env_file:
-      - .env-test
+      - test.env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-discovery.rule=Host(`discovery.localhost`)"
-      - "traefik.http.routers.reform-discovery.entrypoints=web"
+      - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`)"
+      - "traefik.http.routers.reform-discovery.entrypoints=web-$VITE_DISCOVERY_SERVER_PORT"
       - "traefik.http.routers.reform-discovery.service=reform-discovery"
-      - "traefik.http.services.reform-discovery.loadbalancer.server.port=3000"
-      - "traefik.http.routers.reform-discovery-ws.rule=Host(`ws.discovery.localhost`)"
-      - "traefik.http.routers.reform-discovery-ws.entrypoints=web"
+      - "traefik.http.services.reform-discovery.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_PORT"
+      - "traefik.http.routers.reform-discovery-ws.rule=Host(`$VITE_DISCOVERY_SERVER_WEBSOCKET_HOST`)"
+      - "traefik.http.routers.reform-discovery-ws.entrypoints=web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
       - "traefik.http.routers.reform-discovery-ws.service=reform-discovery-ws"
-      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=7071"
+      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
     networks:
       - traefik_default
   # https://doc.traefik.io/traefik/routing/providers/docker/
