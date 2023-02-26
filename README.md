@@ -93,7 +93,7 @@ docker compose --env-file .env-test --project-name reform --file docker-compose.
 docker compose --env-file .env-test --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
 ```
 
-The application should no be available on http://reform.localhost
+The application should now be available on http://reform.localhost
 
 ```bash
 # netlify
