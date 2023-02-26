@@ -34,7 +34,7 @@ import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
 import webapp.utils.Futures.*
 import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
-import webapp.npm.JSUtils.downloadJson
+import webapp.npm.JSUtils.downloadFile
 import org.scalajs.dom.HTMLInputElement
 import rescala.default.*
 
@@ -59,25 +59,28 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           ButtonStyle.Primary,
           () => {
             document.getElementById("loadPDF").classList.add("loading")
-            PDF
-              .fill(
-                "contract_unlocked.pdf",
-                "arbeitsvertrag2.pdf",
-                Seq(
-                  PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
-                  PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
-                  PDFTextField("Vertragsbeginn", "25.01.2023"),
-                  PDFTextField("Vertragsende", "25.01.2024"),
-                  PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
-                  PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                  PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
-                  PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
-                ),
-              )
-              .andThen(s => {
-                console.log(s)
-                document.getElementById("loadPDF").classList.remove("loading")
-              })
+            js.dynamicImport {
+              PDF
+                .fill(
+                  "contract_unlocked.pdf",
+                  "arbeitsvertrag2.pdf",
+                  Seq(
+                    PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
+                    PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
+                    PDFTextField("Vertragsbeginn", "25.01.2023"),
+                    PDFTextField("Vertragsende", "25.01.2024"),
+                    PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
+                    PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                    PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
+                    PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
+                  ),
+                )
+                .andThen(s => {
+                  console.log(s)
+                  document.getElementById("loadPDF").classList.remove("loading")
+                })
+                .toastOnError()
+            }.toFuture
               .toastOnError()
           },
         ),
@@ -113,7 +116,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           "Export again",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
           }),
         ),
       ),
@@ -209,7 +212,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           "Export DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
             toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
@@ -243,7 +246,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           "Delete DB",
           onClick.foreach(_ => {
             val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
             deleteDBModal.open()
 
           }),

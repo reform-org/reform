@@ -34,12 +34,14 @@ import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
 import webapp.components.common.*
-import webapp.components.Icons
+import webapp.components.icons
 import webapp.given_ExecutionContext
 import webapp.npm.JSUtils.createPopper
 
 import scala.collection.mutable
 import webapp.npm.IIndexedDB
+import scala.annotation.nowarn
+import webapp.npm.JSUtils.downloadFile
 
 sealed trait EntityValue[T]
 case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
@@ -174,7 +176,7 @@ class EntityRow[T <: Entity[T]](
             val res = {
               IconButton(
                 ButtonStyle.LightError,
-                Icons.close("fill-red-600 w-4 h-4"),
+                icons.Close(cls := "text-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-left",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
@@ -238,7 +240,7 @@ class EntityRow[T <: Entity[T]](
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
               IconButton(
                 ButtonStyle.LightError,
-                Icons.close("fill-red-600 w-4 h-4"),
+                icons.Close(cls := "text-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-top",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
@@ -376,7 +378,7 @@ abstract class EntityPage[T <: Entity[T]](
                 "Filter",
                 idAttr := "filter-btn",
                 div(cls := "ml-3 badge", "0"),
-                Icons.filter("ml-1 w-6 h-6", "#49556a"),
+                icons.Filter(cls := "text-slate-600 ml-1 w-6 h-6"),
                 cls := "!mt-0",
                 onClick.foreach(e => {
                   filterDropdownOpen.transform(!_)
@@ -407,6 +409,7 @@ abstract class EntityPage[T <: Entity[T]](
                 .map(entityRows => entityRows.length),
               " Entities",
             ),
+            Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView)),
           ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
@@ -447,6 +450,60 @@ abstract class EntityPage[T <: Entity[T]](
         ),
       ),
     )
+  }
+
+  private def exportView = {
+    var csvHeader: Seq[String] = Seq()
+    var csvData: Seq[String] = Seq()
+
+    filter.predicate
+      .map(pred =>
+        entityRows.map(
+          _.filterSignal(_.value match {
+            case New(_)             => Signal(false)
+            case Existing(value, _) => value.signal.map(pred)
+          }),
+        ),
+      )
+      .flatten
+      .flatten
+      .map(data => {
+        data.foreach(row => {
+          row.value match {
+            case New(_) => {}
+            case Existing(value, _) =>
+              value.signal.map(value => {
+                var csvRow: Seq[String] = Seq()
+                var selectedHeaders: Seq[String] = Seq()
+                routing
+                  .getQueryParameterAsSeq("columns")
+                  .map(columns =>
+                    row.uiAttributes
+                      .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
+                      .foreach(attr => {
+                        selectedHeaders = selectedHeaders :+ attr.label
+                        attr match {
+                          case attr: UIAttribute[?, ?] => {
+                            if (value.exists) {
+                              val a = attr.getter(value)
+                              csvRow = csvRow :+ a.getAll.map(x => attr.readConverter(x)).mkString(", ")
+                            }
+                          }
+                          case _ => {}
+                        }
+                      }),
+                  ): @nowarn
+
+                if (csvHeader.size == 0) csvHeader = selectedHeaders
+                if (csvRow.size > 0)
+                  csvData = csvData :+ csvRow.map(escapeCSVString).mkString(",")
+              })
+          }
+        })
+      }): @nowarn
+
+    val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
+    downloadFile(s"$title.csv", csvString, "data:text/csv")
   }
 
   private def renderEntities = {
