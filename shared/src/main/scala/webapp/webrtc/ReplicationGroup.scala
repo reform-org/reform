@@ -88,7 +88,6 @@ class ReplicationGroup[A](name: String)(using
   private val binding = Binding[DeltaFor[A] => Future[A]](name)
 
   registry.bindSbj(binding)((remoteRef: RemoteRef, payload: DeltaFor[A]) => {
-    println(payload.name)
     if (payload.name != "ids") {
       indexeddb.requestPersistentStorage
     }

@@ -33,7 +33,6 @@ import scala.scalajs.js
 
 object Main {
   def main(): Unit = {
-    js.`import`("../../../../index.css").toFuture.toastOnError()
     given toaster: Toaster = Toaster()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()

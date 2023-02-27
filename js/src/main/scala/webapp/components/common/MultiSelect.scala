@@ -8,9 +8,11 @@ import webapp.npm.JSUtils.createPopper
 import webapp.given
 import org.scalajs.dom.HTMLInputElement
 import webapp.components.Icons
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.{console, document, window}
 import org.scalajs.dom.HTMLElement
 import scala.annotation.nowarn
+import org.scalajs.dom.ResizeObserver
+import webapp.remToPx
 
 class MultiSelectOption(
     val id: String,
@@ -30,6 +32,7 @@ def MultiSelect(
     emptyState: VMod = span("Nothing found..."),
     props: VMod*,
 ): VNode = {
+  var visibleItems = Var(showItems)
   val dropdownOpen = Var(false)
 
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
@@ -60,9 +63,20 @@ def MultiSelect(
 
   }
 
+  val resizeObserver = ResizeObserver((entries, _) => {
+    val maxWidth = document.querySelector(s"#$id").getBoundingClientRect().width - remToPx(2.25)
+    entries.foreach(entry => {
+      if (entry.contentRect.width > maxWidth) {
+        visibleItems.transform(_ - 1)
+      }
+    })
+  })
+
   value.observe(v => updateSelectAll(v)): @nowarn
 
   div(
+    onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
+    onDomUnmount.foreach(element => resizeObserver.unobserve(element.querySelector(".multiselect-value-wrapper"))),
     cls := "multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
     cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
@@ -73,43 +87,47 @@ def MultiSelect(
         dropdownOpen.transform(!_)
       }),
       div(
-        cls := "flex flex-row gap-2",
+        cls := "flex flex-row gap-2 multiselect-value-wrapper",
         options.map(o =>
           value
             .map(s =>
-              o.filter(v => s.contains(v.id))
-                .slice(0, showItems)
-                .map(v =>
-                  div(
-                    cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center",
-                    v.name,
+              visibleItems.map(visibleItems =>
+                o.filter(v => s.contains(v.id))
+                  .slice(0, visibleItems)
+                  .map(v =>
                     div(
-                      Icons.close("w-4 h-4", "#64748b"),
-                      cls := "cursor-pointer",
-                      onClick.foreach(_ => {
-                        onInput(
-                          document
-                            .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                            .map(element =>
-                              element
-                                .asInstanceOf[HTMLElement]
-                                .dataset
-                                .get("id")
-                                .getOrElse(""),
-                            )
-                            .filter(id => id != v.id)
-                            .asInstanceOf[Seq[String]],
-                        )
-                      }),
+                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap",
+                      v.name,
+                      div(
+                        Icons.close("w-4 h-4", "#64748b"),
+                        cls := "cursor-pointer",
+                        onClick.foreach(_ => {
+                          onInput(
+                            document
+                              .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
+                              .map(element =>
+                                element
+                                  .asInstanceOf[HTMLElement]
+                                  .dataset
+                                  .get("id")
+                                  .getOrElse(""),
+                              )
+                              .filter(id => id != v.id)
+                              .asInstanceOf[Seq[String]],
+                          )
+                        }),
+                      ),
                     ),
                   ),
-                ),
+              ),
             ),
         ),
         value.map(s => {
-          if (s.size > showItems) {
-            Some(div(cls := "flex items-center justify-center text-slate-400", s"+${s.size - showItems}"))
-          } else None
+          visibleItems.map(visibleItems => {
+            if (s.size > visibleItems) {
+              Some(div(cls := "flex items-center justify-center text-slate-400", s"+${s.size - visibleItems}"))
+            } else None
+          })
         }),
         value.map(s => {
           if (s.size == 0) {
