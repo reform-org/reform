@@ -28,7 +28,12 @@ case class PaymentLevelsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
-) extends EntityPage[PaymentLevel]("Payment Levels", repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
+) extends EntityPage[PaymentLevel](
+      "Payment Levels",
+      repositories.paymentLevels,
+      Seq(title, pdfCheckboxName),
+      DefaultEntityRow(),
+    ) {}
 
 object PaymentLevelsPage {
   private def title(using routing: RoutingService) = UIAttributeBuilder.string
@@ -37,5 +42,13 @@ object PaymentLevelsPage {
     .bindAsText[PaymentLevel](
       _.title,
       (p, a) => p.copy(title = a),
+    )
+
+  private def pdfCheckboxName(using routing: RoutingService) = UIAttributeBuilder.string
+    .withLabel("PDF Checkbox Name")
+    .require
+    .bindAsText[PaymentLevel](
+      _.pdfCheckboxName,
+      (p, a) => p.copy(pdfCheckboxName = a),
     )
 }
