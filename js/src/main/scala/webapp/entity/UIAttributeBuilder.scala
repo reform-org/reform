@@ -77,8 +77,8 @@ object UIAttributeBuilder {
 
   def boolean(using routing: RoutingService): UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
 
-  def money(using routing: RoutingService): UIAttributeBuilder[Double] =
-    UIAttributeBuilder[Double](JSUtils.toMoneyString(_), _.toDouble, editConverter = _.toString)
+  def money(using routing: RoutingService): UIAttributeBuilder[BigDecimal] =
+    UIAttributeBuilder[BigDecimal](JSUtils.toMoneyString(_), BigDecimal(_), editConverter = _.toString)
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 

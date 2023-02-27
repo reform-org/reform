@@ -5,9 +5,11 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.CodecMakerConfig
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import kofre.base.*
 import webapp.BasicCodecs.*
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 
 case class SalaryChange(
-    value: Attribute[Double] = Attribute.empty,
+    value: Attribute[BigDecimal] = Attribute.empty,
     paymentLevel: Attribute[String] = Attribute.empty,
     fromDate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
@@ -29,6 +31,14 @@ case class SalaryChange(
 
 object SalaryChange {
   val empty: SalaryChange = SalaryChange()
+
+  implicit val bigDecimalCodec: JsonValueCodec[BigDecimal] = new JsonValueCodec[BigDecimal] {
+    def decodeValue(in: JsonReader, default: BigDecimal): BigDecimal = in.readStringAsBigDecimal(0)
+
+    def encodeValue(x: BigDecimal, out: JsonWriter): Unit = out.writeVal(x)
+
+    def nullValue: BigDecimal = ???
+  }
 
   implicit val codec: JsonValueCodec[SalaryChange] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 }
