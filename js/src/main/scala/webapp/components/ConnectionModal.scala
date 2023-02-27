@@ -22,18 +22,17 @@ import webapp.components.common.*
 class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
   val offlineBanner = {
     div(
-      cls := "bg-amber-100 flex flex-col	items-center	",
-      Icons.reload(
-        "h-8 w-8 animate-reload",
-        "#D97706",
-        e => {
+      cls := "bg-amber-100 flex flex-col items-center",
+      icons.Reload(
+        cls := "h-8 w-8 animate-reload text-amber-600",
+        onClick.foreach(e => {
           e.target.classList.add("animate-spin")
           discovery
             .connect(true)
             .onComplete(_ => {
               window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
             })
-        },
+        }),
       ),
       span(
         cls := "text-amber-600 font-semibold text-center",
@@ -69,7 +68,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
         if (connections.size == 0) {
           emptyState = div(
             cls := "flex flex-col items-center mt-4 mb-4",
-            Icons.ghost("w-14 h-14 mb-2"),
+            icons.Ghost(cls := "w-14 h-14 mb-2"),
             i("It's quiet for now..."),
           )
         }

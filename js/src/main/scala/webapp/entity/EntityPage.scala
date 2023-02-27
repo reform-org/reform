@@ -34,7 +34,7 @@ import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
 import webapp.utils.Seqnal.*
 import webapp.components.common.*
-import webapp.components.Icons
+import webapp.components.icons
 import webapp.given_ExecutionContext
 import webapp.npm.JSUtils.createPopper
 
@@ -168,7 +168,7 @@ class EntityRow[T <: Entity[T]](
             val res = {
               IconButton(
                 ButtonStyle.LightError,
-                Icons.close("fill-red-600 w-4 h-4"),
+                icons.Close(cls := "text-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-left",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
@@ -226,7 +226,7 @@ class EntityRow[T <: Entity[T]](
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
               IconButton(
                 ButtonStyle.LightError,
-                Icons.close("fill-red-600 w-4 h-4"),
+                icons.Close(cls := "text-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-top",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
@@ -364,7 +364,7 @@ abstract class EntityPage[T <: Entity[T]](
                 "Filter",
                 idAttr := "filter-btn",
                 div(cls := "ml-3 badge", "0"),
-                Icons.filter("ml-1 w-6 h-6", "#49556a"),
+                icons.Filter(cls := "text-slate-600 ml-1 w-6 h-6"),
                 cls := "!mt-0",
                 onClick.foreach(e => {
                   filterDropdownOpen.transform(!_)

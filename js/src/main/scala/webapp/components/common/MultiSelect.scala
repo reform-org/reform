@@ -7,8 +7,8 @@ import rescala.default.*
 import webapp.npm.JSUtils.createPopper
 import webapp.given
 import org.scalajs.dom.HTMLInputElement
-import webapp.components.Icons
-import org.scalajs.dom.{console, document}
+import webapp.components.icons
+import org.scalajs.dom.{console, document, window}
 import org.scalajs.dom.HTMLElement
 import scala.annotation.nowarn
 
@@ -84,23 +84,27 @@ def MultiSelect(
                     cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center",
                     v.name,
                     div(
-                      Icons.close("w-4 h-4", "#64748b"),
-                      cls := "cursor-pointer",
-                      onClick.foreach(_ => {
-                        onInput(
-                          document
-                            .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                            .map(element =>
-                              element
-                                .asInstanceOf[HTMLElement]
-                                .dataset
-                                .get("id")
-                                .getOrElse(""),
-                            )
-                            .filter(id => id != v.id)
-                            .asInstanceOf[Seq[String]],
-                        )
-                      }),
+                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap",
+                      v.name,
+                      div(
+                        icons.Close(cls := "w-4 h-4 text-slate-600"),
+                        cls := "cursor-pointer",
+                        onClick.foreach(_ => {
+                          onInput(
+                            document
+                              .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
+                              .map(element =>
+                                element
+                                  .asInstanceOf[HTMLElement]
+                                  .dataset
+                                  .get("id")
+                                  .getOrElse(""),
+                              )
+                              .filter(id => id != v.id)
+                              .asInstanceOf[Seq[String]],
+                          )
+                        }),
+                      ),
                     ),
                   ),
                 ),
@@ -120,7 +124,7 @@ def MultiSelect(
       label(
         tabIndex := 0,
         cls := "grow relative pr-7 h-full",
-        div(cls := "absolute right-2 top-1/2 -translate-y-1/2", Icons.notch("w-4 h-4")),
+        div(cls := "absolute right-2 top-1/2 -translate-y-1/2", icons.Notch(cls := "w-4 h-4")),
       ),
     ),
     div(

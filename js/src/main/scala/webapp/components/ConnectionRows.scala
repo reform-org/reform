@@ -56,7 +56,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         if (own.uuid != uuid)
           Some(
             div(
-              Icons.forbidden("fill-red-600 w-3 h-3"),
+              icons.Forbidden(cls := "text-red-600 w-3 h-3"),
               cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
               data.tip := "Remove from Whitelist",
               onClick.foreach(_ => {
@@ -66,7 +66,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
           )
         else None,
         div(
-          Icons.close("fill-red-600 w-4 h-4"),
+          icons.Close(cls := "text-red-600 w-4 h-4"),
           cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
           data.tip := "Close Connection",
           onClick.foreach(_ => {
@@ -102,7 +102,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         ),
       ),
       div(
-        Icons.close("fill-red-600 w-4 h-4"),
+        icons.Close(cls := "text-red-600 w-4 h-4"),
         cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
         data.tip := "Close Connection",
         onClick.foreach(_ => ref.disconnect()),
@@ -139,7 +139,7 @@ def availableConnectionRow(
       ),
     ),
     div(
-      Icons.check("w-4 h-4", "stroke-green-600"),
+      icons.Check(cls := "w-4 h-4 text-green-600"),
       cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
       data.tip := "Add to Whitelist",
       onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
