@@ -1,0 +1,16 @@
+server {
+  listen 80 default_server;
+  listen [::]:80 default_server;
+
+  root   /app/dist/;
+
+  location /assets {
+    expires max;
+    try_files $uri =404;
+  }
+
+  location / {
+    expires epoch;
+    try_files $uri /index.html =404;
+  }
+}

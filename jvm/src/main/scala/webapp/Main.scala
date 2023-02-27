@@ -14,12 +14,13 @@ import webapp.npm.SqliteDB
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  connector.setPort(1334)
+  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").get.toInt
+  connector.setPort(port)
   val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
   server.setHandler(context)
   server.addConnector(connector)
   registry.listen(WS(context, "/registry/*")).get
   server.start()
-  println("listening on ws://localhost:1334/registry/")
+  println(s"listening on ws://localhost:$port/registry/")
   server.join()
 }
