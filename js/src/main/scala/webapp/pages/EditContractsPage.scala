@@ -33,7 +33,7 @@ import webapp.utils.Futures.*
 import webapp.services.ToastType
 import scala.scalajs.js.Date
 import webapp.npm.IIndexedDB
-import webapp.components.Icons
+import webapp.components.icons
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -294,7 +294,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                           Some(
                             dsl.p(
                               cls := "bg-yellow-100 text-yellow-600 flex flex-row",
-                              Icons.warningTriangle("w-6 h-6", "#ca8a04"),
+                              icons.WarningTriangle(cls := "w-6 h-6"),
                               "Start date is in the past",
                             ),
                           )
@@ -328,7 +328,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                           Some(
                             dsl.p(
                               cls := "bg-yellow-100 text-yellow-600 flex flex-row",
-                              Icons.warningTriangle("w-6 h-6", "#ca8a04"),
+                              icons.WarningTriangle(cls := "w-6 h-6"),
                               "End date is in the past or before start date",
                             ),
                           )
