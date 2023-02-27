@@ -41,8 +41,6 @@ object Main {
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
 
-    useTheme
-
     indexedDb
       .update[String]("test", _ => "test")
       .onComplete(value => {

@@ -137,7 +137,6 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
 
     val multiSelectValue: Var[Seq[String]] = Var(Seq())
     val selectValue: Var[String] = Var("")
-    val theme: Var[String] = Var(Settings.get[String]("theme").getOrElse(""))
 
     navigationHeader(
       div(
@@ -152,9 +151,8 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             ),
           ),
           (value) => {
+            window.localStorage.setItem("theme", value)
             theme.set(value)
-            Settings.set("theme", value)
-            useTheme
           },
           theme,
           false,
