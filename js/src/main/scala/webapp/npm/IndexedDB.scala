@@ -17,6 +17,7 @@ import webapp.utils.Futures.*
 import webapp.services.Toaster
 import webapp.services.ToastMode
 import webapp.services.ToastType
+import webapp.Globals
 
 // manually extracted from scalablytyped
 
@@ -193,7 +194,7 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
       )
       .toFuture
 
-  var requestedPersistentStorage = JSUtils.isSelenium
+  var requestedPersistentStorage = Globals.VITE_SELENIUM
 
   def requestPersistentStorage: Unit = {
     if (!requestedPersistentStorage) {
