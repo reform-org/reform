@@ -38,6 +38,7 @@ import scala.scalajs.js
 import org.scalajs.dom.{console, document}
 import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
 import webapp.npm.JSUtils.toGermanDate
+import scala.annotation.nowarn
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -509,7 +510,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                           }
                         })
                       }
-                    }
+                    }: @nowarn
                   }),
                 ),
               ),
