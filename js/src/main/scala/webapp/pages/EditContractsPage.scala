@@ -448,74 +448,83 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                             val hiwis = repositories.hiwis.all.now
                             val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
                             hiwi match {
-                              case None => { /* no hiwi with id*/ }
-                              case Some(hiwi) => {
-                                hiwi.signal.map(hiwi => {
-                                  contract.contractAssociatedPaymentLevel.get match {
-                                    case None => { /* no hiwi assigned */ }
-                                    case Some(paymentLevelId) => {
-                                      repositories.paymentLevels.all.map(paymentLevels => {
-                                        val paymentLevel =
-                                          paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
-                                        paymentLevel match {
-                                          case None => { /* no paymentlevel with id */ }
-                                          case Some(paymentLevel) => {
-                                            paymentLevel.signal.map(paymentLevel => {
-                                              js.dynamicImport {
-                                                PDF
-                                                  .fill(
-                                                    "/contract_unlocked.pdf",
-                                                    "arbeitsvertrag.pdf",
-                                                    Seq(
-                                                      PDFTextField(
-                                                        "Vorname Nachname (Studentische Hilfskraft)",
-                                                        s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
-                                                      ),
-                                                      PDFTextField(
-                                                        "Geburtsdatum (Studentische Hilfskraft)",
-                                                        s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
-                                                      ),
-                                                      PDFTextField(
-                                                        "Vertragsbeginn",
-                                                        toGermanDate(contract.contractStartDate.get.getOrElse(0)),
-                                                      ),
-                                                      PDFTextField(
-                                                        "Vertragsende",
-                                                        toGermanDate(contract.contractEndDate.get.getOrElse(0)),
-                                                      ),
-                                                      PDFTextField(
-                                                        "Arbeitszeit Kästchen 1",
-                                                        contract.contractHoursPerMonth.get.getOrElse(0).toString(),
-                                                      ),
-                                                      PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                                                      PDFCheckboxField(
-                                                        paymentLevel.pdfCheckboxName.get.getOrElse(""),
-                                                        true,
-                                                      ),
-                                                    ),
-                                                  )
-                                                  .andThen(s => {
-                                                    console.log(s)
-                                                    document.getElementById("loadPDF").classList.remove("loading")
-                                                  })
-                                                  .toastOnError()
-                                              }.toFuture
-                                                .toastOnError()
+                              case None => {
+                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
+                              }
+                              case Some(_hiwi) => {
+                                val hiwi = _hiwi.signal.now
+                                contract.contractAssociatedPaymentLevel.get match {
+                                  case None => {
+                                    toaster.make(
+                                      "No payment level associated with contract!",
+                                      ToastMode.Long,
+                                      ToastType.Error,
+                                    )
+                                  }
+                                  case Some(paymentLevelId) => {
+                                    val paymentLevels = repositories.paymentLevels.all.now
+                                    val paymentLevel =
+                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
+                                    paymentLevel match {
+                                      case None => {
+                                        toaster.make(
+                                          "This payment level does not seem to exist!",
+                                          ToastMode.Long,
+                                          ToastType.Error,
+                                        )
+                                      }
+                                      case Some(_paymentLevel) => {
+                                        val paymentLevel = _paymentLevel.signal.now
+                                        js.dynamicImport {
+                                          PDF
+                                            .fill(
+                                              "/contract_unlocked.pdf",
+                                              "arbeitsvertrag.pdf",
+                                              Seq(
+                                                PDFTextField(
+                                                  "Vorname Nachname (Studentische Hilfskraft)",
+                                                  s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
+                                                ),
+                                                PDFTextField(
+                                                  "Geburtsdatum (Studentische Hilfskraft)",
+                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                                ),
+                                                PDFTextField(
+                                                  "Vertragsbeginn",
+                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                                ),
+                                                PDFTextField(
+                                                  "Vertragsende",
+                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                                ),
+                                                PDFTextField(
+                                                  "Arbeitszeit Kästchen 1",
+                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString(),
+                                                ),
+                                                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                                                PDFCheckboxField(
+                                                  paymentLevel.pdfCheckboxName.get.getOrElse(""),
+                                                  true,
+                                                ),
+                                              ),
+                                            )
+                                            .andThen(s => {
+                                              console.log(s)
+                                              document.getElementById("loadPDF").classList.remove("loading")
                                             })
-                                          }
-                                        }
-                                      })
+                                            .toastOnError()
+                                        }.toFuture
+                                          .toastOnError()
+                                      }
                                     }
                                   }
-                                })
+                                }
                               }
                             }
-
                           }
                         }
-
                       }
-                    }: @nowarn
+                    }
                   }),
                 ),
               ),
