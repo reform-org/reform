@@ -42,7 +42,7 @@ def Select(
   }
 
   div(
-    cls := "select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
+    cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
     cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
     idAttr := id,
@@ -63,7 +63,7 @@ def Select(
       ),
       value.map(s => {
         if (s.size == 0) {
-          Some(div(cls := "flex items-center justify-center text-slate-400", "Select..."))
+          Some(div(cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."))
         } else None
       }),
       label(
@@ -73,11 +73,11 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+      cls := "select-dropdown-list-wrapper dark:bg-gray-800 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(
-            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300",
+            cls := "select-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300 dark:bg-gray-700 dark:border-gray-600",
             placeholder := "Search Options...",
             outwatch.dsl.onInput.value --> search,
             outwatch.dsl.value <-- search,
@@ -93,7 +93,7 @@ def Select(
                 if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
                   Some(
                     label(
-                      cls := "block w-full hover:bg-slate-50",
+                      cls := "block w-full hover:bg-slate-50 dark:hover:bg-gray-700",
                       input(
                         tpe := "radio",
                         cls := "hidden peer",

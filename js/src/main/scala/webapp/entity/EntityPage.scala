@@ -118,11 +118,11 @@ class EntityRow[T <: Entity[T]](
           uiAttributes
             .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
             .map(ui => {
-              td(cls := "p-0", ui.renderEdit(id, editingValue))
+              td(cls := "p-0 border-none", ui.renderEdit(id, editingValue))
             }),
         ),
       td(
-        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
+        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-700 border-x border-b border-gray-300 dark:border-gray-700 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -214,7 +214,7 @@ class EntityRow[T <: Entity[T]](
       if (p.exists) {
         tr(
           onDblClick.foreach(e => startEditing()),
-          cls := "odd:bg-slate-50",
+          cls := "odd:bg-slate-50 odd:dark:bg-gray-600",
           data.id := synced.id,
           key := synced.id,
           routing
@@ -224,7 +224,7 @@ class EntityRow[T <: Entity[T]](
                 .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
                 .map(ui => {
                   td(
-                    cls := "border-b border-l border-gray-300 p-0",
+                    cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
                     cls := (ui.width match {
                       case None    => "min-w-[200px]"
                       case Some(v) => s"max-w-[$v] min-w-[$v]"
@@ -234,7 +234,7 @@ class EntityRow[T <: Entity[T]](
                 }),
             ),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white border-l border-r border-b border-gray-300 !z-[1]",
+            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white dark:bg-gray-700 border-l border-r border-b border-gray-300 dark:border-gray-700 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
@@ -378,7 +378,7 @@ abstract class EntityPage[T <: Entity[T]](
                 "Filter",
                 idAttr := "filter-btn",
                 div(cls := "ml-3 badge", "0"),
-                icons.Filter(cls := "text-slate-600 ml-1 w-6 h-6"),
+                icons.Filter(cls := "ml-1 w-6 h-6"),
                 cls := "!mt-0",
                 onClick.foreach(e => {
                   filterDropdownOpen.transform(!_)
@@ -386,7 +386,7 @@ abstract class EntityPage[T <: Entity[T]](
               ),
               ul(
                 idAttr := "filter-dropdown",
-                cls := "dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-96",
+                cls := "dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-96 dark:bg-gray-700",
                 filter.render,
                 "Columns",
                 MultiSelect(
@@ -403,10 +403,9 @@ abstract class EntityPage[T <: Entity[T]](
               ),
             ),
             div(
-              renderEntities.flatten.map(filtered => filtered.length),
+              countFilteredEntities,
               " / ",
-              entityRows
-                .map(entityRows => entityRows.length),
+              countEntities,
               " Entities",
             ),
             Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView)),
@@ -424,18 +423,45 @@ abstract class EntityPage[T <: Entity[T]](
                         .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
                         .map(a =>
                           th(
-                            cls := "border-gray-300 border-b-2 border-t border-l dark:border-gray-500 px-4 py-2 uppercase",
+                            cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-500 px-4 py-2 uppercase",
                             a.label,
                           ),
                         ),
                     ),
                   th(
-                    cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
+                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-700 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
                     "Actions",
                   ),
                 ),
               ),
               tbody(
+                countFilteredEntities
+                  .map(countFilteredEntities => {
+                    countEntities
+                      .map(countEntities => {
+                        if (countEntities == 0)
+                          Some(
+                            tr(
+                              td(
+                                colSpan := 100,
+                                cls := "h-96 text-slate-300 text-center",
+                                "Empty...",
+                              ),
+                            ),
+                          )
+                        else if (countFilteredEntities == 0 && countEntities > 0)
+                          Some(
+                            tr(
+                              td(
+                                colSpan := 100,
+                                cls := "h-96 text-slate-300 text-center",
+                                "No results for your Filter...",
+                              ),
+                            ),
+                          )
+                        else None
+                      })
+                  }),
                 renderEntities,
               ),
               tfoot(
@@ -450,6 +476,33 @@ abstract class EntityPage[T <: Entity[T]](
         ),
       ),
     )
+  }
+
+  private def countEntities: Signal[Int] = {
+    entityRows
+      .map(
+        _.filterSignal(_.value match {
+          case New(_)             => Signal(false)
+          case Existing(value, _) => value.signal.map(a => a.exists)
+        }),
+      )
+      .flatten
+      .map(a => a.size)
+  }
+
+  private def countFilteredEntities: Signal[Int] = {
+    filter.predicate
+      .map(pred =>
+        entityRows.map(
+          _.filterSignal(_.value match {
+            case New(_)             => Signal(false)
+            case Existing(value, _) => value.signal.map(a => pred(a) && a.exists)
+          }),
+        ),
+      )
+      .flatten
+      .flatten
+      .map(a => a.size)
   }
 
   private def exportView = {
@@ -472,6 +525,7 @@ abstract class EntityPage[T <: Entity[T]](
           row.value match {
             case New(_) => {}
             case Existing(value, _) =>
+              val id = value.id
               value.signal.map(value => {
                 var csvRow: Seq[String] = Seq()
                 var selectedHeaders: Seq[String] = Seq()
@@ -483,6 +537,12 @@ abstract class EntityPage[T <: Entity[T]](
                       .foreach(attr => {
                         selectedHeaders = selectedHeaders :+ attr.label
                         attr match {
+                          case attr: UIReadOnlyAttribute[?, ?] => {
+                            if (value.exists) {
+                              val a = attr.getter(id, value)
+                              a.map(a => csvRow = csvRow :+ attr.readConverter(a))
+                            }
+                          }
                           case attr: UIAttribute[?, ?] => {
                             if (value.exists) {
                               val a = attr.getter(value)
