@@ -51,7 +51,7 @@ class Modal(val title: VMod, val body: VMod, val buttons: Seq[ModalButton]) {
       div(
         cls <-- openState.map(v => s"modal ${(if (v) Some("modal-open") else None).getOrElse("")}"),
         div(
-          cls := "modal-box",
+          cls := "modal-box dark:bg-gray-600",
           h3(cls := "font-bold text-xl", title),
           div(cls := "divider"),
           p(

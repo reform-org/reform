@@ -54,7 +54,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
   def render(using toaster: Toaster): VNode = {
     ul(
       tabIndex := 0,
-      cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52",
+      cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52 dark:bg-gray-600 dark:text-gray-200",
       h2(
         "Connections",
         cls := "font-bold text-lg p-2",
@@ -74,7 +74,10 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
         }
         emptyState
       }),
-      div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-2", "Auto"), {
+      div(
+        cls := "divider uppercase text-slate-300 font-bold text-xs mb-2 after:dark:bg-slate-300 before:dark:bg-slate-300",
+        "Auto",
+      ), {
         discovery.online.map(online => {
           if (online) {
             li(
@@ -91,7 +94,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
       discovery.availableConnections.map(_.map(connection => availableConnectionRow(connection))),
       label(
         cls := "label cursor-pointer",
-        span(cls := "label-text", "Autoconnect"),
+        span(cls := "label-text dark:text-slate-300", "Autoconnect"),
         Checkbox(
           CheckboxStyle.Primary,
           cls := "checkbox-sm",
@@ -99,7 +102,10 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
           onClick.foreach(e => discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)),
         ),
       ),
-      div(cls := "divider uppercase text-slate-300 font-bold text-xs mb-0", "Manual"),
+      div(
+        cls := "divider uppercase text-slate-300 font-bold text-xs mb-0  after:dark:bg-slate-300 before:dark:bg-slate-300",
+        "Manual",
+      ),
       ManualConnectionDialog().render(),
     )
 
@@ -126,7 +132,7 @@ class Login() {
           else
             div(
               cls := "form-control w-full text-sm",
-              label(cls := "label", span(cls := "label-text text-slate-500", "Username")),
+              label(cls := "label", span(cls := "label-text text-slate-500 dark:text-slate-300", "Username")),
               input(
                 tpe := "text",
                 placeholder := "Username",
@@ -135,7 +141,7 @@ class Login() {
                 onInput.value --> username,
                 value := "",
               ),
-              label(cls := "label", span(cls := "label-text text-slate-500", "Password")),
+              label(cls := "label", span(cls := "label-text text-slate-500 dark:text-slate-300", "Password")),
               input(
                 tpe := "password",
                 placeholder := "Password",
