@@ -10,19 +10,19 @@ def getID(name: String): String = {
 }
 
 def Label(props: VMod*): VNode = {
-  label(cls := "label label-text text-slate-500", props)
+  label(cls := "label label-text text-slate-500 dark:text-slate-300", props)
 }
 
 def Input(props: VMod*): VNode = {
   input(
-    cls := "input input-bordered w-full text-sm p-2 h-fit",
+    cls := "input input-bordered w-full text-sm p-2 h-fit dark:bg-gray-700 dark:placeholder-gray-400 dark:text-slate-300",
     props,
   )
 }
 
 def TableInput(props: VMod*): VNode = {
   input(
-    cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
+    cls := "dark:border-gray-500 input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
     props,
   )
 }

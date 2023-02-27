@@ -10,7 +10,8 @@ enum ButtonStyle(val props: VMod) {
   case Warning extends ButtonStyle(cls := "bg-yellow-400 hover:bg-yellow-400 text-yellow-800")
   case Error extends ButtonStyle(cls := "bg-red-400 hover:bg-red-400 text-red-800")
   case LightPrimary extends ButtonStyle(cls := "bg-purple-200 hover:bg-purple-300 text-purple-600")
-  case LightDefault extends ButtonStyle(cls := "bg-slate-200 hover:bg-slate-300 text-slate-600")
+  case LightDefault
+      extends ButtonStyle(cls := "bg-slate-200 hover:bg-slate-300 text-slate-600 dark:bg-gray-700 dark:text-gray-200")
   case LightSuccess extends ButtonStyle(cls := "bg-green-200 hover:bg-green-300 text-green-600")
   case LightWarning extends ButtonStyle(cls := "bg-yellow-200 hover:bg-yellow-300 text-yellow-600")
   case LightError extends ButtonStyle(cls := "bg-red-200 hover:bg-red-300 text-red-600")
@@ -18,7 +19,7 @@ enum ButtonStyle(val props: VMod) {
 
 def Button(style: ButtonStyle, props: VMod*): VNode = {
   button(
-    cls := "btn btn-active p-2 h-fit min-h-10 mt-2 border-0",
+    cls := "btn btn-active p-2 h-fit min-h-10 mt-2 border-0 disabled:dark:bg-gray-500 disabled:dark:text-gray-300",
     props,
     style.props,
   )
