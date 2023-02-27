@@ -65,24 +65,19 @@ object ProjectsPage {
       (p, a) => p.copy(accountName = a),
     )
 
-  private def contractCount(using repositories: Repositories) = new UIBasicAttribute[Project](
-    label = "Contracts",
-  ) {
-
-    override def render(id: String, entity: Project): VMod = {
-      div(
-        cls := " px-4", {
-          repositories.contracts.all
-            .map(_.map(_.signal))
-            .flatten
-            .map(contracts => contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size)
-        },
-        " Contract(s)",
-      )
-    }
-
-    def renderEdit(formId: String, editing: Var[Option[(Project, Var[Project])]]): VMod = Signal(
-      div(),
+  private def contractCount(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Project, String](
+      label = "Contracts",
+      getter = (id, project) =>
+        repositories.contracts.all
+          .map(_.map(_.signal))
+          .flatten
+          .map(contracts =>
+            contracts
+              .filter(contract => contract.contractAssociatedProject.get == Some(id))
+              .size
+              .toString + " Contract(s)",
+          ),
+      readConverter = identity,
     )
-  }
 }

@@ -403,10 +403,9 @@ abstract class EntityPage[T <: Entity[T]](
               ),
             ),
             div(
-              renderEntities.flatten.map(filtered => filtered.length),
+              countFilteredEntities,
               " / ",
-              entityRows
-                .map(entityRows => entityRows.length),
+              countEntities,
               " Entities",
             ),
             Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView)),
@@ -436,6 +435,33 @@ abstract class EntityPage[T <: Entity[T]](
                 ),
               ),
               tbody(
+                countFilteredEntities
+                  .map(countFilteredEntities => {
+                    countEntities
+                      .map(countEntities => {
+                        if (countEntities == 0)
+                          Some(
+                            tr(
+                              td(
+                                colSpan := 100,
+                                cls := "h-96 text-slate-300 text-center",
+                                "Empty...",
+                              ),
+                            ),
+                          )
+                        else if (countFilteredEntities == 0 && countEntities > 0)
+                          Some(
+                            tr(
+                              td(
+                                colSpan := 100,
+                                cls := "h-96 text-slate-300 text-center",
+                                "No results for your Filter...",
+                              ),
+                            ),
+                          )
+                        else None
+                      })
+                  }),
                 renderEntities,
               ),
               tfoot(
@@ -450,6 +476,33 @@ abstract class EntityPage[T <: Entity[T]](
         ),
       ),
     )
+  }
+
+  private def countEntities: Signal[Int] = {
+    entityRows
+      .map(
+        _.filterSignal(_.value match {
+          case New(_)             => Signal(false)
+          case Existing(value, _) => value.signal.map(a => a.exists)
+        }),
+      )
+      .flatten
+      .map(a => a.size)
+  }
+
+  private def countFilteredEntities: Signal[Int] = {
+    filter.predicate
+      .map(pred =>
+        entityRows.map(
+          _.filterSignal(_.value match {
+            case New(_)             => Signal(false)
+            case Existing(value, _) => value.signal.map(a => pred(a) && a.exists)
+          }),
+        ),
+      )
+      .flatten
+      .flatten
+      .map(a => a.size)
   }
 
   private def exportView = {
@@ -472,6 +525,7 @@ abstract class EntityPage[T <: Entity[T]](
           row.value match {
             case New(_) => {}
             case Existing(value, _) =>
+              val id = value.id
               value.signal.map(value => {
                 var csvRow: Seq[String] = Seq()
                 var selectedHeaders: Seq[String] = Seq()
@@ -483,6 +537,12 @@ abstract class EntityPage[T <: Entity[T]](
                       .foreach(attr => {
                         selectedHeaders = selectedHeaders :+ attr.label
                         attr match {
+                          case attr: UIReadOnlyAttribute[?, ?] => {
+                            if (value.exists) {
+                              val a = attr.getter(id, value)
+                              a.map(a => csvRow = csvRow :+ attr.readConverter(a))
+                            }
+                          }
                           case attr: UIAttribute[?, ?] => {
                             if (value.exists) {
                               val a = attr.getter(value)

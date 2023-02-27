@@ -55,7 +55,7 @@ def LabeledCheckbox(labelProps: VMod*)(style: CheckboxStyle, props: VMod*): VNod
         idAttr := s"all-checkbox-$id",
       ),
       forId := s"all-checkbox-$id",
-      cls := "label cursor-pointer",
+      cls := "label cursor-pointer !justify-start gap-2",
       span(cls := "label-text", labelProps),
     ),
   )

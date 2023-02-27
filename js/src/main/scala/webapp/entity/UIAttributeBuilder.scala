@@ -60,14 +60,6 @@ case class UIAttributeBuilder[AttributeType](
     fieldType = "text",
   )
 
-  def bindReadOnly[EntityType](
-      getter: EntityType => Attribute[AttributeType],
-  ): UIAttribute[EntityType, AttributeType] = UIReadOnlyAttribute(
-    getter = getter,
-    readConverter = readConverter,
-    label = label,
-  )
-
 }
 
 object UIAttributeBuilder {

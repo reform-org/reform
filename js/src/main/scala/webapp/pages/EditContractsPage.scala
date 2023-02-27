@@ -33,6 +33,7 @@ import webapp.utils.Futures.*
 import webapp.services.ToastType
 import scala.scalajs.js.Date
 import webapp.npm.IIndexedDB
+import webapp.components.icons
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -178,7 +179,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       .require
       .bindAsSelect(
         _.contractAssociatedPaymentLevel,
-        (p, a) => p.copy(contractType = a),
+        (p, a) => p.copy(contractAssociatedPaymentLevel = a),
       )
   }
 
@@ -227,6 +228,17 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing.to(ContractsPage())
   }
 
+  private def editStep(number: String, title: String, props: VMod*): VNode = {
+    div(
+      cls := "border rounded-2xl m-4 border-purple-200",
+      div(
+        cls := "bg-purple-200 p-4 rounded-t-2xl",
+        p("STEP " + number + ": " + title),
+      ),
+      props,
+    )
+  }
+
   var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
     Option(existingValue.get.signal.now, Var(existingValue.get.signal.now)),
   )
@@ -242,95 +254,180 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       div(
         div(
           cls := "p-1",
-          h1(cls := "text-4xl text-center", "EditContractsPage"),
+          h1(cls := "text-3xl mt-4 text-center", "Edit Contract"),
         ),
         div(
-          p("Editing Contract:"),
-          label(existingValue.map(p => p.id)),
+          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          p(cls := "pl-4", "Editing Contract: ", label(existingValue.map(p => p.id))),
           form(
-            p("Basic information"),
-            div(
+            editStep(
+              "1",
+              "Basic information",
               div(
-                label("Hiwi:"),
-                contractAssociatedHiwi.renderEdit("", editingValue),
-                br,
-                label("Supervisor:"),
-                contractAssociatedSupervisor.renderEdit("", editingValue),
-              ),
-              div(
-                label("Start date:"),
-                contractStartDate.renderEdit("", editingValue),
-                p(
-                  editingValue.map(p =>
-                    p.get._2.map(v => {
-                      if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
-                        "Duration in days: " + (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                          .getOrElse(0L)).toString()
-                      else ""
-                    }),
+                cls := "p-4 space-y-4",
+                div(
+                  cls := "flex space-x-4",
+                  div(
+                    cls := "basis-1/2",
+                    label(cls := "font-bold", "Hiwi:"),
+                    contractAssociatedHiwi.renderEdit("", editingValue),
+                    LabeledCheckbox("Hiwi has a degree", cls := "text-left")(CheckboxStyle.Default),
                   ),
-                  editingValue.map(p =>
-                    p.get._2.map(v => {
-                      if (
-                        v.contractStartDate.get.getOrElse(0L) - (Date
-                          .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
-                      ) "Start date is in the past"
-                      else ""
-
-                    }),
+                  div(
+                    cls := "basis-1/2",
+                    label(cls := "font-bold", "Supervisor:"),
+                    contractAssociatedSupervisor.renderEdit("", editingValue),
                   ),
                 ),
-                label("End date:"),
-                contractEndDate.renderEdit("", editingValue),
-                p(
-                  editingValue.map(p =>
-                    p.get._2.map(v => {
-                      if (
-                        v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                          .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
-                      ) "End date is in the past or before start date"
-                      else ""
-
-                    }),
+                div(
+                  cls := "flex space-x-4",
+                  div(
+                    cls := "basis-2/5",
+                    label(cls := "font-bold", "Start date:"),
+                    contractStartDate.renderEdit("", editingValue),
+                    editingValue.map(p =>
+                      p.get._2.map(v => {
+                        if (
+                          v.contractStartDate.get.getOrElse(0L) - (Date
+                            .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
+                        ) {
+                          Some(
+                            dsl.p(
+                              cls := "bg-yellow-100 text-yellow-600 flex flex-row",
+                              icons.WarningTriangle(cls := "w-6 h-6"),
+                              "Start date is in the past",
+                            ),
+                          )
+                        } else None
+                      }),
+                    ),
+                  ),
+                  div(
+                    cls := "basis-1/5",
+                    label(cls := "font-bold", "Duration: "),
+                    br,
+                    editingValue.map(p =>
+                      p.get._2.map(v => {
+                        if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
+                          (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                            .getOrElse(0L)).toString() + " days"
+                        else ""
+                      }),
+                    ),
+                  ),
+                  div(
+                    cls := "basis-2/5",
+                    label(cls := "font-bold", "End date:"),
+                    contractEndDate.renderEdit("", editingValue),
+                    editingValue.map(p =>
+                      p.get._2.map(v => {
+                        if (
+                          v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                            .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
+                        ) {
+                          Some(
+                            dsl.p(
+                              cls := "bg-yellow-100 text-yellow-600 flex flex-row",
+                              icons.WarningTriangle(cls := "w-6 h-6"),
+                              "End date is in the past or before start date",
+                            ),
+                          )
+                        } else None
+                      }),
+                    ),
+                  ),
+                  // Todo Warning
+                ),
+                div(
+                  cls := "flex space-x-4",
+                  div( // TODO calculation of monthly base salary and total hours
+                    cls := "basis-1/2",
+                    p(cls := "bg-blue-100", "Monthly base salary: 1.500€; with bonus: 1.800€"),
+                    br,
+                    p(cls := "bg-blue-100", "Total Hours: 160h"),
+                  ),
+                  div(
+                    cls := "basis-1/2",
+                    label(cls := "font-bold", "Payment level:"),
+                    contractAssociatedPaymentLevel.renderEdit("", editingValue),
+                    label(cls := "font-bold", "Hours per month:"),
+                    contractHoursPerMonth.renderEdit("", editingValue),
                   ),
                 ),
-                // Todo Warning
-              ),
-              div(
-                label("Hours per month:"),
-                contractHoursPerMonth.renderEdit("", editingValue),
-                label("Payment level:"),
-                contractAssociatedPaymentLevel.renderEdit("", editingValue),
-                // TODO calculation of monthly base salary and total hours
-                p("Monthly base salary: 1.500€; with bonus: 1.800€"),
-                p("Total Hours: 160h"),
               ),
             ),
+
             // Select Project Field
-            p("Select project"),
-            div(
-              label("Project:"),
-              contractAssociatedProject.renderEdit("", editingValue),
+            editStep(
+              "1b",
+              "Select project",
+              div(
+                cls := "flex p-4 space-x-4",
+                div(
+                  cls := "basis-1/2",
+                  label(cls := "font-bold", "Project:"),
+                  contractAssociatedProject.renderEdit("", editingValue),
+                ),
+                div(
+                  cls := "basis-[12.5%]",
+                  label(cls := "font-bold", "Contract"),
+                ),
+                div(
+                  cls := "basis-[12.5%]",
+                  label(cls := "font-bold", "Other drafts"),
+                ),
+                div(
+                  cls := "basis-[12.5%]",
+                  label(cls := "font-bold", "This draft"),
+                ),
+                div(
+                  cls := "basis-[12.5%]",
+                  label(cls := "font-bold", "Max. hours"),
+                ),
+              ),
             ),
             // Contract Type Field
-            p("ContractType:"),
+            editStep(
+              "2",
+              "Contract type",
+              div(
+                cls := "p-4",
+                // TODO active contract checking
+                p("Hiwi did not have an active contract ..."),
+                label(cls := "font-bold", "Contract type:"),
+                contractAssociatedType.renderEdit("", editingValue),
+              ),
+            ),
+            // Contract Requirements
+            editStep(
+              "3a",
+              "Contract requirements - reminder mail",
+              div(
+                cls := "p-4",
+                "Send a reminder e-mail to Hiwi",
+              ),
+            ),
+            // Check requirements
+            editStep(
+              "3",
+              "Check requirements",
+              div(
+                cls := "p-4",
+                "Check all forms the hiwi has filled out and handed back.",
+              ),
+            ),
             div(
-              // TODO active contract checking
-              p("Hiwi did not have an active contract ..."),
-              label("ContractType:"),
-              contractAssociatedType.renderEdit("", editingValue),
+              cls := "pl-8 space-x-4",
+              Button(
+                ButtonStyle.LightPrimary,
+                "Save",
+                onClick.foreach(e => {
+                  e.preventDefault()
+                  createOrUpdate()
+                }),
+              ),
+              Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
             ),
-            button(
-              cls := "btn",
-              `type` := "submit",
-              idAttr := "confirmEdit",
-              "Save",
-            ),
-            TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
-            onSubmit.foreach(e => {
-              e.preventDefault()
-              createOrUpdate()
-            }),
           ),
         ),
       ),
