@@ -28,7 +28,7 @@ case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
           onClick.foreach(e => {
             e.preventDefault()
             e.target.asInstanceOf[HTMLElement].blur()
-            routing.to(HomePage())
+            routing.to(HomePage(), true)
           }),
           href := routing.linkPath(HomePage()),
         ),

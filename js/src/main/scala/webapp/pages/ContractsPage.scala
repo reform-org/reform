@@ -26,10 +26,7 @@ import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 
-private def contractAssociatedHiwi(using
-    repositories: Repositories,
-    routing: RoutingService,
-): UIAttribute[Contract, String] = {
+private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
   UIAttributeBuilder
     .select(
       repositories.hiwis.all.map(list =>
@@ -44,10 +41,7 @@ private def contractAssociatedHiwi(using
     )
 }
 
-private def contractAssociatedProject(using
-    repositories: Repositories,
-    routing: RoutingService,
-): UIAttribute[Contract, String] = {
+private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
   UIAttributeBuilder
     .select(
       repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),

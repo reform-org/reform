@@ -31,9 +31,8 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       {ModuleInitializer.mainMethod("webapp.MainJSTest", "main").withModuleID("main")}
     ),*/
     scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
-    scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallestModules)),
-    Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
-    Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
+    scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
+    scalaJSLinkerConfig ~= { _.withOptimizer(false) },
     libraryDependencies ++= Seq(
       "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",

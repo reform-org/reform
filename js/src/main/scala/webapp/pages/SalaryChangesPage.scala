@@ -38,7 +38,7 @@ case class SalaryChangesPage()(using
     ) {}
 
 object SalaryChangesPage {
-  private def salaryChangeValue(using routing: RoutingService) = UIAttributeBuilder.money
+  private val salaryChangeValue = UIAttributeBuilder.money
     .withLabel("Value")
     .require
     .bindAsNumber[SalaryChange](
@@ -46,10 +46,7 @@ object SalaryChangesPage {
       (s, a) => s.copy(value = a),
     )
 
-  private def salaryChangePaymentLevel(using
-      repositories: Repositories,
-      routing: RoutingService,
-  ): UIAttribute[SalaryChange, String] = {
+  private def salaryChangePaymentLevel(using repositories: Repositories): UIAttribute[SalaryChange, String] = {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.all.map(list =>
@@ -64,7 +61,7 @@ object SalaryChangesPage {
       )
   }
 
-  private def salaryChangeFromDate(using RoutingService) = UIAttributeBuilder.date
+  private val salaryChangeFromDate = UIAttributeBuilder.date
     .withLabel("From")
     .require
     .bindAsDatePicker[SalaryChange](

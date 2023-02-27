@@ -1,6 +1,5 @@
 import { createPopper as createPopperImpl } from '@popperjs/core';
 import { flip, preventOverflow } from '@popperjs/core/lib';
-import { DateTime } from 'luxon';
 
 export const usesTurn = async (connection) => {
 	try {
@@ -27,9 +26,9 @@ export const usesTurn = async (connection) => {
 	}
 };
 
-export const downloadFile = (name, text, type) => {
+export const downloadJson = (name, text) => {
 	const elem = document.createElement("a");
-	elem.setAttribute("href", `${type};charset=utf-8,${encodeURIComponent(text)}`);
+	elem.setAttribute("href", `data:text/json;charset=utf-8,${encodeURIComponent(text)}`);
 	elem.setAttribute("download", name);
 	elem.style.display = "none";
 	document.body.appendChild(elem);
@@ -122,24 +121,3 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 };
 
 export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
-
-export const toGermanDate = (/** @type {number} */ input) => {
-	return DateTime.fromMillis(Number(input)).setLocale("de").toFormat("dd.LL.yyyy");
-};
-
-export const DateTimeFromISO = (/** @type {string} */ input) => {
-	return DateTime.fromISO(input).toMillis().toString();
-};
-
-export const toYYYYMMDD = (input) => {
-	return DateTime.fromMillis(Number(input)).toISODate();
-};
-
-const formatter = new Intl.NumberFormat('de-DE', {
-	style: 'currency',
-	currency: 'EUR'
-});
-
-export const toMoneyString = (input) => {
-	return formatter.format(input);
-};

@@ -40,8 +40,6 @@ import webapp.npm.JSUtils.createPopper
 
 import scala.collection.mutable
 import webapp.npm.IIndexedDB
-import scala.annotation.nowarn
-import webapp.npm.JSUtils.downloadFile
 
 sealed trait EntityValue[T]
 case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
@@ -112,15 +110,9 @@ class EntityRow[T <: Entity[T]](
       cls := "",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
-      routing
-        .getQueryParameterAsSeq("columns")
-        .map(columns =>
-          uiAttributes
-            .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
-            .map(ui => {
-              td(cls := "p-0", ui.renderEdit(id, editingValue))
-            }),
-        ),
+      uiAttributes.map(ui => {
+        td(cls := "p-0", ui.renderEdit(id, editingValue))
+      }),
       td(
         cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white border-x border-b border-gray-300 !z-[1]",
         div(
@@ -217,22 +209,16 @@ class EntityRow[T <: Entity[T]](
           cls := "odd:bg-slate-50",
           data.id := synced.id,
           key := synced.id,
-          routing
-            .getQueryParameterAsSeq("columns")
-            .map(columns =>
-              uiAttributes
-                .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
-                .map(ui => {
-                  td(
-                    cls := "border-b border-l border-gray-300 p-0",
-                    cls := (ui.width match {
-                      case None    => "min-w-[200px]"
-                      case Some(v) => s"max-w-[$v] min-w-[$v]"
-                    }),
-                    ui.render(synced.id, p),
-                  )
-                }),
-            ),
+          uiAttributes.map(ui => {
+            td(
+              cls := "border-b border-l border-gray-300 p-0",
+              cls := (ui.width match {
+                case None    => "min-w-[200px]"
+                case Some(v) => s"max-w-[$v] min-w-[$v]"
+              }),
+              ui.render(synced.id, p),
+            )
+          }),
           td(
             cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white border-l border-r border-b border-gray-300 !z-[1]",
             div(
@@ -388,18 +374,6 @@ abstract class EntityPage[T <: Entity[T]](
                 idAttr := "filter-dropdown",
                 cls := "dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-96",
                 filter.render,
-                "Columns",
-                MultiSelect(
-                  Signal(
-                    uiAttributes.map(attr => MultiSelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
-                  ),
-                  (value) => routing.updateQueryParameters(Map(("columns" -> value))),
-                  routing.getQueryParameterAsSeq("columns"),
-                  4,
-                  true,
-                  span("Nothing found..."),
-                  cls := "rounded-md",
-                ),
               ),
             ),
             div(
@@ -409,7 +383,6 @@ abstract class EntityPage[T <: Entity[T]](
                 .map(entityRows => entityRows.length),
               " Entities",
             ),
-            Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView)),
           ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
@@ -417,18 +390,12 @@ abstract class EntityPage[T <: Entity[T]](
               cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
               thead(
                 tr(
-                  routing
-                    .getQueryParameterAsSeq("columns")
-                    .map(columns =>
-                      uiAttributes
-                        .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
-                        .map(a =>
-                          th(
-                            cls := "border-gray-300 border-b-2 border-t border-l dark:border-gray-500 px-4 py-2 uppercase",
-                            a.label,
-                          ),
-                        ),
+                  uiAttributes.map(a =>
+                    th(
+                      cls := "border-gray-300 border-b-2 border-t border-l dark:border-gray-500 px-4 py-2 uppercase",
+                      a.label,
                     ),
+                  ),
                   th(
                     cls := "border-gray-300 border border-b-2 dark:border-gray-500 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
                     "Actions",
@@ -450,60 +417,6 @@ abstract class EntityPage[T <: Entity[T]](
         ),
       ),
     )
-  }
-
-  private def exportView = {
-    var csvHeader: Seq[String] = Seq()
-    var csvData: Seq[String] = Seq()
-
-    filter.predicate
-      .map(pred =>
-        entityRows.map(
-          _.filterSignal(_.value match {
-            case New(_)             => Signal(false)
-            case Existing(value, _) => value.signal.map(pred)
-          }),
-        ),
-      )
-      .flatten
-      .flatten
-      .map(data => {
-        data.foreach(row => {
-          row.value match {
-            case New(_) => {}
-            case Existing(value, _) =>
-              value.signal.map(value => {
-                var csvRow: Seq[String] = Seq()
-                var selectedHeaders: Seq[String] = Seq()
-                routing
-                  .getQueryParameterAsSeq("columns")
-                  .map(columns =>
-                    row.uiAttributes
-                      .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
-                      .foreach(attr => {
-                        selectedHeaders = selectedHeaders :+ attr.label
-                        attr match {
-                          case attr: UIAttribute[?, ?] => {
-                            if (value.exists) {
-                              val a = attr.getter(value)
-                              csvRow = csvRow :+ a.getAll.map(x => attr.readConverter(x)).mkString(", ")
-                            }
-                          }
-                          case _ => {}
-                        }
-                      }),
-                  ): @nowarn
-
-                if (csvHeader.size == 0) csvHeader = selectedHeaders
-                if (csvRow.size > 0)
-                  csvData = csvData :+ csvRow.map(escapeCSVString).mkString(",")
-              })
-          }
-        })
-      }): @nowarn
-
-    val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
-    downloadFile(s"$title.csv", csvString, "data:text/csv")
   }
 
   private def renderEntities = {

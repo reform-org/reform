@@ -37,7 +37,7 @@ case class HiwisPage()(using
     ) {}
 
 object HiwisPage {
-  private def firstName(using routing: RoutingService) = UIAttributeBuilder.string
+  private val firstName = UIAttributeBuilder.string
     .withLabel("First Name")
     .require
     .bindAsText[Hiwi](
@@ -45,7 +45,7 @@ object HiwisPage {
       (h, a) => h.copy(firstName = a),
     )
 
-  private def lastName(using routing: RoutingService) = UIAttributeBuilder.string
+  private val lastName = UIAttributeBuilder.string
     .withLabel("Last Name")
     .require
     .bindAsText[Hiwi](
@@ -53,7 +53,7 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private def gender(using routing: RoutingService): UIAttribute[Hiwi, String] = {
+  private def gender: UIAttribute[Hiwi, String] = {
     UIAttributeBuilder
       .select(
         Signal(
@@ -69,7 +69,7 @@ object HiwisPage {
       )
   }
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.string
+  private val eMail = UIAttributeBuilder.string
     .withLabel("Email")
     .require
     .bindAsText[Hiwi](
@@ -77,7 +77,7 @@ object HiwisPage {
       (h, a) => h.copy(eMail = a),
     )
 
-  private def birthdate(using routing: RoutingService) = UIAttributeBuilder.date
+  private val birthdate = UIAttributeBuilder.date
     .withLabel("Birthdate")
     .require
     .bindAsDatePicker[Hiwi](
