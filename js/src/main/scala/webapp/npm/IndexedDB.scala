@@ -255,5 +255,5 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
     JSON.parse(writeToString(value))
 
   private def castFromJsDynamic[T](dynamic: js.Any | Null)(using codec: JsonValueCodec[T]) =
-    readFromString(JSON.stringify(dynamic.nn))
+    readFromString(JSON.stringify(dynamic.asInstanceOf[js.Any]))
 }
