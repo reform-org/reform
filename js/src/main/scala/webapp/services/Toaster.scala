@@ -204,7 +204,7 @@ class Toaster() {
   }
 
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
-    if (JSUtils.isSelenium && style != ToastType.Error) return
+    if (Globals.VITE_SELENIUM && style != ToastType.Error) return
     val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
   }
