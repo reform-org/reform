@@ -8,7 +8,7 @@ import org.scalajs.dom.{document, window}
 import scala.scalajs.js
 import webapp.*
 import webapp.given
-import webapp.components.Icons
+import webapp.components.icons
 import org.scalajs.dom.HTMLHtmlElement
 import scala.annotation.nowarn
 import webapp.npm.JSUtils
@@ -27,27 +27,27 @@ enum ToastType(
     val icon: Option[VNode],
     val copyable: Boolean = false,
 ) {
-  case Default extends ToastType("bg-white", "bg-slate-100", "", Some(Icons.infoStar("w-6 h-6", "#475569")))
+  case Default extends ToastType("bg-white", "bg-slate-100", "", Some(icons.Info(cls := "w-6 h-6 text-slate-600")))
   case Success
       extends ToastType(
         "bg-green-100",
         "bg-green-200",
         "text-green-600",
-        Some(Icons.checkmarkCircle("w-6 h-6", "#16A34A")),
+        Some(icons.CheckCircle(cls := "w-6 h-6 text-green-600")),
       )
   case Warning
       extends ToastType(
         "bg-yellow-100",
         "bg-yellow-200",
         "text-yellow-600",
-        Some(Icons.warningTriangle("w-6 h-6", "#ca8a04")),
+        Some(icons.WarningTriangle(cls := "w-6 h-6 text-yellow-600")),
       )
   case Error
       extends ToastType(
         "bg-red-100 toast-error",
         "bg-red-200",
         "text-red-600",
-        Some(Icons.warningPolygon("w-6 h-6 fill-red-600")),
+        Some(icons.WarningPolygon(cls := "w-6 h-6 text-red-600")),
         true,
       )
 }
@@ -157,7 +157,7 @@ class Toast(
           if (toastType.copyable) {
             Some(
               div(
-                Icons.clipboard("w-4 h-4", "#dc2626"),
+                icons.Clipboard(cls := "w-4 h-4 text-red-600"),
                 cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5",
                 onClick.foreach(_ =>
                   window.navigator.clipboard
@@ -178,7 +178,7 @@ class Toast(
           if (toastMode.closeable) {
             Some(
               div(
-                Icons.close("fill-red-600 w-4 h-4"),
+                icons.Close(cls := "text-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer shrink-0 m-0.5 reform-toast-close",
                 onClick.foreach(_ => onclose(this)),
               ),

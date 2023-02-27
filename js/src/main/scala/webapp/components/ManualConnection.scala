@@ -19,6 +19,7 @@ import webapp.components.common.Input
 import webapp.components.common.LabeledInput
 import webapp.components.common.Button
 import webapp.components.common.ButtonStyle
+import webapp.components.icons
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
@@ -31,7 +32,7 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
       button(
         data.token := PendingConnection.sessionAsToken(session),
         cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+        icons.Clipboard(cls := "w-6 h-6 text-white group-hover:text-purple-600"),
         onClick.foreach(_ =>
           window.navigator.clipboard
             .writeText(PendingConnection.sessionAsToken(session))
@@ -41,13 +42,13 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
       ),
       a(
         cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+        icons.Mail(cls := "w-6 h-6 text-white group-hover:text-purple-600"),
         href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
       a(
         cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
+        icons.Whatsapp(cls := "w-6 h-6 group-hover:text-green-600 text-white"),
         href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
