@@ -90,7 +90,7 @@ def Select(
           option.map(uiOption => {
             uiOption.name.map(name => {
               search.map(searchKey => {
-                if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
+                if (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())) {
                   Some(
                     label(
                       cls := "block w-full hover:bg-slate-50 dark:hover:bg-gray-700",
@@ -132,7 +132,7 @@ def Select(
                       .map(name => {
                         search
                           .map(searchKey =>
-                            (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())),
+                            (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())),
                           )
                       })
                       .flatten

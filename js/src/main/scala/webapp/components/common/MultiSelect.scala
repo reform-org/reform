@@ -41,12 +41,14 @@ def MultiSelect(
   createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
 
   def updateSelectAll(value: Seq[String]): Unit = {
-    val selectAll = document
-      .querySelector(s"#$id input[type=checkbox]#all-checkbox-$id")
-      .asInstanceOf[HTMLInputElement]
+    val selectAll = Option(
+      document
+        .querySelector(s"#$id input[type=checkbox]#all-checkbox-$id")
+        .asInstanceOf[HTMLInputElement],
+    )
 
     options.map(options => {
-      if (selectAll != null) {
+      selectAll.map(selectAll => {
         val uncheckedOptions = options.size - value.size
 
         if (uncheckedOptions == 0) {
@@ -58,7 +60,7 @@ def MultiSelect(
         } else {
           selectAll.indeterminate = true
         }
-      }
+      })
     }): @nowarn
 
   }
@@ -197,7 +199,7 @@ def MultiSelect(
           option.map(uiOption => {
             uiOption.name.map(name => {
               search.map(searchKey => {
-                if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
+                if (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())) {
                   Some(
                     label(
                       cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700",
@@ -242,7 +244,7 @@ def MultiSelect(
                       .map(name => {
                         search
                           .map(searchKey =>
-                            (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())),
+                            (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())),
                           )
                       })
                       .flatten

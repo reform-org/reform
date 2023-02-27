@@ -152,8 +152,12 @@ class DiscoveryService {
     ws.foreach(emit(_, "request_available_clients", None.orNull))
   }
 
-  private def emit(ws: WebSocket, name: String, payload: js.Dynamic) = {
-    val event = js.Dynamic.literal("type" -> name, "payload" -> payload);
+  private def emit(ws: WebSocket, name: String, payload: js.Any | Null) = {
+    val event = if (payload == null) {
+      js.Dynamic.literal("type" -> name)
+    } else {
+      js.Dynamic.literal("type" -> name, "payload" -> payload)
+    }
     ws.send(JSON.stringify(event))
   }
 

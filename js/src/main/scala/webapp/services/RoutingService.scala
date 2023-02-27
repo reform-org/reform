@@ -30,6 +30,7 @@ import webapp.npm.JSUtils.cleanPopper
 import scala.scalajs.js
 import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
+import scalajs.js.JSConverters.JSRichOption
 
 trait Page {
   def render(using
@@ -68,7 +69,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     if (newTab) {
       window.open(linkPath(newPage, queryParams), "_blank").focus();
     } else {
-      window.history.pushState(null, "", linkPath(newPage, queryParams))
+      window.history.pushState(None.orUndefined, "", linkPath(newPage, queryParams))
       cleanPopper()
       page.set(newPage)
       query.set(queryParams)
@@ -85,13 +86,16 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     if (decodedQuery.isBlank() || !decodedQuery.startsWith("?")) return res
     decodedQuery
       .substring(1)
+      .nn
       .split("&")
+      .nn
+      .map(_.nn)
       .foreach(param => {
         if (param.contains("=")) {
-          val kv = param.split("=")
-          val value = if (kv.length >= 2) kv(1) else ""
-          if (kv(0).matches(".*\\[\\]$")) {
-            val key = kv(0).replace("[]", "")
+          val kv = param.split("=").nn
+          val value = if (kv.length >= 2) kv(1).nn else "".nn
+          if (kv(0).nn.matches(".*\\[\\]$")) {
+            val key = kv(0).nn.replace("[]", "").nn
             if (!res.contains(key)) res += (key -> Seq(value))
             else {
               val oldVal = res.get(key).getOrElse(Seq())
@@ -102,7 +106,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
 
             }
           } else {
-            res += (kv(0) -> (value))
+            res += (kv(0).nn -> (value))
           }
         }
       })
@@ -159,7 +163,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     window.history.back()
 
   query.map(query => {
-    window.history.replaceState(null, "", linkPath(page.now, query))
+    window.history.replaceState(None.orUndefined, "", linkPath(page.now, query))
   }): @nowarn
 
   window.onpopstate = _ => {
