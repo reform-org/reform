@@ -87,7 +87,7 @@ val autoupdateTheme = {
 }
 
 def toQueryParameterName(in: String) = {
-  "[\\W]".r.replaceAllIn(in.toLowerCase(), "_")
+  "[\\W]".nn.r.replaceAllIn(in.toLowerCase().nn, "_")
 }
 
 def remToPx(rem: Float): Float = {

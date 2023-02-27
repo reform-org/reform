@@ -231,7 +231,7 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
     store = tx.objectStore("reform")
     v <- store.get(key).toFuture
     _ <- tx.done.toFuture
-    value = Option(v.orNull).map(castFromJsDynamic(_))
+    value = Option(v.orNull).map(castFromJsDynamic(_).nn)
     yield {
       value
     }
@@ -254,6 +254,6 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
   private def castToJsDynamic[T](value: T)(using codec: JsonValueCodec[T]): js.Any =
     JSON.parse(writeToString(value))
 
-  private def castFromJsDynamic[T](dynamic: js.Any)(using codec: JsonValueCodec[T]) =
-    readFromString(JSON.stringify(dynamic))
+  private def castFromJsDynamic[T](dynamic: js.Any | Null)(using codec: JsonValueCodec[T]) =
+    readFromString(JSON.stringify(dynamic.asInstanceOf[js.Any]))
 }

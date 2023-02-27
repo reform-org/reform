@@ -23,27 +23,29 @@ import java.sql.DriverManager
 class SqliteDB extends IIndexedDB {
   val url = "jdbc:sqlite:../data/reform.db"
 
-  val connection = DriverManager.getConnection(url)
+  val connection = DriverManager.getConnection(url).nn
   connection.setAutoCommit(false)
-  val _ = connection.createStatement.execute(
+  val _ = connection.createStatement.nn.execute(
     "CREATE TABLE IF NOT EXISTS reform (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL);",
   )
   connection.commit()
 
-  val readStatement = connection.prepareStatement("SELECT value FROM reform WHERE key = ?;")
+  val readStatement = connection.prepareStatement("SELECT value FROM reform WHERE key = ?;").nn
   val writeStatement =
-    connection.prepareStatement(
-      "INSERT INTO reform (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value;",
-    )
+    connection
+      .prepareStatement(
+        "INSERT INTO reform (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value;",
+      )
+      .nn
 
   def requestPersistentStorage: Unit = {}
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     synchronized {
       readStatement.setString(1, key);
-      val resultSet = readStatement.executeQuery();
+      val resultSet = readStatement.executeQuery().nn;
       val dbValue = if (resultSet.next()) {
-        Some(resultSet.getString("value"))
+        Some(resultSet.getString("value").nn)
       } else {
         None
       }
@@ -56,9 +58,9 @@ class SqliteDB extends IIndexedDB {
   override def update[T](key: String, fun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
     synchronized {
       readStatement.setString(1, key);
-      val resultSet = readStatement.executeQuery();
+      val resultSet = readStatement.executeQuery().nn;
       val dbValue = if (resultSet.next()) {
-        Some(resultSet.getString("value"))
+        Some(resultSet.getString("value").nn)
       } else {
         None
       }

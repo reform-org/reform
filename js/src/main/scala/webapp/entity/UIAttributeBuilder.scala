@@ -90,7 +90,7 @@ object UIAttributeBuilder {
   def multiSelect(
       options: Signal[Seq[(String, Signal[String])]],
   )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
-    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").toSeq)
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
 
   implicit class BindToInt[AttributeType](self: UIAttributeBuilder[AttributeType])(implicit

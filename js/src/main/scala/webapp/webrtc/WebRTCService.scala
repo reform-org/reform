@@ -58,7 +58,7 @@ object PendingConnection {
     val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
     PendingConnection(answer, p.future, answer.connection)
   }
-  private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
+  private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make: @nowarn
   def sessionAsToken(s: ConnectionInformation): String = Base64.encode(writeToString(s)(codec))
 
   def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)

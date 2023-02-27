@@ -43,7 +43,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
     routing
       .getQueryParameterAsString(name)
       .map(s =>
-        e => uiAttribute.getter(e).get.exists(v => uiAttribute.readConverter(v).toLowerCase.contains(s.toLowerCase)),
+        e => uiAttribute.getter(e).get.exists(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(s.toLowerCase)),
       )
   }
 }
