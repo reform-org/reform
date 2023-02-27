@@ -3,6 +3,9 @@ package webapp
 import outwatch.*
 import outwatch.dsl.*
 import org.scalajs.dom.{document, window}
+import org.scalajs.dom.MediaQueryList
+import rescala.default.*
+import scala.annotation.nowarn
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
@@ -39,6 +42,48 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
       res
     },
   )
+}
+
+val theme = {
+  val theme = Var(Option(window.localStorage.getItem("theme")).getOrElse("default"))
+  window.onstorage = (event) => {
+    if (event.key == "theme") {
+      theme.set(event.newValue)
+    }
+  }
+  theme
+}
+
+val browserThemeDark = {
+  val matchPrefersDark = window.matchMedia("(prefers-color-scheme: dark)")
+  val browserThemeDark = Var(matchPrefersDark.matches)
+  matchPrefersDark
+    .asInstanceOf[scalajs.js.Dynamic]
+    .addEventListener(
+      "change",
+      (event: MediaQueryList) => {
+        browserThemeDark.set(event.matches)
+      },
+    ): @nowarn
+  browserThemeDark
+}
+
+val autoupdateTheme = {
+  theme.map(theme => {
+    browserThemeDark.map(browserThemeDark => {
+      if (theme == "dark") {
+        document.documentElement.classList.add("dark")
+      } else if (theme == "light") {
+        document.documentElement.classList.remove("dark")
+      } else {
+        if (browserThemeDark) {
+          document.documentElement.classList.add("dark")
+        } else {
+          document.documentElement.classList.remove("dark")
+        }
+      }
+    })
+  })
 }
 
 def toQueryParameterName(in: String) = {

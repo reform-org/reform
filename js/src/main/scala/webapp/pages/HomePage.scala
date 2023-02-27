@@ -142,11 +142,21 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
       div(
         cls := "flex flex-col gap-2 max-w-sm",
         p("Homepage"),
-        LabeledCheckbox("Testbox1")(CheckboxStyle.Primary),
-        Checkbox(CheckboxStyle.Default),
-        Checkbox(CheckboxStyle.Success),
-        Checkbox(CheckboxStyle.Warning),
-        Checkbox(CheckboxStyle.Error),
+        Select(
+          Signal(
+            Seq(
+              SelectOption("dark", Signal("DarkMogk®")),
+              SelectOption("light", Signal("LightMogk®")),
+              SelectOption("default", Signal("Use Browser Preferences")),
+            ),
+          ),
+          (value) => {
+            window.localStorage.setItem("theme", value)
+            theme.set(value)
+          },
+          theme,
+          false,
+        ),
         Button(
           ButtonStyle.Primary,
           idAttr := "loadPDF",
@@ -155,7 +165,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             modal.open()
           }),
         ),
-        TableButton(
+        Button(
           ButtonStyle.LightDefault,
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
           "Make me a boring normal toast 🍞",
@@ -204,7 +214,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
-        FileInput(tpe := "file", idAttr := "import-file"),
+        // FileInput(tpe := "file", idAttr := "import-file"),
         Button(
           ButtonStyle.Primary,
           "Import DB",
@@ -251,23 +261,6 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           (value) => selectValue.set(value),
           selectValue,
         ),
-        Button(
-          ButtonStyle.Default,
-          "Test",
-          onClick.foreach(_ => {
-            routing.to(this, false, Map(("test" -> "works")))
-          }),
-        ),
-        routing
-          .getQueryParameterAsString("input")
-          .map(input => {
-            LabeledInput("Update QueryParameter")(
-              placeholder := "test",
-              value := input,
-              onInput.value.foreach(v => routing.updateQueryParameters(Map(("input" -> v)))),
-            )
-          }),
-        routing.queryParameters.map(params => params.toString),
       ),
     )
   }

@@ -77,7 +77,7 @@ def MultiSelect(
   div(
     onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
     onDomUnmount.foreach(element => resizeObserver.unobserve(element.querySelector(".multiselect-value-wrapper"))),
-    cls := "multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9",
+    cls := "rounded multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
     cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
     idAttr := id,
@@ -96,10 +96,10 @@ def MultiSelect(
                   .slice(0, visibleItems)
                   .map(v =>
                     div(
-                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap",
+                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
                       v.name,
                       div(
-                        icons.Close(cls := "w-4 h-4 text-slate-600"),
+                        icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
                         cls := "cursor-pointer",
                         onClick.foreach(_ => {
                           onInput(
@@ -125,13 +125,18 @@ def MultiSelect(
         value.map(s => {
           visibleItems.map(visibleItems => {
             if (s.size > visibleItems) {
-              Some(div(cls := "flex items-center justify-center text-slate-400", s"+${s.size - visibleItems}"))
+              Some(
+                div(
+                  cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
+                  s"+${s.size - visibleItems}",
+                ),
+              )
             } else None
           })
         }),
         value.map(s => {
           if (s.size == 0) {
-            Some(div(cls := "flex items-center justify-center text-slate-400", "Select..."))
+            Some(div(cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."))
           } else None
         }),
       ),
@@ -142,11 +147,11 @@ def MultiSelect(
       ),
     ),
     div(
-      cls := "multiselect-dropdown-list-wrapper bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+      cls := "multiselect-dropdown-list-wrapper dark:bg-gray-700 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(
-            cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300",
+            cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300 dark:bg-gray-700 dark:border-gray-600",
             placeholder := "Search Options...",
             outwatch.dsl.onInput.value --> search,
             outwatch.dsl.value <-- search,
@@ -154,7 +159,7 @@ def MultiSelect(
         )
       } else None,
       div(
-        cls := "p-2 border-b border-gray-300",
+        cls := "p-2 border-b border-gray-300 dark:border-gray-600",
         label(
           Checkbox(
             CheckboxStyle.Default,
@@ -195,7 +200,7 @@ def MultiSelect(
                 if (searchKey.isBlank() || name.toLowerCase().contains(searchKey.toLowerCase())) {
                   Some(
                     label(
-                      cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center",
+                      cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700",
                       Checkbox(
                         CheckboxStyle.Default,
                         cls := "mr-2",
