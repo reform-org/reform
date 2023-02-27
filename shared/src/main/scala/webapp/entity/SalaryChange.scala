@@ -33,7 +33,7 @@ object SalaryChange {
   val empty: SalaryChange = SalaryChange()
 
   implicit val bigDecimalCodec: JsonValueCodec[BigDecimal] = new JsonValueCodec[BigDecimal] {
-    def decodeValue(in: JsonReader, default: BigDecimal): BigDecimal = in.readStringAsBigDecimal(0)
+    def decodeValue(in: JsonReader, default: BigDecimal): BigDecimal = in.readBigDecimal(0)
 
     def encodeValue(x: BigDecimal, out: JsonWriter): Unit = out.writeVal(x)
 
