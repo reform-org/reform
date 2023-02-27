@@ -435,12 +435,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     editingValue.now match {
                       case None => {
                         toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
+                        document.getElementById("loadPDF").classList.remove("loading")
                       }
                       case Some(editingValue) => {
                         val contract = editingValue._2.now
                         contract.contractAssociatedHiwi.get match {
                           case None => {
                             toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
+                            document.getElementById("loadPDF").classList.remove("loading")
                           }
                           case Some(hiwiId) => {
                             val hiwis = repositories.hiwis.all.now
@@ -448,6 +450,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                             hiwi match {
                               case None => {
                                 toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
+                                document.getElementById("loadPDF").classList.remove("loading")
                               }
                               case Some(_hiwi) => {
                                 val hiwi = _hiwi.signal.now
@@ -458,6 +461,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                                       ToastMode.Long,
                                       ToastType.Error,
                                     )
+                                    document.getElementById("loadPDF").classList.remove("loading")
                                   }
                                   case Some(paymentLevelId) => {
                                     val paymentLevels = repositories.paymentLevels.all.now
@@ -470,6 +474,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                                           ToastMode.Long,
                                           ToastType.Error,
                                         )
+                                        document.getElementById("loadPDF").classList.remove("loading")
                                       }
                                       case Some(_paymentLevel) => {
                                         val paymentLevel = _paymentLevel.signal.now
