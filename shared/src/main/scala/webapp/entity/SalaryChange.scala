@@ -37,7 +37,7 @@ object SalaryChange {
 
     def encodeValue(x: BigDecimal, out: JsonWriter): Unit = out.writeVal(x)
 
-    def nullValue: BigDecimal = ???
+    def nullValue: BigDecimal = null.asInstanceOf[BigDecimal]
   }
 
   implicit val codec: JsonValueCodec[SalaryChange] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
