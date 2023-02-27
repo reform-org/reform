@@ -199,14 +199,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
             p.getOrElse(Contract.empty).merge(editingNow)
           })
           .map(value => {
-            editingValue.set(None)
+            // editingValue.set(None)
             toaster.make(
               "Contract saved!",
               ToastMode.Short,
               ToastType.Success,
             )
-          })
-          .map(value => {
             routing.to(ContractsPage())
           })
           .toastOnError(ToastMode.Infinit)
