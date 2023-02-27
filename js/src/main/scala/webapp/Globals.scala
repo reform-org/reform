@@ -10,6 +10,11 @@ import scala.scalajs.js
 import scala.scalajs.js.Promise
 import scala.scalajs.js.annotation.JSImport
 
+object Globals2 {
+  // TODO FIXME convert to this
+  val VITE_SELENIUM: Boolean = js.`import`.meta.env.VITE_SELENIUM.asInstanceOf[Boolean]
+}
+
 @js.native
 @JSImport("../../src/main/scala/webapp/globals.js", JSImport.Namespace)
 object Globals extends js.Object {

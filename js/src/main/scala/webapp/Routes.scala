@@ -58,6 +58,6 @@ object Routes {
     case ContractsPage()       => Root / "contracts"
     case EditContractsPage(id) => Root / "edit-contracts" / id
     case DocumentsPage()       => Root / "documents"
-    case ErrorPage()           => Root / window.location.pathname.substring(1)
+    case ErrorPage()           => Root / window.location.pathname.nn.substring(1).nn
   }
 }

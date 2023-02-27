@@ -149,11 +149,11 @@ class DiscoveryService {
   }
 
   def refetchAvailableClients(): Unit = {
-    ws.foreach(emit(_, "request_available_clients", None.orNull))
+    ws.foreach(emit(_, "request_available_clients", null))
   }
 
-  private def emit(ws: WebSocket, name: String, payload: js.Dynamic) = {
-    val event = js.Dynamic.literal("type" -> name, "payload" -> payload);
+  private def emit(ws: WebSocket, name: String, payload: js.Any | Null) = {
+    val event = js.Dynamic.literal("type" -> name, "payload" -> payload.asInstanceOf[js.Any])
     ws.send(JSON.stringify(event))
   }
 
@@ -247,7 +247,7 @@ class DiscoveryService {
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
       }
       case "ping" => {
-        emit(ws, "pong", None.orNull)
+        emit(ws, "pong", null)
       }
       case "connection_closed" => {
         webrtc.closeConnectionById(payload.id.asInstanceOf[String])

@@ -72,7 +72,7 @@ class Toast(
   var animationRef: Option[Int] = None
 
   private def animate(timestamp: Double, resumeTo: Double = 0): Unit = {
-    val element = document.querySelector(s"#toast-$id").asInstanceOf[HTMLHtmlElement];
+    val element = Option(document.querySelector(s"#toast-$id").asInstanceOf[HTMLHtmlElement]);
     if (resumeTo > 0) {
       start match {
         case None             => {}
@@ -80,36 +80,39 @@ class Toast(
       }
     }
 
-    if (element != null) {
-      start match {
-        case None => {
-          start = Some(timestamp)
-          window.requestAnimationFrame(t => animate(t)): @nowarn
-        }
-        case Some(startValue) => {
-          val elapsed = timestamp - startValue
-
-          if (previousTimeStamp != timestamp) {
-            // animation magic
-            val widthVal = js.Math.min((100 / toastMode.duration.toDouble) * elapsed, 100)
-            val width = s"${widthVal}%"
-            element.querySelector(".toast-progress").asInstanceOf[HTMLHtmlElement].style.width = width
-
-            if (widthVal >= 100) {
-              this.onclose(this)
-            }
+    element match {
+      case Some(element) => {
+        start match {
+          case None => {
+            start = Some(timestamp)
+            window.requestAnimationFrame(t => animate(t)): @nowarn
           }
+          case Some(startValue) => {
+            val elapsed = timestamp - startValue
 
-          if (elapsed < toastMode.duration) {
-            previousTimeStamp = timestamp
-            if (!animationDone) {
-              animationRef = Some(window.requestAnimationFrame(t => animate(t)))
+            if (previousTimeStamp != timestamp) {
+              // animation magic
+              val widthVal = js.Math.min((100 / toastMode.duration.toDouble) * elapsed, 100)
+              val width = s"${widthVal}%"
+              element.querySelector(".toast-progress").asInstanceOf[HTMLHtmlElement].style.width = width
+
+              if (widthVal >= 100) {
+                this.onclose(this)
+              }
+            }
+
+            if (elapsed < toastMode.duration) {
+              previousTimeStamp = timestamp
+              if (!animationDone) {
+                animationRef = Some(window.requestAnimationFrame(t => animate(t)))
+              }
             }
           }
         }
       }
-    } else {
-      animationRef = Some(window.requestAnimationFrame(t => animate(t)))
+      case None => {
+        animationRef = Some(window.requestAnimationFrame(t => animate(t)))
+      }
     }
   }
 
