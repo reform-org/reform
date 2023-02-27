@@ -69,7 +69,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     if (newTab) {
       window.open(linkPath(newPage, queryParams), "_blank").focus();
     } else {
-      window.history.pushState(None.orUndefined, "", linkPath(newPage, queryParams))
+      window.history.pushState(null.asInstanceOf[js.Any], "", linkPath(newPage, queryParams))
       cleanPopper()
       page.set(newPage)
       query.set(queryParams)
@@ -163,7 +163,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     window.history.back()
 
   query.map(query => {
-    window.history.replaceState(None.orUndefined, "", linkPath(page.now, query))
+    window.history.replaceState(null.asInstanceOf[js.Any], "", linkPath(page.now, query))
   }): @nowarn
 
   window.onpopstate = _ => {
