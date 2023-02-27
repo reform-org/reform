@@ -434,12 +434,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     e.preventDefault()
                     document.getElementById("loadPDF").classList.add("loading")
 
-                    existingValue match {
+                    editingValue.now match {
                       case None => {
-                        toaster.make("No existing contract found!", ToastMode.Long, ToastType.Error)
+                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
                       }
-                      case Some(existingValue) => {
-                        val contract = existingValue.signal.now
+                      case Some(editingValue) => {
+                        val contract = editingValue._2.now
                         contract.contractAssociatedHiwi.get match {
                           case None => {
                             toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
