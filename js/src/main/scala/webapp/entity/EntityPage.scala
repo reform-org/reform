@@ -525,6 +525,7 @@ abstract class EntityPage[T <: Entity[T]](
           row.value match {
             case New(_) => {}
             case Existing(value, _) =>
+              val id = value.id
               value.signal.map(value => {
                 var csvRow: Seq[String] = Seq()
                 var selectedHeaders: Seq[String] = Seq()
@@ -536,6 +537,12 @@ abstract class EntityPage[T <: Entity[T]](
                       .foreach(attr => {
                         selectedHeaders = selectedHeaders :+ attr.label
                         attr match {
+                          case attr: UIReadOnlyAttribute[?, ?] => {
+                            if (value.exists) {
+                              val a = attr.getter(id, value)
+                              a.map(a => csvRow = csvRow :+ attr.readConverter(a))
+                            }
+                          }
                           case attr: UIAttribute[?, ?] => {
                             if (value.exists) {
                               val a = attr.getter(value)
