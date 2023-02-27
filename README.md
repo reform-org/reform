@@ -86,6 +86,15 @@ sbt webappJS/test
 
 ## Deployment
 
+Using docker-compose (or e.g. podman):
+```
+docker compose --env-file test.env --project-name traefik --file docker-compose-local-traefik.yml up --build --remove-orphans
+docker compose --env-file test.env --project-name reform --file docker-compose.yml up --build --remove-orphans
+docker compose --env-file test.env --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
+```
+
+The application is available on http://reform.localhost:2001/ by default
+
 ```bash
 # netlify
 #curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt fastLinkJS && npm ci && npm run build

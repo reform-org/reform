@@ -105,7 +105,7 @@ class DiscoveryService {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
-        s"${Globals.discoveryServerURL}/api/login",
+        s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PORT}/api/login",
         new RequestInit {
           method = HttpMethod.POST
           body = writeToString(loginInfo)(LoginInfo.codec)
@@ -164,7 +164,7 @@ class DiscoveryService {
         val config = new RTCConfiguration {
           iceServers = js.Array(
             new RTCIceServer {
-              urls = Globals.turnServerURL;
+              urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
               username = payload.host.turn.username.asInstanceOf[String];
               credential = payload.host.turn.credential.asInstanceOf[String];
             },
@@ -193,7 +193,7 @@ class DiscoveryService {
       case "request_client_token" => {
         val config = new RTCConfiguration {
           iceServers = js.Array(new RTCIceServer {
-            urls = Globals.turnServerURL;
+            urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
             username = payload.client.turn.username.asInstanceOf[String];
             credential = payload.client.turn.credential.asInstanceOf[String];
           });
@@ -264,7 +264,12 @@ class DiscoveryService {
       if (tokenIsValid(token.now)) {
         ws match {
           case Some(socket) => {}
-          case None         => ws = Some(new WebSocket(Globals.discoveryServerWebsocketURL))
+          case None =>
+            ws = Some(
+              new WebSocket(
+                s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PORT}",
+              ),
+            )
         }
 
         ws.get.onopen = (_) => {

@@ -21,7 +21,7 @@ import scala.concurrent.Future
 import java.sql.DriverManager
 
 class SqliteDB extends IIndexedDB {
-  val url = "jdbc:sqlite:../reform.db"
+  val url = "jdbc:sqlite:../data/reform.db"
 
   val connection = DriverManager.getConnection(url)
   connection.setAutoCommit(false)

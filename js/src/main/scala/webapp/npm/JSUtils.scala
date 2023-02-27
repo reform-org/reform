@@ -28,8 +28,6 @@ object JSUtils {
     NativeImpl.cleanPopper()
   }
 
-  val isSelenium: Boolean = NativeImpl.isSelenium
-
   def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
 
   def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
@@ -53,8 +51,6 @@ object JSUtils {
 
     def cleanPopper(): Unit =
       js.native
-
-    val isSelenium: Boolean = js.native
 
     def toGermanDate(input: String): String = js.native
 
