@@ -30,6 +30,7 @@ import webapp.utils.Futures.*
 import webapp.given_ExecutionContext
 
 import scala.scalajs.js
+import scala.annotation.nowarn
 
 object Main {
   def main(): Unit = {
@@ -40,6 +41,14 @@ object Main {
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
+
+    helpers.OutwatchTracing.error.unsafeForeach { throwable =>
+      toaster.make(
+        s"Unknown internal exception: ${throwable.getMessage}",
+        ToastMode.Persistent,
+        ToastType.Error,
+      )
+    }: @nowarn
 
     indexedDb
       .update[String]("test", _ => "test")

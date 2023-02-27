@@ -78,7 +78,9 @@ def MultiSelect(
 
   div(
     onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
-    onDomUnmount.foreach(element => resizeObserver.unobserve(element.querySelector(".multiselect-value-wrapper"))),
+    onDomUnmount.foreach(element =>
+      Option(element.querySelector(".multiselect-value-wrapper")).foreach(resizeObserver.unobserve(_)),
+    ),
     cls := "rounded multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
     cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
     props,
