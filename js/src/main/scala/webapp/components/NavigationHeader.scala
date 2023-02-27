@@ -42,7 +42,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       a(
         cls := "btn btn-ghost normal-case	font-normal rounded-md	",
         "Settings",
-        Icons.expand("w-4 h-4"),
+        icons.Expand(cls := "w-4 h-4"),
       ),
       ul(
         cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10]",
@@ -104,7 +104,7 @@ def navigationHeader(
               tabIndex := 0,
               idAttr := "dropdown-button",
               cls := "btn btn-ghost lg:hidden",
-              Icons.hamburger("h-5 w-5"),
+              icons.Hamburger(cls := "h-5 w-5"),
               onClick.foreach(e => {
                 dropdownOpen.transform(!_)
               }),
@@ -115,13 +115,13 @@ def navigationHeader(
         div(
           cls := "flex-1",
           a(
-            Icons.reform(),
+            icons.Reform(),
             cls := "btn btn-ghost normal-case text-xl",
             href := "/",
             onClick.foreach(e => {
               e.preventDefault()
               e.target.asInstanceOf[HTMLElement].blur()
-              routing.to(HomePage(), true)
+              routing.to(HomePage())
             }),
           ),
         ),
@@ -136,7 +136,7 @@ def navigationHeader(
             cls := "btn btn-ghost",
             div(
               cls := "indicator",
-              Icons.connections("h-6 w-6", "#000"),
+              icons.Connections(cls := "h-6 w-6"),
               span(
                 cls := "badge badge-sm indicator-item",
                 webrtc.connections.map(_.size),

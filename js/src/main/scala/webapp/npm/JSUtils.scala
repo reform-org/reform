@@ -16,8 +16,8 @@ object JSUtils {
     promise.toFuture
   }
 
-  def downloadJson(name: String, content: String): Unit = {
-    NativeImpl.downloadJson(name, content)
+  def downloadFile(name: String, content: String, tpe: String): Unit = {
+    NativeImpl.downloadFile(name, content, tpe)
   }
 
   def createPopper(trigger: String, element: String, placement: String = "bottom", sameWidth: Boolean = true): Unit = {
@@ -28,16 +28,22 @@ object JSUtils {
     NativeImpl.cleanPopper()
   }
 
-  val isSelenium: Boolean = NativeImpl.isSelenium
+  def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
+
+  def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
+
+  def toYYYYMMDD(input: Long) = NativeImpl.toYYYYMMDD(input.toString())
+
+  val toMoneyString = NativeImpl.toMoneyString
 
   @js.native
-  @JSImport("../../../../utils.js", JSImport.Namespace)
+  @JSImport("../../../utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
 
     def usesTurn(connection: js.Object): js.Promise[Boolean] =
       js.native
 
-    def downloadJson(name: String, content: String): Unit =
+    def downloadFile(name: String, content: String, tpe: String): Unit =
       js.native
 
     def createPopper(trigger: String, element: String, placement: String, sameWidth: Boolean): Unit =
@@ -46,6 +52,12 @@ object JSUtils {
     def cleanPopper(): Unit =
       js.native
 
-    val isSelenium: Boolean = js.native
+    def toGermanDate(input: String): String = js.native
+
+    def toYYYYMMDD(input: String): String = js.native
+
+    def DateTimeFromISO(input: String): String = js.native
+
+    def toMoneyString(input: BigDecimal): String = js.native
   }
 }

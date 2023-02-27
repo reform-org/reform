@@ -2,6 +2,7 @@ package webapp
 
 import outwatch.*
 import outwatch.dsl.*
+import org.scalajs.dom.{document, window}
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
@@ -38,4 +39,17 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
       res
     },
   )
+}
+
+def toQueryParameterName(in: String) = {
+  "[\\W]".r.replaceAllIn(in.toLowerCase(), "_")
+}
+
+def remToPx(rem: Float): Float = {
+  rem * "^\\d*".r.findFirstIn(window.getComputedStyle(document.documentElement).fontSize).getOrElse("16").toFloat
+}
+
+def escapeCSVString(in: String): String = {
+  if (!"""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isEmpty) s"\"${in.replaceAll("\"", "\"\"")}\""
+  else in
 }

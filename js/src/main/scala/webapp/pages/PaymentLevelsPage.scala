@@ -31,7 +31,7 @@ case class PaymentLevelsPage()(using
 ) extends EntityPage[PaymentLevel]("Payment Levels", repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
 
 object PaymentLevelsPage {
-  private val title = UIAttributeBuilder.string
+  private def title(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Title")
     .require
     .bindAsText[PaymentLevel](
