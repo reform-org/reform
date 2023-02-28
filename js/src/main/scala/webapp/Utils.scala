@@ -45,7 +45,7 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
 }
 
 val theme = {
-  val theme = Var(Option(window.localStorage.getItem("theme")).getOrElse("default"))
+  val theme = Var(Option(window.localStorage.getItem("theme")).getOrElse("light"))
   window.onstorage = (event) => {
     if (event.key == "theme") {
       theme.set(event.newValue)
