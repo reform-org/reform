@@ -261,7 +261,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
-          p(cls := "pl-4", "Editing Contract: ", label(existingValue.map(p => p.id))),
           form(
             editStep(
               "1",
@@ -502,7 +501,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                                                 ),
                                                 PDFTextField(
                                                   "Arbeitszeit Kästchen 1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString(),
+                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
                                                 ),
                                                 PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
                                                 PDFCheckboxField(
