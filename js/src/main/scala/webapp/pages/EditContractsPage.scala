@@ -417,6 +417,15 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
+                LabeledCheckbox("Bestätigung 48 Kalendermonate", cls := "text-left")(CheckboxStyle.Default),
+                LabeledCheckbox("Studienbescheinigung", cls := "text-left")(CheckboxStyle.Default),
+                LabeledCheckbox("Fragebogen zur Sozialversicherung", cls := "text-left")(CheckboxStyle.Default),
+                LabeledCheckbox("Personalbogen", cls := "text-left")(CheckboxStyle.Default),
+                LabeledCheckbox("Selbstauskunft für Steuermerkmale (ELStAM)", cls := "text-left")(
+                  CheckboxStyle.Default,
+                ),
+                LabeledCheckbox("Krankenkassenbescheinigung", cls := "text-left")(CheckboxStyle.Default),
+                LabeledCheckbox("Proof of Degree", cls := "text-left")(CheckboxStyle.Default),
               ),
             ),
             editStep(
