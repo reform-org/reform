@@ -16,7 +16,7 @@ import webapp.given_ExecutionContext
 class PingService(using registry: Registry) {
 
   implicit val codec: JsonValueCodec[String] = JsonCodecMaker.make
-  val binding = Binding[String => Unit]("pings")
+  val binding = Binding[String => Unit](s"pings")
 
   private def ping(timer: Timer, ref: RemoteRef) = {
     if (!ref.connected) {
