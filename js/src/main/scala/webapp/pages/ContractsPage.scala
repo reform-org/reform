@@ -74,7 +74,13 @@ case class ContractsPage()(using
       "Contracts",
       repositories.contracts,
       onlyFinalizedContracts,
-      Seq(contractAssociatedProject, contractAssociatedHiwi),
+      Seq(
+        contractAssociatedProject,
+        contractAssociatedHiwi,
+        contractAssociatedSupervisor,
+        contractStartDate,
+        contractEndDate,
+      ),
       DetailPageEntityRowBuilder(),
     ) {}
 
@@ -92,7 +98,7 @@ object ContractsPage {
           ),
         ),
       )
-      .withLabel("Associated Hiwi")
+      .withLabel("Hiwi")
       .require
       .bindAsSelect(
         _.contractAssociatedHiwi,
@@ -128,7 +134,7 @@ object ContractsPage {
           ),
         ),
       )
-      .withLabel("Associated Supervisors")
+      .withLabel("Supervisor")
       .require
       .bindAsSelect(
         _.contractAssociatedSupervisor,
@@ -146,7 +152,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )
-      .withLabel("Contract Type")
+      .withLabel("Type")
       .require
       .bindAsSelect(
         _.contractType,
@@ -155,7 +161,7 @@ object ContractsPage {
   }
 
   def contractStartDate(using routing: RoutingService) = UIAttributeBuilder.date
-    .withLabel("Start Date")
+    .withLabel("Start")
     .require
     .bindAsDatePicker[Contract](
       _.contractStartDate,
@@ -163,7 +169,7 @@ object ContractsPage {
     )
 
   def contractEndDate(using routing: RoutingService) = UIAttributeBuilder.date
-    .withLabel("Start Date")
+    .withLabel("End")
     .require
     .bindAsDatePicker[Contract](
       _.contractEndDate,
@@ -171,7 +177,7 @@ object ContractsPage {
     )
 
   def contractHoursPerMonth(using routing: RoutingService) = UIAttributeBuilder.int
-    .withLabel("Hours per Month")
+    .withLabel("h/month")
     .require
     .bindAsNumber[Contract](
       _.contractHoursPerMonth,
@@ -196,7 +202,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
         ),
       )
-      .withLabel("Associated PaymentLevel")
+      .withLabel("Payment level")
       .require
       .bindAsSelect(
         _.contractAssociatedPaymentLevel,

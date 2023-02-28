@@ -41,6 +41,12 @@ case class ContractDraftsPage()(using
       "Contract drafts",
       repositories.contracts,
       onlyDrafts,
-      Seq(contractAssociatedProject, contractAssociatedHiwi),
+      Seq(
+        contractAssociatedProject,
+        contractAssociatedHiwi,
+        contractAssociatedSupervisor,
+        contractStartDate,
+        contractEndDate,
+      ),
       DetailPageEntityRowBuilder(),
     ) {}
