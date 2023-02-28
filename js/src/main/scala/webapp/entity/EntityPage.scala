@@ -440,26 +440,32 @@ abstract class EntityPage[T <: Entity[T]](
                     countEntities
                       .map(countEntities => {
                         if (countEntities == 0)
-                          Some(
+                          List(
+                            tr(
+                              cls := "h-4",
+                            ),
                             tr(
                               td(
                                 colSpan := 100,
-                                cls := "h-96 text-slate-300 text-center",
-                                "Empty...",
+                                cls := "text-slate-500",
+                                "No entries.",
                               ),
                             ),
                           )
                         else if (countFilteredEntities == 0 && countEntities > 0)
-                          Some(
+                          List(
+                            tr(
+                              cls := "h-4",
+                            ),
                             tr(
                               td(
                                 colSpan := 100,
-                                cls := "h-96 text-slate-300 text-center",
-                                "No results for your Filter...",
+                                cls := "text-slate-500",
+                                "No results for your filter.",
                               ),
                             ),
                           )
-                        else None
+                        else List()
                       })
                   }),
                 renderEntities,
