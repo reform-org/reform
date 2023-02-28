@@ -34,8 +34,6 @@ import scala.annotation.nowarn
 
 object Main {
   def main(): Unit = {
-    println(Globals.VITE_DATABASE_VERSION)
-
     given toaster: Toaster = Toaster()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
