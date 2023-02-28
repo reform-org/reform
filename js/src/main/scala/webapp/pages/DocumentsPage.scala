@@ -32,7 +32,7 @@ case class DocumentsPage()(using
 ) extends EntityPage[Document](
       "Documents",
       repositories.requiredDocuments,
-      Seq(name, fileName),
+      Seq(name),
       DefaultEntityRow(),
     ) {}
 
@@ -43,13 +43,5 @@ object DocumentsPage {
     .bindAsText[Document](
       _.name,
       (d, a) => d.copy(name = a),
-    )
-
-  private def fileName(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("File Name")
-    .require
-    .bindAsText[Document](
-      _.fileName,
-      (d, a) => d.copy(fileName = a),
     )
 }
