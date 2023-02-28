@@ -98,7 +98,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
         Checkbox(
           CheckboxStyle.Primary,
           cls := "checkbox-sm",
-          checked := Settings.get[Boolean]("autoconnect").getOrElse(false),
+          checked := Settings.get[Boolean]("autoconnect").getOrElse(true),
           onClick.foreach(e => discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)),
         ),
       ),

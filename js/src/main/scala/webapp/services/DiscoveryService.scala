@@ -260,7 +260,7 @@ class DiscoveryService {
 
     if (resetWebsocket) ws = None
 
-    if (Settings.get[Boolean]("autoconnect").getOrElse(false)) {
+    if (Settings.get[Boolean]("autoconnect").getOrElse(true)) {
       if (tokenIsValid(token.now)) {
         ws match {
           case Some(socket) => {}
