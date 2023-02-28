@@ -16,6 +16,7 @@ case class Contract(
     contractType: Attribute[String] = Attribute.empty,
     contractHoursPerMonth: Attribute[Int] = Attribute.empty,
     isDraft: Attribute[Boolean] = Attribute.empty,
+    requiredDocuments: Attribute[Seq[String]] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Contract]
     derives DecomposeLattice,
