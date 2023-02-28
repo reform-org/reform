@@ -8,7 +8,6 @@ import webapp.entity.Attribute.given
 
 case class Document(
     name: Attribute[String] = Attribute.empty,
-    fileName: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Document]
     derives DecomposeLattice,
@@ -16,7 +15,7 @@ case class Document(
 
   // empty for required fields, default for optional fields
   def default: Document =
-    Document(Attribute.default, Attribute.default, Attribute(true))
+    Document(Attribute.default, Attribute(true))
 
   def identifier: Attribute[String] = name
 
