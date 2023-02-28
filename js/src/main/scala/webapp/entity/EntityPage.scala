@@ -116,7 +116,7 @@ class EntityRow[T <: Entity[T]](
         .getQueryParameterAsSeq("columns")
         .map(columns =>
           uiAttributes
-            .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
+            .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
             .map(ui => {
               td(cls := "p-0 border-none", ui.renderEdit(id, editingValue))
             }),
@@ -221,7 +221,7 @@ class EntityRow[T <: Entity[T]](
             .getQueryParameterAsSeq("columns")
             .map(columns =>
               uiAttributes
-                .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
+                .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
                 .map(ui => {
                   td(
                     cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
@@ -343,10 +343,11 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
     repository.all.map(
-      _.map(syncedEntity => {
-        val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
-        entityRowContructor.construct(repository, existing, uiAttributes)
-      }),
+      _.sortBy(_.signal.now.identifier.get)
+        .map(syncedEntity => {
+          val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
+          entityRowContructor.construct(repository, existing, uiAttributes)
+        }),
     )
 
   private val filter = Filter[T](uiAttributes)
@@ -511,7 +512,7 @@ abstract class EntityPage[T <: Entity[T]](
       .map(a => a.size)
   }
 
-  private def exportView = {
+  private def exportView: Unit = {
     var csvHeader: Seq[String] = Seq()
     var csvData: Seq[String] = Seq()
 
@@ -539,7 +540,7 @@ abstract class EntityPage[T <: Entity[T]](
                   .getQueryParameterAsSeq("columns")
                   .map(columns =>
                     row.uiAttributes
-                      .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
+                      .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
                       .foreach(attr => {
                         selectedHeaders = selectedHeaders :+ attr.label
                         attr match {
@@ -560,8 +561,8 @@ abstract class EntityPage[T <: Entity[T]](
                       }),
                   ): @nowarn
 
-                if (csvHeader.size == 0) csvHeader = selectedHeaders
-                if (csvRow.size > 0)
+                if (csvHeader.isEmpty) csvHeader = selectedHeaders
+                if (csvRow.nonEmpty)
                   csvData = csvData :+ csvRow.map(escapeCSVString).mkString(",")
               })
           }
