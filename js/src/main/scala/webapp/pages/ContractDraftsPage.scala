@@ -27,8 +27,9 @@ import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import ContractsPage.*
 import webapp.utils.Seqnal.*
+import webapp.repo.Synced
 
-def onlyDrafts(using repositories: Repositories) = {
+def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
   repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
 }
 
