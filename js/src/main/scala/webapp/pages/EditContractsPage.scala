@@ -39,6 +39,7 @@ import org.scalajs.dom.{console, document}
 import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
 import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
+import ContractsPage.*
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -86,107 +87,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     indexeddb: IIndexedDB,
 ) {
   val startEditEntity = existingValue.map(_.signal.now)
-
-  private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
-      )
-      .withLabel("Project")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedProject,
-        (p, a) => p.copy(contractAssociatedProject = a),
-      )
-  }
-
-  private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.hiwis.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
-        ),
-      )
-      .withLabel("Associated Hiwi")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedHiwi,
-        (p, a) => p.copy(contractAssociatedHiwi = a),
-      )
-  }
-
-  private def contractAssociatedSupervisor(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        options = repositories.supervisors.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
-        ),
-      )
-      .withLabel("Associated Supervisors")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedSupervisor,
-        (p, a) => p.copy(contractAssociatedSupervisor = a),
-      )
-  }
-
-  private def contractAssociatedType(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.contractSchemas.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
-        ),
-      )
-      .withLabel("Contract Type")
-      .require
-      .bindAsSelect(
-        _.contractType,
-        (p, a) => p.copy(contractType = a),
-      )
-  }
-
-  private val contractStartDate = UIAttributeBuilder.date
-    .withLabel("Start Date")
-    .require
-    .bindAsDatePicker[Contract](
-      _.contractStartDate,
-      (h, a) => h.copy(contractStartDate = a),
-    )
-
-  private val contractEndDate = UIAttributeBuilder.date
-    .withLabel("Start Date")
-    .require
-    .bindAsDatePicker[Contract](
-      _.contractEndDate,
-      (h, a) => h.copy(contractEndDate = a),
-    )
-
-  private val contractHoursPerMonth = UIAttributeBuilder.int
-    .withLabel("Hours per Month")
-    .require
-    .bindAsNumber[Contract](
-      _.contractHoursPerMonth,
-      (h, a) => h.copy(contractHoursPerMonth = a),
-    )
-
-  private def contractAssociatedPaymentLevel(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
-        ),
-      )
-      .withLabel("Associated PaymentLevel")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedPaymentLevel,
-        (p, a) => p.copy(contractAssociatedPaymentLevel = a),
-      )
-  }
 
   private def createOrUpdate(): Unit = {
     indexeddb.requestPersistentStorage

@@ -25,40 +25,7 @@ import kofre.base.Bottom
 import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
-
-private def contractAssociatedHiwi(using
-    repositories: Repositories,
-    routing: RoutingService,
-): UIAttribute[Contract, String] = {
-  UIAttributeBuilder
-    .select(
-      repositories.hiwis.all.map(list =>
-        list.map(value => value.id -> value.signal.map(v => v.firstName.get.getOrElse(""))),
-      ),
-    )
-    .withLabel("Associated Hiwi")
-    .require
-    .bindAsSelect(
-      _.contractAssociatedHiwi,
-      (p, a) => p.copy(contractAssociatedHiwi = a),
-    )
-}
-
-private def contractAssociatedProject(using
-    repositories: Repositories,
-    routing: RoutingService,
-): UIAttribute[Contract, String] = {
-  UIAttributeBuilder
-    .select(
-      repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
-    )
-    .withLabel("Project")
-    .require
-    .bindAsSelect(
-      _.contractAssociatedProject,
-      (p, a) => p.copy(contractAssociatedProject = a),
-    )
-}
+import ContractsPage.*
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
@@ -101,9 +68,125 @@ case class ContractsPage()(using
 ) extends EntityPage[Contract](
       "Contract",
       repositories.contracts,
-      Seq(
-        contractAssociatedProject,
-        contractAssociatedHiwi,
-      ),
+      Seq(contractAssociatedProject, contractAssociatedHiwi),
       DetailPageEntityRowBuilder(),
     ) {}
+
+object ContractsPage {
+
+  def contractAssociatedHiwi(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.hiwis.all.map(list =>
+          list.map(value =>
+            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
+          ),
+        ),
+      )
+      .withLabel("Associated Hiwi")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedHiwi,
+        (p, a) => p.copy(contractAssociatedHiwi = a),
+      )
+  }
+
+  def contractAssociatedProject(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
+      )
+      .withLabel("Project")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedProject,
+        (p, a) => p.copy(contractAssociatedProject = a),
+      )
+  }
+
+  def contractAssociatedSupervisor(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        options = repositories.supervisors.all.map(list =>
+          list.map(value =>
+            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
+          ),
+        ),
+      )
+      .withLabel("Associated Supervisors")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedSupervisor,
+        (p, a) => p.copy(contractAssociatedSupervisor = a),
+      )
+  }
+
+  def contractAssociatedType(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.contractSchemas.all.map(list =>
+          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
+        ),
+      )
+      .withLabel("Contract Type")
+      .require
+      .bindAsSelect(
+        _.contractType,
+        (p, a) => p.copy(contractType = a),
+      )
+  }
+
+  def contractStartDate(using routing: RoutingService) = UIAttributeBuilder.date
+    .withLabel("Start Date")
+    .require
+    .bindAsDatePicker[Contract](
+      _.contractStartDate,
+      (h, a) => h.copy(contractStartDate = a),
+    )
+
+  def contractEndDate(using routing: RoutingService) = UIAttributeBuilder.date
+    .withLabel("Start Date")
+    .require
+    .bindAsDatePicker[Contract](
+      _.contractEndDate,
+      (h, a) => h.copy(contractEndDate = a),
+    )
+
+  def contractHoursPerMonth(using routing: RoutingService) = UIAttributeBuilder.int
+    .withLabel("Hours per Month")
+    .require
+    .bindAsNumber[Contract](
+      _.contractHoursPerMonth,
+      (h, a) => h.copy(contractHoursPerMonth = a),
+    )
+
+  def contractAssociatedPaymentLevel(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, String] = {
+    UIAttributeBuilder
+      .select(
+        repositories.paymentLevels.all.map(list =>
+          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
+        ),
+      )
+      .withLabel("Associated PaymentLevel")
+      .require
+      .bindAsSelect(
+        _.contractAssociatedPaymentLevel,
+        (p, a) => p.copy(contractAssociatedPaymentLevel = a),
+      )
+  }
+}
