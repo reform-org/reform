@@ -18,9 +18,15 @@ object Globals {
       .map(_.VITE_SELENIUM.asInstanceOf[String] == "true")
       .getOrElse(false)
 
-  val VITE_DATABASE_VERSION: String = js.`import`.meta.env.VITE_DATABASE_VERSION.asInstanceOf[String]
+  val VITE_DATABASE_VERSION: String = js.`import`.meta.env
+    .asInstanceOf[UndefOr[js.Dynamic]]
+    .map(_.VITE_DATABASE_VERSION.asInstanceOf[String])
+    .getOrElse("test")
 
-  val VITE_PROTOCOL_VERSION: String = js.`import`.meta.env.VITE_PROTOCOL_VERSION.asInstanceOf[String]
+  val VITE_PROTOCOL_VERSION: String = js.`import`.meta.env
+    .asInstanceOf[UndefOr[js.Dynamic]]
+    .map(_.VITE_PROTOCOL_VERSION.asInstanceOf[String])
+    .getOrElse("test")
 
   val VITE_SERVER_PROTOCOL: String = js.`import`.meta.env.VITE_SERVER_PROTOCOL.asInstanceOf[String]
 
