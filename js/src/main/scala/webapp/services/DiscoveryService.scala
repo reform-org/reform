@@ -255,12 +255,12 @@ class DiscoveryService {
     }
   }
 
-  def connect(resetWebsocket: Boolean = false)(using webrtc: WebRTCService): Future[Boolean] = {
+  def connect(resetWebsocket: Boolean = false, force: Boolean = false)(using webrtc: WebRTCService): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
     if (resetWebsocket) ws = None
 
-    if (Settings.get[Boolean]("autoconnect").getOrElse(true)) {
+    if (Settings.get[Boolean]("autoconnect").getOrElse(true) || force) {
       if (tokenIsValid(token.now)) {
         ws match {
           case Some(socket) => {}

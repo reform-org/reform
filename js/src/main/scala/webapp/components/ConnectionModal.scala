@@ -18,8 +18,10 @@ import webapp.given_ExecutionContext
 import scala.util.Failure
 import scala.util.Success
 import webapp.components.common.*
+import webapp.utils.Futures.*
+import scala.annotation.nowarn
 
-class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) {
+class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, toaster: Toaster) {
   val offlineBanner = {
     div(
       cls := "bg-amber-100 flex flex-col items-center",
@@ -28,10 +30,12 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService) 
         onClick.foreach(e => {
           e.target.classList.add("animate-spin")
           discovery
-            .connect(true)
-            .onComplete(_ => {
-              window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
+            .connect(true, true)
+            .transform(res => {
+              window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000): @nowarn
+              res
             })
+            .toastOnError()
         }),
       ),
       span(
