@@ -68,7 +68,7 @@ case class ContractsPage()(using
 ) extends EntityPage[Contract](
       "Contract",
       repositories.contracts,
-      Seq(contractAssociatedProject, contractAssociatedHiwi),
+      Seq(contractAssociatedProject, contractAssociatedHiwi, contractDraft),
       DetailPageEntityRowBuilder(),
     ) {}
 
@@ -170,6 +170,14 @@ object ContractsPage {
     .bindAsNumber[Contract](
       _.contractHoursPerMonth,
       (h, a) => h.copy(contractHoursPerMonth = a),
+    )
+
+  def contractDraft(using routing: RoutingService) = UIAttributeBuilder.boolean
+    .withLabel("Draft?")
+    .require
+    .bindAsCheckbox[Contract](
+      _.isDraft,
+      (h, a) => h.copy(isDraft = a),
     )
 
   def contractAssociatedPaymentLevel(using
