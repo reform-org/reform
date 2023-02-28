@@ -60,7 +60,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     fork := true,
     libraryDependencies ++= Seq(
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
-      "org.xerial" % "sqlite-jdbc" % "3.39.2.1",
+      "org.xerial" % "sqlite-jdbc" % "3.41.0.0",
     ),
   )
   .settings(
@@ -73,7 +73,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.21.2",
     ),
-    libraryDependencies += compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.4" cross CrossVersion.full),
+    libraryDependencies += compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.5" cross CrossVersion.full),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
       "-no-indent",
