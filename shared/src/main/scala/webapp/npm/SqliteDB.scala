@@ -27,16 +27,16 @@ class SqliteDB extends IIndexedDB {
   val connection = DriverManager.getConnection(url).nn
   connection.setAutoCommit(false)
   val _ = connection.createStatement.nn.execute(
-    s"CREATE TABLE IF NOT EXISTS ${Globals.VITE_DATABASE_VERSION}-reform (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL);",
+    s"CREATE TABLE IF NOT EXISTS reform_${Globals.VITE_DATABASE_VERSION} (key TEXT NOT NULL PRIMARY KEY, value TEXT NOT NULL);",
   )
   connection.commit()
 
   val readStatement =
-    connection.prepareStatement(s"SELECT value FROM ${Globals.VITE_DATABASE_VERSION}-reform WHERE key = ?;").nn
+    connection.prepareStatement(s"SELECT value FROM reform_${Globals.VITE_DATABASE_VERSION} WHERE key = ?;").nn
   val writeStatement =
     connection
       .prepareStatement(
-        s"INSERT INTO ${Globals.VITE_DATABASE_VERSION}-reform (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value;",
+        s"INSERT INTO reform_${Globals.VITE_DATABASE_VERSION} (key, value) VALUES (?, ?) ON CONFLICT (key) DO UPDATE SET value = excluded.value;",
       )
       .nn
 

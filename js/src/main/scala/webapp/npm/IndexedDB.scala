@@ -189,7 +189,7 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
         3,
         OpenDBCallbacks()
           .setUpgrade((db, _, _, _, _) => {
-            val _ = db.createObjectStore(s"reform-${Globals.VITE_DATABASE_VERSION}")
+            val _ = db.createObjectStore(s"reform_${Globals.VITE_DATABASE_VERSION}")
           }),
       )
       .toFuture
@@ -227,8 +227,8 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     for db <- database
-    tx = db.transaction(js.Array(s"reform-${Globals.VITE_DATABASE_VERSION}"), IDBTransactionMode.readonly)
-    store = tx.objectStore(s"reform-${Globals.VITE_DATABASE_VERSION}")
+    tx = db.transaction(js.Array(s"reform_${Globals.VITE_DATABASE_VERSION}"), IDBTransactionMode.readonly)
+    store = tx.objectStore(s"reform_${Globals.VITE_DATABASE_VERSION}")
     v <- store.get(key).toFuture
     _ <- tx.done.toFuture
     value = Option(v.orNull).map(castFromJsDynamic(_).nn)
@@ -239,8 +239,8 @@ class IndexedDB(using toaster: Toaster) extends IIndexedDB {
 
   override def update[T](key: String, scalaFun: Option[T] => T)(using codec: JsonValueCodec[T]): Future[T] = {
     for db <- database
-    tx = db.transaction(js.Array(s"reform-${Globals.VITE_DATABASE_VERSION}"), IDBTransactionMode.readwrite)
-    store = tx.objectStore(s"reform-${Globals.VITE_DATABASE_VERSION}")
+    tx = db.transaction(js.Array(s"reform_${Globals.VITE_DATABASE_VERSION}"), IDBTransactionMode.readwrite)
+    store = tx.objectStore(s"reform_${Globals.VITE_DATABASE_VERSION}")
     v <- store.get(key).toFuture
     value = Option(v.orNull).map(castFromJsDynamic(_))
     newValue = scalaFun(value)

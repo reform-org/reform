@@ -25,7 +25,9 @@ object Globals {
     properties
   }
 
-  val VITE_DATABASE_VERSION: String = sys.env.get("VITE_DATABASE_VERSION").get
+  val VITE_DATABASE_VERSION: String =
+    sys.env.get("VITE_DATABASE_VERSION").orElse(Option(properties.getProperty("VITE_DATABASE_VERSION"))).get.nn
 
-  val VITE_PROTOCOL_VERSION: String = sys.env.get("VITE_PROTOCOL_VERSION").get
+  val VITE_PROTOCOL_VERSION: String =
+    sys.env.get("VITE_PROTOCOL_VERSION").orElse(Option(properties.getProperty("VITE_PROTOCOL_VERSION"))).get.nn
 }
