@@ -88,7 +88,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def createOrUpdate(): Unit = {
+  private def createOrUpdate(finalize: Boolean = false): Unit = {
     indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -96,7 +96,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       case Some(existing) => {
         existing
           .update(p => {
-            p.getOrElse(Contract.empty).merge(editingNow)
+            val c = p.getOrElse(Contract.empty).merge(editingNow)
+            if (finalize) {
+              c.copy(isDraft = c.isDraft.set(false))
+            } else {
+              c
+            }
           })
           .map(value => {
             // editingValue.set(None)
@@ -105,7 +110,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               ToastMode.Short,
               ToastType.Success,
             )
-            routing.to(ContractsPage())
+            if (value.isDraft.get.getOrElse(true)) {
+              routing.to(ContractDraftsPage())
+            } else {
+              routing.to(ContractsPage())
+            }
           })
           .toastOnError(ToastMode.Infinit)
       }
@@ -116,11 +125,20 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
             editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.getOrElse(Contract.empty).merge(editingNow)
+              val c = p.getOrElse(Contract.empty).merge(editingNow)
+              if (finalize) {
+                c.copy(isDraft = c.isDraft.set(false))
+              } else {
+                c
+              }
             })
           })
           .map(value => {
-            routing.to(ContractsPage())
+            if (value.isDraft.get.getOrElse(true)) {
+              routing.to(ContractDraftsPage())
+            } else {
+              routing.to(ContractsPage())
+            }
           })
           .toastOnError(ToastMode.Infinit)
       }
@@ -435,10 +453,18 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               cls := "pl-8 space-x-4",
               Button(
                 ButtonStyle.LightPrimary,
-                "Save",
+                "Save and return",
                 onClick.foreach(e => {
                   e.preventDefault()
                   createOrUpdate()
+                }),
+              ),
+              Button(
+                ButtonStyle.LightPrimary,
+                "Save and finalize",
+                onClick.foreach(e => {
+                  e.preventDefault()
+                  createOrUpdate(true)
                 }),
               ),
               Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
