@@ -33,6 +33,7 @@ import webapp.repo.Synced
 import scala.annotation.nowarn
 import webapp.repo.Storage
 import webapp.npm.IIndexedDB
+import webapp.Globals
 
 /** @param name
   *   The name/type of the thing to sync
@@ -85,7 +86,7 @@ class ReplicationGroup[A](name: String)(using
 
   given magicCodec: JsonValueCodec[Tuple2[Option[A], Option[String]]] = JsonCodecMaker.make
 
-  private val binding = Binding[DeltaFor[A] => Future[A]](name)
+  private val binding = Binding[DeltaFor[A] => Future[A]](s"${Globals.VITE_PROTOCOL_VERSION}-${name}")
 
   registry.bindSbj(binding)((remoteRef: RemoteRef, payload: DeltaFor[A]) => {
     if (payload.name != "ids") {
