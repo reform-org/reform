@@ -26,6 +26,11 @@ import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import ContractsPage.*
+import webapp.utils.Seqnal.*
+
+def onlyDrafts(using repositories: Repositories) = {
+  repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
+}
 
 case class ContractDraftsPage()(using
     repositories: Repositories,
@@ -33,8 +38,9 @@ case class ContractDraftsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
-      "Contract",
+      "Contract drafts",
       repositories.contracts,
-      Seq(contractAssociatedProject, contractAssociatedHiwi, contractDraft),
+      onlyDrafts,
+      Seq(contractAssociatedProject, contractAssociatedHiwi),
       DetailPageEntityRowBuilder(),
     ) {}

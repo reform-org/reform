@@ -31,6 +31,7 @@ case class PaymentLevelsPage()(using
 ) extends EntityPage[PaymentLevel](
       "Payment Levels",
       repositories.paymentLevels,
+      repositories.paymentLevels.all,
       Seq(title, pdfCheckboxName),
       DefaultEntityRow(),
     ) {}

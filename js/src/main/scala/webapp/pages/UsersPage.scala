@@ -28,7 +28,13 @@ case class UsersPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
-) extends EntityPage[User]("Users", repositories.users, Seq(username, role, comment), DefaultEntityRow()) {}
+) extends EntityPage[User](
+      "Users",
+      repositories.users,
+      repositories.users.all,
+      Seq(username, role, comment),
+      DefaultEntityRow(),
+    ) {}
 
 object UsersPage {
   private def username(using routing: RoutingService) = UIAttributeBuilder.string

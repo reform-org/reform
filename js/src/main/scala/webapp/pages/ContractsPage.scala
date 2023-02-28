@@ -26,6 +26,7 @@ import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import ContractsPage.*
+import webapp.utils.Seqnal.*
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
@@ -60,15 +61,20 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
   ): EntityRow[T] = DetailPageEntityRow(repository, value, uiAttributes)
 }
 
+def onlyFinalizedContracts(using repositories: Repositories) = {
+  repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
+}
+
 case class ContractsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
-      "Contract",
+      "Contracts",
       repositories.contracts,
-      Seq(contractAssociatedProject, contractAssociatedHiwi, contractDraft),
+      onlyFinalizedContracts,
+      Seq(contractAssociatedProject, contractAssociatedHiwi),
       DetailPageEntityRowBuilder(),
     ) {}
 

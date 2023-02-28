@@ -33,6 +33,7 @@ case class ContractSchemasPage()(using
 ) extends EntityPage[ContractSchema](
       "Contract schemas",
       repositories.contractSchemas,
+      repositories.contractSchemas.all,
       Seq(name, files),
       DefaultEntityRow(),
     ) {}
