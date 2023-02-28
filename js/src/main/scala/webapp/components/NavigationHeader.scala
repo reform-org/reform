@@ -52,6 +52,12 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
         li(
           navigationLink(SalaryChangesPage(), "Salary changes"),
         ),
+        li(
+          navigationLink(ContractSchemasPage(), "Contract schemas"),
+        ),
+        li(
+          navigationLink(DocumentsPage(), "Documents"),
+        ),
       ),
     ),
     li(
@@ -61,18 +67,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
-      navigationLink(ContractSchemasPage(), "Contract schemas"),
-    ),
-    li(
       navigationLink(ContractsPage(), "Contracts"),
-    ),
-    /*
-    li(
-      navigationLink(EditContractsPage(null), "Edit Contracs"),
-    ),
-     */
-    li(
-      navigationLink(DocumentsPage(), "Documents"),
     ),
   )
 }

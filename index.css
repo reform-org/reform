@@ -51,7 +51,7 @@ tfoot td {
 
 /* Chrome, Edge, and Safari */
 .custom-scrollbar::-webkit-scrollbar {
-    width: 16px;
+    width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {

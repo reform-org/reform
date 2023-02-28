@@ -34,6 +34,11 @@ import webapp.services.ToastType
 import scala.scalajs.js.Date
 import webapp.npm.IIndexedDB
 import webapp.components.icons
+import scala.scalajs.js
+import org.scalajs.dom.{console, document}
+import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
+import webapp.npm.JSUtils.toGermanDate
+import scala.annotation.nowarn
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -194,14 +199,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
             p.getOrElse(Contract.empty).merge(editingNow)
           })
           .map(value => {
-            editingValue.set(None)
+            // editingValue.set(None)
             toaster.make(
               "Contract saved!",
               ToastMode.Short,
               ToastType.Success,
             )
-          })
-          .map(value => {
             routing.to(ContractsPage())
           })
           .toastOnError(ToastMode.Infinit)
@@ -414,6 +417,119 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
+              ),
+            ),
+            editStep(
+              "4",
+              "Create Documents",
+              div(
+                cls := "p-4",
+                Button(
+                  ButtonStyle.LightDefault,
+                  "Create Contract PDF",
+                  idAttr := "loadPDF",
+                  onClick.foreach(e => {
+                    e.preventDefault()
+                    document.getElementById("loadPDF").classList.add("loading")
+
+                    editingValue.now match {
+                      case None => {
+                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
+                        document.getElementById("loadPDF").classList.remove("loading")
+                      }
+                      case Some(editingValue) => {
+                        val contract = editingValue._2.now
+                        contract.contractAssociatedHiwi.get match {
+                          case None => {
+                            toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
+                            document.getElementById("loadPDF").classList.remove("loading")
+                          }
+                          case Some(hiwiId) => {
+                            val hiwis = repositories.hiwis.all.now
+                            val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
+                            hiwi match {
+                              case None => {
+                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
+                                document.getElementById("loadPDF").classList.remove("loading")
+                              }
+                              case Some(_hiwi) => {
+                                val hiwi = _hiwi.signal.now
+                                contract.contractAssociatedPaymentLevel.get match {
+                                  case None => {
+                                    toaster.make(
+                                      "No payment level associated with contract!",
+                                      ToastMode.Long,
+                                      ToastType.Error,
+                                    )
+                                    document.getElementById("loadPDF").classList.remove("loading")
+                                  }
+                                  case Some(paymentLevelId) => {
+                                    val paymentLevels = repositories.paymentLevels.all.now
+                                    val paymentLevel =
+                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
+                                    paymentLevel match {
+                                      case None => {
+                                        toaster.make(
+                                          "This payment level does not seem to exist!",
+                                          ToastMode.Long,
+                                          ToastType.Error,
+                                        )
+                                        document.getElementById("loadPDF").classList.remove("loading")
+                                      }
+                                      case Some(_paymentLevel) => {
+                                        val paymentLevel = _paymentLevel.signal.now
+                                        js.dynamicImport {
+                                          PDF
+                                            .fill(
+                                              "/contract_unlocked.pdf",
+                                              "arbeitsvertrag.pdf",
+                                              Seq(
+                                                PDFTextField(
+                                                  "Vorname Nachname (Studentische Hilfskraft)",
+                                                  s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
+                                                ),
+                                                PDFTextField(
+                                                  "Geburtsdatum (Studentische Hilfskraft)",
+                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                                ),
+                                                PDFTextField(
+                                                  "Vertragsbeginn",
+                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                                ),
+                                                PDFTextField(
+                                                  "Vertragsende",
+                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                                ),
+                                                PDFTextField(
+                                                  "Arbeitszeit Kästchen 1",
+                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString(),
+                                                ),
+                                                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                                                PDFCheckboxField(
+                                                  paymentLevel.pdfCheckboxName.get.getOrElse(""),
+                                                  true,
+                                                ),
+                                              ),
+                                            )
+                                            .andThen(s => {
+                                              console.log(s)
+                                              document.getElementById("loadPDF").classList.remove("loading")
+                                            })
+                                            .toastOnError()
+                                        }.toFuture
+                                          .toastOnError()
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }),
+                ),
               ),
             ),
             div(
