@@ -211,8 +211,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     editingValue.map(p =>
                       p.get._2.map(v => {
                         if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
-                          (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                            .getOrElse(0L)).toString + " days"
+                          ((v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                            .getOrElse(0L)) / 86400000).toString + " days"
                         else ""
                       }),
                     ),
