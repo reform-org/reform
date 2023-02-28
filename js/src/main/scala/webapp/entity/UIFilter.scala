@@ -19,7 +19,7 @@ class UIFilterNothing[EntityType]() extends UIFilter[EntityType] {
 
   def render: VNode = td()
 
-  val predicate: default.Signal[EntityType => Boolean] = Signal(_ => true)
+  val predicate: Signal[EntityType => Boolean] = Signal(_ => true)
 }
 
 class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])(using
@@ -43,7 +43,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
     routing
       .getQueryParameterAsString(name)
       .map(s =>
-        e => uiAttribute.getter(e).get.exists(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(s.toLowerCase)),
+        e => uiAttribute.getter(e).get.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(s.toLowerCase)),
       )
   }
 }
@@ -85,7 +85,7 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
               uiAttribute
                 .getter(e)
                 .get
-                .exists(
+                .forall(
                   isBetween(min, _, max),
                 ),
           ),
@@ -222,6 +222,6 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    selected.map(s => e => uiAttribute.getter(e).get.exists(v => s.isBlank || s == "both" || s.toBoolean == v))
+    selected.map(s => e => uiAttribute.getter(e).get.forall(v => s.isBlank || s == "both" || s.toBoolean == v))
   }
 }

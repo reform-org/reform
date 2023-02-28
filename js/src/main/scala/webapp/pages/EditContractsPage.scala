@@ -86,7 +86,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing: RoutingService,
     indexeddb: IIndexedDB,
 ) {
-  val startEditEntity = existingValue.map(_.signal.now)
+  val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
   private def createOrUpdate(): Unit = {
     indexeddb.requestPersistentStorage
@@ -161,7 +161,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
-          p(cls := "pl-4", "Editing Contract: ", label(existingValue.map(p => p.id))),
           form(
             editStep(
               "1",
@@ -213,7 +212,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                       p.get._2.map(v => {
                         if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
                           (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                            .getOrElse(0L)).toString() + " days"
+                            .getOrElse(0L)).toString + " days"
                         else ""
                       }),
                     ),
@@ -402,7 +401,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                                                 ),
                                                 PDFTextField(
                                                   "Arbeitszeit Kästchen 1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString(),
+                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
                                                 ),
                                                 PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
                                                 PDFCheckboxField(
