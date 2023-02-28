@@ -9,9 +9,14 @@ import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.Promise
 import scala.scalajs.js.annotation.JSImport
+import js.UndefOr
 
 object Globals {
-  val VITE_SELENIUM: Boolean = js.`import`.meta.env.VITE_SELENIUM.asInstanceOf[String] == "true"
+  val VITE_SELENIUM: Boolean =
+    js.`import`.meta.env
+      .asInstanceOf[UndefOr[js.Dynamic]]
+      .map(_.VITE_SELENIUM.asInstanceOf[String] == "true")
+      .getOrElse(false)
 
   val VITE_DATABASE_VERSION: String = js.`import`.meta.env.VITE_DATABASE_VERSION.asInstanceOf[String]
 
