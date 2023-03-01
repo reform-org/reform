@@ -61,13 +61,31 @@ class ReplicationGroup[A](name: String)(using
   @volatile
   private var cache: Map[String, Future[Synced[A]]] = Map.empty
 
-  def sync(id: String): Future[Synced[A]] = {
+  def createAndSync(id: String, initialValue: A): Future[Synced[A]] = {
+    synchronized {
+      if (cache.contains(id)) {
+        throw new Exception("This is not a new entity!")
+      } else {
+        val synced = storage
+          .getOrDefault(id, initialValue)
+          .map(value => {
+            var synced = Synced(storage, id, Var(value))
+            distributeDeltaRDT(id, synced)
+            synced
+          })
+        cache = cache + (id -> synced)
+        synced
+      }
+    }
+  }
+
+  def getOrCreateAndSync(id: String): Future[Synced[A]] = {
     synchronized {
       if (cache.contains(id)) {
         cache(id)
       } else {
         val synced = storage
-          .getOrDefault(id)
+          .getOrDefault(id, bottom.empty)
           .map(value => {
             var synced = Synced(storage, id, Var(value))
             distributeDeltaRDT(id, synced)
@@ -92,7 +110,7 @@ class ReplicationGroup[A](name: String)(using
     if (payload.name != "ids") {
       indexeddb.requestPersistentStorage
     }
-    sync(payload.name).flatMap(_.update(v => v.getOrElse(bottom.empty).merge(payload.delta)))
+    getOrCreateAndSync(payload.name).flatMap(_.update(v => v.getOrElse(bottom.empty).merge(payload.delta)))
   })
 
   def distributeDeltaRDT(
