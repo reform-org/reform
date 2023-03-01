@@ -122,7 +122,7 @@ class EntityRow[T <: Entity[T]](
             }),
         ),
       td(
-        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-700 border-x border-b border-gray-300 dark:border-gray-700 !z-[1]",
+        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-500 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -234,7 +234,7 @@ class EntityRow[T <: Entity[T]](
                 }),
             ),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white dark:bg-gray-700 border-l border-r border-b border-gray-300 dark:border-gray-700 !z-[1]",
+            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
@@ -426,13 +426,13 @@ abstract class EntityPage[T <: Entity[T]](
                         .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
                         .map(a =>
                           th(
-                            cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-500 px-4 py-2 uppercase",
+                            cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase",
                             a.label,
                           ),
                         ),
                     ),
                   th(
-                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-700 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
+                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
                     "Actions",
                   ),
                 ),
