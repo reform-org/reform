@@ -98,11 +98,14 @@ def MultiSelect(
           cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
           tabIndex := -1,
           formId := props
-            .find(p => p.isInstanceOf[BasicAttr] && p.asInstanceOf[BasicAttr].title == "form")
-            .getOrElse(formId := "")
-            .asInstanceOf[BasicAttr]
-            .value
-            .toString(),
+            .collectFirst(p => {
+              p match {
+                case AccumAttr("form", value, _) => value
+                case BasicAttr("form", value)    => value
+              }
+            })
+            .getOrElse("")
+            .toString,
         ),
       ),
       div(
