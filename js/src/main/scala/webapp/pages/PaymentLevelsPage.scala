@@ -22,6 +22,8 @@ import webapp.services.Toaster
 import PaymentLevelsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import rescala.default.*
+import webapp.utils.Seqnal.*
 
 case class PaymentLevelsPage()(using
     repositories: Repositories,
@@ -32,7 +34,7 @@ case class PaymentLevelsPage()(using
       "Payment Levels",
       repositories.paymentLevels,
       repositories.paymentLevels.all,
-      Seq(title, pdfCheckboxName),
+      Seq(title, pdfCheckboxName, currentValue),
       DefaultEntityRow(),
     ) {}
 
@@ -51,5 +53,15 @@ object PaymentLevelsPage {
     .bindAsText[PaymentLevel](
       _.pdfCheckboxName,
       (p, a) => p.copy(pdfCheckboxName = a),
+    )
+
+  private def currentValue(using repositories: Repositories) =
+    new UIReadOnlyAttribute[PaymentLevel, String](
+      label = "Current Value",
+      getter = (id, paymentLevel) => {
+        // repositories.salaryChanges.all.map(salaryChanges => {})
+        Signal("")
+      },
+      readConverter = identity,
     )
 }

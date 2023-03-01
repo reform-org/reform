@@ -81,6 +81,7 @@ case class ContractsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
+        hoursPerMonth,
       ),
       DetailPageEntityRowBuilder(),
     ) {}
@@ -106,6 +107,13 @@ object ContractsPage {
         (p, a) => p.copy(contractAssociatedHiwi = a),
       )
   }
+
+  def hoursPerMonth(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Contract, String](
+      label = "h/month",
+      getter = (id, contract) => Signal(s"${contract.contractHoursPerMonth.get.getOrElse("-")} h"),
+      readConverter = identity,
+    )
 
   def contractAssociatedProject(using
       repositories: Repositories,
