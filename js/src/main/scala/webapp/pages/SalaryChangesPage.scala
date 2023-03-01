@@ -50,6 +50,8 @@ object SalaryChangesPage {
   private def salaryChangePaymentLevel(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[SalaryChange, String] = {
     UIAttributeBuilder
       .select(
@@ -57,6 +59,7 @@ object SalaryChangesPage {
           list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(PaymentLevelsPage())
       .withLabel("Payment Level")
       .require
       .bindAsSelect(
