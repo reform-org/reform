@@ -28,6 +28,7 @@ def Select(
     value: Signal[String],
     searchEnabled: Boolean = true,
     emptyState: VMod = span("Nothing found..."),
+    required: Boolean = false,
     props: VMod*,
 ): VNode = {
   val dropdownOpen = Var(false)
@@ -41,6 +42,8 @@ def Select(
     document.querySelector(s"#$id .select-select").asInstanceOf[HTMLElement].click()
   }
 
+  props.foreach(p => console.log(p.asInstanceOf[BasicAttr].title))
+
   div(
     cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
     cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
@@ -51,6 +54,21 @@ def Select(
       onClick.foreach(e => {
         dropdownOpen.transform(!_)
       }),
+      value.map(v =>
+        input(
+          outwatch.dsl.value := v,
+          tpe := "text",
+          outwatch.dsl.required := required,
+          cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
+          tabIndex := -1,
+          formId := props
+            .find(p => p.isInstanceOf[BasicAttr] && p.asInstanceOf[BasicAttr].title == "form")
+            .getOrElse(formId := "test")
+            .asInstanceOf[BasicAttr]
+            .value
+            .toString(),
+        ),
+      ),
       options.map(o =>
         value
           .map(s => {

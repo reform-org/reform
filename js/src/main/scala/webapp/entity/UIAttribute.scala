@@ -310,8 +310,8 @@ class UISelectAttribute[EntityType, AttributeType](
       attr.map(getEditString(_)),
       searchEnabled,
       span("Nothing found..."),
+      isRequired,
       formId := _formId,
-      required := isRequired,
     )
   }
 }
@@ -378,8 +378,8 @@ class UIMultiSelectAttribute[EntityType](
         showItems,
         searchEnabled,
         span("Nothing found..."),
+        isRequired,
         formId := _formId,
-        required := isRequired,
       ),
     )
 
