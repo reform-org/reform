@@ -343,13 +343,14 @@ abstract class EntityPage[T <: Entity[T]](
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
-    all.map(
-      _.sortBy(_.signal.now.identifier.get)
-        .map(syncedEntity => {
-          val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
-          entityRowContructor.construct(repository, existing, uiAttributes)
-        }),
-    )
+    all
+      .flatMap(
+        _.sortBySignal(_.signal.map(_.identifier.get)),
+      )
+      .mapInside(syncedEntity => {
+        val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
+        entityRowContructor.construct(repository, existing, uiAttributes)
+      })
 
   private val filter = Filter[T](uiAttributes)
 

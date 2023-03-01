@@ -21,6 +21,8 @@ object Seqnal {
       })
     }
 
+    def flatMap(f: T => Signal[T]): Signal[T] = self.map(f).flatten
+
     def waitUntil(pred: T => Boolean): Future[T] = {
       val promise = Promise[T]()
       val disconnectable: Disconnectable = self.observe(v => {
@@ -52,6 +54,16 @@ object Seqnal {
       .map(e => p(e).map(if (_) Seq(e) else Seq.empty))
       .seqToSignal
       .map(_.flatten)
+
+    def sortBySignal[U](f: T => Signal[U])(using ordering: Ordering[U]): Signal[Seq[T]] = {
+      self
+        .map(x => f(x).map((y: U) => (x, y)))
+        .seqToSignal
+        .map(
+          _.sortBy(_._2)
+            .map(_._1),
+        )
+    }
 
     def mapToSignal[U](f: T => Signal[U]): Signal[Seq[U]] = self.map(f).seqToSignal
   }
