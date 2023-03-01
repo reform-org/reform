@@ -6,6 +6,7 @@ import rescala.default.*
 import webapp.components.common.*
 import webapp.services.RoutingService
 import webapp.npm.JSUtils
+import webapp.services.Page
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -18,6 +19,7 @@ case class UIAttributeBuilder[AttributeType](
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
     options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
     searchEnabled: Boolean = true,
+    createPage: Option[Page] = None,
 )(using routing: RoutingService) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
@@ -31,6 +33,8 @@ case class UIAttributeBuilder[AttributeType](
   def withRegex(regex: String): UIAttributeBuilder[AttributeType] = copy(regex = regex)
 
   def disableSearch: UIAttributeBuilder[AttributeType] = copy(searchEnabled = false)
+
+  def withCreatePage(page: Page): UIAttributeBuilder[AttributeType] = copy(createPage = Some(page))
 
   def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] =
     map(_.getOrElse(default), Some(_))
@@ -154,6 +158,7 @@ object UIAttributeBuilder {
         options = self.options.mapInside { case (k, v) => MultiSelectOption(k, v) },
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
+        createPage = self.createPage,
       )
   }
 
@@ -172,6 +177,7 @@ object UIAttributeBuilder {
         options = self.options.mapInside { case (k, v) => SelectOption(k, v) },
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
+        createPage = self.createPage,
       )
 
   }
