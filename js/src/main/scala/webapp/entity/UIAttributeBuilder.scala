@@ -158,6 +158,7 @@ object UIAttributeBuilder {
         options = self.options.mapInside { case (k, v) => MultiSelectOption(k, v) },
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
+        createPage = self.createPage,
       )
   }
 
@@ -176,6 +177,7 @@ object UIAttributeBuilder {
         options = self.options.mapInside { case (k, v) => SelectOption(k, v) },
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
+        createPage = self.createPage,
       )
 
   }
