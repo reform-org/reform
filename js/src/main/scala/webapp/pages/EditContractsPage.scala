@@ -93,7 +93,7 @@ case class EditContractsPage(contractId: String)(using
                 div(
                   div(
                     cls := "p-1",
-                    h1(cls := "text-4xl text-center", "EditContractsPage"),
+                    h1(cls := "text-4xl text-center", "Contract"),
                   ),
                   h2("Contract not found"),
                 ),
