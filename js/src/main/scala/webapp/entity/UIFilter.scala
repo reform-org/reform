@@ -128,6 +128,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
         5,
         true,
         span("Nothing found..."),
+        false,
         cls := "rounded-md",
       ),
     )
@@ -161,6 +162,7 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
         routing.getQueryParameterAsString(name + ":mode"),
         false,
         span("Nothing found..."),
+        false,
         cls := "rounded-md",
       ),
       MultiSelect(
@@ -170,6 +172,7 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
         5,
         true,
         span("Nothing found..."),
+        false,
         cls := "rounded-md",
       ),
     )
