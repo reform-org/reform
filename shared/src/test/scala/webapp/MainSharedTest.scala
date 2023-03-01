@@ -48,7 +48,7 @@ object MainSharedTest extends TestSuite {
   def testRepository[T <: Entity[T]](repository: Repository[T]) = {
     for _ <- repository.all.waitUntil(_.isEmpty)
     _ <- repository
-      .create()
+      .create(repository.defaultValue)
       .map(value => testE(value))
     _ <- repository.all.waitUntil(_.length == 1)
     yield ()
