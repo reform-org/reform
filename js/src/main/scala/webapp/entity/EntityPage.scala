@@ -283,14 +283,10 @@ class EntityRow[T <: Entity[T]](
       }
       case None => {
         repository
-          .create()
-          .flatMap(entity => {
+          .create(editingNow)
+          .map(entity => {
             editingValue.set(Some((bottom.empty.default, Var(bottom.empty.default))))
             entity
-              .update(p => {
-                p.getOrElse(bottom.empty).merge(editingNow)
-              })
-              .map(_ => entity)
           })
           .map(value => { afterCreated(value.id); value })
           .toastOnError(ToastMode.Infinit)
