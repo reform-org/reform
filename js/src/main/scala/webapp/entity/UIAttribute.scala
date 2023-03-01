@@ -102,7 +102,7 @@ class UITextAttribute[EntityType, AttributeType](
       required := isRequired,
       stepAttr := stepSize,
       pattern := regex,
-      value <-- attr.map(getEditString(_)),
+      value <-- attr.map(getEditString),
       onInput.value --> {
         val evt = Evt[String]()
         ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
@@ -197,7 +197,7 @@ class UIDateAttribute[EntityType](
       setter = setter,
       readConverter = readConverter,
       writeConverter = writeConverter,
-      editConverter = JSUtils.toYYYYMMDD(_),
+      editConverter = JSUtils.toYYYYMMDD,
       label = label,
       width = None,
       isRequired = isRequired,
@@ -215,7 +215,7 @@ class UIDateAttribute[EntityType](
     formId := _formId,
     required := isRequired,
     minAttr := min,
-    value <-- attr.map(getEditString(_)),
+    value <-- attr.map(getEditString),
     onInput.value --> {
       val evt = Evt[String]()
       ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
@@ -309,7 +309,7 @@ class UISelectAttribute[EntityType, AttributeType](
       v => {
         set(writeConverter(v))
       },
-      attr.map(getEditString(_)),
+      attr.map(getEditString),
       searchEnabled, {
         createPage match {
           case Some(createPage) =>

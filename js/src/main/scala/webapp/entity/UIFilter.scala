@@ -34,7 +34,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
       Input(
         placeholder := "Filter here",
         value <-- routing.getQueryParameterAsString(name),
-        onInput.value.foreach(v => routing.updateQueryParameters(Map((name -> v)))),
+        onInput.value.foreach(v => routing.updateQueryParameters(Map(name -> v))),
       ),
     )
   }
@@ -63,13 +63,13 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
         placeholder := "Minimum value",
         `type` := uiAttribute.fieldType,
         value <-- routing.getQueryParameterAsString(name + ":min"),
-        onInput.value.foreach(v => routing.updateQueryParameters(Map((name + ":min" -> v)))),
+        onInput.value.foreach(v => routing.updateQueryParameters(Map(name + ":min" -> v))),
       ),
       Input(
         placeholder := "Maximum value",
         `type` := uiAttribute.fieldType,
         value <-- routing.getQueryParameterAsString(name + ":max"),
-        onInput.value.foreach(v => routing.updateQueryParameters(Map((name + ":max" -> v)))),
+        onInput.value.foreach(v => routing.updateQueryParameters(Map(name + ":max" -> v))),
       ),
     )
   }
@@ -123,7 +123,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
       uiAttribute.label,
       MultiSelect(
         uiAttribute.options.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
-        (value) => routing.updateQueryParameters(Map((name -> value))),
+        value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,
         true,
@@ -137,7 +137,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
   val predicate: Signal[EntityType => Boolean] = {
     routing
       .getQueryParameterAsSeq(name)
-      .map(s => e => s.size == 0 || uiAttribute.getter(e).get.exists(a => s.contains(a)))
+      .map(s => e => s.isEmpty || uiAttribute.getter(e).get.exists(a => s.contains(a)))
   }
 }
 
@@ -158,7 +158,7 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
             SelectOption("exact", Signal("Exact match")),
           ),
         ),
-        (value) => routing.updateQueryParameters(Map((name + ":mode" -> value))),
+        value => routing.updateQueryParameters(Map(name + ":mode" -> value)),
         routing.getQueryParameterAsString(name + ":mode"),
         false,
         span("Nothing found..."),
@@ -167,7 +167,7 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
       ),
       MultiSelect(
         uiAttribute.options,
-        (value) => routing.updateQueryParameters(Map((name -> value))),
+        value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,
         true,
@@ -186,13 +186,13 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
           .getQueryParameterAsSeq(name)
           .map(s =>
             (e: EntityType) =>
-              s.size == 0 || uiAttribute
+              s.isEmpty || uiAttribute
                 .getter(e)
                 .get
                 .exists(a => {
-                  var res = false;
+                  var res = false
                   if (mode == "or") {
-                    res = s.toSet.intersect(a.toSet).size > 0
+                    res = s.toSet.intersect(a.toSet).nonEmpty
                   } else if (mode == "and") {
                     res = s.toSet.intersect(a.toSet).size >= s.toSet.size
                   } else if (mode == "exact") {
