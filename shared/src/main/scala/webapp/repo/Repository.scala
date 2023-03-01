@@ -59,15 +59,15 @@ case class Repository[A](name: String, defaultValue: A)(using
     (this, values)
   }
 
-  implicit val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
+  implicit val idStorage: Storage[GrowOnlySet[String]] = Storage(name)
 
   private val idSyncer = ReplicationGroup[GrowOnlySet[String]](name + "-ids")
 
-  private val idSynced = idSyncer.sync("ids")
+  private val idSynced = idSyncer.getOrCreateAndSync("ids")
 
   val ids: Signal[Set[String]] = Signals.fromFuture(idSynced).map(synced => synced.signal.map(_.set)).flatten
 
-  implicit val valuesStorage: Storage[A] = Storage(name, defaultValue)
+  implicit val valuesStorage: Storage[A] = Storage(name)
 
   private val valueSyncer = ReplicationGroup[A](name)
 
@@ -81,15 +81,14 @@ case class Repository[A](name: String, defaultValue: A)(using
       .flatten
   }
 
-  // TODO FIXME make this private and create a public getOption
-  private def get(id: String): Future[Synced[A]] = valueSyncer.sync(id)
+  private def get(id: String): Future[Synced[A]] = valueSyncer.getOrCreateAndSync(id)
 
   def create(): Future[Synced[A]] = getOrCreate(UUID.randomUUID().toString())
 
   def getOrCreate(id: String): Future[Synced[A]] = {
     indexedDb.requestPersistentStorage
     valueSyncer
-      .sync(id)
+      .getOrCreateAndSync(id)
       .flatMap(value => {
         idSynced.flatMap(_.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value))
       })
