@@ -18,7 +18,7 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 import rescala.default.*
-import webapp.services.Toaster
+import webapp.services.{ToastMode, Toaster}
 import webapp.components.common.*
 import webapp.repo.Repository
 import kofre.base.Bottom
@@ -28,6 +28,10 @@ import webapp.npm.IIndexedDB
 import ContractsPage.*
 import webapp.utils.Seqnal.*
 import webapp.repo.Synced
+import outwatch.*
+import outwatch.dsl.*
+import webapp.given_ExecutionContext
+import webapp.utils.Futures.*
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
@@ -83,6 +87,12 @@ case class ContractsPage()(using
         contractEndDate,
       ),
       DetailPageEntityRowBuilder(),
+      true,
+      Button(
+        ButtonStyle.LightPrimary,
+        "Add new Contract",
+        onClick.foreach(_ => routing.to(EditContractsPage("new"))),
+      ),
     ) {}
 
 object ContractsPage {
