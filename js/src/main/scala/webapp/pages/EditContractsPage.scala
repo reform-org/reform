@@ -175,7 +175,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       div(
         div(
           cls := "p-1",
-          h1(cls := "text-3xl mt-4 text-center", "Edit Contract"),
+          h1(cls := "text-3xl mt-4 text-center", "Contract draft"),
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
