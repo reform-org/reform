@@ -43,6 +43,7 @@ object Routes {
     case Root / "contracts"           => ContractsPage()
     case Root / "contract-drafts"     => ContractDraftsPage()
     case Root / "edit-contracts" / id => EditContractsPage(id)
+    case Root / "new-contract"        => NewContractPage()
     case Root / "documents"           => DocumentsPage()
     case _                            => ErrorPage()
   }
@@ -59,7 +60,9 @@ object Routes {
     case ContractsPage()       => Root / "contracts"
     case ContractDraftsPage()  => Root / "contract-drafts"
     case EditContractsPage(id) => Root / "edit-contracts" / id
+    case NewContractPage()     => Root / "new-contract"
     case DocumentsPage()       => Root / "documents"
-    case ErrorPage()           => Root / window.location.pathname.nn.substring(1).nn
+
+    case ErrorPage() => Root / window.location.pathname.nn.substring(1).nn
   }
 }

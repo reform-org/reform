@@ -88,11 +88,6 @@ case class ContractsPage()(using
       ),
       DetailPageEntityRowBuilder(),
       true,
-      Button(
-        ButtonStyle.LightPrimary,
-        "Add new Contract",
-        onClick.foreach(_ => routing.to(EditContractsPage("new"))),
-      ),
     ) {}
 
 object ContractsPage {
