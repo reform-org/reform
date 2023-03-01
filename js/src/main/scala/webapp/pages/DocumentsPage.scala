@@ -32,6 +32,7 @@ case class DocumentsPage()(using
 ) extends EntityPage[Document](
       "Documents",
       repositories.requiredDocuments,
+      repositories.requiredDocuments.all,
       Seq(name),
       DefaultEntityRow(),
     ) {}

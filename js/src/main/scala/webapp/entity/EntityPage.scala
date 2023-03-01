@@ -321,6 +321,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 abstract class EntityPage[T <: Entity[T]](
     title: String,
     repository: Repository[T],
+    all: Signal[Seq[Synced[T]]],
     uiAttributes: Seq[UIBasicAttribute[T]],
     entityRowContructor: EntityRowBuilder[T],
 )(using
@@ -342,7 +343,7 @@ abstract class EntityPage[T <: Entity[T]](
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
-    repository.all.map(
+    all.map(
       _.sortBy(_.signal.now.identifier.get)
         .map(syncedEntity => {
           val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))

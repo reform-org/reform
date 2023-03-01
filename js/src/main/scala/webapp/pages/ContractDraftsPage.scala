@@ -17,39 +17,37 @@ package webapp.pages
 
 import webapp.Repositories
 import webapp.entity.*
+import rescala.default.*
 import webapp.services.Toaster
-
-import PaymentLevelsPage.*
+import webapp.components.common.*
+import webapp.repo.Repository
+import kofre.base.Bottom
+import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import ContractsPage.*
+import webapp.utils.Seqnal.*
+import webapp.repo.Synced
 
-case class PaymentLevelsPage()(using
+def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
+  repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
+}
+
+case class ContractDraftsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
-) extends EntityPage[PaymentLevel](
-      "Payment Levels",
-      repositories.paymentLevels,
-      repositories.paymentLevels.all,
-      Seq(title, pdfCheckboxName),
-      DefaultEntityRow(),
+) extends EntityPage[Contract](
+      "Contract drafts",
+      repositories.contracts,
+      onlyDrafts,
+      Seq(
+        contractAssociatedProject,
+        contractAssociatedHiwi,
+        contractAssociatedSupervisor,
+        contractStartDate,
+        contractEndDate,
+      ),
+      DetailPageEntityRowBuilder(),
     ) {}
-
-object PaymentLevelsPage {
-  private def title(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("Title")
-    .require
-    .bindAsText[PaymentLevel](
-      _.title,
-      (p, a) => p.copy(title = a),
-    )
-
-  private def pdfCheckboxName(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("PDF Checkbox Name")
-    .require
-    .bindAsText[PaymentLevel](
-      _.pdfCheckboxName,
-      (p, a) => p.copy(pdfCheckboxName = a),
-    )
-}

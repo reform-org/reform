@@ -32,6 +32,7 @@ case class SupervisorsPage()(using
 ) extends EntityPage[Supervisor](
       "Supervisors",
       repositories.supervisors,
+      repositories.supervisors.all,
       Seq(firstName, lastName, eMail),
       DefaultEntityRow(),
     ) {}

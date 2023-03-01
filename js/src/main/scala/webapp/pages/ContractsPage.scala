@@ -26,6 +26,8 @@ import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import ContractsPage.*
+import webapp.utils.Seqnal.*
+import webapp.repo.Synced
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
@@ -60,15 +62,26 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
   ): EntityRow[T] = DetailPageEntityRow(repository, value, uiAttributes)
 }
 
+def onlyFinalizedContracts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
+  repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
+}
+
 case class ContractsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
-      "Contract",
+      "Contracts",
       repositories.contracts,
-      Seq(contractAssociatedProject, contractAssociatedHiwi),
+      onlyFinalizedContracts,
+      Seq(
+        contractAssociatedProject,
+        contractAssociatedHiwi,
+        contractAssociatedSupervisor,
+        contractStartDate,
+        contractEndDate,
+      ),
       DetailPageEntityRowBuilder(),
     ) {}
 
@@ -86,7 +99,7 @@ object ContractsPage {
           ),
         ),
       )
-      .withLabel("Associated Hiwi")
+      .withLabel("Hiwi")
       .require
       .bindAsSelect(
         _.contractAssociatedHiwi,
@@ -122,7 +135,7 @@ object ContractsPage {
           ),
         ),
       )
-      .withLabel("Associated Supervisors")
+      .withLabel("Supervisor")
       .require
       .bindAsSelect(
         _.contractAssociatedSupervisor,
@@ -140,7 +153,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )
-      .withLabel("Contract Type")
+      .withLabel("Type")
       .require
       .bindAsSelect(
         _.contractType,
@@ -149,7 +162,7 @@ object ContractsPage {
   }
 
   def contractStartDate(using routing: RoutingService) = UIAttributeBuilder.date
-    .withLabel("Start Date")
+    .withLabel("Start")
     .require
     .bindAsDatePicker[Contract](
       _.contractStartDate,
@@ -157,7 +170,7 @@ object ContractsPage {
     )
 
   def contractEndDate(using routing: RoutingService) = UIAttributeBuilder.date
-    .withLabel("Start Date")
+    .withLabel("End")
     .require
     .bindAsDatePicker[Contract](
       _.contractEndDate,
@@ -165,11 +178,19 @@ object ContractsPage {
     )
 
   def contractHoursPerMonth(using routing: RoutingService) = UIAttributeBuilder.int
-    .withLabel("Hours per Month")
+    .withLabel("h/month")
     .require
     .bindAsNumber[Contract](
       _.contractHoursPerMonth,
       (h, a) => h.copy(contractHoursPerMonth = a),
+    )
+
+  def contractDraft(using routing: RoutingService) = UIAttributeBuilder.boolean
+    .withLabel("Draft?")
+    .require
+    .bindAsCheckbox[Contract](
+      _.isDraft,
+      (h, a) => h.copy(isDraft = a),
     )
 
   def contractAssociatedPaymentLevel(using
@@ -182,11 +203,29 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
         ),
       )
-      .withLabel("Associated PaymentLevel")
+      .withLabel("Payment level")
       .require
       .bindAsSelect(
         _.contractAssociatedPaymentLevel,
         (p, a) => p.copy(contractAssociatedPaymentLevel = a),
+      )
+  }
+
+  def requiredDocuments(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, Seq[String]] = {
+    UIAttributeBuilder
+      .multiSelect(
+        repositories.requiredDocuments.all.map(list =>
+          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
+        ),
+      )
+      .withLabel("Required Documents")
+      .require
+      .bindAsMultiSelect[Contract](
+        _.requiredDocuments,
+        (c, a) => c.copy(requiredDocuments = a),
       )
   }
 }
