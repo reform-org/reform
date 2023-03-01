@@ -84,7 +84,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     ),
   ): @nowarn
 
-  registry.connect(BroadcastChannel("test")): @nowarn
+  registry.connect(BroadcastChannel("default")): @nowarn
 
   def registerConnection(
       connector: Connector[Connections.Protocol],
