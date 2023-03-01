@@ -39,6 +39,18 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       navigationLink(ProjectsPage(), "Projects"),
     ),
     li(
+      navigationLink(SupervisorsPage(), "Supervisors"),
+    ),
+    li(
+      navigationLink(HiwisPage(), "Hiwis"),
+    ),
+    li(
+      navigationLink(ContractsPage(), "Contracts"),
+    ),
+    li(
+      navigationLink(ContractDraftsPage(), "Contract drafts"),
+    ),
+    li(
       a(
         cls := "btn btn-ghost normal-case	font-normal rounded-md	",
         "Settings",
@@ -59,15 +71,6 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
           navigationLink(DocumentsPage(), "Documents"),
         ),
       ),
-    ),
-    li(
-      navigationLink(HiwisPage(), "Hiwis"),
-    ),
-    li(
-      navigationLink(SupervisorsPage(), "Supervisors"),
-    ),
-    li(
-      navigationLink(ContractsPage(), "Contracts"),
     ),
   )
 }

@@ -40,8 +40,9 @@ case class Contract(
       Attribute.empty,
       Attribute.empty,
       Attribute.empty,
+      Attribute(true),
       Attribute.empty,
-      Attribute.empty,
+      Attribute(true),
     )
 
 }

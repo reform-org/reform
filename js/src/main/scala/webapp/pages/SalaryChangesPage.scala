@@ -33,6 +33,7 @@ case class SalaryChangesPage()(using
 ) extends EntityPage[SalaryChange](
       "Salary Changes",
       repositories.salaryChanges,
+      repositories.salaryChanges.all,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
       DefaultEntityRow(),
     ) {}

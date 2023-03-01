@@ -71,10 +71,10 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val valueSyncer = ReplicationGroup[A](name)
 
-  val all: Signal[List[Synced[A]]] = {
+  val all: Signal[Seq[Synced[A]]] = {
     ids
       .map(ids => {
-        val futures = ids.toList.map(get)
+        val futures = ids.toSeq.map(get)
         val future = Future.sequence(futures)
         Signals.fromFuture(future)
       })

@@ -39,6 +39,7 @@ import org.scalajs.dom.{console, document}
 import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
 import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
+import ContractsPage.*
 
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
@@ -85,128 +86,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
     routing: RoutingService,
     indexeddb: IIndexedDB,
 ) {
-  val startEditEntity = existingValue.map(_.signal.now)
+  val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def contractAssociatedProject(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
-      )
-      .withLabel("Project")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedProject,
-        (p, a) => p.copy(contractAssociatedProject = a),
-      )
-  }
-
-  private def contractAssociatedHiwi(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.hiwis.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
-        ),
-      )
-      .withLabel("Associated Hiwi")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedHiwi,
-        (p, a) => p.copy(contractAssociatedHiwi = a),
-      )
-  }
-
-  private def contractAssociatedSupervisor(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        options = repositories.supervisors.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
-        ),
-      )
-      .withLabel("Associated Supervisors")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedSupervisor,
-        (p, a) => p.copy(contractAssociatedSupervisor = a),
-      )
-  }
-
-  private def contractAssociatedType(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.contractSchemas.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
-        ),
-      )
-      .withLabel("Contract Type")
-      .require
-      .bindAsSelect(
-        _.contractType,
-        (p, a) => p.copy(contractType = a),
-      )
-  }
-
-  private val contractStartDate = UIAttributeBuilder.date
-    .withLabel("Start Date")
-    .require
-    .bindAsDatePicker[Contract](
-      _.contractStartDate,
-      (h, a) => h.copy(contractStartDate = a),
-    )
-
-  private val contractEndDate = UIAttributeBuilder.date
-    .withLabel("Start Date")
-    .require
-    .bindAsDatePicker[Contract](
-      _.contractEndDate,
-      (h, a) => h.copy(contractEndDate = a),
-    )
-
-  private val contractHoursPerMonth = UIAttributeBuilder.int
-    .withLabel("Hours per Month")
-    .require
-    .bindAsNumber[Contract](
-      _.contractHoursPerMonth,
-      (h, a) => h.copy(contractHoursPerMonth = a),
-    )
-
-  private def contractAssociatedPaymentLevel(using repositories: Repositories): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
-      .select(
-        repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
-        ),
-      )
-      .withLabel("Associated PaymentLevel")
-      .require
-      .bindAsSelect(
-        _.contractAssociatedPaymentLevel,
-        (p, a) => p.copy(contractAssociatedPaymentLevel = a),
-      )
-  }
-
-  private def requiredDocuments(using
-      repositories: Repositories,
-      routing: RoutingService,
-  ): UIAttribute[Contract, Seq[String]] = {
-    UIAttributeBuilder
-      .multiSelect(
-        repositories.requiredDocuments.all.map(list =>
-          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
-        ),
-      )
-      .withLabel("Required Documents")
-      .require
-      .bindAsMultiSelect[Contract](
-        _.requiredDocuments,
-        (c, a) => c.copy(requiredDocuments = a),
-      )
-  }
-
-  private def createOrUpdate(): Unit = {
+  private def createOrUpdate(finalize: Boolean = false): Unit = {
     indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -214,7 +96,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       case Some(existing) => {
         existing
           .update(p => {
-            p.getOrElse(Contract.empty).merge(editingNow)
+            val c = p.getOrElse(Contract.empty).merge(editingNow)
+            if (finalize) {
+              c.copy(isDraft = c.isDraft.set(false))
+            } else {
+              c
+            }
           })
           .map(value => {
             // editingValue.set(None)
@@ -223,7 +110,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               ToastMode.Short,
               ToastType.Success,
             )
-            routing.to(ContractsPage())
+            if (value.isDraft.get.getOrElse(true)) {
+              routing.to(ContractDraftsPage())
+            } else {
+              routing.to(ContractsPage())
+            }
           })
           .toastOnError(ToastMode.Infinit)
       }
@@ -234,11 +125,20 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
             editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
             //  TODO FIXME we probably should special case initialization and not use the event
             entity.update(p => {
-              p.getOrElse(Contract.empty).merge(editingNow)
+              val c = p.getOrElse(Contract.empty).merge(editingNow)
+              if (finalize) {
+                c.copy(isDraft = c.isDraft.set(false))
+              } else {
+                c
+              }
             })
           })
           .map(value => {
-            routing.to(ContractsPage())
+            if (value.isDraft.get.getOrElse(true)) {
+              routing.to(ContractDraftsPage())
+            } else {
+              routing.to(ContractsPage())
+            }
           })
           .toastOnError(ToastMode.Infinit)
       }
@@ -279,7 +179,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
-          p(cls := "pl-4", "Editing Contract: ", label(existingValue.map(p => p.id))),
           form(
             editStep(
               "1",
@@ -329,9 +228,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     br,
                     editingValue.map(p =>
                       p.get._2.map(v => {
+                        val DAY_IN_MILLISECONDS = 86400000
                         if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
-                          (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                            .getOrElse(0L)).toString() + " days"
+                          ((v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
+                            .getOrElse(0L)) / DAY_IN_MILLISECONDS).toString + " days"
                         else ""
                       }),
                     ),
@@ -522,7 +422,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                                                 ),
                                                 PDFTextField(
                                                   "Arbeitszeit Kästchen 1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString(),
+                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
                                                 ),
                                                 PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
                                                 PDFCheckboxField(
@@ -556,10 +456,18 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               cls := "pl-8 space-x-4",
               Button(
                 ButtonStyle.LightPrimary,
-                "Save",
+                "Save and return",
                 onClick.foreach(e => {
                   e.preventDefault()
                   createOrUpdate()
+                }),
+              ),
+              Button(
+                ButtonStyle.LightPrimary,
+                "Save and finalize",
+                onClick.foreach(e => {
+                  e.preventDefault()
+                  createOrUpdate(true)
                 }),
               ),
               Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),

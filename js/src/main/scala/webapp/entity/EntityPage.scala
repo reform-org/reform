@@ -321,6 +321,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 abstract class EntityPage[T <: Entity[T]](
     title: String,
     repository: Repository[T],
+    all: Signal[Seq[Synced[T]]],
     uiAttributes: Seq[UIBasicAttribute[T]],
     entityRowContructor: EntityRowBuilder[T],
 )(using
@@ -342,7 +343,7 @@ abstract class EntityPage[T <: Entity[T]](
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
   private val entityRows: Signal[Seq[EntityRow[T]]] =
-    repository.all.map(
+    all.map(
       _.map(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
         entityRowContructor.construct(repository, existing, uiAttributes)
@@ -440,26 +441,32 @@ abstract class EntityPage[T <: Entity[T]](
                     countEntities
                       .map(countEntities => {
                         if (countEntities == 0)
-                          Some(
+                          List(
+                            tr(
+                              cls := "h-4",
+                            ),
                             tr(
                               td(
                                 colSpan := 100,
-                                cls := "h-96 text-slate-300 text-center",
-                                "Empty...",
+                                cls := "text-slate-500",
+                                "No entries.",
                               ),
                             ),
                           )
                         else if (countFilteredEntities == 0 && countEntities > 0)
-                          Some(
+                          List(
+                            tr(
+                              cls := "h-4",
+                            ),
                             tr(
                               td(
                                 colSpan := 100,
-                                cls := "h-96 text-slate-300 text-center",
-                                "No results for your Filter...",
+                                cls := "text-slate-500",
+                                "No results for your filter.",
                               ),
                             ),
                           )
-                        else None
+                        else List()
                       })
                   }),
                 renderEntities,

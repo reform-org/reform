@@ -168,7 +168,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             toaster.make("Database exported", ToastMode.Short, ToastType.Success)
           }),
         ),
-        // FileInput(tpe := "file", idAttr := "import-file"),
+        FileInput(tpe := "file", idAttr := "import-file"),
         Button(
           ButtonStyle.Primary,
           "Import DB",
