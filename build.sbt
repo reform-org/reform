@@ -37,8 +37,9 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "69ab30877539712051f508bdf680134e90032e0b",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "69ab30877539712051f508bdf680134e90032e0b",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "a9b0021d0ceab2e587b3125a83fda2fcfc23a4d9",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-webrtc" % "a9b0021d0ceab2e587b3125a83fda2fcfc23a4d9",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-broadcastchannel" % "a9b0021d0ceab2e587b3125a83fda2fcfc23a4d9",
     ),
     /*
     externalNpm := baseDirectory.value.getParentFile(),
@@ -59,7 +60,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(
     fork := true,
     libraryDependencies ++= Seq(
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "a9b0021d0ceab2e587b3125a83fda2fcfc23a4d9",
       "org.xerial" % "sqlite-jdbc" % "3.41.0.0",
     ),
   )
@@ -67,7 +68,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     resolvers += "jitpack".at("https://jitpack.io"),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "69ab30877539712051f508bdf680134e90032e0b",
+      "com.github.reform-org.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "a9b0021d0ceab2e587b3125a83fda2fcfc23a4d9",
       "com.github.rescala-lang.REScala" %%% "rescala" % "e797c43178820482223e92264089108814c15fab",
       "com.github.rescala-lang.REScala" %%% "kofre" % "e797c43178820482223e92264089108814c15fab",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
