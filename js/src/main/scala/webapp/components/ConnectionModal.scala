@@ -73,7 +73,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
           emptyState = div(
             cls := "flex flex-col items-center mt-4 mb-4",
             icons.Ghost(cls := "w-14 h-14 mb-2"),
-            i("It's quiet for now..."),
+            i("No other clients available"),
           )
         }
         emptyState
