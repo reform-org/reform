@@ -53,7 +53,7 @@ object ContractSchemasPage {
   ): UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
       .multiSelect(
-        repositories.requiredDocuments.all.map(list =>
+        repositories.requiredDocuments.existing.map(list =>
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),
       )

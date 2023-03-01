@@ -31,6 +31,8 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import webapp.webrtc.ReplicationGroup
+import webapp.utils.Seqnal.*
+import webapp.entity.Entity
 
 type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
 
@@ -42,9 +44,9 @@ case class Repository[A](name: String, defaultValue: A)(using
     codec: JsonValueCodec[A],
 ) {
 
-  def bottomEmpty = bottom.empty
+  def bottomEmpty: A = bottom.empty
 
-  def latticeMerge(left: A, right: A) = dcl.merge(left)(right)
+  def latticeMerge(left: A, right: A): A = dcl.merge(left)(right)
 
   given mapCodec: JsonValueCodec[mutable.Map[String, A]] = JsonCodecMaker.make
 
@@ -81,10 +83,18 @@ case class Repository[A](name: String, defaultValue: A)(using
       .flatten
   }
 
+  val existing: Signal[Seq[Synced[A]]] = {
+    all.flatMap(
+      _.filterSignal(
+        _.signal.map(_ => true),
+      ),
+    )
+  }
+
   // TODO FIXME make this private and create a public getOption
   private def get(id: String): Future[Synced[A]] = valueSyncer.sync(id)
 
-  def create(): Future[Synced[A]] = getOrCreate(UUID.randomUUID().toString())
+  def create(): Future[Synced[A]] = getOrCreate(UUID.randomUUID().toString)
 
   def getOrCreate(id: String): Future[Synced[A]] = {
     indexedDb.requestPersistentStorage
@@ -93,5 +103,16 @@ case class Repository[A](name: String, defaultValue: A)(using
       .flatMap(value => {
         idSynced.flatMap(_.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value))
       })
+  }
+}
+
+object Repository {
+
+  implicit class EntityRepositoryOps[A <: Entity[A]](self: Repository[A]) {
+
+    val existing: Signal[Seq[Synced[A]]] = self.all
+      .flatMap(
+        _.filterSignal(_.signal.map(_.exists)),
+      )
   }
 }
