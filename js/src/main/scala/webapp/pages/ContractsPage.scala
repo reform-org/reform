@@ -95,6 +95,8 @@ object ContractsPage {
   def contractAssociatedHiwi(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -104,6 +106,7 @@ object ContractsPage {
           ),
         ),
       )
+      .withCreatePage(HiwisPage())
       .withLabel("Hiwi")
       .require
       .bindAsSelect(
@@ -115,11 +118,14 @@ object ContractsPage {
   def contractAssociatedProject(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
         repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
       )
+      .withCreatePage(ProjectsPage())
       .withLabel("Project")
       .require
       .bindAsSelect(
@@ -131,6 +137,8 @@ object ContractsPage {
   def contractAssociatedSupervisor(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -140,6 +148,7 @@ object ContractsPage {
           ),
         ),
       )
+      .withCreatePage(SupervisorsPage())
       .withLabel("Supervisor")
       .require
       .bindAsSelect(
@@ -151,6 +160,8 @@ object ContractsPage {
   def contractAssociatedType(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -158,6 +169,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(ContractSchemasPage())
       .withLabel("Type")
       .require
       .bindAsSelect(
@@ -201,6 +213,8 @@ object ContractsPage {
   def contractAssociatedPaymentLevel(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -208,6 +222,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(PaymentLevelsPage())
       .withLabel("Payment level")
       .require
       .bindAsSelect(
@@ -219,6 +234,8 @@ object ContractsPage {
   def requiredDocuments(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
       .multiSelect(
@@ -226,6 +243,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")
       .require
       .bindAsMultiSelect[Contract](
