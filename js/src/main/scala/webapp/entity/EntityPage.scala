@@ -278,8 +278,10 @@ class EntityRow[T <: Entity[T]](
           .update(p => {
             p.get.merge(editingNow)
           })
+          .map(_ => {
+            editingValue.set(None)
+          })
           .toastOnError(ToastMode.Infinit)
-        editingValue.set(None)
       }
       case None => {
         repository
