@@ -109,7 +109,7 @@ class EntityRow[T <: Entity[T]](
     val deleteModal = Var[Option[Modal]](None)
     val id = s"form-${existingValue.map(_.id).getOrElse("new")}"
     tr(
-      cls := "",
+      cls := "odd:bg-slate-50 odd:dark:bg-gray-600",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
       routing
@@ -122,7 +122,7 @@ class EntityRow[T <: Entity[T]](
             }),
         ),
       td(
-        cls := "py-1 min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-500 !z-[1]",
+        cls := "py min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 odd:bg-blue-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -369,7 +369,7 @@ abstract class EntityPage[T <: Entity[T]](
       div(
         h1(cls := "text-3xl mt-4 text-center", title),
         div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
           div(
             cls := "flex flex-row gap-2 items-center mb-4",
             div(
@@ -411,7 +411,7 @@ abstract class EntityPage[T <: Entity[T]](
               countEntities,
               " Entities",
             ),
-            Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView)),
+            Button(ButtonStyle.LightDefault, "Export as CSV", cls := "!m-0", onClick.foreach(_ => exportView)),
           ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
@@ -426,7 +426,7 @@ abstract class EntityPage[T <: Entity[T]](
                         .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
                         .map(a =>
                           th(
-                            cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase",
+                            cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
                             a.label,
                           ),
                         ),
@@ -438,6 +438,7 @@ abstract class EntityPage[T <: Entity[T]](
                 ),
               ),
               tbody(
+                cls := "dark:bg-gray-600",
                 countFilteredEntities
                   .map(countFilteredEntities => {
                     countEntities

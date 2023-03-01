@@ -138,7 +138,12 @@ def MultiSelect(
         }),
         value.map(s => {
           if (s.size == 0) {
-            Some(div(cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."))
+            Some(
+              div(
+                cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
+                "Select...",
+              ),
+            )
           } else None
         }),
       ),
