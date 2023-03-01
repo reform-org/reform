@@ -65,7 +65,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
           navigationLink(SalaryChangesPage(), "Salary changes"),
         ),
         li(
-          navigationLink(ContractSchemasPage(), "Contract schemas"),
+          navigationLink(ContractTypesPage(), "Contract types"),
         ),
         li(
           navigationLink(DocumentsPage(), "Documents"),

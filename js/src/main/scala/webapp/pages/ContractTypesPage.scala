@@ -21,28 +21,28 @@ import webapp.services.Toaster
 import rescala.default.*
 import webapp.components.common.*
 
-import ContractSchemasPage.*
+import ContractTypesPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 
-case class ContractSchemasPage()(using
+case class ContractTypesPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
-) extends EntityPage[ContractSchema](
-      "Contract schemas",
-      repositories.contractSchemas,
-      repositories.contractSchemas.all,
+) extends EntityPage[ContractType](
+      "Contract types",
+      repositories.contractTypes,
+      repositories.contractTypes.all,
       Seq(name, files),
       DefaultEntityRow(),
     ) {}
 
-object ContractSchemasPage {
+object ContractTypesPage {
   private def name(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Name")
     .require
-    .bindAsText[ContractSchema](
+    .bindAsText[ContractType](
       _.name,
       (s, a) => s.copy(name = a),
     )
@@ -50,7 +50,7 @@ object ContractSchemasPage {
   private def files(using
       repositories: Repositories,
       routing: RoutingService,
-  ): UIAttribute[ContractSchema, Seq[String]] =
+  ): UIAttribute[ContractType, Seq[String]] =
     UIAttributeBuilder
       .multiSelect(
         repositories.requiredDocuments.all.map(list =>
@@ -59,7 +59,7 @@ object ContractSchemasPage {
       )
       .withLabel("Required Documents")
       .require
-      .bindAsMultiSelect[ContractSchema](
+      .bindAsMultiSelect[ContractType](
         _.files,
         (c, a) => c.copy(files = a),
       )

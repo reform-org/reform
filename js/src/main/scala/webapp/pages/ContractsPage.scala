@@ -149,7 +149,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.contractSchemas.all.map(list =>
+        repositories.contractTypes.all.map(list =>
           list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )

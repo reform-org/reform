@@ -5,20 +5,20 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.BasicCodecs.*
 
-case class ContractSchema(
+case class ContractType(
     name: Attribute[String] = Attribute.empty,
     files: Attribute[Seq[String]] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
-) extends Entity[ContractSchema]
+) extends Entity[ContractType]
     derives DecomposeLattice,
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: ContractSchema = ContractSchema(Attribute.empty, Attribute(Seq()), Attribute(true))
+  def default: ContractType = ContractType(Attribute.empty, Attribute(Seq()), Attribute(true))
 
   def identifier: Attribute[String] = name
 
-  def withExists(exists: Boolean): ContractSchema = {
+  def withExists(exists: Boolean): ContractType = {
     this.copy(_exists = _exists.set(exists))
   }
 
@@ -26,8 +26,8 @@ case class ContractSchema(
 
 }
 
-object ContractSchema {
-  val empty: ContractSchema = ContractSchema()
+object ContractType {
+  val empty: ContractType = ContractType()
 
-  implicit val codec: JsonValueCodec[ContractSchema] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
+  implicit val codec: JsonValueCodec[ContractType] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
 }

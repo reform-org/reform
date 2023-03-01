@@ -41,29 +41,29 @@ type KeyOf[T /* <: js.Object */ ] = Extract[ /* keyof T */ String, String]
 
 type Omit[T, K] = Pick[T, Exclude[ /* keyof T */ String, K]]
 
-type StoreKey[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
+type StoreKey[DBTypes /* <: DBType */, StoreName /* <: /* keyof DBTypes */ String */ ] =
   /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['key'] */ js.Any
 
-type StoreNames[DBTypes /* <: DBSchema */ ] = KeyOf[DBTypes]
+type StoreNames[DBTypes /* <: DBType */ ] = KeyOf[DBTypes]
 
-type StoreValue[DBTypes /* <: DBSchema */, StoreName /* <: /* keyof DBTypes */ String */ ] =
+type StoreValue[DBTypes /* <: DBType */, StoreName /* <: /* keyof DBTypes */ String */ ] =
   /* import warning: importer.ImportType#apply Failed type conversion: DBTypes[StoreName]['value'] */ js.Any
 
 @js.native
 sealed trait versionchange extends StObject
 inline def versionchange: versionchange = "versionchange".asInstanceOf[versionchange]
 
-trait OpenDBCallbacks[DBTypes /* <: DBSchema */ ] extends StObject {}
+trait OpenDBCallbacks[DBTypes /* <: DBType */ ] extends StObject {}
 
 object OpenDBCallbacks {
 
-  inline def apply[DBTypes /* <: DBSchema */ ](): OpenDBCallbacks[DBTypes] = {
+  inline def apply[DBTypes /* <: DBType */ ](): OpenDBCallbacks[DBTypes] = {
     val __obj = js.Dynamic.literal()
     __obj.asInstanceOf[OpenDBCallbacks[DBTypes]]
   }
 
   @scala.inline
-  implicit open class MutableBuilder[Self <: OpenDBCallbacks[?], DBTypes /* <: DBSchema */ ](
+  implicit open class MutableBuilder[Self <: OpenDBCallbacks[?], DBTypes /* <: DBType */ ](
       val x: Self & OpenDBCallbacks[DBTypes],
   ) extends AnyVal {
 
@@ -87,7 +87,7 @@ object mod {
   @js.native
   val ^ : js.Any = js.native
 
-  inline def openDB[DBTypes /* <: DBSchema */ ](
+  inline def openDB[DBTypes /* <: DBType */ ](
       name: String,
       version: Double,
       param2: OpenDBCallbacks[DBTypes],
@@ -101,7 +101,7 @@ trait IDBPDatabaseExtends extends StObject {}
 object IDBPDatabaseExtends {}
 
 @js.native
-trait IDBPDatabase[DBTypes /* <: DBSchema */ ] extends StObject with IDBPDatabaseExtends {
+trait IDBPDatabase[DBTypes /* <: DBType */ ] extends StObject with IDBPDatabaseExtends {
 
   def createObjectStore[Name /* <: StoreNames[DBTypes] */ ](
       name: Name,
@@ -119,7 +119,7 @@ object IDBPObjectStoreExtends {}
 
 @js.native
 trait IDBPObjectStore[
-    DBTypes /* <: DBSchema */,
+    DBTypes /* <: DBType */,
     TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
     StoreName /* <: StoreNames[DBTypes] */,
     Mode, /* <: IDBTransactionMode */
@@ -139,7 +139,7 @@ trait IDBPTransactionExtends extends StObject {}
 object IDBPTransactionExtends {}
 
 trait IDBPTransaction[
-    DBTypes /* <: DBSchema */,
+    DBTypes /* <: DBType */,
     TxStores /* <: ArrayLike[StoreNames[DBTypes]] */,
     Mode, /* <: IDBTransactionMode */
 ] extends StObject

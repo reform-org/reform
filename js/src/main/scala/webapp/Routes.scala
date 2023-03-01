@@ -39,7 +39,7 @@ object Routes {
     case Root / "payment-levels"      => PaymentLevelsPage()
     case Root / "salary-changes"      => SalaryChangesPage()
     case Root / "supervisors"         => SupervisorsPage()
-    case Root / "contract-schemas"    => ContractSchemasPage()
+    case Root / "contract-types"      => ContractTypesPage()
     case Root / "contracts"           => ContractsPage()
     case Root / "contract-drafts"     => ContractDraftsPage()
     case Root / "edit-contracts" / id => EditContractsPage(id)
@@ -55,7 +55,7 @@ object Routes {
     case PaymentLevelsPage()   => Root / "payment-levels"
     case SalaryChangesPage()   => Root / "salary-changes"
     case SupervisorsPage()     => Root / "supervisors"
-    case ContractSchemasPage() => Root / "contract-schemas"
+    case ContractTypesPage()   => Root / "contract-types"
     case ContractsPage()       => Root / "contracts"
     case ContractDraftsPage()  => Root / "contract-drafts"
     case EditContractsPage(id) => Root / "edit-contracts" / id
