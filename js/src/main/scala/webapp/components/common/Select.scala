@@ -62,8 +62,8 @@ def Select(
           formId := props
             .collectFirst(p => {
               p match {
-                case AccumAttr("title", value, _) => value
-                case BasicAttr("title", value)    => value
+                case AccumAttr("form", value, _) => value
+                case BasicAttr("form", value)    => value
               }
             })
             .getOrElse("")
