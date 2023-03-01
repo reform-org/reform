@@ -309,7 +309,7 @@ class UISelectAttribute[EntityType, AttributeType](
       },
       attr.map(getEditString(_)),
       searchEnabled,
-      span("Nothing found..."),
+      span("Nothing found. Maybe you need to create first?"),
       isRequired,
       formId := _formId,
     )
