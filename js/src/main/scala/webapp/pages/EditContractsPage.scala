@@ -335,6 +335,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
+                // TODO only show documents that are included by contract schema
+                requiredDocuments.renderEdit("", editingValue),
               ),
             ),
             editStep(

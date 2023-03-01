@@ -210,4 +210,22 @@ object ContractsPage {
         (p, a) => p.copy(contractAssociatedPaymentLevel = a),
       )
   }
+
+  def requiredDocuments(using
+      repositories: Repositories,
+      routing: RoutingService,
+  ): UIAttribute[Contract, Seq[String]] = {
+    UIAttributeBuilder
+      .multiSelect(
+        repositories.requiredDocuments.all.map(list =>
+          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
+        ),
+      )
+      .withLabel("Required Documents")
+      .require
+      .bindAsMultiSelect[Contract](
+        _.requiredDocuments,
+        (c, a) => c.copy(requiredDocuments = a),
+      )
+  }
 }
