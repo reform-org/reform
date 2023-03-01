@@ -103,13 +103,13 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
     navigationHeader(
       div(
         cls := "flex flex-col gap-2 max-w-sm",
-        p("Homepage"),
+        p("Color scheme:"),
         Select(
           Signal(
             Seq(
-              SelectOption("dark", Signal("DarkMogk®")),
-              SelectOption("light", Signal("LightMogk®")),
-              SelectOption("default", Signal("Use Browser Preferences")),
+              SelectOption("dark", Signal("Dark mode")),
+              SelectOption("light", Signal("Light mode")),
+              SelectOption("default", Signal("Use browser preferences")),
             ),
           ),
           (value) => {
@@ -119,6 +119,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           theme,
           false,
         ),
+        /*
         Button(
           ButtonStyle.LightDefault,
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
@@ -214,6 +215,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           (value) => selectValue.set(value),
           selectValue,
         ),
+         */
       ),
     )
   }
