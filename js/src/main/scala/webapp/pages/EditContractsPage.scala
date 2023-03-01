@@ -120,21 +120,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       }
       case None => {
         repositories.contracts
-          .create()
-          .flatMap(entity => {
-            editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
-            //  TODO FIXME we probably should special case initialization and not use the event
-            entity.update(p => {
-              val c = p.getOrElse(Contract.empty).merge(editingNow)
-              if (finalize) {
-                c.copy(isDraft = c.isDraft.set(false))
-              } else {
-                c
-              }
-            })
+          .create({
+            if (finalize) {
+              editingNow.copy(isDraft = editingNow.isDraft.set(false))
+            } else {
+              editingNow
+            }
           })
-          .map(value => {
-            if (value.isDraft.get.getOrElse(true)) {
+          .map(entity => {
+            editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
+            if (entity.signal.now.isDraft.get.getOrElse(true)) {
               routing.to(ContractDraftsPage())
             } else {
               routing.to(ContractsPage())
