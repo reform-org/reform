@@ -10,6 +10,7 @@ import webapp.*
 import webapp.components.common.*
 import webapp.npm.JSUtils
 import webapp.services.RoutingService
+import webapp.services.Page
 
 abstract class UIBasicAttribute[EntityType](
     val label: String,
@@ -274,6 +275,7 @@ class UISelectAttribute[EntityType, AttributeType](
     isRequired: Boolean,
     val options: Signal[Seq[SelectOption]],
     searchEnabled: Boolean = true,
+    createPage: Option[Page] = None,
 )(using routing: RoutingService)
     extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
@@ -308,8 +310,13 @@ class UISelectAttribute[EntityType, AttributeType](
         set(writeConverter(v))
       },
       attr.map(getEditString(_)),
-      searchEnabled,
-      span("Nothing found. Maybe you need to create first?"),
+      searchEnabled, {
+        createPage match {
+          case Some(createPage) =>
+            a(href := routing.linkPath(createPage), target := "_blank", "Nothing found. Click here to create.")
+          case None => span("Nothing found...")
+        }
+      },
       isRequired,
       formId := _formId,
     )
@@ -326,6 +333,7 @@ class UIMultiSelectAttribute[EntityType](
     val options: Signal[Seq[MultiSelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
+    createPage: Option[Page] = None,
 )(using routing: RoutingService)
     extends UITextAttribute[EntityType, Seq[String]](
       getter = getter,
@@ -376,8 +384,13 @@ class UIMultiSelectAttribute[EntityType](
         },
         attr.map(_.get.getOrElse(Seq())),
         showItems,
-        searchEnabled,
-        span("Nothing found..."),
+        searchEnabled, {
+          createPage match {
+            case Some(createPage) =>
+              a(href := routing.linkPath(createPage), target := "_blank", "Nothing found. Click here to create.")
+            case None => span("Nothing found...")
+          }
+        },
         isRequired,
         formId := _formId,
       ),
