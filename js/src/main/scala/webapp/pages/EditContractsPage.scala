@@ -41,6 +41,31 @@ import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
 import ContractsPage.*
 
+// TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
+case class NewContractPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexeddb: IIndexedDB,
+) extends Page {
+
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+      toaster: Toaster,
+  ): VNode = {
+    div(
+      repositories.contracts
+        .create(repositories.contracts.defaultValue)
+        .map(currentContract => {
+          InnerEditContractsPage(Some(currentContract)).render()
+        }),
+    )
+  }
+}
+
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
     toaster: Toaster,
