@@ -42,8 +42,6 @@ def Select(
     document.querySelector(s"#$id .select-select").asInstanceOf[HTMLElement].click()
   }
 
-  props.foreach(p => console.log(p.asInstanceOf[BasicAttr].title))
-
   div(
     cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
     cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
@@ -62,11 +60,14 @@ def Select(
           cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
           tabIndex := -1,
           formId := props
-            .find(p => p.isInstanceOf[BasicAttr] && p.asInstanceOf[BasicAttr].title == "form")
-            .getOrElse(formId := "")
-            .asInstanceOf[BasicAttr]
-            .value
-            .toString(),
+            .collectFirst(p => {
+              p match {
+                case AccumAttr("form", value, _) => value
+                case BasicAttr("form", value)    => value
+              }
+            })
+            .getOrElse("")
+            .toString,
         ),
       ),
       options.map(o =>
