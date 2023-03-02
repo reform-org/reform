@@ -24,6 +24,7 @@ import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import rescala.default.*
 import webapp.utils.Seqnal.*
+import webapp.npm.JSUtils.toMoneyString
 
 case class PaymentLevelsPage()(using
     repositories: Repositories,
@@ -58,10 +59,24 @@ object PaymentLevelsPage {
   private def currentValue(using repositories: Repositories) =
     new UIReadOnlyAttribute[PaymentLevel, String](
       label = "Current Value",
-      getter = (id, paymentLevel) => {
-        // repositories.salaryChanges.all.map(salaryChanges => {})
-        Signal("")
-      },
+      getter = (id, paymentLevel) =>
+        Signal {
+          val salaryChanges = repositories.salaryChanges.all.value
+          Signal {
+            toMoneyString(
+              Signal(
+                salaryChanges
+                  .map(a => Signal { a.signal.value }),
+              ).flatten.value
+                .filter(_.paymentLevel.get.getOrElse("") == id)
+                .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+                .head
+                .value
+                .get
+                .getOrElse(0),
+            )
+          }
+        }.flatten,
       readConverter = identity,
     )
 }
