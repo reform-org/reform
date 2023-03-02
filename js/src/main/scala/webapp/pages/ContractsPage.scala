@@ -18,7 +18,7 @@ package webapp.pages
 import webapp.Repositories
 import webapp.entity.*
 import rescala.default.*
-import webapp.services.Toaster
+import webapp.services.{ToastMode, Toaster}
 import webapp.components.common.*
 import webapp.repo.Repository
 import kofre.base.Bottom
@@ -28,6 +28,10 @@ import webapp.npm.IIndexedDB
 import ContractsPage.*
 import webapp.utils.Seqnal.*
 import webapp.repo.Synced
+import outwatch.*
+import outwatch.dsl.*
+import webapp.given_ExecutionContext
+import webapp.utils.Futures.*
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
@@ -44,7 +48,7 @@ class DetailPageEntityRow[T <: Entity[T]](
   override protected def startEditing(): Unit = {
     value match {
       case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
-      case New(value)                    => {}
+      case New(value)                    =>
     }
   }
 
@@ -83,6 +87,7 @@ case class ContractsPage()(using
         contractEndDate,
       ),
       DetailPageEntityRowBuilder(),
+      true,
     ) {}
 
 object ContractsPage {
@@ -90,6 +95,8 @@ object ContractsPage {
   def contractAssociatedHiwi(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -99,6 +106,7 @@ object ContractsPage {
           ),
         ),
       )
+      .withCreatePage(HiwisPage())
       .withLabel("Hiwi")
       .require
       .bindAsSelect(
@@ -110,11 +118,14 @@ object ContractsPage {
   def contractAssociatedProject(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
         repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
       )
+      .withCreatePage(ProjectsPage())
       .withLabel("Project")
       .require
       .bindAsSelect(
@@ -126,6 +137,8 @@ object ContractsPage {
   def contractAssociatedSupervisor(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -135,6 +148,7 @@ object ContractsPage {
           ),
         ),
       )
+      .withCreatePage(SupervisorsPage())
       .withLabel("Supervisor")
       .require
       .bindAsSelect(
@@ -146,6 +160,8 @@ object ContractsPage {
   def contractAssociatedType(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -153,6 +169,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(ContractSchemasPage())
       .withLabel("Type")
       .require
       .bindAsSelect(
@@ -161,7 +178,7 @@ object ContractsPage {
       )
   }
 
-  def contractStartDate(using routing: RoutingService) = UIAttributeBuilder.date
+  def contractStartDate(using routing: RoutingService): UIAttribute[Contract, Long] = UIAttributeBuilder.date
     .withLabel("Start")
     .require
     .bindAsDatePicker[Contract](
@@ -169,7 +186,7 @@ object ContractsPage {
       (h, a) => h.copy(contractStartDate = a),
     )
 
-  def contractEndDate(using routing: RoutingService) = UIAttributeBuilder.date
+  def contractEndDate(using routing: RoutingService): UIAttribute[Contract, Long] = UIAttributeBuilder.date
     .withLabel("End")
     .require
     .bindAsDatePicker[Contract](
@@ -177,7 +194,7 @@ object ContractsPage {
       (h, a) => h.copy(contractEndDate = a),
     )
 
-  def contractHoursPerMonth(using routing: RoutingService) = UIAttributeBuilder.int
+  def contractHoursPerMonth(using routing: RoutingService): UIAttribute[Contract, Int] = UIAttributeBuilder.int
     .withLabel("h/month")
     .require
     .bindAsNumber[Contract](
@@ -185,7 +202,7 @@ object ContractsPage {
       (h, a) => h.copy(contractHoursPerMonth = a),
     )
 
-  def contractDraft(using routing: RoutingService) = UIAttributeBuilder.boolean
+  def contractDraft(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
     .withLabel("Draft?")
     .require
     .bindAsCheckbox[Contract](
@@ -196,6 +213,8 @@ object ContractsPage {
   def contractAssociatedPaymentLevel(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -203,6 +222,7 @@ object ContractsPage {
           list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(PaymentLevelsPage())
       .withLabel("Payment level")
       .require
       .bindAsSelect(
@@ -214,13 +234,16 @@ object ContractsPage {
   def requiredDocuments(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
       .multiSelect(
-        repositories.requiredDocuments.all.map(list =>
+        repositories.requiredDocuments.existing.map(list =>
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")
       .require
       .bindAsMultiSelect[Contract](

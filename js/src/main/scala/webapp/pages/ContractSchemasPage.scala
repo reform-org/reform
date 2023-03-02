@@ -50,13 +50,16 @@ object ContractSchemasPage {
   private def files(using
       repositories: Repositories,
       routing: RoutingService,
+      toaster: Toaster,
+      indexeddb: IIndexedDB,
   ): UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
       .multiSelect(
-        repositories.requiredDocuments.all.map(list =>
+        repositories.requiredDocuments.existing.map(list =>
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),
       )
+      .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")
       .require
       .bindAsMultiSelect[ContractSchema](

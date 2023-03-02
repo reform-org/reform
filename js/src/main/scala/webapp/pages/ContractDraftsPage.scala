@@ -28,6 +28,7 @@ import webapp.npm.IIndexedDB
 import ContractsPage.*
 import webapp.utils.Seqnal.*
 import webapp.repo.Synced
+import outwatch.dsl.*
 
 def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
   repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
@@ -50,4 +51,10 @@ case class ContractDraftsPage()(using
         contractEndDate,
       ),
       DetailPageEntityRowBuilder(),
+      true,
+      Button(
+        ButtonStyle.LightPrimary,
+        "Add new contract draft",
+        onClick.foreach(_ => routing.to(NewContractPage())),
+      ),
     ) {}

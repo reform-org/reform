@@ -28,6 +28,7 @@ def Select(
     value: Signal[String],
     searchEnabled: Boolean = true,
     emptyState: VMod = span("Nothing found..."),
+    required: Boolean = false,
     props: VMod*,
 ): VNode = {
   val dropdownOpen = Var(false)
@@ -51,6 +52,24 @@ def Select(
       onClick.foreach(e => {
         dropdownOpen.transform(!_)
       }),
+      value.map(v =>
+        input(
+          outwatch.dsl.value := v,
+          tpe := "text",
+          outwatch.dsl.required := required,
+          cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
+          tabIndex := -1,
+          formId := props
+            .collectFirst(p => {
+              p match {
+                case AccumAttr("form", value, _) => value
+                case BasicAttr("form", value)    => value
+              }
+            })
+            .getOrElse("")
+            .toString,
+        ),
+      ),
       options.map(o =>
         value
           .map(s => {

@@ -15,15 +15,13 @@ def exportIndexedDBJson(using repositories: Repositories): String = {
     new JsonValueCodec {
       def encodeValue(x: Repositories, out: JsonWriter): Unit = {
         out.writeObjectStart()
-        x.productIterator.foreach(f => {
-          f match {
-            case repository: Repository[?] => {
-              out.writeKey(repository.name)
-              repository.encodeRepository(out)
-            }
-            case _ => {}
+        x.productIterator.foreach {
+          case repository: Repository[?] => {
+            out.writeKey(repository.name)
+            repository.encodeRepository(out)
           }
-        })
+          case _ => {}
+        }
         out.writeObjectEnd()
       }
 
@@ -31,7 +29,7 @@ def exportIndexedDBJson(using repositories: Repositories): String = {
 
       def nullValue: Repositories = ???
     }
-  return writeToString(repositories)(using repositoryCodec)
+  writeToString(repositories)(using repositoryCodec)
 }
 
 def importIndexedDBJson(
@@ -39,14 +37,12 @@ def importIndexedDBJson(
 )(using repositories: Repositories): Future[scala.collection.mutable.Iterable[Repository[?]]] = {
   Future {
     var repositoryCodecs: mutable.Map[String, Repository[?]] = mutable.Map()
-    repositories.productIterator.foreach(value => {
-      value match {
-        case repository: Repository[?] => {
-          repositoryCodecs += (repository.name -> repository)
-        }
-        case _ => {}
+    repositories.productIterator.foreach {
+      case repository: Repository[?] => {
+        repositoryCodecs += (repository.name -> repository)
       }
-    })
+      case _ => {}
+    }
 
     given repositoryMapCodec: JsonValueCodec[mutable.Map[String, (Repository[?], mutable.Map[String, ?])]] =
       new JsonValueCodec {
@@ -63,7 +59,7 @@ def importIndexedDBJson(
               val mb = mutable.Map.newBuilder[String, (Repository[?], mutable.Map[String, ?])]
               while ({
                 val key = in.readKeyAsString()
-                val repository = repositoryCodecs.get(key).get
+                val repository = repositoryCodecs(key)
                 mb += (key -> repository.decodeRepository(in)): @nowarn
                 in.isNextToken(',')
               }) ()

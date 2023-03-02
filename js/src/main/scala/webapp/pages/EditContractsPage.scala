@@ -41,6 +41,31 @@ import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
 import ContractsPage.*
 
+// TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
+case class NewContractPage()(using
+    repositories: Repositories,
+    toaster: Toaster,
+    routing: RoutingService,
+    indexeddb: IIndexedDB,
+) extends Page {
+
+  def render(using
+      routing: RoutingService,
+      repositories: Repositories,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+      toaster: Toaster,
+  ): VNode = {
+    div(
+      repositories.contracts
+        .create(repositories.contracts.defaultValue)
+        .map(currentContract => {
+          InnerEditContractsPage(Some(currentContract)).render()
+        }),
+    )
+  }
+}
+
 case class EditContractsPage(contractId: String)(using
     repositories: Repositories,
     toaster: Toaster,
@@ -68,7 +93,7 @@ case class EditContractsPage(contractId: String)(using
                 div(
                   div(
                     cls := "p-1",
-                    h1(cls := "text-4xl text-center", "EditContractsPage"),
+                    h1(cls := "text-4xl text-center", "Contract"),
                   ),
                   h2("Contract not found"),
                 ),
@@ -120,21 +145,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
       }
       case None => {
         repositories.contracts
-          .create()
-          .flatMap(entity => {
-            editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
-            //  TODO FIXME we probably should special case initialization and not use the event
-            entity.update(p => {
-              val c = p.getOrElse(Contract.empty).merge(editingNow)
-              if (finalize) {
-                c.copy(isDraft = c.isDraft.set(false))
-              } else {
-                c
-              }
-            })
+          .create({
+            if (finalize) {
+              editingNow.copy(isDraft = editingNow.isDraft.set(false))
+            } else {
+              editingNow
+            }
           })
-          .map(value => {
-            if (value.isDraft.get.getOrElse(true)) {
+          .map(entity => {
+            editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
+            if (entity.signal.now.isDraft.get.getOrElse(true)) {
               routing.to(ContractDraftsPage())
             } else {
               routing.to(ContractsPage())

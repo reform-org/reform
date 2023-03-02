@@ -31,6 +31,8 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import webapp.webrtc.ReplicationGroup
+import webapp.utils.Seqnal.*
+import webapp.entity.Entity
 
 type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
 
@@ -42,9 +44,9 @@ case class Repository[A](name: String, defaultValue: A)(using
     codec: JsonValueCodec[A],
 ) {
 
-  def bottomEmpty = bottom.empty
+  def bottomEmpty: A = bottom.empty
 
-  def latticeMerge(left: A, right: A) = dcl.merge(left)(right)
+  def latticeMerge(left: A, right: A): A = dcl.merge(left)(right)
 
   given mapCodec: JsonValueCodec[mutable.Map[String, A]] = JsonCodecMaker.make
 
@@ -59,15 +61,15 @@ case class Repository[A](name: String, defaultValue: A)(using
     (this, values)
   }
 
-  implicit val idStorage: Storage[GrowOnlySet[String]] = Storage(name, GrowOnlySet.empty)
+  implicit val idStorage: Storage[GrowOnlySet[String]] = Storage(name)
 
   private val idSyncer = ReplicationGroup[GrowOnlySet[String]](name + "-ids")
 
-  private val idSynced = idSyncer.sync("ids")
+  private val idSynced = idSyncer.getOrCreateAndSync("ids")
 
   val ids: Signal[Set[String]] = Signals.fromFuture(idSynced).map(synced => synced.signal.map(_.set)).flatten
 
-  implicit val valuesStorage: Storage[A] = Storage(name, defaultValue)
+  implicit val valuesStorage: Storage[A] = Storage(name)
 
   private val valueSyncer = ReplicationGroup[A](name)
 
@@ -81,17 +83,35 @@ case class Repository[A](name: String, defaultValue: A)(using
       .flatten
   }
 
-  // TODO FIXME make this private and create a public getOption
-  private def get(id: String): Future[Synced[A]] = valueSyncer.sync(id)
+  private def get(id: String): Future[Synced[A]] = valueSyncer.getOrCreateAndSync(id)
 
-  def create(): Future[Synced[A]] = getOrCreate(UUID.randomUUID().toString())
+  def create(initialValue: A): Future[Synced[A]] = {
+    indexedDb.requestPersistentStorage
+    val id = UUID.randomUUID().toString
+    valueSyncer
+      .createAndSync(id, initialValue)
+      .flatMap(value => {
+        idSynced.flatMap(_.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value))
+      })
+  }
 
   def getOrCreate(id: String): Future[Synced[A]] = {
     indexedDb.requestPersistentStorage
     valueSyncer
-      .sync(id)
+      .getOrCreateAndSync(id)
       .flatMap(value => {
         idSynced.flatMap(_.update(_.getOrElse(GrowOnlySet.empty).add(id)).map(_ => value))
       })
+  }
+}
+
+object Repository {
+
+  implicit class EntityRepositoryOps[A <: Entity[A]](self: Repository[A]) {
+
+    val existing: Signal[Seq[Synced[A]]] = self.all
+      .flatMap(
+        _.filterSignal(_.signal.map(_.exists)),
+      )
   }
 }

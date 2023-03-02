@@ -278,19 +278,17 @@ class EntityRow[T <: Entity[T]](
           .update(p => {
             p.get.merge(editingNow)
           })
+          .map(_ => {
+            editingValue.set(None)
+          })
           .toastOnError(ToastMode.Infinit)
-        editingValue.set(None)
       }
       case None => {
         repository
-          .create()
-          .flatMap(entity => {
+          .create(editingNow)
+          .map(entity => {
             editingValue.set(Some((bottom.empty.default, Var(bottom.empty.default))))
             entity
-              .update(p => {
-                p.getOrElse(bottom.empty).merge(editingNow)
-              })
-              .map(_ => entity)
           })
           .map(value => { afterCreated(value.id); value })
           .toastOnError(ToastMode.Infinit)
@@ -323,7 +321,9 @@ abstract class EntityPage[T <: Entity[T]](
     repository: Repository[T],
     all: Signal[Seq[Synced[T]]],
     uiAttributes: Seq[UIBasicAttribute[T]],
-    entityRowContructor: EntityRowBuilder[T],
+    entityRowConstructor: EntityRowBuilder[T],
+    addInPlace: Boolean = false,
+    addButton: VMod = span(),
 )(using
     bottom: Bottom[T],
     lattice: Lattice[T],
@@ -334,7 +334,7 @@ abstract class EntityPage[T <: Entity[T]](
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =
-    entityRowContructor.construct(
+    entityRowConstructor.construct(
       repository,
       New(Var(Some((bottom.empty.default, Var(bottom.empty.default))))),
       uiAttributes,
@@ -349,7 +349,7 @@ abstract class EntityPage[T <: Entity[T]](
       )
       .mapInside(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
-        entityRowContructor.construct(repository, existing, uiAttributes)
+        entityRowConstructor.construct(repository, existing, uiAttributes)
       })
 
   private val filter = Filter[T](uiAttributes)
@@ -401,6 +401,7 @@ abstract class EntityPage[T <: Entity[T]](
                   4,
                   true,
                   span("Nothing found..."),
+                  false,
                   cls := "rounded-md",
                 ),
               ),
@@ -412,6 +413,9 @@ abstract class EntityPage[T <: Entity[T]](
               " Entities",
             ),
             Button(ButtonStyle.LightDefault, "Export as CSV", cls := "!m-0", onClick.foreach(_ => exportView)),
+            if (addInPlace) {
+              Some(addButton)
+            } else None,
           ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
@@ -474,13 +478,17 @@ abstract class EntityPage[T <: Entity[T]](
                   }),
                 renderEntities,
               ),
-              tfoot(
-                tr(
-                  cls := "h-4",
-                ),
-                cls := "",
-                addEntityRow.render,
-              ),
+              if (!addInPlace) {
+                Some(
+                  tfoot(
+                    tr(
+                      cls := "h-4",
+                    ),
+                    cls := "",
+                    addEntityRow.render,
+                  ),
+                )
+              } else None,
             ),
           ),
         ),
