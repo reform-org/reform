@@ -48,7 +48,7 @@ class DetailPageEntityRow[T <: Entity[T]](
   override protected def startEditing(): Unit = {
     value match {
       case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
-      case New(value)                    => {}
+      case New(value)                    =>
     }
   }
 
@@ -186,7 +186,7 @@ object ContractsPage {
       )
   }
 
-  def contractStartDate(using routing: RoutingService) = UIAttributeBuilder.date
+  def contractStartDate(using routing: RoutingService): UIAttribute[Contract, Long] = UIAttributeBuilder.date
     .withLabel("Start")
     .require
     .bindAsDatePicker[Contract](
@@ -194,7 +194,7 @@ object ContractsPage {
       (h, a) => h.copy(contractStartDate = a),
     )
 
-  def contractEndDate(using routing: RoutingService) = UIAttributeBuilder.date
+  def contractEndDate(using routing: RoutingService): UIAttribute[Contract, Long] = UIAttributeBuilder.date
     .withLabel("End")
     .require
     .bindAsDatePicker[Contract](
@@ -202,7 +202,7 @@ object ContractsPage {
       (h, a) => h.copy(contractEndDate = a),
     )
 
-  def contractHoursPerMonth(using routing: RoutingService) = UIAttributeBuilder.int
+  def contractHoursPerMonth(using routing: RoutingService): UIAttribute[Contract, Int] = UIAttributeBuilder.int
     .withLabel("h/month")
     .require
     .bindAsNumber[Contract](
@@ -210,7 +210,7 @@ object ContractsPage {
       (h, a) => h.copy(contractHoursPerMonth = a),
     )
 
-  def contractDraft(using routing: RoutingService) = UIAttributeBuilder.boolean
+  def contractDraft(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
     .withLabel("Draft?")
     .require
     .bindAsCheckbox[Contract](
@@ -247,7 +247,7 @@ object ContractsPage {
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
       .multiSelect(
-        repositories.requiredDocuments.all.map(list =>
+        repositories.requiredDocuments.existing.map(list =>
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),
       )

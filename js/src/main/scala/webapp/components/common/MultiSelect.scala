@@ -13,6 +13,7 @@ import org.scalajs.dom.HTMLElement
 import scala.annotation.nowarn
 import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
+import webapp.utils.Seqnal.*
 
 class MultiSelectOption(
     val id: String,
@@ -33,7 +34,7 @@ def MultiSelect(
     required: Boolean = false,
     props: VMod*,
 ): VNode = {
-  var visibleItems = Var(showItems)
+  val visibleItems = Var(showItems)
   val dropdownOpen = Var(false)
 
   val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
@@ -97,11 +98,14 @@ def MultiSelect(
           cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
           tabIndex := -1,
           formId := props
-            .find(p => p.isInstanceOf[BasicAttr] && p.asInstanceOf[BasicAttr].title == "form")
-            .getOrElse(formId := "")
-            .asInstanceOf[BasicAttr]
-            .value
-            .toString(),
+            .collectFirst(p => {
+              p match {
+                case AccumAttr("form", value, _) => value
+                case BasicAttr("form", value)    => value
+              }
+            })
+            .getOrElse("")
+            .toString,
         ),
       ),
       div(
@@ -153,7 +157,7 @@ def MultiSelect(
           })
         }),
         value.map(s => {
-          if (s.size == 0) {
+          if (s.isEmpty) {
             Some(div(cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."))
           } else None
         }),
@@ -198,7 +202,7 @@ def MultiSelect(
                     .asInstanceOf[Seq[String]],
                 )
               } else {
-                onInput(Seq().asInstanceOf[Seq[String]])
+                onInput(Seq.empty)
               }
 
             }),
@@ -215,7 +219,7 @@ def MultiSelect(
           option.map(uiOption => {
             uiOption.name.map(name => {
               search.map(searchKey => {
-                if (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())) {
+                if (searchKey.isBlank || name.toLowerCase().nn.contains(searchKey.toLowerCase())) {
                   Some(
                     label(
                       cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700",
@@ -251,25 +255,17 @@ def MultiSelect(
 
           }),
         ), {
-          val noResults = options
-            .map(option => {
-              Signal(
-                option
-                  .map(uiOption => {
-                    uiOption.name
-                      .map(name => {
-                        search
-                          .map(searchKey =>
-                            (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())),
-                          )
-                      })
-                      .flatten
-                  }),
-              ).flatten.map(options => {
-                options.count(identity) == 0
-              })
-            })
-            .flatten
+          val noResults: Signal[Boolean] = options
+            .flatMap(
+              _.filterSignal(uiOption =>
+                uiOption.name
+                  .flatMap(name =>
+                    search
+                      .map(searchKey => searchKey.isBlank || name.toLowerCase().nn.contains(searchKey.toLowerCase())),
+                  ),
+              ),
+            )
+            .map(_.isEmpty)
           noResults.map(noResults => {
             if (noResults) {
               Some(

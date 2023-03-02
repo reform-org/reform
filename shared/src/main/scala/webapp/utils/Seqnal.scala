@@ -21,7 +21,7 @@ object Seqnal {
       })
     }
 
-    def flatMap(f: T => Signal[T]): Signal[T] = self.map(f).flatten
+    def flatMap[U](f: T => Signal[U]): Signal[U] = self.map(f).flatten
 
     def waitUntil(pred: T => Boolean): Future[T] = {
       val promise = Promise[T]()
