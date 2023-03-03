@@ -294,7 +294,7 @@ export class Peer {
 			By.css("input[placeholder='Account']"),
 		);
 		let addProjectButton = await this.driver.findElement(
-			By.xpath(`.//button[text()="Add Entity"]`),
+			By.css(`button#add-entity-button`),
 		);
 
 		let projectName = chance.animal();
