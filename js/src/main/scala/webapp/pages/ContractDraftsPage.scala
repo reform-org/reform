@@ -29,6 +29,7 @@ import ContractsPage.*
 import webapp.utils.Seqnal.*
 import webapp.repo.Synced
 import outwatch.dsl.*
+import webapp.npm.JSUtils.toMoneyString
 
 def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
   repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
@@ -49,7 +50,7 @@ case class ContractDraftsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
-        // ContractDraftsPage.moneyPerHour,
+        ContractDraftsPage.moneyPerHour,
         hoursPerMonth,
         ContractDraftsPage.forms,
       ),
@@ -63,59 +64,43 @@ case class ContractDraftsPage()(using
     ) {}
 
 object ContractDraftsPage {
-  // private def moneyPerHour(using repositories: Repositories) =
-  //   new UIReadOnlyAttribute[Contract, String](
-  //     label = "€/h",
-  //     getter = (id, contract) => {
-  //       repositories.paymentLevels.all
-  //         .map(paymentLevels => {
-  //           val paymentLevel = paymentLevels.find(p => Some(p.id) == contract.contractAssociatedPaymentLevel.get)
-  //           paymentLevel match {
-  //             case None => Signal("")
-  //             case Some(paymentLevel) => {
-  //               repositories.salaryChanges.all
-  //                 .map(salaryChanges => {
-  //                   val latestSalaryChange = salaryChanges
-  //                     .map(_.signal)
-  //                     .filterSignal(salaryChange =>
-  //                       salaryChange.map(salaryChange =>
-  //                         salaryChange.paymentLevel.get == Some(paymentLevel.id) && salaryChange.fromDate.get == Some(
-  //                           1677625200000L,
-  //                         ),
-  //                       ),
-  //                     )
-  //                     .map(a => a(0).map(b => b.value.get))
-  //                     .flatten
-
-  //                   latestSalaryChange.map(a => a.getOrElse(0L).toString())
-  //                 })
-  //             }
-  //           }
-  //         })
-  //         .flatten
-  //     },
-  //     readConverter = identity,
-  //   )
+  private def moneyPerHour(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Contract, String](
+      label = "€/h",
+      getter = (id, contract) =>
+        Signal {
+          val salaryChanges = repositories.salaryChanges.all.value
+          Signal {
+            toMoneyString(
+              Signal(
+                salaryChanges
+                  .map(a => Signal { a.signal.value }),
+              ).flatten.value
+                .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
+                .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+                .head
+                .value
+                .get
+                .getOrElse(0),
+            )
+          }
+        }.flatten,
+      readConverter = identity,
+    )
 
   private def forms(using repositories: Repositories) =
     new UIReadOnlyAttribute[Contract, String](
       label = "Forms",
-      getter = (id, contract) => {
-        val contractTypeId = contract.contractType.get.getOrElse("")
-        val contractSchema = repositories.contractSchemas.all.map(contractSchemas =>
-          contractSchemas.find(contractSchema => contractSchema.id == contractTypeId),
-        )
-        val totalDocumentCount = contractSchema
-          .map(contractSchema => {
-            contractSchema match {
-              case None        => Signal("")
-              case Some(value) => value.signal.map(v => v.files.get.size.toString())
-            }
-          })
-          .flatten
+      getter = (id, contract) =>
+        Signal {
+          val contractTypeId = contract.contractType.get.getOrElse("")
+          val contractSchema =
+            repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
 
-        totalDocumentCount.map(docs => s"0 / $docs")
-      },
+          Signal {
+            s"${contract.requiredDocuments.get.getOrElse(Seq.empty).size} / ${contractSchema.get.signal.value.files.get.getOrElse(Seq.empty).size}"
+          }
+        }.flatten,
       readConverter = identity,
     )
 }
