@@ -30,7 +30,7 @@ case class HiwisPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Hiwi](
-      "Hiwis",
+      Title("Hiwi"),
       repositories.hiwis,
       repositories.hiwis.all,
       Seq(firstName, lastName, gender, eMail, birthdate),

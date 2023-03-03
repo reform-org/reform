@@ -40,7 +40,7 @@ case class ContractDraftsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
-      "Contract drafts",
+      Title("Contract Draft"),
       repositories.contracts,
       onlyDrafts,
       Seq(

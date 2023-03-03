@@ -48,7 +48,7 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       navigationLink(ContractsPage(), "Contracts"),
     ),
     li(
-      navigationLink(ContractDraftsPage(), "Contract drafts"),
+      navigationLink(ContractDraftsPage(), "Contract Drafts"),
     ),
     li(
       a(
@@ -59,13 +59,13 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       ul(
         cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10] dark:bg-gray-700",
         li(
-          navigationLink(PaymentLevelsPage(), "Payment levels"),
+          navigationLink(PaymentLevelsPage(), "Payment Levels"),
         ),
         li(
-          navigationLink(SalaryChangesPage(), "Salary changes"),
+          navigationLink(SalaryChangesPage(), "Salary Changes"),
         ),
         li(
-          navigationLink(ContractSchemasPage(), "Contract schemas"),
+          navigationLink(ContractSchemasPage(), "Contract Schemas"),
         ),
         li(
           navigationLink(DocumentsPage(), "Documents"),
