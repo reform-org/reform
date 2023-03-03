@@ -145,9 +145,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         options = repositories.supervisors.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
+          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )
       .withCreatePage(SupervisorsPage())
