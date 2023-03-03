@@ -54,7 +54,7 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.string
+  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
     .withLabel("Email")
     .require
     .bindAsText[Hiwi](

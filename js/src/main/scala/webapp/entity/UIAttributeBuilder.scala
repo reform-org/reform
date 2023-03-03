@@ -16,6 +16,7 @@ case class UIAttributeBuilder[AttributeType](
     min: String = "",
     stepSize: String = "1",
     regex: String = ".*",
+    fieldType: String = "text",
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
     options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
     searchEnabled: Boolean = true,
@@ -25,6 +26,8 @@ case class UIAttributeBuilder[AttributeType](
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
 
   def withMin(min: String): UIAttributeBuilder[AttributeType] = copy(min = min)
+
+  def withFieldType(fieldType: String): UIAttributeBuilder[AttributeType] = copy(fieldType = fieldType)
 
   def require: UIAttributeBuilder[AttributeType] = copy(isRequired = true)
 
@@ -61,7 +64,7 @@ case class UIAttributeBuilder[AttributeType](
     isRequired = isRequired,
     regex = regex,
     stepSize = stepSize,
-    fieldType = "text",
+    fieldType = fieldType,
   )
 
 }
@@ -71,11 +74,13 @@ object UIAttributeBuilder {
   def string(using routing: RoutingService): UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
   def date(using routing: RoutingService): UIAttributeBuilder[Long] = UIAttributeBuilder(
-    JSUtils.toGermanDate(_),
-    writeConverter = JSUtils.DateTimeFromISO(_),
+    JSUtils.toGermanDate,
+    writeConverter = JSUtils.DateTimeFromISO,
   )
 
   def int(using routing: RoutingService): UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
+
+  def email(using routing: RoutingService): UIAttributeBuilder[String] = string.withFieldType("email")
 
   def float(using routing: RoutingService): UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
 
