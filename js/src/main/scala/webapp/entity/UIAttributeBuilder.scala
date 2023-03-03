@@ -117,6 +117,7 @@ object UIAttributeBuilder {
       label = self.label,
       isRequired = self.isRequired,
       regex = self.regex,
+      min = self.min,
       stepSize = self.stepSize,
     )
   }

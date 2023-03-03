@@ -198,6 +198,7 @@ object ContractsPage {
 
   def contractHoursPerMonth(using routing: RoutingService): UIAttribute[Contract, Int] = UIAttributeBuilder.int
     .withLabel("h/month")
+    .withMin("0")
     .require
     .bindAsNumber[Contract](
       _.contractHoursPerMonth,

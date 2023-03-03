@@ -52,6 +52,7 @@ object ProjectsPage {
 
   private def maxHours(using routing: RoutingService) = UIAttributeBuilder.int
     .withLabel("Max Hours")
+    .withMin("0")
     .require
     .bindAsNumber[Project](
       _.maxHours,
