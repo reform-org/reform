@@ -78,11 +78,11 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   val connections: Signal[Seq[RemoteRef]] = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
 
-  registry.connect(
+  /*registry.connect(
     WS(
       s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/",
     ),
-  ): @nowarn
+  ): @nowarn*/
 
   // registry.connect(BroadcastChannel("default")): @nowarn
 
