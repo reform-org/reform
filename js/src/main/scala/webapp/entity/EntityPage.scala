@@ -421,7 +421,7 @@ abstract class EntityPage[T <: Entity[T]](
               countEntities,
               " " + title.plural,
             ),
-            Button(ButtonStyle.LightDefault, "Export as CSV", onClick.foreach(_ => exportView())),
+            Button(ButtonStyle.LightDefault, "Export to Spreadsheet Editor", onClick.foreach(_ => exportView())),
             if (addInPlace) {
               Some(addButton)
             } else None,
