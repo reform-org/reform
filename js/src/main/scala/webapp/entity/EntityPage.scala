@@ -444,10 +444,7 @@ abstract class EntityPage[T <: Entity[T]](
                           ),
                         ),
                     ),
-                  th(
-                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-700 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
-                    "Actions",
-                  ),
+                  th(cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-700 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]"),
                 ),
               ),
               tbody(
