@@ -39,7 +39,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "cafa3f3d2fd4286c9b237ada4717242f3b26add6",
       "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-webrtc" % "cafa3f3d2fd4286c9b237ada4717242f3b26add6",
-      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-broadcastchannel" % "cafa3f3d2fd4286c9b237ada4717242f3b26add6",
+      // "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-broadcastchannel" % "cafa3f3d2fd4286c9b237ada4717242f3b26add6",
     ),
     /*
     externalNpm := baseDirectory.value.getParentFile(),

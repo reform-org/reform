@@ -37,7 +37,7 @@ import scala.concurrent.Promise
 import scala.annotation.nowarn
 import webapp.services.{ToastMode, ToastType, Toaster}
 import loci.communicator.ws.webnative.WS
-import loci.communicator.broadcastchannel.BroadcastChannel
+//import loci.communicator.broadcastchannel.BroadcastChannel
 import org.scalajs.dom.RTCPeerConnection
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
@@ -84,7 +84,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     ),
   ): @nowarn
 
-  registry.connect(BroadcastChannel("default")): @nowarn
+  // registry.connect(BroadcastChannel("default")): @nowarn
 
   def registerConnection(
       connector: Connector[Connections.Protocol],
