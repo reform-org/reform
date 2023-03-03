@@ -29,7 +29,7 @@ case class UsersPage()(using
     routing: RoutingService,
     indexeddb: IIndexedDB,
 ) extends EntityPage[User](
-      "Users",
+      Title("User"),
       repositories.users,
       repositories.users.all,
       Seq(username, role, comment),

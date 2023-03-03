@@ -30,7 +30,7 @@ case class SupervisorsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Supervisor](
-      "Supervisors",
+      Title("Supervisor"),
       repositories.supervisors,
       repositories.supervisors.all,
       Seq(firstName, lastName, eMail),

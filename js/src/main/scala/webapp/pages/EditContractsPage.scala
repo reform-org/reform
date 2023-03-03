@@ -289,7 +289,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                   ),
                   div(
                     cls := "basis-1/2",
-                    label(cls := "font-bold", "Payment level:"),
+                    label(cls := "font-bold", "Payment Level:"),
                     contractAssociatedPaymentLevel.renderEdit("", editingValue),
                     label(cls := "font-bold", "Hours per month:"),
                     contractHoursPerMonth.renderEdit("", editingValue),
