@@ -54,7 +54,7 @@ object SupervisorsPage {
       (s, a) => s.copy(lastName = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.string
+  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](
