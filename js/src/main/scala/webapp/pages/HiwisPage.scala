@@ -33,7 +33,7 @@ case class HiwisPage()(using
       Title("Hiwi"),
       repositories.hiwis,
       repositories.hiwis.all,
-      Seq(firstName, lastName, gender, eMail, birthdate),
+      Seq(firstName, lastName, eMail, birthdate),
       DefaultEntityRow(),
     ) {}
 
@@ -53,22 +53,6 @@ object HiwisPage {
       _.lastName,
       (h, a) => h.copy(lastName = a),
     )
-
-  private def gender(using routing: RoutingService): UIAttribute[Hiwi, String] = {
-    UIAttributeBuilder
-      .select(
-        Signal(
-          List("not specified", "male", "female").map(gender => gender -> Signal(gender)),
-        ),
-      )
-      .withLabel("Gender")
-      .require
-      .disableSearch
-      .bindAsSelect(
-        _.gender,
-        (p, a) => p.copy(gender = a),
-      )
-  }
 
   private def eMail(using routing: RoutingService) = UIAttributeBuilder.string
     .withLabel("Email")
