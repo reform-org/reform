@@ -33,25 +33,17 @@ case class SupervisorsPage()(using
       Title("Supervisor"),
       repositories.supervisors,
       repositories.supervisors.all,
-      Seq(firstName, lastName, eMail),
+      Seq(name, eMail),
       DefaultEntityRow(),
     ) {}
 
 object SupervisorsPage {
-  private def firstName(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("First Name")
+  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+    .withLabel("Name")
     .require
     .bindAsText[Supervisor](
-      _.firstName,
-      (s, a) => s.copy(firstName = a),
-    )
-
-  private def lastName(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("Last Name")
-    .require
-    .bindAsText[Supervisor](
-      _.lastName,
-      (s, a) => s.copy(lastName = a),
+      _.name,
+      (s, a) => s.copy(name = a),
     )
 
   private def eMail(using routing: RoutingService) = UIAttributeBuilder.email

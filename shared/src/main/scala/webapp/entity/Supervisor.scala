@@ -6,8 +6,7 @@ import kofre.base.*
 import webapp.BasicCodecs.*
 
 case class Supervisor(
-    firstName: Attribute[String] = Attribute.empty,
-    lastName: Attribute[String] = Attribute.empty,
+    name: Attribute[String] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Supervisor]
@@ -15,9 +14,9 @@ case class Supervisor(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: Supervisor = Supervisor(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
+  def default: Supervisor = Supervisor(Attribute.empty, Attribute.empty, Attribute(true))
 
-  def identifier: Attribute[String] = firstName
+  def identifier: Attribute[String] = name
 
   def withExists(exists: Boolean): Supervisor = {
     this.copy(_exists = _exists.set(exists))
