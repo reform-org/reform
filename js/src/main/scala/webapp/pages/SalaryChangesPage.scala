@@ -41,6 +41,7 @@ case class SalaryChangesPage()(using
 object SalaryChangesPage {
   private def salaryChangeValue(using routing: RoutingService) = UIAttributeBuilder.money
     .withLabel("Value")
+    .withMin("0")
     .require
     .bindAsNumber[SalaryChange](
       _.value,
