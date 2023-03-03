@@ -137,13 +137,13 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     removeConnection.fire(remoteRef)
   }): @nowarn("msg=discarded expression")
 
-  registry
+  /*registry
     .connect(
       WS(
         s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/",
       ),
     )
-    .toastOnError()
+    .toastOnError()*/
 
   // registry.connect(BroadcastChannel("default")): @nowarn
 }
