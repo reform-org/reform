@@ -138,7 +138,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     removeConnection.fire(remoteRef)
   }): @nowarn("msg=discarded expression")
 
-  Try(
+  /*Try(
     registry
       .connect(
         WS(
@@ -146,7 +146,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
         ),
       )
       .toastOnError(),
-  ).toastOnError()
+  ).toastOnError()*/
 
   registry.connect(BroadcastChannel("default")): @nowarn
 }
