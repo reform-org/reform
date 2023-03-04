@@ -37,9 +37,9 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     libraryDependencies ++= Seq(
       "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
-      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "722c7b59a371e73a6aa40e661e66d9ead869e7bb",
-      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-webrtc" % "722c7b59a371e73a6aa40e661e66d9ead869e7bb",
-      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-broadcastchannel" % "722c7b59a371e73a6aa40e661e66d9ead869e7bb",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-broadcastchannel" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
     ),
     /*
     externalNpm := baseDirectory.value.getParentFile(),
@@ -60,7 +60,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(
     fork := true,
     libraryDependencies ++= Seq(
-      "com.github.reform-org.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "722c7b59a371e73a6aa40e661e66d9ead869e7bb",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "org.xerial" % "sqlite-jdbc" % "3.41.0.0",
     ),
   )
@@ -68,7 +68,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     resolvers += "jitpack".at("https://jitpack.io"),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
-      "com.github.reform-org.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "722c7b59a371e73a6aa40e661e66d9ead869e7bb",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "com.github.rescala-lang.REScala" %%% "rescala" % "e797c43178820482223e92264089108814c15fab",
       "com.github.rescala-lang.REScala" %%% "kofre" % "e797c43178820482223e92264089108814c15fab",
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
