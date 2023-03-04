@@ -7,6 +7,9 @@ import scala.concurrent.Future
 import webapp.given_ExecutionContext
 import webapp.services.ToastMode
 import webapp.services.ToastType
+import scala.util.Try
+import scala.util.Success
+import scala.util.Failure
 
 object Futures {
 
@@ -22,6 +25,19 @@ object Futures {
             toaster.make(value.failed.get.getMessage.nn, mode, style)
           }
         })
+    }
+  }
+
+  implicit class TryOps[T](self: Try[T]) {
+    def toastOnError(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error)(using
+        toaster: Toaster,
+    ): Unit = {
+      self match {
+        case Success(value) =>
+        case Failure(exception) =>
+          exception.printStackTrace()
+          toaster.make(exception.getMessage.nn, mode, style)
+      }
     }
   }
 }
