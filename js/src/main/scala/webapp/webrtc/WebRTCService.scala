@@ -37,7 +37,7 @@ import scala.concurrent.Promise
 import scala.annotation.nowarn
 import webapp.services.{ToastMode, ToastType, Toaster}
 import loci.communicator.ws.webnative.WS
-//import loci.communicator.broadcastchannel.BroadcastChannel
+import loci.communicator.broadcastchannel.BroadcastChannel
 import org.scalajs.dom.RTCPeerConnection
 import webapp.utils.Futures.*
 import scala.util.Try
