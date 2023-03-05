@@ -65,15 +65,15 @@ case class ContractDraftsPage()(using
     ) {}
 
 object ContractDraftsPage {
-  private def getNumberOfForms(contract: Contract)(using repositories: Repositories): Signal[Int] = Signal {
+  private def getNumberOfForms(contract: Contract)(using repositories: Repositories): Signal[Int] = Signal.dynamic {
     val contractTypeId = contract.contractType.get.getOrElse("")
     val contractSchema =
       repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
     contractSchema match {
-      case None        => Signal(0)
-      case Some(value) => Signal { value.signal.value.files.get.getOrElse(Seq.empty).size }
+      case None        => 0
+      case Some(value) => value.signal.value.files.get.getOrElse(Seq.empty).size
     }
-  }.flatten
+  }
 
   private def forms(using repositories: Repositories) =
     new UIReadOnlyAttribute[Contract, String](
