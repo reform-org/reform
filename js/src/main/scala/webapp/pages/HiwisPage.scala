@@ -31,6 +31,7 @@ case class HiwisPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[Hiwi](
       Title("Hiwi"),
+      None,
       repositories.hiwis,
       repositories.hiwis.all,
       Seq(firstName, lastName, eMail, birthdate),

@@ -20,6 +20,17 @@ import webapp.components.common.LabeledInput
 import webapp.components.common.Button
 import webapp.components.common.ButtonStyle
 import webapp.components.icons
+import org.scalajs.dom.RTCConfiguration
+import scala.scalajs.js
+import org.scalajs.dom.RTCIceServer
+
+private val webrtcConfig = new RTCConfiguration {
+  iceServers = js.Array(
+    new RTCIceServer {
+      urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
+    },
+  );
+}
 
 private sealed trait State {
   def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
@@ -59,7 +70,7 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
 private case object Init extends State {
   private def initializeHostSession(using state: Var[State], webrtc: WebRTCService): Unit = {
     val pendingConnection =
-      PendingConnection.webrtcIntermediate(WebRTC.offer(), alias.now)
+      PendingConnection.webrtcIntermediate(WebRTC.offer(webrtcConfig), alias.now)
     state.set(HostPending(pendingConnection))
   }
 
@@ -107,7 +118,7 @@ private case class ClientAskingForHostSessionToken() extends State {
   )
 
   private def connectToHost(using state: Var[State])(using webrtc: WebRTCService): Unit = {
-    val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(), alias.now)
+    val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(webrtcConfig), alias.now)
     connection.connector.set(PendingConnection.tokenAsSession(sessionToken.now).session)
     state.set(ClientWaitingForHostConfirmation(connection, PendingConnection.tokenAsSession(sessionToken.now).alias))
   }

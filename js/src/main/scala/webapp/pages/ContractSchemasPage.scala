@@ -32,6 +32,7 @@ case class ContractSchemasPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[ContractSchema](
       Title("Contract Schema"),
+      Some("Contractschemas Description..."),
       repositories.contractSchemas,
       repositories.contractSchemas.all,
       Seq(name, files),
