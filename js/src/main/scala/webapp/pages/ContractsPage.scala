@@ -32,6 +32,7 @@ import outwatch.*
 import outwatch.dsl.*
 import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
+import webapp.npm.JSUtils.toMoneyString
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val repository: Repository[T],
@@ -85,7 +86,8 @@ case class ContractsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
-        hoursPerMonth,
+        contractHoursPerMonth,
+        moneyPerHour,
       ),
       DetailPageEntityRowBuilder(),
       true,
@@ -115,13 +117,6 @@ object ContractsPage {
         (p, a) => p.copy(contractAssociatedHiwi = a),
       )
   }
-
-  def hoursPerMonth(using repositories: Repositories) =
-    new UIReadOnlyAttribute[Contract, String](
-      label = "h/month",
-      getter = (id, contract) => Signal(s"${contract.contractHoursPerMonth.get.getOrElse("-")} h"),
-      readConverter = identity,
-    )
 
   def contractAssociatedProject(using
       repositories: Repositories,
@@ -259,4 +254,54 @@ object ContractsPage {
         (c, a) => c.copy(requiredDocuments = a),
       )
   }
+
+  def getMoneyPerHour(id: String, contract: Contract)(using repositories: Repositories): Signal[BigDecimal] = Signal {
+    val salaryChanges = repositories.salaryChanges.all.value
+    Signal {
+      Signal(
+        salaryChanges
+          .map(a => Signal { a.signal.value }),
+      ).flatten.value
+        .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
+        .filter(_.fromDate.get.getOrElse(0L) <= contract.contractStartDate.get.getOrElse(0L))
+        .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+        .headOption match {
+        case None     => BigDecimal(0)
+        case Some(sc) => sc.value.get.getOrElse(BigDecimal(0))
+      }
+    }
+  }.flatten
+
+  def getMoneyPerHourShould(id: String, contract: Contract)(using repositories: Repositories): Signal[BigDecimal] =
+    Signal {
+      val salaryChanges = repositories.salaryChanges.all.value
+      Signal {
+        Signal(
+          salaryChanges
+            .map(a => Signal { a.signal.value }),
+        ).flatten.value
+          .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
+          .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+          .headOption match {
+          case None     => BigDecimal(0)
+          case Some(sc) => sc.value.get.getOrElse(BigDecimal(0))
+        }
+      }
+    }.flatten
+
+  def moneyPerHour(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Contract, String](
+      label = "€/h",
+      getter = (id, contract) => Signal { toMoneyString(getMoneyPerHour(id, contract).value) },
+      readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (id, contract) =>
+            Signal {
+              getMoneyPerHour(id, contract).value != getMoneyPerHourShould(id, contract).value
+            },
+          "text-red-500 font-bold",
+        ),
+      ),
+    )
 }

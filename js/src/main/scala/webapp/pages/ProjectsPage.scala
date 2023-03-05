@@ -80,5 +80,16 @@ object ProjectsPage {
               .toString + " Contract(s)",
           ),
       readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (id, project) => {
+            Signal {
+              val contracts = Signal(repositories.contracts.all.value.map(v => Signal { v.signal.value })).flatten.value
+              contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
+            }
+          },
+          "text-slate-400 italic",
+        ),
+      ),
     )
 }

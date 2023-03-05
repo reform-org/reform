@@ -50,8 +50,8 @@ case class ContractDraftsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
-        ContractDraftsPage.moneyPerHour,
-        hoursPerMonth,
+        moneyPerHour,
+        contractHoursPerMonth,
         ContractDraftsPage.forms,
       ),
       DetailPageEntityRowBuilder(),
@@ -64,43 +64,41 @@ case class ContractDraftsPage()(using
     ) {}
 
 object ContractDraftsPage {
-  private def moneyPerHour(using repositories: Repositories) =
-    new UIReadOnlyAttribute[Contract, String](
-      label = "€/h",
-      getter = (id, contract) =>
-        Signal {
-          val salaryChanges = repositories.salaryChanges.all.value
-          Signal {
-            toMoneyString(
-              Signal(
-                salaryChanges
-                  .map(a => Signal { a.signal.value }),
-              ).flatten.value
-                .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
-                .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
-                .head
-                .value
-                .get
-                .getOrElse(0),
-            )
-          }
-        }.flatten,
-      readConverter = identity,
-    )
+  private def getNumberOfForms(contract: Contract)(using repositories: Repositories): Signal[Int] = Signal {
+    val contractTypeId = contract.contractType.get.getOrElse("")
+    val contractSchema =
+      repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
+    contractSchema match {
+      case None        => Signal(0)
+      case Some(value) => Signal { value.signal.value.files.get.getOrElse(Seq.empty).size }
+    }
+  }.flatten
 
   private def forms(using repositories: Repositories) =
     new UIReadOnlyAttribute[Contract, String](
       label = "Forms",
       getter = (id, contract) =>
         Signal {
-          val contractTypeId = contract.contractType.get.getOrElse("")
-          val contractSchema =
-            repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
-
           Signal {
-            s"${contract.requiredDocuments.get.getOrElse(Seq.empty).size} / ${contractSchema.get.signal.value.files.get.getOrElse(Seq.empty).size}"
+            s"${contract.requiredDocuments.get.getOrElse(Seq.empty).size} of ${getNumberOfForms(contract).value}"
           }
         }.flatten,
       readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (id, project) =>
+            Signal {
+              project.requiredDocuments.get.getOrElse(Seq.empty).size == getNumberOfForms(project).value
+            },
+          "text-green-500 font-bold",
+        ),
+        UIFormat(
+          (id, project) =>
+            Signal {
+              project.requiredDocuments.get.getOrElse(Seq.empty).size != getNumberOfForms(project).value
+            },
+          "text-red-500 font-bold",
+        ),
+      ),
     )
 }
