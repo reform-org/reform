@@ -30,7 +30,7 @@ case class DocumentsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Document](
-      "Documents",
+      Title("Document"),
       repositories.requiredDocuments,
       repositories.requiredDocuments.all,
       Seq(name),

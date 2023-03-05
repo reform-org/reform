@@ -43,15 +43,21 @@ import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
 import webapp.npm.JSUtils.downloadFile
 
+case class Title(singular: String) {
+
+  val plural: String = singular + "s"
+}
+
 sealed trait EntityValue[T]
 case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
     extends EntityValue[T]
 
-// TODO FIXME the type here is unecessarily complex because the Var types need to be the same
+// TODO FIXME the type here is unnecessarily complex because the Var types need to be the same
 case class New[T](value: Var[Option[(T, Var[T])]]) extends EntityValue[T]
 
 abstract class EntityRowBuilder[T <: Entity[T]] {
   def construct(
+      title: Title,
       repository: Repository[T],
       value: EntityValue[T],
       uiAttributes: Seq[UIBasicAttribute[T]],
@@ -66,17 +72,19 @@ abstract class EntityRowBuilder[T <: Entity[T]] {
 }
 
 class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
-  def construct(repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+  def construct(title: Title, repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(
+      using
       bottom: Bottom[T],
       lattice: Lattice[T],
       toaster: Toaster,
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
-  ): EntityRow[T] = EntityRow[T](repository, value, uiAttributes)
+  ): EntityRow[T] = EntityRow[T](title, repository, value, uiAttributes)
 }
 
 class EntityRow[T <: Entity[T]](
+    val title: Title,
     val repository: Repository[T],
     val value: EntityValue[T],
     val uiAttributes: Seq[UIBasicAttribute[T]],
@@ -151,7 +159,7 @@ class EntityRow[T <: Entity[T]](
                   formId := id,
                   `type` := "submit",
                   idAttr := "add-entity-button",
-                  "Add Entity",
+                  "Add " + this.title.singular,
                 )
               }
             }
@@ -197,7 +205,7 @@ class EntityRow[T <: Entity[T]](
     val modal = new Modal(
       "Delete",
       span(
-        "Do you really want to delete the entity \"",
+        s"Do you really want to delete the ${title.singular} \"",
         synced.signal.map(value => value.identifier.get.getOrElse("")),
         "\"?",
       ),
@@ -317,7 +325,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 }
 
 abstract class EntityPage[T <: Entity[T]](
-    title: String,
+    title: Title,
     repository: Repository[T],
     all: Signal[Seq[Synced[T]]],
     uiAttributes: Seq[UIBasicAttribute[T]],
@@ -335,6 +343,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val addEntityRow: EntityRow[T] =
     entityRowConstructor.construct(
+      title,
       repository,
       New(Var(Some((bottom.empty.default, Var(bottom.empty.default))))),
       uiAttributes,
@@ -349,7 +358,7 @@ abstract class EntityPage[T <: Entity[T]](
       )
       .mapInside(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
-        entityRowConstructor.construct(repository, existing, uiAttributes)
+        entityRowConstructor.construct(title, repository, existing, uiAttributes)
       })
 
   private val filter = Filter[T](uiAttributes)
@@ -367,7 +376,7 @@ abstract class EntityPage[T <: Entity[T]](
 
     navigationHeader(
       div(
-        h1(cls := "text-3xl mt-4 text-center", title),
+        h1(cls := "text-3xl mt-4 text-center", title.plural),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
           div(
@@ -396,7 +405,7 @@ abstract class EntityPage[T <: Entity[T]](
                   Signal(
                     uiAttributes.map(attr => MultiSelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
                   ),
-                  (value) => routing.updateQueryParameters(Map(("columns" -> value))),
+                  value => routing.updateQueryParameters(Map("columns" -> value)),
                   routing.getQueryParameterAsSeq("columns"),
                   4,
                   true,
@@ -410,9 +419,9 @@ abstract class EntityPage[T <: Entity[T]](
               countFilteredEntities,
               " / ",
               countEntities,
-              " Entities",
+              " " + title.plural,
             ),
-            Button(ButtonStyle.LightDefault, "Export as CSV", cls := "!m-0", onClick.foreach(_ => exportView)),
+            Button(ButtonStyle.LightDefault, "Export to Spreadsheet Editor", cls := "!m-0", onClick.foreach(_ => exportView())),
             if (addInPlace) {
               Some(addButton)
             } else None,
@@ -427,7 +436,7 @@ abstract class EntityPage[T <: Entity[T]](
                     .getQueryParameterAsSeq("columns")
                     .map(columns =>
                       uiAttributes
-                        .filter(attr => columns.size == 0 || columns.contains(toQueryParameterName(attr.label)))
+                        .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
                         .map(a =>
                           th(
                             cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
@@ -437,7 +446,6 @@ abstract class EntityPage[T <: Entity[T]](
                     ),
                   th(
                     cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
-                    "Actions",
                   ),
                 ),
               ),
@@ -523,7 +531,7 @@ abstract class EntityPage[T <: Entity[T]](
       .map(a => a.size)
   }
 
-  private def exportView: Unit = {
+  private def exportView(): Unit = {
     var csvHeader: Seq[String] = Seq()
     var csvData: Seq[String] = Seq()
 
@@ -581,7 +589,7 @@ abstract class EntityPage[T <: Entity[T]](
       }): @nowarn
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
-    downloadFile(s"$title.csv", csvString, "data:text/csv")
+    downloadFile(title.plural + ".csv", csvString, "data:text/csv")
   }
 
   private def renderEntities = {

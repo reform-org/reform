@@ -52,9 +52,9 @@ def Select(
       onClick.foreach(e => {
         dropdownOpen.transform(!_)
       }),
-      value.map(v =>
+      Signal {
         input(
-          outwatch.dsl.value := v,
+          outwatch.dsl.value := value.value,
           tpe := "text",
           outwatch.dsl.required := required,
           cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
@@ -68,23 +68,19 @@ def Select(
             })
             .getOrElse("")
             .toString,
-        ),
-      ),
-      options.map(o =>
-        value
-          .map(s => {
-            val selectedOption = o.find(v => s == v.id)
-            selectedOption match {
-              case None    => div()
-              case Some(v) => div(v.name)
-            }
-          }),
-      ),
-      value.map(s => {
-        if (s.size == 0) {
+        )
+      },
+      Signal {
+        if (value.value.isEmpty) {
           Some(div(cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."))
         } else None
-      }),
+      },
+      Signal {
+        options.value.find(v => value.value == v.id) match {
+          case None    => div()
+          case Some(v) => div(v.name)
+        }
+      },
       label(
         tabIndex := 0,
         cls := "grow relative pr-7 h-full",
@@ -105,74 +101,61 @@ def Select(
       } else None,
       div(
         cls := "select-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto custom-scrollbar",
-        options.map(option =>
-          option.map(uiOption => {
-            uiOption.name.map(name => {
-              search.map(searchKey => {
-                if (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())) {
-                  Some(
-                    label(
-                      cls := "block w-full hover:bg-slate-50 dark:hover:bg-gray-700",
-                      input(
-                        tpe := "radio",
-                        cls := "hidden peer",
-                        checked <-- value.map(i => i.contains(uiOption.id)),
-                        idAttr := s"$id-${uiOption.id}",
-                        VMod.attr("data-id") := uiOption.id,
-                        VMod.attr("name") := id,
-                        onClick.foreach(_ => {
-                          onInput(
-                            document
-                              .querySelector(s"#$id input[type=radio]:checked")
-                              .asInstanceOf[HTMLElement]
-                              .dataset
-                              .get("id")
-                              .getOrElse(""),
-                          )
-                          close()
-                        }),
-                      ),
-                      tabIndex := 0,
-                      uiOption.render,
-                      forId := s"$id-${uiOption.id}",
+        Signal {
+          options.value.map(uiOption =>
+            Signal {
+              if (search.value.isBlank() || uiOption.name.value.toLowerCase().nn.contains(search.value.toLowerCase())) {
+                Some(
+                  label(
+                    cls := "block w-full hover:bg-slate-50 dark:hover:bg-gray-700",
+                    input(
+                      tpe := "radio",
+                      cls := "hidden peer",
+                      checked <-- value.map(i => i.contains(uiOption.id)),
+                      idAttr := s"$id-${uiOption.id}",
+                      VMod.attr("data-id") := uiOption.id,
+                      VMod.attr("name") := id,
+                      onClick.foreach(_ => {
+                        onInput(
+                          document
+                            .querySelector(s"#$id input[type=radio]:checked")
+                            .asInstanceOf[HTMLElement]
+                            .dataset
+                            .get("id")
+                            .getOrElse(""),
+                        )
+                        close()
+                      }),
                     ),
-                  )
-                } else None
-              })
-            })
-          }),
-        ), {
-          val noResults = options
-            .map(option => {
-              Signal(
-                option
-                  .map(uiOption => {
-                    uiOption.name
-                      .map(name => {
-                        search
-                          .map(searchKey =>
-                            (searchKey.isBlank() || name.toLowerCase().nn.contains(searchKey.toLowerCase())),
-                          )
-                      })
-                      .flatten
-                  }),
-              ).flatten.map(options => {
-                options.count(identity) == 0
-              })
-            })
-            .flatten
-          noResults.map(noResults => {
-            if (noResults) {
-              Some(
-                div(
-                  cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
-                  emptyState,
+                    tabIndex := 0,
+                    uiOption.render,
+                    forId := s"$id-${uiOption.id}",
+                  ),
+                )
+              } else None
+            },
+          )
+        },
+        Signal {
+          if (
+            Signal(
+              options.value
+                .map(uiOption =>
+                  Signal {
+                    search.value.isBlank || uiOption.name.value.toLowerCase().nn.contains(search.value.toLowerCase())
+                  },
                 ),
-              )
-            } else {
-              None
-            }
-          })
+            ).flatten.map(_.count(identity) == 0).value
+          ) {
+            Some(
+              div(
+                cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
+                emptyState,
+              ),
+            )
+          } else {
+            None
+          }
         },
       ),
     ),

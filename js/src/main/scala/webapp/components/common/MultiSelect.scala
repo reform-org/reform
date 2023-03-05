@@ -90,9 +90,9 @@ def MultiSelect(
       onClick.foreach(e => {
         dropdownOpen.transform(!_)
       }),
-      value.map(v =>
+      Signal {
         input(
-          outwatch.dsl.value := v.mkString(", "),
+          outwatch.dsl.value := value.value.mkString(", "),
           tpe := "text",
           outwatch.dsl.required := required,
           cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
@@ -106,66 +106,55 @@ def MultiSelect(
             })
             .getOrElse("")
             .toString,
-        ),
-      ),
+        )
+      },
       div(
         cls := "flex flex-row gap-2 multiselect-value-wrapper",
-        options.map(o =>
-          value
-            .map(s =>
-              visibleItems.map(visibleItems =>
-                o.filter(v => s.contains(v.id))
-                  .slice(0, visibleItems)
-                  .map(v =>
-                    div(
-                      cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
-                      v.name,
-                      div(
-                        icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
-                        cls := "cursor-pointer",
-                        onClick.foreach(_ => {
-                          onInput(
-                            document
-                              .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                              .map(element =>
-                                element
-                                  .asInstanceOf[HTMLElement]
-                                  .dataset
-                                  .get("id")
-                                  .getOrElse(""),
-                              )
-                              .filter(id => id != v.id)
-                              .asInstanceOf[Seq[String]],
-                          )
-                        }),
-                      ),
-                    ),
-                  ),
-              ),
-            ),
-        ),
-        value.map(s => {
-          visibleItems.map(visibleItems => {
-            if (s.size > visibleItems) {
-              Some(
+        Signal {
+          options.value
+            .filter(v => value.value.contains(v.id))
+            .slice(0, visibleItems.value)
+            .map(option => {
+              div(
+                cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
+                option.name,
                 div(
-                  cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
-                  s"+${s.size - visibleItems}",
+                  icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
+                  cls := "cursor-pointer",
+                  onClick.foreach(_ => {
+                    onInput(
+                      document
+                        .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
+                        .map(element =>
+                          element
+                            .asInstanceOf[HTMLElement]
+                            .dataset
+                            .get("id")
+                            .getOrElse(""),
+                        )
+                        .filter(id => id != option.id)
+                        .asInstanceOf[Seq[String]],
+                    )
+                  }),
                 ),
               )
-            } else None
-          })
-        }),
-        value.map(s => {
-          if (s.isEmpty) {
+            })
+        },
+        Signal {
+          if (value.value.size > visibleItems.value) {
             Some(
               div(
                 cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
-                "Select...",
+                s"+${value.value.size - visibleItems.value}",
               ),
             )
           } else None
-        }),
+        },
+        Signal {
+          if (value.value.isEmpty) {
+            Some(div(cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."))
+          } else None
+        },
       ),
       label(
         tabIndex := 0,
@@ -220,69 +209,63 @@ def MultiSelect(
       ),
       div(
         cls := "multiselect-dropdown-list max-h-96 md:max-h-44 sm:max-h-44 overflow-y-auto custom-scrollbar",
-        options.map(option =>
-          option.map(uiOption => {
-            uiOption.name.map(name => {
-              search.map(searchKey => {
-                if (searchKey.isBlank || name.toLowerCase().nn.contains(searchKey.toLowerCase())) {
-                  Some(
-                    label(
-                      cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700",
-                      Checkbox(
-                        CheckboxStyle.Default,
-                        cls := "mr-2",
-                        checked <-- value.map(i => i.contains(uiOption.id)),
-                        idAttr := s"$id-${uiOption.id}",
-                        VMod.attr("data-id") := uiOption.id,
-                        onClick.foreach(_ => {
-                          onInput(
-                            document
-                              .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                              .map(element =>
-                                element
-                                  .asInstanceOf[HTMLElement]
-                                  .dataset
-                                  .get("id")
-                                  .getOrElse(""),
-                              )
-                              .asInstanceOf[Seq[String]],
-                          )
-                        }),
-                      ),
-                      tabIndex := 0,
-                      uiOption.render,
-                      forId := s"$id-${uiOption.id}",
+        Signal {
+          options.value.map(uiOption =>
+            Signal {
+              if (search.value.isBlank || uiOption.name.value.toLowerCase().nn.contains(search.value.toLowerCase())) {
+                Some(
+                  label(
+                    cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700",
+                    Checkbox(
+                      CheckboxStyle.Default,
+                      cls := "mr-2",
+                      checked <-- value.map(i => i.contains(uiOption.id)),
+                      idAttr := s"$id-${uiOption.id}",
+                      VMod.attr("data-id") := uiOption.id,
+                      onClick.foreach(_ => {
+                        onInput(
+                          document
+                            .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
+                            .map(element =>
+                              element
+                                .asInstanceOf[HTMLElement]
+                                .dataset
+                                .get("id")
+                                .getOrElse(""),
+                            )
+                            .asInstanceOf[Seq[String]],
+                        )
+                      }),
                     ),
-                  )
-                } else None
-              })
-            })
-
-          }),
-        ), {
-          val noResults: Signal[Boolean] = options
-            .flatMap(
-              _.filterSignal(uiOption =>
-                uiOption.name
-                  .flatMap(name =>
-                    search
-                      .map(searchKey => searchKey.isBlank || name.toLowerCase().nn.contains(searchKey.toLowerCase())),
+                    tabIndex := 0,
+                    uiOption.render,
+                    forId := s"$id-${uiOption.id}",
                   ),
+                )
+              } else None
+            },
+          )
+        },
+        Signal {
+          if (
+            Signal(
+              options.value
+                .map(uiOption =>
+                  Signal {
+                    search.value.isBlank || uiOption.name.value.toLowerCase().nn.contains(search.value.toLowerCase())
+                  },
+                ),
+            ).flatten.map(_.count(identity) == 0).value
+          ) {
+            Some(
+              div(
+                cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
+                emptyState,
               ),
             )
-            .map(_.isEmpty)
-          noResults.map(noResults => {
-            if (noResults) {
-              Some(
-                div(
-                  cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
-                  emptyState,
-                ),
-              )
-            } else {
-              None
-            }
-          })
+          } else {
+            None
+          }
         },
       ),
     ),
