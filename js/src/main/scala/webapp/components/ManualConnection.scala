@@ -135,7 +135,7 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p-1",
     span(
-      cls := "label label-text text-slate-500 dark:text-slate-300",
+      cls := "label label-text text-slate-500 dark:text-gray-300",
       "Please share the code with the peer that invited you to finish the connection.",
     ),
     showConnectionToken(connection),
@@ -165,7 +165,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
   override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
     cls := "p-1",
     span(
-      cls := "label label-text text-slate-500 dark:text-slate-300",
+      cls := "label label-text text-slate-500 dark:text-gray-300",
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
     showConnectionToken(connection),
