@@ -171,9 +171,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
 
   private def editStep(number: String, title: String, props: VMod*): VNode = {
     div(
-      cls := "border rounded-2xl m-4 border-purple-200",
+      cls := "border rounded-2xl m-4 border-purple-200 dark:text-gray-200",
       div(
-        cls := "bg-purple-200 p-4 rounded-t-2xl",
+        cls := "bg-purple-200 p-4 rounded-t-2xl dark:text-gray-600",
         p("STEP " + number + ": " + title),
       ),
       props,
@@ -283,9 +283,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                   cls := "flex space-x-4",
                   div( // TODO calculation of monthly base salary and total hours
                     cls := "basis-1/2",
-                    p(cls := "bg-blue-100", "Monthly base salary: 1.500€; with bonus: 1.800€"),
+                    p(
+                      cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                      "Monthly base salary: 1.500€; with bonus: 1.800€",
+                    ),
                     br,
-                    p(cls := "bg-blue-100", "Total Hours: 160h"),
+                    p(cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600", "Total Hours: 160h"),
                   ),
                   div(
                     cls := "basis-1/2",
