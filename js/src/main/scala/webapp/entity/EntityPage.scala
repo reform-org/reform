@@ -326,6 +326,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
 abstract class EntityPage[T <: Entity[T]](
     title: Title,
+    description: Option[VMod],
     repository: Repository[T],
     all: Signal[Seq[Synced[T]]],
     uiAttributes: Seq[UIBasicAttribute[T]],
@@ -377,6 +378,10 @@ abstract class EntityPage[T <: Entity[T]](
     navigationHeader(
       div(
         h1(cls := "text-3xl mt-4 text-center", title.plural),
+        div(
+          cls := "w-[95%] mx-[2.5%] text-slate-400 dark:text-gray-200",
+          description,
+        ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
           div(

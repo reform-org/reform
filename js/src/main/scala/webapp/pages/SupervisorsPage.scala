@@ -31,6 +31,7 @@ case class SupervisorsPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[Supervisor](
       Title("Supervisor"),
+      None,
       repositories.supervisors,
       repositories.supervisors.all,
       Seq(name, eMail),

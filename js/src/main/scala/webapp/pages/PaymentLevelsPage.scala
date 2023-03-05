@@ -30,6 +30,7 @@ case class PaymentLevelsPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
+      Some("Paymentlevel Description..."),
       repositories.paymentLevels,
       repositories.paymentLevels.all,
       Seq(title, pdfCheckboxName),

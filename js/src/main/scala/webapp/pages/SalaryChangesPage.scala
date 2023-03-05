@@ -32,6 +32,7 @@ case class SalaryChangesPage()(using
     indexeddb: IIndexedDB,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
+      Some("Salary Changes Description..."),
       repositories.salaryChanges,
       repositories.salaryChanges.all,
       Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),

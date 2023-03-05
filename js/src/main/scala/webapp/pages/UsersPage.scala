@@ -30,6 +30,7 @@ case class UsersPage()(using
     indexeddb: IIndexedDB,
 ) extends EntityPage[User](
       Title("User"),
+      None,
       repositories.users,
       repositories.users.all,
       Seq(username, role, comment),
