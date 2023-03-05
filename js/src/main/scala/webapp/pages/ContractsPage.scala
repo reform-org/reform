@@ -79,6 +79,7 @@ case class ContractsPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
       Title("Contract"),
+      None,
       repositories.contracts,
       onlyFinalizedContracts,
       Seq(

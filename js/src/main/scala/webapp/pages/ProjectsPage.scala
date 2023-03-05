@@ -35,6 +35,7 @@ case class ProjectsPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[Project](
       Title("Project"),
+      None,
       repositories.projects,
       repositories.projects.all,
       Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
