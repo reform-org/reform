@@ -472,6 +472,125 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                 ),
               ),
             ),
+            editStep(
+              "5",
+              "Letter to Deanship",
+              div(
+                cls := "p-4",
+                Button(
+                  ButtonStyle.LightDefault,
+                  "Create Letter",
+                  idAttr := "loadLetter",
+                  onClick.foreach(e => {
+                    e.preventDefault()
+                    document.getElementById("loadLetter").classList.add("loading")
+
+                    editingValue.now match {
+                      case None => {
+                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
+                        document.getElementById("loadLetter").classList.remove("loading")
+                      }
+                      case Some(editingValue) => {
+                        val contract = editingValue._2.now
+                        contract.contractAssociatedHiwi.get match {
+                          case None => {
+                            toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
+                            document.getElementById("loadLetter").classList.remove("loading")
+                          }
+                          case Some(hiwiId) => {
+                            val hiwis = repositories.hiwis.all.now
+                            val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
+                            hiwi match {
+                              case None => {
+                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
+                                document.getElementById("loadLetter").classList.remove("loading")
+                              }
+                              case Some(_hiwi) => {
+                                val hiwi = _hiwi.signal.now
+                                contract.contractAssociatedPaymentLevel.get match {
+                                  case None => {
+                                    toaster.make(
+                                      "No payment level associated with contract!",
+                                      ToastMode.Long,
+                                      ToastType.Error,
+                                    )
+                                    document.getElementById("loadLetter").classList.remove("loading")
+                                  }
+                                  case Some(paymentLevelId) => {
+                                    val paymentLevels = repositories.paymentLevels.all.now
+                                    val paymentLevel =
+                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
+                                    paymentLevel match {
+                                      case None => {
+                                        toaster.make(
+                                          "This payment level does not seem to exist!",
+                                          ToastMode.Long,
+                                          ToastType.Error,
+                                        )
+                                        document.getElementById("loadLetter").classList.remove("loading")
+                                      }
+                                      case Some(_paymentLevel) => {
+                                        val paymentLevel = _paymentLevel.signal.now
+                                        js.dynamicImport {
+                                          PDF
+                                            .fill(
+                                              "/letter_editable.pdf",
+                                              "letter.pdf",
+                                              Seq(
+                                                PDFTextField(
+                                                  "Name VornameRow1",
+                                                  s"${hiwi.lastName.get.getOrElse("")}, ${hiwi.firstName.get.getOrElse("")}",
+                                                ),
+                                                PDFTextField(
+                                                  "GebDatumRow1",
+                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                                ),
+                                                PDFTextField(
+                                                  "Vertrags beginnRow1",
+                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                                ),
+                                                PDFTextField(
+                                                  "Vertrags endeRow1",
+                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                                ),
+                                                PDFTextField("€StdRow1", 0.toString),
+                                                PDFTextField("Stunden gesamtRow1", 0.toString),
+                                                PDFTextField("Stunden gesamtSumme", 0.toString),
+                                                PDFTextField(
+                                                  "Std MonatRow1",
+                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
+                                                ),
+                                                PDFTextField(
+                                                  "Account",
+                                                  contract.contractAssociatedProject.get.getOrElse(""),
+                                                ),
+                                                PDFTextField(
+                                                  "Datum",
+                                                  toGermanDate(js.Date.now().toLong),
+                                                ),
+                                              ),
+                                            )
+                                            .andThen(s => {
+                                              console.log(s)
+                                              document.getElementById("loadLetter").classList.remove("loading")
+                                            })
+                                            .toastOnError()
+                                        }.toFuture
+                                          .toastOnError()
+                                      }
+                                    }
+                                  }
+                                }
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  }),
+                ),
+              ),
+            ),
             div(
               cls := "pl-8 space-x-4",
               Button(
