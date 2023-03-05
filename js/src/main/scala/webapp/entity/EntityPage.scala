@@ -130,7 +130,7 @@ class EntityRow[T <: Entity[T]](
             }),
         ),
       td(
-        cls := "py min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 odd:bg-blue-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
+        cls := "py min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
           form(
@@ -421,7 +421,12 @@ abstract class EntityPage[T <: Entity[T]](
               countEntities,
               " " + title.plural,
             ),
-            Button(ButtonStyle.LightDefault, "Export to Spreadsheet Editor", cls := "!m-0", onClick.foreach(_ => exportView())),
+            Button(
+              ButtonStyle.LightDefault,
+              "Export to Spreadsheet Editor",
+              cls := "!m-0",
+              onClick.foreach(_ => exportView()),
+            ),
             if (addInPlace) {
               Some(addButton)
             } else None,
