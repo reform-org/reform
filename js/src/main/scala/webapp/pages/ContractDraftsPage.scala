@@ -80,10 +80,8 @@ object ContractDraftsPage {
       label = "Forms",
       getter = (id, contract) =>
         Signal {
-          Signal {
-            s"${contract.requiredDocuments.get.getOrElse(Seq.empty).size} of ${getNumberOfForms(contract).value}"
-          }
-        }.flatten,
+          s"${contract.requiredDocuments.get.getOrElse(Seq.empty).size} of ${getNumberOfForms(contract).value}"
+        },
       readConverter = identity,
       formats = Seq(
         UIFormat(
