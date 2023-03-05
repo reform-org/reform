@@ -34,7 +34,7 @@ case class ProjectsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Project](
-      "Projects",
+      Title("Project"),
       repositories.projects,
       repositories.projects.all,
       Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
@@ -52,6 +52,7 @@ object ProjectsPage {
 
   private def maxHours(using routing: RoutingService) = UIAttributeBuilder.int
     .withLabel("Max Hours")
+    .withMin("0")
     .require
     .bindAsNumber[Project](
       _.maxHours,
@@ -74,10 +75,7 @@ object ProjectsPage {
           .map(_.map(_.signal))
           .flatten
           .map(contracts =>
-            contracts
-              .filter(contract => contract.contractAssociatedProject.get == Some(id))
-              .size
-              .toString + " Contract(s)",
+            contracts.count(contract => contract.contractAssociatedProject.get.contains(id)).toString + " Contract(s)",
           ),
       readConverter = identity,
       formats = Seq(

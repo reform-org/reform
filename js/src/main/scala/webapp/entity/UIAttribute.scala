@@ -92,6 +92,7 @@ class UITextAttribute[EntityType, AttributeType](
     override val width: Option[String] = None,
     val regex: String = ".*",
     val stepSize: String = "1",
+    val min: String = "",
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
 )(using routing: RoutingService)
     extends UIAttribute[EntityType, AttributeType](
@@ -122,6 +123,7 @@ class UITextAttribute[EntityType, AttributeType](
       required := isRequired,
       stepAttr := stepSize,
       pattern := regex,
+      VMod.attr("min") := min,
       value <-- attr.map(getEditString),
       onInput.value --> {
         val evt = Evt[String]()
@@ -182,6 +184,7 @@ class UINumberAttribute[EntityType, AttributeType](
     editConverter: AttributeType => String,
     writeConverter: String => AttributeType,
     label: String,
+    min: String,
     isRequired: Boolean,
     regex: String,
     stepSize: String,
@@ -193,6 +196,7 @@ class UINumberAttribute[EntityType, AttributeType](
       readConverter = readConverter,
       editConverter = editConverter,
       writeConverter = writeConverter,
+      min = min,
       label = label,
       isRequired = isRequired,
       regex = regex,

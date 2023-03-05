@@ -35,6 +35,7 @@ import webapp.utils.Futures.*
 import webapp.npm.JSUtils.toMoneyString
 
 class DetailPageEntityRow[T <: Entity[T]](
+    override val title: Title,
     override val repository: Repository[T],
     override val value: EntityValue[T],
     override val uiAttributes: Seq[UIBasicAttribute[T]],
@@ -45,7 +46,7 @@ class DetailPageEntityRow[T <: Entity[T]](
     routing: RoutingService,
     repositories: Repositories,
     indexedb: IIndexedDB,
-) extends EntityRow[T](repository, value, uiAttributes) {
+) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
       case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
@@ -57,14 +58,15 @@ class DetailPageEntityRow[T <: Entity[T]](
 }
 
 class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
-  def construct(repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(using
+  def construct(title: Title, repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(
+      using
       bottom: Bottom[T],
       lattice: Lattice[T],
       toaster: Toaster,
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
-  ): EntityRow[T] = DetailPageEntityRow(repository, value, uiAttributes)
+  ): EntityRow[T] = DetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
 def onlyFinalizedContracts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
@@ -77,7 +79,7 @@ case class ContractsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Contract](
-      "Contracts",
+      Title("Contract"),
       repositories.contracts,
       onlyFinalizedContracts,
       Seq(
@@ -146,9 +148,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         options = repositories.supervisors.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
+          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
         ),
       )
       .withCreatePage(SupervisorsPage())
@@ -199,6 +199,7 @@ object ContractsPage {
 
   def contractHoursPerMonth(using routing: RoutingService): UIAttribute[Contract, Int] = UIAttributeBuilder.int
     .withLabel("h/month")
+    .withMin("0")
     .require
     .bindAsNumber[Contract](
       _.contractHoursPerMonth,
@@ -226,7 +227,7 @@ object ContractsPage {
         ),
       )
       .withCreatePage(PaymentLevelsPage())
-      .withLabel("Payment level")
+      .withLabel("Payment Level")
       .require
       .bindAsSelect(
         _.contractAssociatedPaymentLevel,

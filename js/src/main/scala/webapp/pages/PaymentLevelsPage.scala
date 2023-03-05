@@ -32,7 +32,7 @@ case class PaymentLevelsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[PaymentLevel](
-      "Payment Levels",
+      Title("Payment Level"),
       repositories.paymentLevels,
       repositories.paymentLevels.all,
       Seq(title, pdfCheckboxName, currentValue),

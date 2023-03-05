@@ -30,31 +30,23 @@ case class SupervisorsPage()(using
     routing: RoutingService,
     indexedb: IIndexedDB,
 ) extends EntityPage[Supervisor](
-      "Supervisors",
+      Title("Supervisor"),
       repositories.supervisors,
       repositories.supervisors.all,
-      Seq(firstName, lastName, eMail),
+      Seq(name, eMail),
       DefaultEntityRow(),
     ) {}
 
 object SupervisorsPage {
-  private def firstName(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("First Name")
+  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+    .withLabel("Name")
     .require
     .bindAsText[Supervisor](
-      _.firstName,
-      (s, a) => s.copy(firstName = a),
+      _.name,
+      (s, a) => s.copy(name = a),
     )
 
-  private def lastName(using routing: RoutingService) = UIAttributeBuilder.string
-    .withLabel("Last Name")
-    .require
-    .bindAsText[Supervisor](
-      _.lastName,
-      (s, a) => s.copy(lastName = a),
-    )
-
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.string
+  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](
