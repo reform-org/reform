@@ -31,6 +31,7 @@ case class DocumentsPage()(using
     indexedb: IIndexedDB,
 ) extends EntityPage[Document](
       Title("Document"),
+      Some("Document Description..."),
       repositories.requiredDocuments,
       repositories.requiredDocuments.all,
       Seq(name),
