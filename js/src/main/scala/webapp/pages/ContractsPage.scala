@@ -32,6 +32,8 @@ import outwatch.*
 import outwatch.dsl.*
 import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
+import webapp.npm.JSUtils.toMoneyString
+import scala.scalajs.js
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
@@ -88,6 +90,8 @@ case class ContractsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
+        contractHoursPerMonth,
+        moneyPerHour,
       ),
       DetailPageEntityRowBuilder(),
       true,
@@ -269,4 +273,40 @@ object ContractsPage {
         (c, a) => c.copy(requiredDocuments = a),
       )
   }
+
+  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      val salaryChanges = repositories.salaryChanges.all.value
+      salaryChanges
+        .map(_.signal.value)
+        .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
+        .filter(_.fromDate.get.getOrElse(0L) <= date)
+        .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+        .headOption
+        .flatMap(_.value.get)
+        .getOrElse(BigDecimal(0))
+    }
+
+  def moneyPerHour(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Contract, String](
+      label = "€/h",
+      getter = (id, contract) =>
+        Signal { toMoneyString(getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value) },
+      readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (id, contract) =>
+            Signal {
+              getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value != getMoneyPerHour(
+                id,
+                contract,
+                js.Date.now().toLong,
+              ).value
+            },
+          "text-red-500 font-bold",
+        ),
+      ),
+    )
 }
