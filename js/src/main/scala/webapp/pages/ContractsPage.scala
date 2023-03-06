@@ -108,9 +108,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.hiwis.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(HiwisPage())
@@ -130,7 +128,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
+        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse("")))),
       )
       .withCreatePage(ProjectsPage())
       .withLabel("Project")
@@ -150,7 +148,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         options = repositories.supervisors.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(SupervisorsPage())
@@ -171,7 +169,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.contractSchemas.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(ContractSchemasPage())
@@ -241,7 +239,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(PaymentLevelsPage())
@@ -262,7 +260,7 @@ object ContractsPage {
     UIAttributeBuilder
       .multiSelect(
         repositories.requiredDocuments.existing.map(list =>
-          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(_.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(DocumentsPage())
