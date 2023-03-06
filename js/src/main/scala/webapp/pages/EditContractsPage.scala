@@ -352,7 +352,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 ),
                 div(
                   cls := "basis-[12.5%] flex flex-col",
-                  label(cls := "font-bold", "Contracts"),
+                  label(
+                    cls := "font-bold",
+                    Signal.dynamic {
+                      editingValue.resource.value.flatMap((_, value) =>
+                        Some(if (value.resource.value.isDraft.get.getOrElse(true)) "Contracts" else "Other Contracts"),
+                      )
+                    },
+                  ),
                   div(
                     Signal.dynamic {
                       editingValue.resource.value.flatMap((_, value) =>
@@ -384,7 +391,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 ),
                 div(
                   cls := "basis-[12.5%] flex flex-col",
-                  label(cls := "font-bold", "Other drafts"),
+                  label(
+                    cls := "font-bold",
+                    Signal.dynamic {
+                      editingValue.resource.value.flatMap((_, value) =>
+                        Some(if (value.resource.value.isDraft.get.getOrElse(true)) "Other Drafts" else "Drafts"),
+                      )
+                    },
+                  ),
                   div(
                     Signal.dynamic {
                       editingValue.resource.value.flatMap((_, value) =>
@@ -416,7 +430,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 ),
                 div(
                   cls := "basis-[12.5%] flex flex-col",
-                  label(cls := "font-bold", "This draft"),
+                  label(
+                    cls := "font-bold",
+                    Signal.dynamic {
+                      editingValue.resource.value.flatMap((_, value) =>
+                        Some(if (value.resource.value.isDraft.get.getOrElse(true)) "This Draft" else "This Contract"),
+                      )
+                    },
+                  ),
                   div(
                     Signal.dynamic {
                       editingValue.resource.value.flatMap((_, value) =>
