@@ -58,7 +58,7 @@ object SalaryChangesPage {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(PaymentLevelsPage())

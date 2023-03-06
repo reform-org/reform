@@ -32,6 +32,8 @@ import outwatch.*
 import outwatch.dsl.*
 import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
+import webapp.npm.JSUtils.toMoneyString
+import scala.scalajs.js
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
@@ -88,6 +90,8 @@ case class ContractsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
+        contractHoursPerMonth,
+        moneyPerHour,
       ),
       DetailPageEntityRowBuilder(),
       true,
@@ -104,9 +108,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.hiwis.all.map(list =>
-          list.map(value =>
-            value.id -> value.signal.map(v => v.firstName.get.getOrElse("") + " " + v.lastName.get.getOrElse("")),
-          ),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(HiwisPage())
@@ -126,7 +128,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse("")))),
+        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse("")))),
       )
       .withCreatePage(ProjectsPage())
       .withLabel("Project")
@@ -146,7 +148,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         options = repositories.supervisors.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(SupervisorsPage())
@@ -167,7 +169,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.contractSchemas.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.name.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(ContractSchemasPage())
@@ -212,6 +214,22 @@ object ContractsPage {
       (h, a) => h.copy(isDraft = a),
     )
 
+  def signed(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+    .withLabel("Signed?")
+    .require
+    .bindAsCheckbox[Contract](
+      _.isSigned,
+      (h, a) => h.copy(isSigned = a),
+    )
+
+  def submitted(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+    .withLabel("Submitted?")
+    .require
+    .bindAsCheckbox[Contract](
+      _.isSubmitted,
+      (h, a) => h.copy(isSubmitted = a),
+    )
+
   def contractAssociatedPaymentLevel(using
       repositories: Repositories,
       routing: RoutingService,
@@ -221,7 +239,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(PaymentLevelsPage())
@@ -242,7 +260,7 @@ object ContractsPage {
     UIAttributeBuilder
       .multiSelect(
         repositories.requiredDocuments.existing.map(list =>
-          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
+          list.map(value => value.id -> value.signal.map(_.identifier.get.getOrElse(""))),
         ),
       )
       .withCreatePage(DocumentsPage())
@@ -253,4 +271,40 @@ object ContractsPage {
         (c, a) => c.copy(requiredDocuments = a),
       )
   }
+
+  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      val salaryChanges = repositories.salaryChanges.all.value
+      salaryChanges
+        .map(_.signal.value)
+        .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
+        .filter(_.fromDate.get.getOrElse(0L) <= date)
+        .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+        .headOption
+        .flatMap(_.value.get)
+        .getOrElse(BigDecimal(0))
+    }
+
+  def moneyPerHour(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Contract, String](
+      label = "€/h",
+      getter = (id, contract) =>
+        Signal { toMoneyString(getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value) },
+      readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (id, contract) =>
+            Signal {
+              getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value != getMoneyPerHour(
+                id,
+                contract,
+                js.Date.now().toLong,
+              ).value
+            },
+          "text-red-500 font-bold",
+        ),
+      ),
+    )
 }

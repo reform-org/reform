@@ -22,6 +22,9 @@ import webapp.services.Toaster
 import PaymentLevelsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import rescala.default.*
+import webapp.utils.Seqnal.*
+import webapp.npm.JSUtils.toMoneyString
 
 case class PaymentLevelsPage()(using
     repositories: Repositories,
@@ -33,7 +36,7 @@ case class PaymentLevelsPage()(using
       Some("Paymentlevel Description..."),
       repositories.paymentLevels,
       repositories.paymentLevels.all,
-      Seq(title, pdfCheckboxName),
+      Seq(title, pdfCheckboxName, currentValue),
       DefaultEntityRow(),
     ) {}
 
@@ -52,5 +55,24 @@ object PaymentLevelsPage {
     .bindAsText[PaymentLevel](
       _.pdfCheckboxName,
       (p, a) => p.copy(pdfCheckboxName = a),
+    )
+
+  private def currentValue(using repositories: Repositories) =
+    new UIReadOnlyAttribute[PaymentLevel, String](
+      label = "Current Value",
+      getter = (id, paymentLevel) =>
+        Signal.dynamic {
+          val salaryChanges = repositories.salaryChanges.all.value
+          toMoneyString(
+            salaryChanges
+              .map(_.signal.value)
+              .filter(_.paymentLevel.get.getOrElse("") == id)
+              .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+              .headOption
+              .flatMap(_.value.get)
+              .getOrElse(0),
+          )
+        },
+      readConverter = identity,
     )
 }

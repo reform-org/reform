@@ -131,6 +131,10 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     "[\\?,&][^\\?,&]*=$|[\\?,&]$|[\\?,&][^\\?,&]*=(?=[\\?,&])".r.replaceAllIn(res, "")
   }
 
+  def countQueryParameters(validParams: Seq[String] = Seq.empty): Signal[Int] = Signal {
+    queryParameters.value.count((p, _) => validParams.isEmpty || validParams.contains(p))
+  }
+
   def getQueryParameterAsString(key: String): Signal[String] = query.map(query =>
     query.get(key).getOrElse("") match {
       case v: String      => v
@@ -145,19 +149,29 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     },
   )
 
+  def cleanQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    newParams.filter((key, value) =>
+      value match {
+        case x: String      => !x.isBlank
+        case x: Seq[String] => x.size > 0 && x.filter(p => !p.isBlank).size > 0
+      },
+    )
+  }
+
   def setQueryParameters(newParams: Map[String, String | Seq[String]]) = {
-    query.set(newParams)
+    query.set(cleanQueryParameters(newParams))
   }
 
   def updateQueryParameters(newParams: Map[String, String | Seq[String]]) = {
-    query.transform(_ ++ newParams)
+    query.transform(a => cleanQueryParameters(a ++ newParams))
   }
 
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 
-  def linkPath(newPage: Page, query: Map[String, String | Seq[String]] = Map()) =
-    Routes.toPath(newPage).pathString + encodeQueryParameters(query)
+  def linkPath(newPage: Page, newQuery: Map[String, String | Seq[String]] = Map()) = {
+    Routes.toPath(newPage).pathString + encodeQueryParameters(newQuery)
+  }
 
   def back() =
     window.history.back()
