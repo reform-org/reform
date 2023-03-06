@@ -17,6 +17,11 @@ import org.eclipse.jetty.security.authentication.LoginAuthenticator
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
 import org.eclipse.jetty.http.HttpHeader
+import org.eclipse.jetty.security.AbstractLoginService
+import org.eclipse.jetty.security.LoginService
+import org.eclipse.jetty.security.IdentityService
+import org.eclipse.jetty.security.Authenticator.AuthConfiguration
+import java.util as ju
 
 // https://github.com/eclipse/jetty.project/issues/4123
 // https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java
@@ -31,7 +36,26 @@ import org.eclipse.jetty.http.HttpHeader
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler().nn
-  securityHandler.setAuthenticator(new LoginAuthenticator {
+  val loginService = new LoginService {
+
+    override def login(
+        username: String | Null,
+        credentials: Object | Null,
+        request: ServletRequest | Null,
+    ): UserIdentity | Null = null
+
+    override def validate(user: UserIdentity | Null): Boolean = true
+
+    override def getName(): String | Null = null
+
+    override def setIdentityService(service: IdentityService | Null): Unit = {}
+
+    override def getIdentityService(): IdentityService | Null = null
+
+    override def logout(user: UserIdentity | Null): Unit = {}
+
+  }
+  val authenticator = new LoginAuthenticator {
 
     override def getAuthMethod(): String | Null = "JWT Authenticator"
 
@@ -68,7 +92,9 @@ import org.eclipse.jetty.http.HttpHeader
         mandatory: Boolean,
         validatedUser: Authentication.User | Null,
     ): Boolean = true
-  });
+  }
+  securityHandler.setAuthenticator(authenticator);
+  securityHandler.setLoginService(loginService)
   server.setHandler(servletContextHandler)
   server.addConnector(connector)
   val listener = WS(servletContextHandler, "/registry/*")
