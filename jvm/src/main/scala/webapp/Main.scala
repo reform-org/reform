@@ -32,7 +32,7 @@ import java.util as ju
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").getOrElse("1234").toInt
+  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").getOrElse("1334").toInt
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler().nn
@@ -66,6 +66,7 @@ import java.util as ju
     ): Authentication | Null = {
       val request: HttpServletRequest = req.asInstanceOf[HttpServletRequest];
       val response: HttpServletResponse = res.asInstanceOf[HttpServletResponse];
+      println(request.getHeader(HttpHeader.AUTHORIZATION.asString()))
       val credentials: String = request.getHeader(HttpHeader.AUTHORIZATION.asString()).nn;
 
       println(credentials)
