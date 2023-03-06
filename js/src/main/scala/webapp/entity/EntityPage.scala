@@ -420,7 +420,7 @@ abstract class EntityPage[T <: Entity[T]](
                   span("Nothing found..."),
                   false,
                   cls := "rounded-md",
-                ),
+                ).render,
               ),
             ),
             div(

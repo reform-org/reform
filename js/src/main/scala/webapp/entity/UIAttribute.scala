@@ -431,7 +431,7 @@ class UIMultiSelectAttribute[EntityType](
         },
         isRequired,
         formId := _formId,
-      ),
+      ).render,
     )
 
   }
