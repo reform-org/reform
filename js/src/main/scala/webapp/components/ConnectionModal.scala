@@ -20,8 +20,9 @@ import scala.util.Success
 import webapp.components.common.*
 import webapp.utils.Futures.*
 import scala.annotation.nowarn
+import loci.registry.Registry
 
-class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, toaster: Toaster) {
+class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, toaster: Toaster, registry: Registry) {
   val offlineBanner = {
     div(
       cls := "bg-amber-100 flex flex-col items-center",
@@ -120,7 +121,7 @@ class Login() {
   private val username = Var("")
   private val password = Var("")
 
-  def render(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster): VNode = {
+  def render(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster, registry: Registry): VNode = {
     div(
       discovery.token
         .map(token =>

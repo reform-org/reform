@@ -41,6 +41,7 @@ import loci.communicator.broadcastchannel.BroadcastChannel
 import org.scalajs.dom.RTCPeerConnection
 import webapp.utils.Futures.*
 import scala.util.Try
+import webapp.services.DiscoveryService
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
@@ -137,17 +138,6 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
     removeConnection.fire(remoteRef)
   }): @nowarn("msg=discarded expression")
-
-  Try({
-    val ws = WS(
-      s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/",
-    )
-    registry
-      .connect(
-        ws,
-      )
-      .toastOnError(ToastMode.Short, ToastType.Warning)
-  }).toastOnError(ToastMode.Short, ToastType.Warning)
 
   registry.connect(BroadcastChannel("default")): @nowarn
 }

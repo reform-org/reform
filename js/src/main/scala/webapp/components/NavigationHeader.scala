@@ -28,6 +28,7 @@ import webapp.services.Toaster
 import webapp.pages.DocumentsPage
 import webapp.npm.IIndexedDB
 import rescala.default.*
+import loci.registry.Registry
 
 def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB)(
     classes: String,
@@ -84,6 +85,7 @@ def navigationHeader(
     discovery: DiscoveryService,
     toaster: Toaster,
     indexeddb: IIndexedDB,
+    registry: Registry,
 ) = {
   val dropdownOpen = Var(false)
   div(

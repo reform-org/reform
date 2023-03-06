@@ -19,6 +19,9 @@ import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
 import webapp.utils.Futures.*
+import scala.util.Try
+import loci.communicator.ws.webnative.WS
+import loci.registry.Registry
 
 class AvailableConnection(
     val name: String,
@@ -54,7 +57,7 @@ class DiscoveryService {
 
   def setAutoconnect(
       value: Boolean,
-  )(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster): Unit = {
+  )(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster, registry: Registry): Unit = {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
       console.log("should connect")
@@ -98,7 +101,7 @@ class DiscoveryService {
     updateToken(None)
   }
 
-  def login(loginInfo: LoginInfo)(using webrtc: WebRTCService, toaster: Toaster): Future[String] = {
+  def login(loginInfo: LoginInfo)(using webrtc: WebRTCService, toaster: Toaster, registry: Registry): Future[String] = {
     val promise = Promise[String]()
 
     if (!tokenIsValid(token.now)) {
@@ -255,7 +258,11 @@ class DiscoveryService {
     }
   }
 
-  def connect(resetWebsocket: Boolean = false, force: Boolean = false)(using webrtc: WebRTCService): Future[Boolean] = {
+  def connect(resetWebsocket: Boolean = false, force: Boolean = false)(using
+      webrtc: WebRTCService,
+      registry: Registry,
+      toaster: Toaster,
+  ): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
     if (resetWebsocket) ws = None
@@ -292,6 +299,19 @@ class DiscoveryService {
         ws.get.onerror = (_) => {
           promise.failure(new Exception("Connection failed"))
         }
+
+        Try({
+          val ws = WS(
+            s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/?${token.now
+                .getOrElse("")}",
+          )
+          registry
+            .connect(
+              ws,
+            )
+            .toastOnError(ToastMode.Short, ToastType.Warning)
+        }).toastOnError(ToastMode.Short, ToastType.Warning)
+
         promise.future
       } else {
         promise.failure(new Exception("Your token is wrong")).future
