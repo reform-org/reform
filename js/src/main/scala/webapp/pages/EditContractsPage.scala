@@ -61,7 +61,7 @@ case class NewContractPage()(using
   ): VNode = {
     div(
       repositories.contracts
-        .create(repositories.contracts.defaultValue)
+        .create(Contract.empty.default)
         .map(currentContract => {
           InnerEditContractsPage(Some(currentContract), "").render()
         }),
