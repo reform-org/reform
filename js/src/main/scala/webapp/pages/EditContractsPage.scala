@@ -616,6 +616,27 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
             ),
           ),
         ),
+        div(
+          idAttr := "sticky_buttons",
+          cls := "left-4 space-x-4 fixed bottom-4 p-3 bg-white shadow-lg rounded-xl border border-slate-200",
+          Button(
+            ButtonStyle.LightPrimary,
+            "Save and return",
+            onClick.foreach(e => {
+              e.preventDefault()
+              createOrUpdate()
+            }),
+          ),
+          Button(
+            ButtonStyle.LightPrimary,
+            "Save and finalize",
+            onClick.foreach(e => {
+              e.preventDefault()
+              createOrUpdate(true)
+            }),
+          ),
+          Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+        ),
       ),
     )
 
