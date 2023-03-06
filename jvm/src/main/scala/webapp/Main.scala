@@ -55,7 +55,11 @@ import java.util as ju
     override def logout(user: UserIdentity | Null): Unit = {}
 
   }
-  val authenticator = new LoginAuthenticator {
+  val authenticator = new Authenticator {
+
+    override def prepareRequest(request: ServletRequest | Null): Unit = {}
+
+    override def setConfiguration(configuration: AuthConfiguration | Null): Unit = {}
 
     override def getAuthMethod(): String | Null = "JWT Authenticator"
 
@@ -95,7 +99,7 @@ import java.util as ju
     ): Boolean = true
   }
   securityHandler.setAuthenticator(authenticator);
-  securityHandler.setLoginService(loginService)
+  // securityHandler.setLoginService(loginService)
   server.setHandler(servletContextHandler)
   server.addConnector(connector)
   val listener = WS(servletContextHandler, "/registry/*")
