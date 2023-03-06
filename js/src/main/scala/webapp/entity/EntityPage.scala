@@ -436,7 +436,7 @@ abstract class EntityPage[T <: Entity[T]](
             ),
             div(
               Signal.dynamic {
-                s"${countFilteredEntities.value} / ${countEntities.value} $title.plural"
+                s"${countFilteredEntities.value} / ${countEntities.value} ${title.plural}"
               },
             ),
             Button(
