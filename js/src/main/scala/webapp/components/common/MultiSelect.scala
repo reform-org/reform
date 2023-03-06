@@ -203,8 +203,8 @@ class MultiSelect(
             "Select All",
           ),
         ),
+        renderOptions,
       ),
-      renderOptions,
     )
   }
 

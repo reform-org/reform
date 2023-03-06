@@ -126,7 +126,14 @@ class EntityRow[T <: Entity[T]](
           uiAttributes
             .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
             .map(ui => {
-              td(cls := "p-0 border-none", ui.renderEdit(id, editingValue))
+              td(
+                cls := "p-0 border-none",
+                styleAttr := (ui.width match {
+                  case None    => "min-width: 200px"
+                  case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                }),
+                ui.renderEdit(id, editingValue),
+              )
             }),
         ),
       td(
@@ -233,9 +240,9 @@ class EntityRow[T <: Entity[T]](
                 .map(ui => {
                   td(
                     cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
-                    cls := (ui.width match {
-                      case None    => "min-w-[200px]"
-                      case Some(v) => s"max-w-[$v] min-w-[$v]"
+                    styleAttr := (ui.width match {
+                      case None    => "min-width: 200px"
+                      case Some(v) => s"max-width: $v; min-width: $v; width: $v"
                     }),
                     ui.render(synced.id, p),
                   )
@@ -453,6 +460,10 @@ abstract class EntityPage[T <: Entity[T]](
                         .map(a =>
                           th(
                             cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
+                            styleAttr := (a.width match {
+                              case None    => "min-width: 200px"
+                              case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                            }),
                             a.label,
                           ),
                         ),
