@@ -518,6 +518,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                                             documents
                                               .find(doc => doc.id == file)
                                               .map(file => file.signal.value.name.get),
+                                            if (!files.contains(file)) cls := "italic" else None,
                                           )(
                                             CheckboxStyle.Default,
                                             checked := checkedDocuments.map(d => d.contains(file)),
