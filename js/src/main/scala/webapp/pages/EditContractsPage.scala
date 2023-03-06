@@ -61,7 +61,7 @@ case class NewContractPage()(using
   ): VNode = {
     div(
       repositories.contracts
-        .create(repositories.contracts.defaultValue)
+        .create(Contract.empty.default)
         .map(currentContract => {
           InnerEditContractsPage(Some(currentContract), "").render()
         }),
@@ -221,7 +221,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     cls := "basis-1/2",
                     label(cls := "font-bold", "Hiwi:"),
                     contractAssociatedHiwi.renderEdit("", editingValue),
-                    LabeledCheckbox("Hiwi has a degree", cls := "text-left")(CheckboxStyle.Default),
                   ),
                   div(
                     cls := "basis-1/2",
@@ -610,6 +609,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     }
                   }),
                 ),
+                signed.renderEdit("", editingValue),
               ),
             ),
             editStep(
@@ -729,6 +729,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     }
                   }),
                 ),
+                submitted.renderEdit("", editingValue),
               ),
             ),
             div(

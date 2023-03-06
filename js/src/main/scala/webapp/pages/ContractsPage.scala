@@ -214,6 +214,22 @@ object ContractsPage {
       (h, a) => h.copy(isDraft = a),
     )
 
+  def signed(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+    .withLabel("Signed?")
+    .require
+    .bindAsCheckbox[Contract](
+      _.isSigned,
+      (h, a) => h.copy(isSigned = a),
+    )
+
+  def submitted(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+    .withLabel("Submitted?")
+    .require
+    .bindAsCheckbox[Contract](
+      _.isSubmitted,
+      (h, a) => h.copy(isSubmitted = a),
+    )
+
   def contractAssociatedPaymentLevel(using
       repositories: Repositories,
       routing: RoutingService,
