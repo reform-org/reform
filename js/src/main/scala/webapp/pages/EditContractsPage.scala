@@ -211,7 +211,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     cls := "basis-1/2",
                     label(cls := "font-bold", "Hiwi:"),
                     contractAssociatedHiwi.renderEdit("", editingValue),
-                    LabeledCheckbox("Hiwi has a degree", cls := "text-left")(CheckboxStyle.Default),
                   ),
                   div(
                     cls := "basis-1/2",
