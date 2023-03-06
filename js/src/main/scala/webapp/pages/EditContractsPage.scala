@@ -40,6 +40,9 @@ import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
 import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
 import ContractsPage.*
+import webapp.npm.JSUtils.dateDiffHumanReadable
+import webapp.npm.JSUtils.dateDiffMonth
+import webapp.npm.JSUtils.toMoneyString
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -60,7 +63,7 @@ case class NewContractPage()(using
       repositories.contracts
         .create(repositories.contracts.defaultValue)
         .map(currentContract => {
-          InnerEditContractsPage(Some(currentContract)).render()
+          InnerEditContractsPage(Some(currentContract), "").render()
         }),
     )
   }
@@ -87,7 +90,7 @@ case class EditContractsPage(contractId: String)(using
         .map(currentContract => {
           val result: VMod = currentContract match {
             case Some(currentContract) =>
-              InnerEditContractsPage(Some(currentContract)).render()
+              InnerEditContractsPage(Some(currentContract), contractId).render()
             case None =>
               navigationHeader(
                 div(
@@ -105,7 +108,7 @@ case class EditContractsPage(contractId: String)(using
   }
 }
 
-case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
+case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contractId: String)(using
     toaster: Toaster,
     repositories: Repositories,
     routing: RoutingService,
@@ -248,11 +251,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     br,
                     editingValue.map(p =>
                       p.get._2.map(v => {
-                        val DAY_IN_MILLISECONDS = 86400000
-                        if (v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get.getOrElse(0L) > 0)
-                          ((v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                            .getOrElse(0L)) / DAY_IN_MILLISECONDS).toString + " days"
-                        else ""
+                        dateDiffHumanReadable(
+                          v.contractStartDate.get.getOrElse(0L),
+                          v.contractEndDate.get.getOrElse(0L),
+                        )
                       }),
                     ),
                   ),
@@ -285,10 +287,46 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     cls := "basis-1/2",
                     p(
                       cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
-                      "Monthly base salary: 1.500€; with bonus: 1.800€",
+                      "Monthly base salary: ",
+                      Signal.dynamic {
+                        editingValue.value match {
+                          case None => "-"
+                          case Some(c) => {
+                            val contract = c(1).resource.value
+                            contract.contractAssociatedPaymentLevel.get match {
+                              case None => ""
+                              case Some(contractAssociatedPaymentLevel) => {
+                                val hourlyWage = getMoneyPerHour(
+                                  contractAssociatedPaymentLevel,
+                                  contract,
+                                  contract.contractStartDate.get.getOrElse(0L),
+                                ).value
+                                s"${toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage)} (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has bin created)"
+                              }
+                            }
+
+                          }
+                        }
+                      },
                     ),
                     br,
-                    p(cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600", "Total Hours: 160h"),
+                    p(
+                      cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                      "Total Hours: ",
+                      Signal.dynamic {
+                        editingValue.value match {
+                          case None => "-"
+                          case Some(c) => {
+                            val contract = c(1).resource.value
+                            val month = dateDiffMonth(
+                              contract.contractStartDate.get.getOrElse(0L),
+                              contract.contractEndDate.get.getOrElse(0L),
+                            )
+                            s"${contract.contractHoursPerMonth.get.getOrElse(0) * month} (calculating with ${month} month)"
+                          }
+                        }
+                      },
+                    ),
                   ),
                   div(
                     cls := "basis-1/2",
@@ -313,20 +351,95 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                   contractAssociatedProject.renderEdit("", editingValue),
                 ),
                 div(
-                  cls := "basis-[12.5%]",
-                  label(cls := "font-bold", "Contract"),
+                  cls := "basis-[12.5%] flex flex-col",
+                  label(cls := "font-bold", "Contracts"),
+                  div(
+                    Signal.dynamic {
+                      editingValue.resource.value.flatMap((_, value) =>
+                        value.resource.value.contractAssociatedProject.get.flatMap(id =>
+                          repositories.projects.all.value
+                            .find(project => project.id == id)
+                            .flatMap(project =>
+                              Some(
+                                s"${repositories.contracts.all.value
+                                    .filter(c => c.id != contractId)
+                                    .map(c => c.signal.value)
+                                    .filter(c =>
+                                      c.contractAssociatedProject.get.getOrElse("") == project.id && !c.isDraft.get
+                                        .getOrElse(true),
+                                    )
+                                    .map(c =>
+                                      c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+                                        c.contractStartDate.get.getOrElse(0L),
+                                        c.contractEndDate.get.getOrElse(0L),
+                                      ),
+                                    )
+                                    .fold[Int](0)((a, b) => a + b)} h",
+                              ),
+                            ),
+                        ),
+                      )
+                    },
+                  ),
                 ),
                 div(
-                  cls := "basis-[12.5%]",
+                  cls := "basis-[12.5%] flex flex-col",
                   label(cls := "font-bold", "Other drafts"),
+                  div(
+                    Signal.dynamic {
+                      editingValue.resource.value.flatMap((_, value) =>
+                        value.resource.value.contractAssociatedProject.get.flatMap(id =>
+                          repositories.projects.all.value
+                            .find(project => project.id == id)
+                            .flatMap(project =>
+                              Some(
+                                s"${repositories.contracts.all.value
+                                    .filter(c => c.id != contractId)
+                                    .map(c => c.signal.value)
+                                    .filter(c =>
+                                      c.contractAssociatedProject.get.getOrElse("") == project.id && c.isDraft.get
+                                        .getOrElse(true),
+                                    )
+                                    .map(c =>
+                                      c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+                                        c.contractStartDate.get.getOrElse(0L),
+                                        c.contractEndDate.get.getOrElse(0L),
+                                      ),
+                                    )
+                                    .fold[Int](0)((a, b) => a + b)} h",
+                              ),
+                            ),
+                        ),
+                      )
+                    },
+                  ),
                 ),
                 div(
-                  cls := "basis-[12.5%]",
+                  cls := "basis-[12.5%] flex flex-col",
                   label(cls := "font-bold", "This draft"),
+                  div(
+                    Signal.dynamic {
+                      editingValue.resource.value.flatMap((_, value) =>
+                        Some(s"${value.resource.value.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+                            value.resource.value.contractStartDate.get.getOrElse(0L),
+                            value.resource.value.contractEndDate.get.getOrElse(0L),
+                          )} h"),
+                      )
+                    },
+                  ),
                 ),
                 div(
-                  cls := "basis-[12.5%]",
+                  cls := "basis-[12.5%] flex flex-col",
                   label(cls := "font-bold", "Max. hours"),
+                  div(Signal.dynamic {
+                    editingValue.resource.value.flatMap((_, value) =>
+                      value.resource.value.contractAssociatedProject.get.flatMap(id =>
+                        repositories.projects.all.value
+                          .find(project => project.id == id)
+                          .flatMap(value => Some(s"${value.signal.value.maxHours.get.getOrElse(0)} h")),
+                      ),
+                    )
+                  }),
                 ),
               ),
             ),

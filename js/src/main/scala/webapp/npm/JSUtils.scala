@@ -34,6 +34,12 @@ object JSUtils {
 
   def toYYYYMMDD(input: Long) = NativeImpl.toYYYYMMDD(input.toString())
 
+  def dateDiffDays(a: Long, b: Long) = NativeImpl.dateDiffDays(a.toString(), b.toString())
+
+  def dateDiffMonth(a: Long, b: Long) = NativeImpl.dateDiffMonth(a.toString(), b.toString())
+
+  def dateDiffHumanReadable(a: Long, b: Long) = NativeImpl.dateDiffHumanReadable(a.toString(), b.toString())
+
   val toMoneyString = NativeImpl.toMoneyString
 
   @js.native
@@ -57,6 +63,12 @@ object JSUtils {
     def toYYYYMMDD(input: String): String = js.native
 
     def DateTimeFromISO(input: String): String = js.native
+
+    def dateDiffDays(a: String, b: String): Int = js.native
+
+    def dateDiffMonth(a: String, b: String): Int = js.native
+
+    def dateDiffHumanReadable(a: String, b: String): String = js.native
 
     def toMoneyString(input: BigDecimal): String = js.native
   }
