@@ -68,10 +68,9 @@ object PaymentLevelsPage {
               .map(_.signal.value)
               .filter(_.paymentLevel.get.getOrElse("") == id)
               .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
-              .headOption match {
-              case None     => 0
-              case Some(sc) => sc.value.get.getOrElse(0)
-            },
+              .headOption
+              .flatMap(_.value.get)
+              .getOrElse(0),
           )
         },
       readConverter = identity,

@@ -69,10 +69,7 @@ object ContractDraftsPage {
     val contractTypeId = contract.contractType.get.getOrElse("")
     val contractSchema =
       repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
-    contractSchema match {
-      case None        => 0
-      case Some(value) => value.signal.value.files.get.getOrElse(Seq.empty).size
-    }
+    contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).size
   }
 
   private def forms(using repositories: Repositories) =

@@ -268,10 +268,9 @@ object ContractsPage {
         .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
         .filter(_.fromDate.get.getOrElse(0L) <= date)
         .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
-        .headOption match {
-        case None     => BigDecimal(0)
-        case Some(sc) => sc.value.get.getOrElse(BigDecimal(0))
-      }
+        .headOption
+        .flatMap(_.value.get)
+        .getOrElse(BigDecimal(0))
     }
 
   def moneyPerHour(using repositories: Repositories) =

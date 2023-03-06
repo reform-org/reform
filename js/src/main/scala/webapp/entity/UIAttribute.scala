@@ -14,9 +14,10 @@ import webapp.services.Page
 
 class UIFormat[EntityType](val condition: (id: String, entity: EntityType) => Signal[Boolean], val classes: String) {
   def apply(id: String, entity: EntityType): Signal[String] = Signal {
-    this.condition(id, entity).value match {
-      case true  => classes
-      case false => ""
+    if (this.condition(id, entity).value) {
+      classes
+    } else {
+      ""
     }
   }
 }

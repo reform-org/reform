@@ -201,8 +201,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
           h1(
             cls := "text-3xl mt-4 text-center",
             Signal.dynamic {
-              editingValue.resource.value.flatMap((_, value) =>
-                Some(if (value.resource.value.isDraft.get.getOrElse(true)) "Edit Contract Draft" else "Edit Contract"),
+              editingValue.resource.value.map((_, value) =>
+                if (value.resource.value.isDraft.get.getOrElse(true)) "Edit Contract Draft" else "Edit Contract",
               )
             },
           ),
@@ -362,8 +362,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
-                      editingValue.resource.value.flatMap((_, value) =>
-                        Some(if (value.resource.value.isDraft.get.getOrElse(true)) "Contracts" else "Other Contracts"),
+                      editingValue.resource.value.map((_, value) =>
+                        if (value.resource.value.isDraft.get.getOrElse(true)) "Contracts" else "Other Contracts",
                       )
                     },
                   ),
@@ -373,23 +373,21 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         value.resource.value.contractAssociatedProject.get.flatMap(id =>
                           repositories.projects.all.value
                             .find(project => project.id == id)
-                            .flatMap(project =>
-                              Some(
-                                s"${repositories.contracts.all.value
-                                    .filter(c => c.id != contractId)
-                                    .map(c => c.signal.value)
-                                    .filter(c =>
-                                      c.contractAssociatedProject.get.getOrElse("") == project.id && !c.isDraft.get
-                                        .getOrElse(true),
-                                    )
-                                    .map(c =>
-                                      c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-                                        c.contractStartDate.get.getOrElse(0L),
-                                        c.contractEndDate.get.getOrElse(0L),
-                                      ),
-                                    )
-                                    .fold[Int](0)((a, b) => a + b)} h",
-                              ),
+                            .map(project =>
+                              s"${repositories.contracts.all.value
+                                  .filter(c => c.id != contractId)
+                                  .map(c => c.signal.value)
+                                  .filter(c =>
+                                    c.contractAssociatedProject.get.getOrElse("") == project.id && !c.isDraft.get
+                                      .getOrElse(true),
+                                  )
+                                  .map(c =>
+                                    c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+                                      c.contractStartDate.get.getOrElse(0L),
+                                      c.contractEndDate.get.getOrElse(0L),
+                                    ),
+                                  )
+                                  .fold[Int](0)((a, b) => a + b)} h",
                             ),
                         ),
                       )
@@ -401,8 +399,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
-                      editingValue.resource.value.flatMap((_, value) =>
-                        Some(if (value.resource.value.isDraft.get.getOrElse(true)) "Other Drafts" else "Drafts"),
+                      editingValue.resource.value.map((_, value) =>
+                        if (value.resource.value.isDraft.get.getOrElse(true)) "Other Drafts" else "Drafts",
                       )
                     },
                   ),
@@ -412,23 +410,21 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         value.resource.value.contractAssociatedProject.get.flatMap(id =>
                           repositories.projects.all.value
                             .find(project => project.id == id)
-                            .flatMap(project =>
-                              Some(
-                                s"${repositories.contracts.all.value
-                                    .filter(c => c.id != contractId)
-                                    .map(c => c.signal.value)
-                                    .filter(c =>
-                                      c.contractAssociatedProject.get.getOrElse("") == project.id && c.isDraft.get
-                                        .getOrElse(true),
-                                    )
-                                    .map(c =>
-                                      c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-                                        c.contractStartDate.get.getOrElse(0L),
-                                        c.contractEndDate.get.getOrElse(0L),
-                                      ),
-                                    )
-                                    .fold[Int](0)((a, b) => a + b)} h",
-                              ),
+                            .map(project =>
+                              s"${repositories.contracts.all.value
+                                  .filter(c => c.id != contractId)
+                                  .map(c => c.signal.value)
+                                  .filter(c =>
+                                    c.contractAssociatedProject.get.getOrElse("") == project.id && c.isDraft.get
+                                      .getOrElse(true),
+                                  )
+                                  .map(c =>
+                                    c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+                                      c.contractStartDate.get.getOrElse(0L),
+                                      c.contractEndDate.get.getOrElse(0L),
+                                    ),
+                                  )
+                                  .fold[Int](0)((a, b) => a + b)} h",
                             ),
                         ),
                       )
@@ -440,18 +436,18 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
-                      editingValue.resource.value.flatMap((_, value) =>
-                        Some(if (value.resource.value.isDraft.get.getOrElse(true)) "This Draft" else "This Contract"),
+                      editingValue.resource.value.map((_, value) =>
+                        if (value.resource.value.isDraft.get.getOrElse(true)) "This Draft" else "This Contract",
                       )
                     },
                   ),
                   div(
                     Signal.dynamic {
-                      editingValue.resource.value.flatMap((_, value) =>
-                        Some(s"${value.resource.value.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+                      editingValue.resource.value.map((_, value) =>
+                        s"${value.resource.value.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
                             value.resource.value.contractStartDate.get.getOrElse(0L),
                             value.resource.value.contractEndDate.get.getOrElse(0L),
-                          )} h"),
+                          )} h",
                       )
                     },
                   ),
@@ -464,7 +460,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                       value.resource.value.contractAssociatedProject.get.flatMap(id =>
                         repositories.projects.all.value
                           .find(project => project.id == id)
-                          .flatMap(value => Some(s"${value.signal.value.maxHours.get.getOrElse(0)} h")),
+                          .map(value => s"${value.signal.value.maxHours.get.getOrElse(0)} h"),
                       ),
                     )
                   }),
