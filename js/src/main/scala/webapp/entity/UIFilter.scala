@@ -130,7 +130,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
         span("Nothing found..."),
         false,
         cls := "rounded-md",
-      ).render,
+      ),
     )
   }
 
@@ -174,7 +174,7 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
         span("Nothing found..."),
         false,
         cls := "rounded-md",
-      ).render,
+      ),
     )
   }
 
@@ -227,7 +227,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
         span("Nothing found..."),
         false,
         cls := "rounded-md",
-      ).render,
+      ),
     )
   }
 

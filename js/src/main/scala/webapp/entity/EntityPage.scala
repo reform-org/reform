@@ -46,6 +46,10 @@ import webapp.npm.JSUtils.downloadFile
 case class Title(singular: String) {
 
   val plural: String = singular + "s"
+
+  def ofCardinal(card: Int): String =
+    if (card == 1) singular
+    else plural
 }
 
 sealed trait EntityValue[T]
@@ -427,14 +431,13 @@ abstract class EntityPage[T <: Entity[T]](
                   span("Nothing found..."),
                   false,
                   cls := "rounded-md",
-                ).render,
+                ),
               ),
             ),
             div(
-              countFilteredEntities,
-              " / ",
-              countEntities,
-              " " + title.plural,
+              Signal.dynamic {
+                s"${countFilteredEntities.value} / ${countEntities.value} $title.plural"
+              },
             ),
             Button(
               ButtonStyle.LightDefault,

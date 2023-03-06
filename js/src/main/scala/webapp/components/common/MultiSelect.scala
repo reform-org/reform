@@ -24,9 +24,9 @@ class MultiSelectOption(
   }
 }
 
-class MultiSelect(
+private class MultiSelect(
     options: Signal[Seq[MultiSelectOption]],
-    onInput: (value: Seq[String]) => Unit,
+    onInput: Seq[String] => Unit,
     value: Signal[Seq[String]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
@@ -247,4 +247,28 @@ class MultiSelect(
     cls := "p-2 flex items-center justify-center text-slate-500 text-sm",
     emptyState,
   )
+}
+
+object MultiSelect {
+
+  def apply(
+      options: Signal[Seq[MultiSelectOption]],
+      onInput: (value: Seq[String]) => Unit,
+      value: Signal[Seq[String]],
+      showItems: Int = 5,
+      searchEnabled: Boolean = true,
+      emptyState: VMod = span("Nothing found..."),
+      required: Boolean = false,
+      props: VMod*,
+  ): VMod = new MultiSelect(
+    options,
+    onInput,
+    value,
+    showItems,
+    searchEnabled,
+    emptyState,
+    required,
+    props,
+  ).render
+
 }
