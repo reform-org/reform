@@ -7,6 +7,7 @@ import kofre.base.*
 import webapp.BasicCodecs.*
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
+import webapp.npm.JSUtils.toGermanDate
 
 case class SalaryChange(
     value: Attribute[BigDecimal] = Attribute.empty,
@@ -20,7 +21,9 @@ case class SalaryChange(
   // empty for required fields, default for optional fields
   def default: SalaryChange = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
-  def identifier: Attribute[String] = paymentLevel
+  def identifier: Attribute[String] = Attribute(
+    s"${paymentLevel.get.getOrElse("")} - ${toGermanDate(fromDate.get.getOrElse(0L))}",
+  )
 
   def withExists(exists: Boolean): SalaryChange = {
     this.copy(_exists = _exists.set(exists))

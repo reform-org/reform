@@ -18,7 +18,9 @@ case class Project(
   // empty for required fields, default for optional fields
   def default: Project = Project(Attribute.empty, Attribute.empty, Attribute.default, Attribute(true))
 
-  def identifier: Attribute[String] = name
+  def identifier: Attribute[String] = Attribute(
+    s"${name.get.getOrElse("")} - ${accountName.get.getOrElse(None).getOrElse("")}",
+  )
 
   def withExists(exists: Boolean): Project = {
     this.copy(_exists = _exists.set(exists))
