@@ -124,15 +124,7 @@ class MultiSelect(
                     cls := "cursor-pointer",
                     onClick.foreach(_ => {
                       onInput(
-                        document
-                          .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-                          .map(element =>
-                            element
-                              .asInstanceOf[HTMLElement]
-                              .dataset
-                              .get("id")
-                              .getOrElse(""),
-                          )
+                        getIds(onlyChecked = true)
                           .filter(id => id != option.id)
                           .asInstanceOf[Seq[String]],
                       )
@@ -170,43 +162,46 @@ class MultiSelect(
         if (searchEnabled) {
           Some(renderSearch)
         } else None,
-        div(
-          cls := "p-2 border-b border-gray-300 dark:border-gray-600",
-          label(
-            Checkbox(
-              CheckboxStyle.Default,
-              cls := "mr-2",
-              idAttr := s"all-checkbox-$id",
-              onClick.foreach(e => {
-                if (e.target.asInstanceOf[HTMLInputElement].checked) {
-                  onInput(
-                    document
-                      .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id)")
-                      .map(element =>
-                        element
-                          .asInstanceOf[HTMLElement]
-                          .dataset
-                          .get("id")
-                          .getOrElse(""),
-                      )
-                      .asInstanceOf[Seq[String]],
-                  )
-                } else {
-                  onInput(Seq.empty)
-                }
-
-              }),
-            ),
-            forId := s"all-checkbox-$id",
-            cls := "w-full block flex items-center",
-            tabIndex := 0,
-            "Select All",
-          ),
-        ),
+        renderSelectAll,
+        renderOptions,
       ),
-      renderOptions,
     )
   }
+
+  private def getIds(onlyChecked: Boolean): Seq[String] =
+    document
+      .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id)" + (if (onlyChecked) ":checked" else ""))
+      .toSeq
+      .map(element =>
+        element
+          .asInstanceOf[HTMLElement]
+          .dataset
+          .get("id")
+          .getOrElse(""),
+      )
+
+  private def renderSelectAll: VMod = div(
+    cls := "p-2 border-b border-gray-300 dark:border-gray-600",
+    label(
+      Checkbox(
+        CheckboxStyle.Default,
+        cls := "mr-2",
+        idAttr := s"all-checkbox-$id",
+        onClick.foreach(e => {
+          if (e.target.asInstanceOf[HTMLInputElement].checked) {
+            onInput(getIds(onlyChecked = false))
+          } else {
+            onInput(Seq.empty)
+          }
+
+        }),
+      ),
+      forId := s"all-checkbox-$id",
+      cls := "w-full block flex items-center",
+      tabIndex := 0,
+      "Select All",
+    ),
+  )
 
   private def renderSearch: VMod = input(
     cls := "multiselect-dropdown-search p-2 w-full focus:outline-0 border-b border-gray-300 dark:bg-gray-700 dark:border-gray-600",
@@ -241,18 +236,7 @@ class MultiSelect(
       idAttr := s"$id-${uiOption.id}",
       VMod.attr("data-id") := uiOption.id,
       onClick.foreach(_ => {
-        onInput(
-          document
-            .querySelectorAll(s"#$id input[type=checkbox]:not(#all-checkbox-$id):checked")
-            .map(element =>
-              element
-                .asInstanceOf[HTMLElement]
-                .dataset
-                .get("id")
-                .getOrElse(""),
-            )
-            .asInstanceOf[Seq[String]],
-        )
+        onInput(getIds(onlyChecked = true))
       }),
     ),
     tabIndex := 0,
