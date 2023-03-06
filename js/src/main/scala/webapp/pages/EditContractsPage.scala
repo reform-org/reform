@@ -473,6 +473,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     }
                   }),
                 ),
+                signed.renderEdit("", editingValue),
               ),
             ),
             editStep(
@@ -592,6 +593,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]])(using
                     }
                   }),
                 ),
+                submitted.renderEdit("", editingValue),
               ),
             ),
             div(

@@ -394,7 +394,7 @@ abstract class EntityPage[T <: Entity[T]](
                 tabIndex := 0,
                 "Filter",
                 idAttr := "filter-btn",
-                div(cls := "ml-3 badge", "0"),
+                div(cls := "ml-3 badge", routing.countQueryParameters()),
                 icons.Filter(cls := "ml-1 w-6 h-6"),
                 cls := "!mt-0",
                 onClick.foreach(e => {

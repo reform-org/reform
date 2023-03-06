@@ -211,20 +211,29 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 ) extends UIFilter[EntityType] {
 
   // has not been tested and is currently not usable over URL becuase we do not have any Boolean field sadly
+  private val name = toQueryParameterName(uiAttribute.label)
 
   private val selected = Var("")
 
   def render: VNode = {
-    select(
-      cls := "input valid:input-success",
-      onInput.value --> selected,
-      option(value := "both", "Both"),
-      option(value := "true", "Yes"),
-      option(value := "false", "No"),
+    div(
+      uiAttribute.label,
+      MultiSelect(
+        Signal(Seq(MultiSelectOption("true", Signal("Yes")), MultiSelectOption("false", Signal("No")))),
+        value => routing.updateQueryParameters(Map(name -> value)),
+        routing.getQueryParameterAsSeq(name),
+        5,
+        true,
+        span("Nothing found..."),
+        false,
+        cls := "rounded-md",
+      ),
     )
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    selected.map(s => e => uiAttribute.getter(e).get.forall(v => s.isBlank || s == "both" || s.toBoolean == v))
+    routing
+      .getQueryParameterAsSeq(name)
+      .map(s => e => uiAttribute.getter(e).get.forall(v => s.isEmpty || s.map(p => p.toBoolean).contains(v)))
   }
 }

@@ -131,6 +131,10 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     "[\\?,&][^\\?,&]*=$|[\\?,&]$|[\\?,&][^\\?,&]*=(?=[\\?,&])".r.replaceAllIn(res, "")
   }
 
+  def countQueryParameters(validParams: Seq[String] = Seq.empty): Signal[Int] = Signal {
+    queryParameters.value.count((p, _) => validParams.isEmpty || validParams.contains(p))
+  }
+
   def getQueryParameterAsString(key: String): Signal[String] = query.map(query =>
     query.get(key).getOrElse("") match {
       case v: String      => v
@@ -156,8 +160,14 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 
-  def linkPath(newPage: Page, query: Map[String, String | Seq[String]] = Map()) =
-    Routes.toPath(newPage).pathString + encodeQueryParameters(query)
+  def linkPath(newPage: Page, newQuery: Map[String, String | Seq[String]] = Map()) = {
+    Signal {
+      if ((query.value.toSet.diff(newQuery.toSet)).size != 0) {
+        query.set(decodeQueryParameters(window.location.search))
+      }
+    }: @nowarn
+    Routes.toPath(newPage).pathString + encodeQueryParameters(newQuery)
+  }
 
   def back() =
     window.history.back()

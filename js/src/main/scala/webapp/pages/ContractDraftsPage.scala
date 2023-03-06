@@ -50,6 +50,8 @@ case class ContractDraftsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
+        signed,
+        submitted,
       ),
       DetailPageEntityRowBuilder(),
       true,
@@ -57,5 +59,6 @@ case class ContractDraftsPage()(using
         ButtonStyle.LightPrimary,
         "Add new contract draft",
         onClick.foreach(_ => routing.to(NewContractPage())),
+        cls := "!mt-0",
       ),
     ) {}
