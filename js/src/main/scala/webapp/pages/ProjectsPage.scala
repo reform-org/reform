@@ -38,7 +38,14 @@ case class ProjectsPage()(using
       None,
       repositories.projects,
       repositories.projects.all,
-      Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
+      Seq[UIBasicAttribute[Project]](
+        ProjectsPage.name,
+        maxHours,
+        accountName,
+        contractCount,
+        plannedHours,
+        assignedHours,
+      ),
       DefaultEntityRow(),
     ) {}
 
@@ -90,5 +97,43 @@ object ProjectsPage {
           "text-slate-400 italic",
         ),
       ),
+    )
+
+  private def assignedHours(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Project, String](
+      label = "assigned Hours",
+      getter = (id, project) =>
+        repositories.contracts.all
+          .map(_.map(_.signal))
+          .flatten
+          .map(contracts =>
+            contracts
+              .filter(contract =>
+                contract.contractAssociatedProject.get.contains(id) && !contract.isDraft.get.getOrElse(true),
+              )
+              .map(contract => contract.contractHoursPerMonth.get.getOrElse(0))
+              .fold[Int](0)((acc: Int, x: Int) => acc + x)
+              .toString + " h",
+          ),
+      readConverter = identity,
+    )
+
+  private def plannedHours(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Project, String](
+      label = "planned Hours",
+      getter = (id, project) =>
+        repositories.contracts.all
+          .map(_.map(_.signal))
+          .flatten
+          .map(contracts =>
+            contracts
+              .filter(contract =>
+                contract.contractAssociatedProject.get.contains(id) && contract.isDraft.get.getOrElse(false),
+              )
+              .map(contract => contract.contractHoursPerMonth.get.getOrElse(0))
+              .fold[Int](0)((acc: Int, x: Int) => acc + x)
+              .toString + " h",
+          ),
+      readConverter = identity,
     )
 }
