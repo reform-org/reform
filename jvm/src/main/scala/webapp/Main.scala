@@ -52,11 +52,9 @@ import java.util as ju
     ): Authentication | Null = {
       val request: HttpServletRequest = req.asInstanceOf[HttpServletRequest];
       val response: HttpServletResponse = res.asInstanceOf[HttpServletResponse];
-      println(request.getHeader(HttpHeader.AUTHORIZATION.asString()))
-      val credentials: String = request.getHeader(HttpHeader.AUTHORIZATION.asString()).nn;
+      val credentials: String | Null = request.getHeader(HttpHeader.AUTHORIZATION.asString());
 
-      println(credentials)
-      if (credentials == "hi") {
+      if (credentials != null) {
         return new Authentication.User {
 
           override def logout(request: ServletRequest | Null): Authentication | Null = null
@@ -69,6 +67,7 @@ import java.util as ju
 
         }
       } else {
+        println("not authenticated")
         return new Authentication.ResponseSent {}
       }
     }

@@ -138,15 +138,16 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     removeConnection.fire(remoteRef)
   }): @nowarn("msg=discarded expression")
 
-  Try(
+  Try({
+    val ws = WS(
+      s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/",
+    )
     registry
       .connect(
-        WS(
-          s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/",
-        ),
+        ws,
       )
-      .toastOnError(ToastMode.Short, ToastType.Warning),
-  ).toastOnError(ToastMode.Short, ToastType.Warning)
+      .toastOnError(ToastMode.Short, ToastType.Warning)
+  }).toastOnError(ToastMode.Short, ToastType.Warning)
 
   registry.connect(BroadcastChannel("default")): @nowarn
 }
