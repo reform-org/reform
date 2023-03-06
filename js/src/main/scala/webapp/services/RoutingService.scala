@@ -149,23 +149,27 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
     },
   )
 
+  def cleanQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    newParams.filter((key, value) =>
+      value match {
+        case x: String      => !x.isBlank
+        case x: Seq[String] => x.size > 0 && x.filter(p => !p.isBlank).size > 0
+      },
+    )
+  }
+
   def setQueryParameters(newParams: Map[String, String | Seq[String]]) = {
-    query.set(newParams)
+    query.set(cleanQueryParameters(newParams))
   }
 
   def updateQueryParameters(newParams: Map[String, String | Seq[String]]) = {
-    query.transform(_ ++ newParams)
+    query.transform(a => cleanQueryParameters(a ++ newParams))
   }
 
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 
   def linkPath(newPage: Page, newQuery: Map[String, String | Seq[String]] = Map()) = {
-    Signal {
-      if ((query.value.toSet.diff(newQuery.toSet)).size != 0) {
-        query.set(decodeQueryParameters(window.location.search))
-      }
-    }: @nowarn
     Routes.toPath(newPage).pathString + encodeQueryParameters(newQuery)
   }
 
