@@ -503,13 +503,13 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                       ) match {
                         case None => Some(span("Please select a contract type"))
                         case Some(value) =>
-                          value.signal.value.files.get.flatMap(files => {
+                          value.signal.value.files.get.flatMap(requiredDocuments => {
                             val documents = repositories.requiredDocuments.all.value
                             val checkedDocuments = contract.value.requiredDocuments.get
                             Some(
                               div(
                                 checkedDocuments
-                                  .map(_ ++ files)
+                                  .map(_ ++ requiredDocuments)
                                   .map(files =>
                                     div(
                                       files.toSet
@@ -518,7 +518,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                                             documents
                                               .find(doc => doc.id == file)
                                               .map(file => file.signal.value.name.get),
-                                            if (!files.contains(file)) cls := "italic" else None,
+                                            if (!requiredDocuments.contains(file)) cls := "italic" else None,
                                           )(
                                             CheckboxStyle.Default,
                                             checked := checkedDocuments.map(d => d.contains(file)),
