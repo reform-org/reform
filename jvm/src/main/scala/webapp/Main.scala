@@ -6,7 +6,20 @@ import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
 import webapp.npm.SqliteDB
+import org.eclipse.jetty.security.SecurityHandler
+import org.eclipse.jetty.security.ConstraintSecurityHandler
+import org.eclipse.jetty.security.Authenticator
+import jakarta.servlet.ServletRequest
+import jakarta.servlet.ServletResponse
+import org.eclipse.jetty.server.Authentication
+import org.eclipse.jetty.server.UserIdentity
+import org.eclipse.jetty.security.authentication.LoginAuthenticator
+import jakarta.servlet.http.HttpServletRequest
+import jakarta.servlet.http.HttpServletResponse
+import org.eclipse.jetty.http.HttpHeader
 
+// https://github.com/eclipse/jetty.project/issues/4123
+// https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java
 @main def runServer() = {
   val registry = Registry()
   val indexedDb = SqliteDB()
@@ -14,12 +27,52 @@ import webapp.npm.SqliteDB
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").get.toInt
+  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").getOrElse("1234").toInt
   connector.setPort(port)
-  val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
-  server.setHandler(context)
+  val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
+  val securityHandler = servletContextHandler.getSecurityHandler().nn
+  securityHandler.setAuthenticator(new LoginAuthenticator {
+
+    override def getAuthMethod(): String | Null = "JWT Authenticator"
+
+    override def validateRequest(
+        req: ServletRequest | Null,
+        res: ServletResponse | Null,
+        mandatory: Boolean,
+    ): Authentication | Null = {
+      val request: HttpServletRequest = req.asInstanceOf[HttpServletRequest];
+      val response: HttpServletResponse = res.asInstanceOf[HttpServletResponse];
+      val credentials: String = request.getHeader(HttpHeader.AUTHORIZATION.asString()).nn;
+
+      println(credentials)
+      if (credentials == "hi") {
+        return new Authentication.User {
+
+          override def logout(request: ServletRequest | Null): Authentication | Null = null
+
+          override def getAuthMethod(): String | Null = null
+
+          override def getUserIdentity(): UserIdentity | Null = null
+
+          override def isUserInRole(scope: UserIdentity.Scope | Null, role: String | Null): Boolean = true
+
+        }
+      } else {
+        return new Authentication.ResponseSent {}
+      }
+    }
+
+    override def secureResponse(
+        request: ServletRequest | Null,
+        response: ServletResponse | Null,
+        mandatory: Boolean,
+        validatedUser: Authentication.User | Null,
+    ): Boolean = true
+  });
+  server.setHandler(servletContextHandler)
   server.addConnector(connector)
-  registry.listen(WS(context, "/registry/*")).get
+  val listener = WS(servletContextHandler, "/registry/*")
+  registry.listen(listener).get
   server.start()
   println(s"listening on ws://localhost:$port/registry/")
   server.join()
