@@ -495,7 +495,45 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
                 // TODO only show documents that are included by contract schema
-                requiredDocuments.renderEdit("", editingValue),
+                Signal.dynamic {
+                  editingValue.resource.value.map((_, contract) =>
+                    contract.value.contractType.get.flatMap(contractTypeId =>
+                      repositories.contractSchemas.all.value.find(contractType =>
+                        contractType.id == contractTypeId,
+                      ) match {
+                        case None => Some(span("Please select a contract type"))
+                        case Some(value) =>
+                          value.signal.value.files.get.flatMap(files => {
+                            val documents = repositories.requiredDocuments.all.value
+                            val checkedDocuments = contract.value.requiredDocuments.get
+                            Some(
+                              div(
+                                checkedDocuments
+                                  .map(_ ++ files)
+                                  .map(files =>
+                                    div(
+                                      files.toSet
+                                        .map(file =>
+                                          LabeledCheckbox(
+                                            documents
+                                              .find(doc => doc.id == file)
+                                              .map(file => file.signal.value.name.get),
+                                          )(
+                                            CheckboxStyle.Default,
+                                            checked := checkedDocuments.map(d => d.contains(file)),
+                                          ),
+                                        )
+                                        .toSeq,
+                                    ),
+                                  ),
+                              ),
+                            )
+                          })
+                      },
+                    ),
+                  )
+
+                },
               ),
             ),
             editStep(
