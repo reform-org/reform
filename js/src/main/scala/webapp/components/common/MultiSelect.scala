@@ -143,14 +143,19 @@ class MultiSelect(
           },
           Signal {
             if (value.value.size > visibleItems.value) {
-              Some(div(
-                cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
-                s"+${value.value.size - visibleItems.value}",
-              ))
+              Some(
+                div(
+                  cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
+                  s"+${value.value.size - visibleItems.value}",
+                ),
+              )
             } else if (value.value.isEmpty) {
-              Some(div(
-                cls := "flex items-center justify-center text-slate-400 dark:text-gray-200", "Select..."
-              ))
+              Some(
+                div(
+                  cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
+                  "Select...",
+                ),
+              )
             } else None
           },
         ),
@@ -197,9 +202,9 @@ class MultiSelect(
             tabIndex := 0,
             "Select All",
           ),
-        )
+        ),
       ),
-      renderOptions
+      renderOptions,
     )
   }
 
