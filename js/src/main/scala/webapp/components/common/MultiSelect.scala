@@ -193,7 +193,6 @@ class MultiSelect(
           } else {
             onInput(Seq.empty)
           }
-
         }),
       ),
       forId := s"all-checkbox-$id",
