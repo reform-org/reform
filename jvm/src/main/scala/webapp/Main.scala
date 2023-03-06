@@ -36,25 +36,7 @@ import java.util as ju
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler().nn
-  val loginService = new LoginService {
 
-    override def login(
-        username: String | Null,
-        credentials: Object | Null,
-        request: ServletRequest | Null,
-    ): UserIdentity | Null = null
-
-    override def validate(user: UserIdentity | Null): Boolean = true
-
-    override def getName(): String | Null = null
-
-    override def setIdentityService(service: IdentityService | Null): Unit = {}
-
-    override def getIdentityService(): IdentityService | Null = null
-
-    override def logout(user: UserIdentity | Null): Unit = {}
-
-  }
   val authenticator = new Authenticator {
 
     override def prepareRequest(request: ServletRequest | Null): Unit = {}
@@ -99,7 +81,6 @@ import java.util as ju
     ): Boolean = true
   }
   securityHandler.setAuthenticator(authenticator);
-  // securityHandler.setLoginService(loginService)
   server.setHandler(servletContextHandler)
   server.addConnector(connector)
   val listener = WS(servletContextHandler, "/registry/*")
