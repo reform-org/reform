@@ -61,23 +61,19 @@ object PaymentLevelsPage {
     new UIReadOnlyAttribute[PaymentLevel, String](
       label = "Current Value",
       getter = (id, paymentLevel) =>
-        Signal {
+        Signal.dynamic {
           val salaryChanges = repositories.salaryChanges.all.value
-          Signal {
-            toMoneyString(
-              Signal(
-                salaryChanges
-                  .map(a => Signal { a.signal.value }),
-              ).flatten.value
-                .filter(_.paymentLevel.get.getOrElse("") == id)
-                .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
-                .headOption match {
-                case None     => 0
-                case Some(sc) => sc.value.get.getOrElse(0)
-              },
-            )
-          }
-        }.flatten,
+          toMoneyString(
+            salaryChanges
+              .map(_.signal.value)
+              .filter(_.paymentLevel.get.getOrElse("") == id)
+              .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+              .headOption match {
+              case None     => 0
+              case Some(sc) => sc.value.get.getOrElse(0)
+            },
+          )
+        },
       readConverter = identity,
     )
 }

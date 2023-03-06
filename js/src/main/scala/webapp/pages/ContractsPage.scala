@@ -260,13 +260,11 @@ object ContractsPage {
 
   def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
       repositories: Repositories,
-  ): Signal[BigDecimal] = Signal {
-    val salaryChanges = repositories.salaryChanges.all.value
-    Signal {
-      Signal(
-        salaryChanges
-          .map(a => Signal { a.signal.value }),
-      ).flatten.value
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      val salaryChanges = repositories.salaryChanges.all.value
+      salaryChanges
+        .map(_.signal.value)
         .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
         .filter(_.fromDate.get.getOrElse(0L) <= date)
         .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
@@ -275,7 +273,6 @@ object ContractsPage {
         case Some(sc) => sc.value.get.getOrElse(BigDecimal(0))
       }
     }
-  }.flatten
 
   def moneyPerHour(using repositories: Repositories) =
     new UIReadOnlyAttribute[Contract, String](

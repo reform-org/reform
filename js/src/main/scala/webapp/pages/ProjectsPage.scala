@@ -82,8 +82,8 @@ object ProjectsPage {
       formats = Seq(
         UIFormat(
           (id, project) => {
-            Signal {
-              val contracts = Signal(repositories.contracts.all.value.map(v => Signal { v.signal.value })).flatten.value
+            Signal.dynamic {
+              val contracts = repositories.contracts.all.value.map(_.signal.value)
               contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
             }
           },
