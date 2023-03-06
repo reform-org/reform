@@ -1,6 +1,8 @@
 import { createPopper as createPopperImpl } from '@popperjs/core';
 import { flip, preventOverflow } from '@popperjs/core/lib';
-import { DateTime } from 'luxon';
+import { DateTime, Duration, Settings } from 'luxon';
+
+Settings.defaultLocale = "en"
 
 export const usesTurn = async (connection) => {
 	try {
@@ -131,6 +133,25 @@ export const DateTimeFromISO = (/** @type {string} */ input) => {
 
 export const toYYYYMMDD = (input) => {
 	return DateTime.fromMillis(Number(input)).toISODate();
+};
+
+export const dateDiffDays = (a, b) => {
+	return Math.ceil(Math.abs(DateTime.fromMillis(Number(a)).diff(DateTime.fromMillis(Number(b)), "days").toObject().days)) || 0;
+};
+
+export const dateDiffMonth = (a, b) => {
+	return Math.ceil(Math.abs(DateTime.fromMillis(Number(a)).diff(DateTime.fromMillis(Number(b)), "month").toObject().months)) || 0;
+};
+
+export const dateDiffHumanReadable = (a, b) => {
+	let rawObject = DateTime.fromMillis(Number(a)).diff(DateTime.fromMillis(Number(b)), ["years", "month", "days"]).toObject();
+	let cleanedObject = {}
+
+	for (let key in rawObject) {
+		if (rawObject[key] !== 0) cleanedObject[key] = Math.abs(rawObject[key])
+	}
+
+	return Duration.fromObject(cleanedObject).toHuman()
 };
 
 const formatter = new Intl.NumberFormat('de-DE', {
