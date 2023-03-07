@@ -12,7 +12,7 @@ case class Project(
     accountName: Attribute[Option[String]] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Project]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields

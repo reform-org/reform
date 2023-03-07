@@ -10,7 +10,7 @@ case class Supervisor(
     eMail: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Supervisor]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields
