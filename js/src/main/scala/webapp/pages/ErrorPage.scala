@@ -8,8 +8,9 @@ import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
-case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
+case class ErrorPage()(using indexeddb: IIndexedDB, registry: Registry) extends Page {
 
   def render(using
       routing: RoutingService,

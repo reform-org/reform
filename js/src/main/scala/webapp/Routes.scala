@@ -24,6 +24,7 @@ import org.scalajs.dom.window
 import webapp.pages.DocumentsPage
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
 object Routes {
   def fromPath(using
@@ -31,6 +32,7 @@ object Routes {
       toaster: Toaster,
       routing: RoutingService,
       indexedb: IIndexedDB,
+      registry: Registry,
   ): Path => Page = {
     case Root                         => HomePage()
     case Root / "projects"            => ProjectsPage()

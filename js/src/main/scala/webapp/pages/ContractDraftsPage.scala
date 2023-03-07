@@ -30,6 +30,7 @@ import webapp.utils.Seqnal.*
 import webapp.repo.Synced
 import outwatch.dsl.*
 import webapp.npm.JSUtils.toMoneyString
+import loci.registry.Registry
 
 def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
   repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
@@ -40,6 +41,7 @@ case class ContractDraftsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[Contract](
       Title("Contract Draft"),
       None,

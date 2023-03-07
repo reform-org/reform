@@ -43,6 +43,7 @@ import ContractsPage.*
 import webapp.npm.JSUtils.dateDiffHumanReadable
 import webapp.npm.JSUtils.dateDiffMonth
 import webapp.npm.JSUtils.toMoneyString
+import loci.registry.Registry
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -50,6 +51,7 @@ case class NewContractPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    registry: Registry,
 ) extends Page {
 
   def render(using
@@ -84,6 +86,7 @@ case class EditContractsPage(contractId: String)(using
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
+      registry: Registry,
   ): VNode = {
     div(
       existingValue
@@ -193,6 +196,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
+      registry: Registry,
   ): VNode =
     navigationHeader(
       div(

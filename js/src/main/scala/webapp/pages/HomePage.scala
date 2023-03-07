@@ -40,8 +40,9 @@ import rescala.default.*
 
 import scala.util.Success
 import scala.util.Failure
+import loci.registry.Registry
 
-case class HomePage()(using indexeddb: IIndexedDB) extends Page {
+case class HomePage()(using indexeddb: IIndexedDB, registry: Registry) extends Page {
 
   def render(using
       routing: RoutingService,
@@ -49,6 +50,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
+      registry: Registry,
   ): VNode = {
     val deleteButtonActive = Var(false)
     val deleteDBModal = new Modal(

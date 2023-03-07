@@ -42,6 +42,7 @@ import scala.collection.mutable
 import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
 import webapp.npm.JSUtils.downloadFile
+import loci.registry.Registry
 
 case class Title(singular: String) {
 
@@ -351,6 +352,7 @@ abstract class EntityPage[T <: Entity[T]](
     routing: RoutingService,
     repositories: Repositories,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =

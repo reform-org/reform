@@ -31,6 +31,7 @@ import scala.scalajs.js
 import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
 import scalajs.js.JSConverters.JSRichOption
+import loci.registry.Registry
 
 trait Page {
   def render(using
@@ -42,7 +43,7 @@ trait Page {
   ): VNode
 }
 
-class RoutingService(using repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB) {
+class RoutingService(using repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB, registry: Registry) {
   given RoutingService = this;
 
   private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
