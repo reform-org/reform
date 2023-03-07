@@ -102,6 +102,12 @@ object UIAttributeBuilder {
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
 
+  def checkboxList[EntityType](
+      options: EntityType => Signal[Seq[(String, Signal[String])]],
+  )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
+      .copy(options = options)
+
   implicit class BindToInt[AttributeType](self: UIAttributeBuilder[AttributeType])(implicit
       ordering: Ordering[AttributeType],
   ) {
@@ -165,6 +171,20 @@ object UIAttributeBuilder {
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
         createPage = self.createPage,
+      )
+
+    def bindAsCheckboxList[EntityType](
+        getter: EntityType => Attribute[Seq[String]],
+        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+    )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
+      UICheckboxListAttribute(
+        getter,
+        setter,
+        readConverter = self.readConverter,
+        writeConverter = self.writeConverter,
+        label = self.label,
+        options = self.options.mapInside { case (k, v) => CheckboxListOption(k, v) },
+        isRequired = self.isRequired,
       )
   }
 

@@ -258,15 +258,54 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
-      .multiSelect(
-        repositories.requiredDocuments.existing.map(list =>
-          list.map(value => value.id -> value.signal.map(_.identifier.get.getOrElse(""))),
-        ),
+      .checkboxList(
+        // Signal.dynamic {
+        //   editingValue.resource.value.map((_, contract) =>
+        //     contract.value.contractType.get.flatMap(contractTypeId =>
+        //       repositories.contractSchemas.all.value.find(contractType => contractType.id == contractTypeId) match {
+        //         case None => Some(span("Please select a contract type"))
+        //         case Some(value) =>
+        //           value.signal.value.files.get.flatMap(requiredDocuments => {
+        //             val documents = repositories.requiredDocuments.all.value
+        //             val checkedDocuments = contract.value.requiredDocuments.get
+        //             Some(
+        //               div(
+        //                 checkedDocuments
+        //                   .map(_ ++ requiredDocuments)
+        //                   .map(files =>
+        //                     div(
+        //                       files.toSet
+        //                         .map(file =>
+        //                           LabeledCheckbox(
+        //                             documents
+        //                               .find(doc => doc.id == file)
+        //                               .map(file => file.signal.value.name.get),
+        //                             if (!requiredDocuments.contains(file)) cls := "italic" else None,
+        //                           )(
+        //                             CheckboxStyle.Default,
+        //                             checked := checkedDocuments.map(d => d.contains(file)),
+        //                           ),
+        //                         )
+        //                         .toSeq,
+        //                     ),
+        //                   ),
+        //               ),
+        //             )
+        //           })
+        //       },
+        //     ),
+        //   )
+        // },
+        Signal {
+          // editingValue.
+          repositories.requiredDocuments.existing.value.map(value =>
+            value.id -> value.signal.map(_.identifier.get.getOrElse("")),
+          )
+        },
       )
-      .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")
       .require
-      .bindAsMultiSelect[Contract](
+      .bindAsCheckboxList[Contract](
         _.requiredDocuments,
         (c, a) => c.copy(requiredDocuments = a),
       )

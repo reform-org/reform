@@ -436,3 +436,68 @@ class UIMultiSelectAttribute[EntityType](
 
   }
 }
+
+class UICheckboxListAttribute[EntityType](
+    getter: EntityType => Attribute[Seq[String]],
+    setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+    readConverter: Seq[String] => String,
+    writeConverter: String => Seq[String],
+    label: String,
+    isRequired: Boolean,
+    val options: EntityType => Signal[Seq[CheckboxListOption]],
+    override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
+)(using routing: RoutingService)
+    extends UITextAttribute[EntityType, Seq[String]](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      editConverter = _.toString,
+      writeConverter = writeConverter,
+      label = label,
+      width = Some("350px"),
+      isRequired = isRequired,
+      fieldType = "select",
+      formats = formats,
+    ) {
+
+  override def render(id: String, entity: EntityType): VMod = {
+    val attr = getter(entity)
+    div(
+      formats.map(f => cls <-- f.apply(id, entity)),
+      duplicateValuesHandler(
+        Seq(
+          div(
+            cls := "flex flex-row gap-2 flex-wrap",
+            attr.getAll
+              .map(x =>
+                x.map(id => options(entity).map(o => o.filter(p => p.id.equals(id)).map(v => v.name).mkString(", "))),
+              ),
+          ),
+        ),
+      ),
+    )
+  }
+
+  // override def uiFilter: UIFilter[EntityType] = UIMultiSelectFilter(this)
+
+  override def renderEditInput(
+      _formId: String,
+      attr: Signal[Attribute[Seq[String]]],
+      set: Seq[String] => Unit,
+      datalist: Option[String] = None,
+  ): VMod = {
+    Seq(
+      CheckboxList(
+        options(),
+        v => {
+          set(v)
+        },
+        attr.map(_.get.getOrElse(Seq())),
+        div("Nothing found..."),
+        isRequired,
+        formId := _formId,
+      ).render,
+    )
+
+  }
+}
