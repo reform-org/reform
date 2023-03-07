@@ -27,12 +27,14 @@ import webapp.{*, given}
 import rescala.default.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
 case class ProjectsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[Project](
       Title("Project"),
       None,

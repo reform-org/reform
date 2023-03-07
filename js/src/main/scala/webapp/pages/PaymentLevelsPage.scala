@@ -25,12 +25,14 @@ import webapp.npm.IIndexedDB
 import rescala.default.*
 import webapp.utils.Seqnal.*
 import webapp.npm.JSUtils.toMoneyString
+import loci.registry.Registry
 
 case class PaymentLevelsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
       Some("Paymentlevel Description..."),

@@ -73,6 +73,7 @@ abstract class EntityRowBuilder[T <: Entity[T]] {
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
+      registry: Registry,
   ): EntityRow[T]
 }
 
@@ -85,6 +86,7 @@ class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
+      registry: Registry,
   ): EntityRow[T] = EntityRow[T](title, repository, value, uiAttributes)
 }
 

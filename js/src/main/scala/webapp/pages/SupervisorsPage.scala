@@ -23,12 +23,14 @@ import webapp.services.Toaster
 import SupervisorsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
 case class SupervisorsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[Supervisor](
       Title("Supervisor"),
       None,

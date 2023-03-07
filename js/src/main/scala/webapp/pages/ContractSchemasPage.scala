@@ -24,12 +24,14 @@ import webapp.components.common.*
 import ContractSchemasPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
 case class ContractSchemasPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[ContractSchema](
       Title("Contract Schema"),
       Some("Contractschemas Description..."),
@@ -53,6 +55,7 @@ object ContractSchemasPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
       .multiSelect(

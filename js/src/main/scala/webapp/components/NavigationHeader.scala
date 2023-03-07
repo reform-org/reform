@@ -30,7 +30,13 @@ import webapp.npm.IIndexedDB
 import rescala.default.*
 import loci.registry.Registry
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB)(
+def navigationMenu(using
+    routing: RoutingService,
+    repositories: Repositories,
+    toaster: Toaster,
+    indexedb: IIndexedDB,
+    registry: Registry,
+)(
     classes: String,
 ) = {
   ul(

@@ -23,12 +23,14 @@ import webapp.components.common.*
 import HiwisPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
 case class HiwisPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[Hiwi](
       Title("Hiwi"),
       None,

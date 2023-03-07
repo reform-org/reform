@@ -24,11 +24,13 @@ import DocumentsPage.*
 import webapp.entity.Document
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 case class DocumentsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[Document](
       Title("Document"),
       Some("Document Description..."),

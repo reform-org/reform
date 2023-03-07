@@ -50,7 +50,6 @@ case class HomePage()(using indexeddb: IIndexedDB, registry: Registry) extends P
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
-      registry: Registry,
   ): VNode = {
     val deleteButtonActive = Var(false)
     val deleteDBModal = new Modal(

@@ -76,6 +76,7 @@ case class EditContractsPage(contractId: String)(using
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    registry: Registry,
 ) extends Page {
 
   private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
@@ -86,7 +87,6 @@ case class EditContractsPage(contractId: String)(using
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
-      registry: Registry,
   ): VNode = {
     div(
       existingValue
@@ -116,6 +116,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     repositories: Repositories,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    registry: Registry,
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 

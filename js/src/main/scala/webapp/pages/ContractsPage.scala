@@ -34,6 +34,7 @@ import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
 import webapp.npm.JSUtils.toMoneyString
 import scala.scalajs.js
+import loci.registry.Registry
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
@@ -47,6 +48,7 @@ class DetailPageEntityRow[T <: Entity[T]](
     routing: RoutingService,
     repositories: Repositories,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
@@ -67,6 +69,7 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
+      registry: Registry,
   ): EntityRow[T] = DetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
@@ -79,6 +82,7 @@ case class ContractsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[Contract](
       Title("Contract"),
       None,
@@ -104,6 +108,7 @@ object ContractsPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -125,6 +130,7 @@ object ContractsPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -144,6 +150,7 @@ object ContractsPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -165,6 +172,7 @@ object ContractsPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -235,6 +243,7 @@ object ContractsPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
@@ -256,6 +265,7 @@ object ContractsPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
       .multiSelect(

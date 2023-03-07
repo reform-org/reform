@@ -24,12 +24,14 @@ import webapp.npm.IIndexedDB
 
 import SalaryChangesPage.*
 import webapp.services.RoutingService
+import loci.registry.Registry
 
 case class SalaryChangesPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
       Some("Salary Changes Description..."),
@@ -54,6 +56,7 @@ object SalaryChangesPage {
       routing: RoutingService,
       toaster: Toaster,
       indexeddb: IIndexedDB,
+      registry: Registry,
   ): UIAttribute[SalaryChange, String] = {
     UIAttributeBuilder
       .select(

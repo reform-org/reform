@@ -22,12 +22,14 @@ import UsersPage.*
 import webapp.services.Toaster
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import loci.registry.Registry
 
 case class UsersPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    registry: Registry,
 ) extends EntityPage[User](
       Title("User"),
       None,
