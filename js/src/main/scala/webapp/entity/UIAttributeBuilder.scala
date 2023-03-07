@@ -102,8 +102,8 @@ object UIAttributeBuilder {
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
 
-  def checkboxList[EntityType](
-      options: EntityType => Signal[Seq[(String, Signal[String])]],
+  def checkboxList(
+      options: Signal[Seq[(String, Signal[String])]],
   )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)

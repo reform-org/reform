@@ -106,3 +106,23 @@ class CheckboxList(
     emptyState,
   )
 }
+
+object CheckboxList {
+
+  def apply(
+      options: Signal[Seq[CheckboxListOption]],
+      onInput: (value: Seq[String]) => Unit,
+      value: Signal[Seq[String]],
+      emptyState: VMod = span("Nothing found..."),
+      required: Boolean = false,
+      props: VMod*,
+  ): VMod = new CheckboxList(
+    options,
+    onInput,
+    value,
+    emptyState,
+    required,
+    props,
+  ).render
+
+}

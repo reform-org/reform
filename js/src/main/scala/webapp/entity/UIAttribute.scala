@@ -444,7 +444,7 @@ class UICheckboxListAttribute[EntityType](
     writeConverter: String => Seq[String],
     label: String,
     isRequired: Boolean,
-    val options: EntityType => Signal[Seq[CheckboxListOption]],
+    val options: Signal[Seq[CheckboxListOption]],
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
 )(using routing: RoutingService)
     extends UITextAttribute[EntityType, Seq[String]](
@@ -469,9 +469,7 @@ class UICheckboxListAttribute[EntityType](
           div(
             cls := "flex flex-row gap-2 flex-wrap",
             attr.getAll
-              .map(x =>
-                x.map(id => options(entity).map(o => o.filter(p => p.id.equals(id)).map(v => v.name).mkString(", "))),
-              ),
+              .map(x => x.map(id => options.map(o => o.filter(p => p.id.equals(id)).map(v => v.name).mkString(", ")))),
           ),
         ),
       ),
@@ -488,7 +486,7 @@ class UICheckboxListAttribute[EntityType](
   ): VMod = {
     Seq(
       CheckboxList(
-        options(),
+        options,
         v => {
           set(v)
         },
@@ -496,7 +494,7 @@ class UICheckboxListAttribute[EntityType](
         div("Nothing found..."),
         isRequired,
         formId := _formId,
-      ).render,
+      ),
     )
 
   }

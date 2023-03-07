@@ -259,6 +259,8 @@ object ContractsPage {
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
       .checkboxList(
+        // this works only on the contract editpage - all checked documents that are left over from old contractTypes should be shown, but in italic
+
         // Signal.dynamic {
         //   editingValue.resource.value.map((_, contract) =>
         //     contract.value.contractType.get.flatMap(contractTypeId =>
@@ -297,7 +299,6 @@ object ContractsPage {
         //   )
         // },
         Signal {
-          // editingValue.
           repositories.requiredDocuments.existing.value.map(value =>
             value.id -> value.signal.map(_.identifier.get.getOrElse("")),
           )
