@@ -378,7 +378,7 @@ class UIMultiSelectAttribute[EntityType](
       editConverter = _.toString,
       writeConverter = writeConverter,
       label = label,
-      width = Some("350px"),
+      width = Some("400px"),
       isRequired = isRequired,
       fieldType = "select",
       formats = formats,
@@ -431,7 +431,7 @@ class UIMultiSelectAttribute[EntityType](
         },
         isRequired,
         formId := _formId,
-      ).render,
+      ),
     )
 
   }
