@@ -39,7 +39,7 @@ type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
 case class Repository[A](name: String, defaultValue: A)(using
     registry: Registry,
     indexedDb: IIndexedDB,
-    dcl: DecomposeLattice[A],
+    dcl: Lattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
 ) {
@@ -67,7 +67,7 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   private val idSynced = idSyncer.getOrCreateAndSync("ids")
 
-  val ids: Signal[Set[String]] = Signals.fromFuture(idSynced).map(synced => synced.signal.map(_.set)).flatten
+  val ids: Signal[Set[String]] = Signal.fromFuture(idSynced).map(synced => synced.signal.map(_.set)).flatten
 
   implicit val valuesStorage: Storage[A] = Storage(name)
 
@@ -78,7 +78,7 @@ case class Repository[A](name: String, defaultValue: A)(using
       .map(ids => {
         val futures = ids.toSeq.map(get)
         val future = Future.sequence(futures)
-        Signals.fromFuture(future)
+        Signal.fromFuture(future)
       })
       .flatten
   }
