@@ -54,5 +54,5 @@ object Attribute {
 
   given bottom[T]: Bottom[Attribute[T]] = Bottom.derived
 
-  given decomposeLattice[T]: DecomposeLattice[Attribute[T]] = DecomposeLattice.derived
+  given decomposeLattice[T]: Lattice[Attribute[T]] = Lattice.derived
 }
