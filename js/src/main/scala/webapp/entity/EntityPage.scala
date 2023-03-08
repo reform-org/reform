@@ -148,9 +148,16 @@ class EntityRow[T <: Entity[T]](
                     formId := id,
                     `type` := "submit",
                     idAttr := "add-entity-button",
-                    "Save",
+                    icons.Save(cls := "ml-1 w-4 h-4 md:hidden"),
+                    span(cls := "hidden md:block", "Save"),
+                    cls := "!mt-0",
                   ),
-                  TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+                  TableButton(
+                    ButtonStyle.LightDefault,
+                    icons.Cancel(cls := "ml-1 w-4 h-4 md:hidden"),
+                    span(cls := "hidden md:block", "Cancel"),
+                    onClick.foreach(_ => cancelEdit()),
+                  ),
                 )
               }
               case None => {
@@ -159,7 +166,8 @@ class EntityRow[T <: Entity[T]](
                   formId := id,
                   `type` := "submit",
                   idAttr := "add-entity-button",
-                  "Add " + this.title.singular,
+                  icons.Add(cls := "ml-1 w-4 h-4 md:hidden"),
+                  span(cls := "hidden md:block", "Add " + this.title.singular),
                 )
               }
             }
@@ -245,7 +253,15 @@ class EntityRow[T <: Entity[T]](
             cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
-              TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
+              TableButton(
+                ButtonStyle.LightPrimary,
+                tabIndex := 0,
+                cls := "rounded px-2 py-1 h-fit uppercase font-bold text-sm",
+                icons.Edit(cls := "ml-1 w-4 h-4 md:hidden"),
+                span(cls := "hidden md:block", "Edit"),
+                cls := "!mt-0",
+                onClick.foreach(_ => startEditing()),
+              ),
               IconButton(
                 ButtonStyle.LightError,
                 icons.Close(cls := "text-red-600 w-4 h-4"),

@@ -359,6 +359,106 @@ object Notch extends Icon {
   }
 }
 
+object Edit extends Icon {
+  def apply(props: VMod*): VNode = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      props,
+      fill := "none",
+      path(
+        d := "M18 10L21 7L17 3L14 6M18 10L8 20H4V16L14 6M18 10L14 6",
+        stroke := "currentColor",
+        VMod.attr("stroke-width") := "1.5",
+        VMod.attr("stroke-linecap") := "round",
+        VMod.attr("stroke-linejoin") := "round",
+      ),
+    )
+  }
+}
+
+object Save extends Icon {
+  def apply(props: VMod*): VNode = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      props,
+      fill := "none",
+      path(
+        d := "M17 20.75H7C6.27065 20.75 5.57118 20.4603 5.05546 19.9445C4.53973 19.4288 4.25 18.7293 4.25 18V6C4.25 5.27065 4.53973 4.57118 5.05546 4.05546C5.57118 3.53973 6.27065 3.25 7 3.25H14.5C14.6988 3.25018 14.8895 3.32931 15.03 3.47L19.53 8C19.6707 8.14052 19.7498 8.33115 19.75 8.53V18C19.75 18.7293 19.4603 19.4288 18.9445 19.9445C18.4288 20.4603 17.7293 20.75 17 20.75ZM7 4.75C6.66848 4.75 6.35054 4.8817 6.11612 5.11612C5.8817 5.35054 5.75 5.66848 5.75 6V18C5.75 18.3315 5.8817 18.6495 6.11612 18.8839C6.35054 19.1183 6.66848 19.25 7 19.25H17C17.3315 19.25 17.6495 19.1183 17.8839 18.8839C18.1183 18.6495 18.25 18.3315 18.25 18V8.81L14.19 4.75H7Z",
+        fill := "currentColor",
+      ),
+      path(
+        d := "M16.75 20H15.25V13.75H8.75V20H7.25V13.5C7.25 13.1685 7.3817 12.8505 7.61612 12.6161C7.85054 12.3817 8.16848 12.25 8.5 12.25H15.5C15.8315 12.25 16.1495 12.3817 16.3839 12.6161C16.6183 12.8505 16.75 13.1685 16.75 13.5V20Z",
+        fill := "currentColor",
+      ),
+      path(
+        d := "M12.47 8.75H8.53001C8.3606 8.74869 8.19311 8.71403 8.0371 8.64799C7.88109 8.58195 7.73962 8.48582 7.62076 8.36511C7.5019 8.24439 7.40798 8.10144 7.34437 7.94443C7.28075 7.78741 7.24869 7.61941 7.25001 7.45V4H8.75001V7.25H12.25V4H13.75V7.45C13.7513 7.61941 13.7193 7.78741 13.6557 7.94443C13.592 8.10144 13.4981 8.24439 13.3793 8.36511C13.2604 8.48582 13.1189 8.58195 12.9629 8.64799C12.8069 8.71403 12.6394 8.74869 12.47 8.75Z",
+        fill := "currentColor",
+      ),
+    )
+  }
+}
+
+object Cancel extends Icon {
+  def apply(props: VMod*): VNode = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      props,
+      fill := "none",
+      svg(
+        viewBox := "0 0 32 32",
+        VMod.attr("xml:space") := "preserve",
+        path(
+          cls := "linesandangles_een",
+          fill := "currentColor",
+          d := "M17,24h-2v-9h2V24z M21,15h-2v9h2V15z M13,15h-2v9h2V15z M27,13h-1.064l-1,15H7.064l-1-15H5V7h7  V4h8v3h7V13z M14,7h4V6h-4V7z M7,11h18V9H7V11z M23.931,13H8.069l0.866,13h14.129L23.931,13z",
+        ),
+      ),
+    )
+  }
+}
+
+object Add extends Icon {
+  def apply(props: VMod*): VNode = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      props,
+      fill := "none",
+      svg(
+        viewBox := "0 0 24 24",
+        path(
+          d := "M3 10C3 8.34315 4.34315 7 6 7H14C15.6569 7 17 8.34315 17 10V18C17 19.6569 15.6569 21 14 21H6C4.34315 21 3 19.6569 3 18V10Z",
+          stroke := "currentColor",
+          VMod.attr("stroke-width") := "2",
+          VMod.attr("stroke-linecap") := "round",
+          VMod.attr("stroke-linejoin") := "round",
+        ),
+        path(
+          d := "M10 14V11M10 14V17M10 14H13M10 14H7",
+          stroke := "currentColor",
+          VMod.attr("stroke-width") := "2",
+          VMod.attr("stroke-linecap") := "round",
+          VMod.attr("stroke-linejoin") := "round",
+        ),
+        path(
+          d := "M7 3L18 3C19.6569 3 21 4.34315 21 6L21 17",
+          stroke := "currentColor",
+          VMod.attr("stroke-width") := "2",
+          VMod.attr("stroke-linecap") := "round",
+          VMod.attr("stroke-linejoin") := "round",
+        ),
+      ),
+    )
+  }
+}
+
 object Filter extends Icon {
   def apply(props: VMod*): VNode = {
     import svg.*
