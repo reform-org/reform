@@ -102,7 +102,7 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
 
     navigationHeader(
       div(
-        p("Settings Page"),
+        h1(cls := "text-3xl mt-4 text-center", "Settings Page"),
         cls := "flex flex-col gap-2 max-w-sm",
         p("Color scheme:"),
         Select(
@@ -120,7 +120,6 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
           theme,
           false,
         ),
-        /*
         Button(
           ButtonStyle.LightDefault,
           // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
@@ -206,17 +205,16 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
           }),
         ),
         deleteDBModal.render,
-        MultiSelect(
+        /*MultiSelect(
           Signal(List(MultiSelectOption("test", Signal("test")), MultiSelectOption("test2", Signal("test2")))),
           (value) => multiSelectValue.set(value),
           multiSelectValue,
-        ),
+        ),*/
         Select(
           Signal(List(SelectOption("test3", Signal("test")), SelectOption("test4", Signal("test2")))),
           (value) => selectValue.set(value),
           selectValue,
         ),
-         */
       ),
     )
   }
