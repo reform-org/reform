@@ -148,15 +148,18 @@ class EntityRow[T <: Entity[T]](
                     formId := id,
                     `type` := "submit",
                     idAttr := "add-entity-button",
-                    icons.Save(cls := "ml-1 w-4 h-4 md:hidden"),
+                    icons.Save(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Save"),
-                    cls := "!mt-0",
+                    cls := "tooltip tooltip-top",
+                    data.tip := "Save",
                   ),
                   TableButton(
                     ButtonStyle.LightDefault,
-                    icons.Cancel(cls := "ml-1 w-4 h-4 md:hidden"),
+                    icons.Close(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Cancel"),
                     onClick.foreach(_ => cancelEdit()),
+                    cls := "tooltip tooltip-top",
+                    data.tip := "Cancel",
                   ),
                 )
               }
@@ -166,8 +169,10 @@ class EntityRow[T <: Entity[T]](
                   formId := id,
                   `type` := "submit",
                   idAttr := "add-entity-button",
-                  icons.Add(cls := "ml-1 w-4 h-4 md:hidden"),
+                  icons.Add(cls := "w-4 h-4 md:hidden"),
                   span(cls := "hidden md:block", "Add " + this.title.singular),
+                  cls := "tooltip tooltip-top",
+                  data.tip := "Add" + this.title.singular,
                 )
               }
             }
@@ -190,10 +195,10 @@ class EntityRow[T <: Entity[T]](
             )
             deleteModal.set(Some(modal))
             val res = {
-              IconButton(
+              TableButton(
                 ButtonStyle.LightError,
-                icons.Close(cls := "text-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-left",
+                icons.Delete(cls := "text-red-600 w-4 h-4"),
+                cls := "tooltip tooltip-top",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               )
@@ -255,16 +260,15 @@ class EntityRow[T <: Entity[T]](
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(
                 ButtonStyle.LightPrimary,
-                tabIndex := 0,
-                cls := "rounded px-2 py-1 h-fit uppercase font-bold text-sm",
-                icons.Edit(cls := "ml-1 w-4 h-4 md:hidden"),
+                icons.Edit(cls := "w-4 h-4 md:hidden"),
                 span(cls := "hidden md:block", "Edit"),
-                cls := "!mt-0",
+                cls := "tooltip tooltip-top",
+                data.tip := "Edit",
                 onClick.foreach(_ => startEditing()),
               ),
-              IconButton(
+              TableButton(
                 ButtonStyle.LightError,
-                icons.Close(cls := "text-red-600 w-4 h-4"),
+                icons.Delete(cls := "text-red-600 w-4 h-4"),
                 cls := "tooltip tooltip-top",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
