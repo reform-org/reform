@@ -130,9 +130,9 @@ class EntityRow[T <: Entity[T]](
             }),
         ),
       td(
-        cls := "py min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
+        cls := "py min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
-          cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
+          cls := "h-full w-full flex flex-row items-center gap-2 justify-center md:px-4",
           form(
             idAttr := id,
             onSubmit.foreach(e => {
@@ -255,7 +255,7 @@ class EntityRow[T <: Entity[T]](
                 }),
             ),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
+            cls := "min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
               TableButton(
@@ -478,7 +478,7 @@ abstract class EntityPage[T <: Entity[T]](
                         ),
                     ),
                   th(
-                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
+                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] !z-[1]",
                   ),
                 ),
               ),
