@@ -240,6 +240,7 @@ class UIDateAttribute[EntityType](
       datalist: Option[String] = None,
   ): VMod = TableInput(
     cls := "input valid:input-success",
+    placeholder := "dd.mm.yyyy",
     `type` := "date",
     formId := _formId,
     required := isRequired,
