@@ -105,7 +105,7 @@ class DiscoveryService {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
-        s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PORT}/api/login",
+        s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_PATH}/login",
         new RequestInit {
           method = HttpMethod.POST
           body = writeToString(loginInfo)(LoginInfo.codec)
@@ -267,8 +267,8 @@ class DiscoveryService {
           case None =>
             ws = Some(
               new WebSocket(
-                s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PORT}",
-                "discovery-server"
+                s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT}",
+                Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL
               ),
             )
         }
