@@ -142,7 +142,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     registry
       .connect(
         WS(
-          s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/",
+          s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}/registry/",
         ),
       )
       .toastOnError(ToastMode.Short, ToastType.Warning),

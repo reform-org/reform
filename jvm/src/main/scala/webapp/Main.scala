@@ -14,7 +14,7 @@ import webapp.npm.SqliteDB
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").get.toInt
+  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").get.toInt
   connector.setPort(port)
   val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
   server.setHandler(context)

@@ -16,7 +16,7 @@ services:
       args:
         VITE_ALWAYS_ONLINE_PEER_PROTOCOL: $VITE_ALWAYS_ONLINE_PEER_PROTOCOL
         VITE_ALWAYS_ONLINE_PEER_HOST: $VITE_ALWAYS_ONLINE_PEER_HOST
-        VITE_ALWAYS_ONLINE_PEER_PORT: $VITE_ALWAYS_ONLINE_PEER_PORT
+        VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT: $VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT
         VITE_DISCOVERY_SERVER_PROTOCOL: $VITE_DISCOVERY_SERVER_PROTOCOL
         VITE_DISCOVERY_SERVER_HOST: $VITE_DISCOVERY_SERVER_HOST
         VITE_DISCOVERY_SERVER_PORT: $VITE_DISCOVERY_SERVER_PORT
@@ -37,7 +37,7 @@ services:
     build:
       dockerfile: Dockerfile-always-online-peer
       args:
-        VITE_ALWAYS_ONLINE_PEER_PORT: $VITE_ALWAYS_ONLINE_PEER_PORT
+        VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT: $VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
     volumes:
       - reform_always_online_peer:/app/data
     env_file:
@@ -45,7 +45,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`)"
-      - "traefik.http.routers.reform-always-online-peer.entrypoints=web-$VITE_ALWAYS_ONLINE_PEER_PORT"
+      - "traefik.http.routers.reform-always-online-peer.entrypoints=web-$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
     networks:
       - traefik_default
   reform-discovery:
