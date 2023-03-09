@@ -13,7 +13,7 @@ services:
       - "--entrypoints.web-$VITE_SERVER_PORT.address=:$VITE_SERVER_PORT"
       - "--entrypoints.web-$VITE_DISCOVERY_SERVER_PORT.address=:$VITE_DISCOVERY_SERVER_PORT"
       - "--entrypoints.web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT.address=:$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
-      - "--entrypoints.web-$VITE_ALWAYS_ONLINE_PEER_PORT.address=:$VITE_ALWAYS_ONLINE_PEER_PORT"
+      - "--entrypoints.web-$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT.address=:$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
       #- "--entrypoints.tcp-3478.address=:3478"
       #- "--entrypoints.udp-3478.address=:3478/udp"
       #- "--entrypoints.tcp-5349.address=:5349"
@@ -22,7 +22,7 @@ services:
       - "$VITE_SERVER_PORT:$VITE_SERVER_PORT"
       - "$VITE_DISCOVERY_SERVER_PORT:$VITE_DISCOVERY_SERVER_PORT"
       - "$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT:$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
-      - "$VITE_ALWAYS_ONLINE_PEER_PORT:$VITE_ALWAYS_ONLINE_PEER_PORT"
+      - "$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT:$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
       - "8080:8080"
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock:ro"
