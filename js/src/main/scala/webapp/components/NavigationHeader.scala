@@ -72,6 +72,9 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
         ),
       ),
     ),
+    li(
+      navigationIconLink(SettingsPage(), icons.Settings(cls := "h-5 w-5")),
+    ),
   )
 }
 
