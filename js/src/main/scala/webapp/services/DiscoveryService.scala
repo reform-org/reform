@@ -268,6 +268,7 @@ class DiscoveryService {
             ws = Some(
               new WebSocket(
                 s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PORT}",
+                "discovery-server"
               ),
             )
         }
