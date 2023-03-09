@@ -229,7 +229,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                 ),
                 div(
-                  cls := "flex space-x-4",
+                  cls := "flex flex-col md:flex-row space-x-4",
                   div(
                     cls := "basis-2/5",
                     label(cls := "font-bold", "Start date:"),

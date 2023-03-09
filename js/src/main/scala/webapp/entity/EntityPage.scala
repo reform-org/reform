@@ -405,7 +405,7 @@ abstract class EntityPage[T <: Entity[T]](
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
           div(
-            cls := "flex flex-row gap-2 items-center mb-4",
+            cls := "flex flex-col sm:flex-row gap-2 items-center mb-4",
             div(
               cls := "dropdown",
               cls <-- filterDropdownOpen.map(if (_) Some("dropdown-open") else None),
