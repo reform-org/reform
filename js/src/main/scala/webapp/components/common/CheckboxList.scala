@@ -16,11 +16,11 @@ import webapp.remToPx
 import webapp.utils.Seqnal.*
 
 class CheckboxListOption(
-    val id: String,
-    val name: Signal[String],
-    val props: VMod*,
-) {
-  def render: VNode = {
+    override val id: String,
+    override val name: Signal[String],
+    override val props: VMod*,
+) extends BasicOption(id, name, props) {
+  override def render: VNode = {
     span(props, name)
   }
 }

@@ -122,7 +122,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
     div(
       uiAttribute.label,
       MultiSelect(
-        uiAttribute.options.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
+        uiAttribute.optionsForFilter.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,
@@ -141,7 +141,9 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
   }
 }
 
-class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[EntityType])(using
+class UIMultiSelectFilter[EntityType](
+    uiAttribute: UIMultiSelectAttribute[EntityType] | UICheckboxListAttribute[EntityType],
+)(using
     routing: RoutingService,
 ) extends UIFilter[EntityType] {
 
@@ -166,7 +168,11 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
         cls := "rounded-md",
       ),
       MultiSelect(
-        uiAttribute.options,
+        uiAttribute match {
+          case x: UIMultiSelectAttribute[EntityType] => x.optionsForFilter
+          case x: UICheckboxListAttribute[EntityType] =>
+            x.optionsForFilter.map(_.map(option => MultiSelectOption(option.id, option.name, option.props)))
+        },
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,

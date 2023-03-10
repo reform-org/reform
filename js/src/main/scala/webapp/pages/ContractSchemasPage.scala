@@ -55,7 +55,7 @@ object ContractSchemasPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
-      .multiSelect(
+      .multiSelect(options =
         repositories.requiredDocuments.existing.map(list =>
           list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
         ),

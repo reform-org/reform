@@ -324,7 +324,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
   private val filters = uiAttributes.map(_.uiFilter)
 
-  def render: VNode = tr(
+  def render: VNode = div(
     filters.map(_.render),
   )
 

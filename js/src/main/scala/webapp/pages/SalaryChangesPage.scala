@@ -56,7 +56,7 @@ object SalaryChangesPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[SalaryChange, String] = {
     UIAttributeBuilder
-      .select(
+      .select(options =
         repositories.paymentLevels.all.map(list =>
           list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),

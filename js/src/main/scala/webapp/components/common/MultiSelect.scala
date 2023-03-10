@@ -16,11 +16,12 @@ import webapp.remToPx
 import webapp.utils.Seqnal.*
 
 class MultiSelectOption(
-    val id: String,
-    val name: Signal[String],
-) {
-  def render: VNode = {
-    span(name)
+    override val id: String,
+    override val name: Signal[String],
+    override val props: VMod*,
+) extends BasicOption(id, name, props) {
+  override def render: VNode = {
+    span(props, name)
   }
 }
 

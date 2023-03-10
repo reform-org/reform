@@ -11,10 +11,11 @@ import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 
 class SelectOption(
-    val id: String,
-    val name: Signal[String],
-) {
-  def render: VNode = {
+    override val id: String,
+    override val name: Signal[String],
+    override val props: VMod*,
+) extends BasicOption(id, name, props) {
+  override def render: VNode = {
     div(
       cls := "peer-checked:bg-blue-400 peer-checked:text-white px-2 py-0.5",
       name,

@@ -106,7 +106,7 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(
+      .select(options =
         repositories.hiwis.all.map(list =>
           list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
@@ -127,8 +127,10 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(
-        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse("")))),
+      .select(options =
+        repositories.projects.all.map(
+          _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
+        ),
       )
       .withCreatePage(ProjectsPage())
       .withLabel("Project")
@@ -146,8 +148,8 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(
-        options = repositories.supervisors.all.map(list =>
+      .select(options =
+        repositories.supervisors.all.map(list =>
           list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
       )
@@ -167,7 +169,7 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(
+      .select(options =
         repositories.contractSchemas.all.map(list =>
           list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
@@ -237,7 +239,7 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(
+      .select(options =
         repositories.paymentLevels.all.map(list =>
           list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
         ),
@@ -258,57 +260,55 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
-      .checkboxList(
-        // this works only on the contract editpage - all checked documents that are left over from old contractTypes should be shown, but in italic
-
-        // Signal.dynamic {
-        //   editingValue.resource.value.map((_, contract) =>
-        //     contract.value.contractType.get.flatMap(contractTypeId =>
-        //       repositories.contractSchemas.all.value.find(contractType => contractType.id == contractTypeId) match {
-        //         case None => Some(span("Please select a contract type"))
-        //         case Some(value) =>
-        //           value.signal.value.files.get.flatMap(requiredDocuments => {
-        //             val documents = repositories.requiredDocuments.all.value
-        //             val checkedDocuments = contract.value.requiredDocuments.get
-        //             Some(
-        //               div(
-        //                 checkedDocuments
-        //                   .map(_ ++ requiredDocuments)
-        //                   .map(files =>
-        //                     div(
-        //                       files.toSet
-        //                         .map(file =>
-        //                           LabeledCheckbox(
-        //                             documents
-        //                               .find(doc => doc.id == file)
-        //                               .map(file => file.signal.value.name.get),
-        //                             if (!requiredDocuments.contains(file)) cls := "italic" else None,
-        //                           )(
-        //                             CheckboxStyle.Default,
-        //                             checked := checkedDocuments.map(d => d.contains(file)),
-        //                           ),
-        //                         )
-        //                         .toSeq,
-        //                     ),
-        //                   ),
-        //               ),
-        //             )
-        //           })
-        //       },
-        //     ),
-        //   )
-        // },
-        Signal {
-          repositories.requiredDocuments.existing.value.map(value =>
-            value.id -> value.signal.map(_.identifier.get.getOrElse("")),
-          )
-        },
+      .checkboxList(options =
+        repositories.requiredDocuments.all.map(list =>
+          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+        ),
       )
       .withLabel("Required Documents")
       .require
       .bindAsCheckboxList[Contract](
         _.requiredDocuments,
         (c, a) => c.copy(requiredDocuments = a),
+        filteredOptions = Some(contract =>
+          Signal.dynamic {
+            contract.contractType.get
+              .flatMap(contractTypeId =>
+                repositories.contractSchemas.all.value
+                  .find(contractType => contractType.id == contractTypeId)
+                  .flatMap(value =>
+                    value.signal.value.files.get.flatMap(requiredDocuments => {
+                      val documents = repositories.requiredDocuments.all.value
+                      val checkedDocuments = contract.requiredDocuments.get
+                      println(checkedDocuments)
+                      println(requiredDocuments)
+                      checkedDocuments
+                        .map(_ ++ requiredDocuments)
+                        .map(files =>
+                          files.toSet
+                            .map(fileId => {
+                              documents
+                                .find(doc => doc.id == fileId)
+                                .map(file => {
+                                  println(file.signal.value.name.get)
+                                  CheckboxListOption(
+                                    fileId,
+                                    file.signal.map(s => s.name.get.getOrElse("")),
+                                    if (!requiredDocuments.contains(fileId)) Seq(cls := "italic", checked := true)
+                                    else None,
+                                  )
+                                })
+                            })
+                            .toSeq,
+                        )
+                    }),
+                  ),
+              )
+              .getOrElse(Seq.empty)
+              .filter(x => x.nonEmpty)
+              .map(_.get)
+          },
+        ),
       )
   }
 
