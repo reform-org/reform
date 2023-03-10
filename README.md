@@ -95,7 +95,7 @@ podman-compose --env-file test.env --project-name reform --file docker-compose.y
 podman-compose --env-file test.env --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
 ```
 
-The application is available on http://reform.localhost:2001/ by default
+The application is available on http://reform.localhost:8888/ by default
 
 ```bash
 # netlify

@@ -64,13 +64,13 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`)"
-      - "traefik.http.routers.reform-discovery.entrypoints=web-$VITE_DISCOVERY_SERVER_PORT"
+      - "traefik.http.routers.reform-discovery.entrypoints=web-$VITE_DISCOVERY_SERVER_PUBLIC_PORT"
       - "traefik.http.routers.reform-discovery.service=reform-discovery"
-      - "traefik.http.services.reform-discovery.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_PORT"
+      - "traefik.http.services.reform-discovery.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_LISTEN_PORT"
       - "traefik.http.routers.reform-discovery-ws.rule=Host(`$VITE_DISCOVERY_SERVER_WEBSOCKET_HOST`)"
-      - "traefik.http.routers.reform-discovery-ws.entrypoints=web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
+      - "traefik.http.routers.reform-discovery-ws.entrypoints=web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT"
       - "traefik.http.routers.reform-discovery-ws.service=reform-discovery-ws"
-      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
+      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT"
     networks:
       - traefik_default
   # https://doc.traefik.io/traefik/routing/providers/docker/
