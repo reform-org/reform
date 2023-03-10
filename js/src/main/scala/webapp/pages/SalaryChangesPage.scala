@@ -57,7 +57,7 @@ object SalaryChangesPage {
   ): UIAttribute[SalaryChange, String] = {
     UIAttributeBuilder
       .select(
-        repositories.paymentLevels.all.map(list =>
+        repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
