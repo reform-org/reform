@@ -5,7 +5,7 @@ import outwatch.*
 import outwatch.dsl.*
 import webapp.{*, given}
 
-class BasicOption(
+class SelectOption(
     val id: String,
     val name: Signal[String],
     val props: VMod*,

@@ -373,8 +373,8 @@ class UIMultiSelectAttribute[EntityType](
     writeConverter: String => Seq[String],
     label: String,
     isRequired: Boolean,
-    val options: EntityType => Signal[Seq[MultiSelectOption]],
-    val optionsForFilter: Signal[Seq[MultiSelectOption]],
+    val options: EntityType => Signal[Seq[SelectOption]],
+    val optionsForFilter: Signal[Seq[SelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
@@ -454,8 +454,8 @@ class UICheckboxListAttribute[EntityType](
     writeConverter: String => Seq[String],
     label: String,
     isRequired: Boolean,
-    val options: EntityType => Signal[Seq[CheckboxListOption]],
-    val optionsForFilter: Signal[Seq[CheckboxListOption]],
+    val options: EntityType => Signal[Seq[SelectOption]],
+    val optionsForFilter: Signal[Seq[SelectOption]],
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
 )(using routing: RoutingService)
     extends UITextAttribute[EntityType, Seq[String]](

@@ -13,7 +13,7 @@ case class UIAttributeBuilder[AttributeType](
     writeConverter: String => AttributeType,
     label: String = "",
     isRequired: Boolean = false,
-    options: Signal[Seq[BasicOption | (String, Signal[String])]] = Signal(Seq.empty),
+    options: Signal[Seq[SelectOption]] = Signal(Seq.empty),
     min: String = "",
     stepSize: String = "1",
     regex: String = ".*",
@@ -71,16 +71,6 @@ case class UIAttributeBuilder[AttributeType](
 
 object UIAttributeBuilder {
 
-  private def tuplesToSelectOptions[T <: BasicOption](
-      options: Signal[Seq[BasicOption | (String, Signal[String])]],
-      tupleConverter: (String, Signal[String]) => T,
-  ): Signal[Seq[T]] = {
-    options.mapInside {
-      case (k, v) => tupleConverter(k, v)
-      case x      => x.asInstanceOf[T]
-    }
-  }
-
   def string(using routing: RoutingService): UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 
   def date(using routing: RoutingService): UIAttributeBuilder[Long] = UIAttributeBuilder(
@@ -101,19 +91,19 @@ object UIAttributeBuilder {
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
-  def select(options: Signal[Seq[SelectOption | (String, Signal[String])]])(using
+  def select(options: Signal[Seq[SelectOption]])(using
       routing: RoutingService,
   ): UIAttributeBuilder[String] =
     string.copy(options = options)
 
   def multiSelect(
-      options: Signal[Seq[MultiSelectOption | (String, Signal[String])]],
+      options: Signal[Seq[SelectOption]],
   )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
 
   def checkboxList(
-      options: Signal[Seq[CheckboxListOption | (String, Signal[String])]],
+      options: Signal[Seq[SelectOption]],
   )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
@@ -170,7 +160,7 @@ object UIAttributeBuilder {
     def bindAsMultiSelect[EntityType](
         getter: EntityType => Attribute[Seq[String]],
         setter: (EntityType, Attribute[Seq[String]]) => EntityType,
-        filteredOptions: Option[EntityType => Signal[Seq[MultiSelectOption | (String, Signal[String])]]] = None,
+        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
     )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
       UIMultiSelectAttribute(
         getter,
@@ -180,10 +170,10 @@ object UIAttributeBuilder {
         label = self.label,
         options =
           if (filteredOptions.nonEmpty)
-            filteredOptions.get.andThen(tuplesToSelectOptions[MultiSelectOption](_, (k, v) => MultiSelectOption(k, v)))
+            filteredOptions.get
           else
-            _ => tuplesToSelectOptions[MultiSelectOption](self.options, (k, v) => MultiSelectOption(k, v)),
-        optionsForFilter = tuplesToSelectOptions[MultiSelectOption](self.options, (k, v) => MultiSelectOption(k, v)),
+            _ => self.options,
+        optionsForFilter = self.options,
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
         createPage = self.createPage,
@@ -192,7 +182,7 @@ object UIAttributeBuilder {
     def bindAsCheckboxList[EntityType](
         getter: EntityType => Attribute[Seq[String]],
         setter: (EntityType, Attribute[Seq[String]]) => EntityType,
-        filteredOptions: Option[EntityType => Signal[Seq[CheckboxListOption | (String, Signal[String])]]] = None,
+        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
     )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
       UICheckboxListAttribute(
         getter,
@@ -202,12 +192,10 @@ object UIAttributeBuilder {
         label = self.label,
         options =
           if (filteredOptions.nonEmpty)
-            filteredOptions.get.andThen(
-              tuplesToSelectOptions[CheckboxListOption](_, (k, v) => CheckboxListOption(k, v)),
-            )
+            filteredOptions.get
           else
-            _ => tuplesToSelectOptions[CheckboxListOption](self.options, (k, v) => CheckboxListOption(k, v)),
-        optionsForFilter = tuplesToSelectOptions[CheckboxListOption](self.options, (k, v) => CheckboxListOption(k, v)),
+            _ => self.options,
+        optionsForFilter = self.options,
         isRequired = self.isRequired,
       )
   }
@@ -217,7 +205,7 @@ object UIAttributeBuilder {
     def bindAsSelect[EntityType](
         getter: EntityType => Attribute[String],
         setter: (EntityType, Attribute[String]) => EntityType,
-        filteredOptions: Option[EntityType => Signal[Seq[SelectOption | (String, Signal[String])]]] = None,
+        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
     )(using routing: RoutingService): UIAttribute[EntityType, String] =
       UISelectAttribute(
         getter,
@@ -227,11 +215,9 @@ object UIAttributeBuilder {
         label = self.label,
         options =
           if (filteredOptions.nonEmpty)
-            filteredOptions.get.andThen(
-              tuplesToSelectOptions[SelectOption](_, (k, v) => SelectOption(k, v)),
-            )
-          else _ => tuplesToSelectOptions[SelectOption](self.options, (k, v) => SelectOption(k, v)),
-        optionsForFilter = tuplesToSelectOptions[SelectOption](self.options, (k, v) => SelectOption(k, v)),
+            filteredOptions.get
+          else _ => self.options,
+        optionsForFilter = self.options,
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
         createPage = self.createPage,

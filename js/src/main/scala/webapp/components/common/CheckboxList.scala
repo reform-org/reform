@@ -15,18 +15,8 @@ import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
 import webapp.utils.Seqnal.*
 
-class CheckboxListOption(
-    override val id: String,
-    override val name: Signal[String],
-    override val props: VMod*,
-) extends BasicOption(id, name, props) {
-  override def render: VNode = {
-    span(props, name)
-  }
-}
-
 class CheckboxList(
-    options: Signal[Seq[CheckboxListOption]],
+    options: Signal[Seq[SelectOption]],
     onInput: (value: Seq[String]) => Unit,
     value: Signal[Seq[String]],
     emptyState: VMod = span("Nothing found..."),
@@ -73,7 +63,7 @@ class CheckboxList(
     },
   )
 
-  private def renderOption(uiOption: CheckboxListOption): VMod = label(
+  private def renderOption(uiOption: SelectOption): VMod = label(
     cls := "block w-fit hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700 rounded-md cursor-pointer",
     Checkbox(
       CheckboxStyle.Default,
@@ -110,7 +100,7 @@ class CheckboxList(
 object CheckboxList {
 
   def apply(
-      options: Signal[Seq[CheckboxListOption]],
+      options: Signal[Seq[SelectOption]],
       onInput: (value: Seq[String]) => Unit,
       value: Signal[Seq[String]],
       emptyState: VMod = span("Nothing found..."),

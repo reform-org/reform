@@ -15,18 +15,8 @@ import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
 import webapp.utils.Seqnal.*
 
-class MultiSelectOption(
-    override val id: String,
-    override val name: Signal[String],
-    override val props: VMod*,
-) extends BasicOption(id, name, props) {
-  override def render: VNode = {
-    span(props, name)
-  }
-}
-
 private class MultiSelect(
-    options: Signal[Seq[MultiSelectOption]],
+    options: Signal[Seq[SelectOption]],
     onInput: Seq[String] => Unit,
     value: Signal[Seq[String]],
     showItems: Int = 5,
@@ -227,7 +217,7 @@ private class MultiSelect(
     },
   )
 
-  private def renderOption(uiOption: MultiSelectOption): VMod = label(
+  private def renderOption(uiOption: SelectOption): VMod = label(
     cls := "block w-full hover:bg-slate-50 px-2 py-0.5 flex items-center dark:hover:bg-gray-700",
     Checkbox(
       CheckboxStyle.Default,
@@ -253,7 +243,7 @@ private class MultiSelect(
 object MultiSelect {
 
   def apply(
-      options: Signal[Seq[MultiSelectOption]],
+      options: Signal[Seq[SelectOption]],
       onInput: (value: Seq[String]) => Unit,
       value: Signal[Seq[String]],
       showItems: Int = 5,

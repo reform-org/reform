@@ -122,7 +122,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
     div(
       uiAttribute.label,
       MultiSelect(
-        uiAttribute.optionsForFilter.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
+        uiAttribute.optionsForFilter.map(option => option.map(selOpt => SelectOption(selOpt.id, selOpt.name))),
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,
@@ -171,7 +171,7 @@ class UIMultiSelectFilter[EntityType](
         uiAttribute match {
           case x: UIMultiSelectAttribute[EntityType] => x.optionsForFilter
           case x: UICheckboxListAttribute[EntityType] =>
-            x.optionsForFilter.map(_.map(option => MultiSelectOption(option.id, option.name, option.props)))
+            x.optionsForFilter.map(_.map(option => SelectOption(option.id, option.name, option.props)))
         },
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
@@ -225,7 +225,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
     div(
       uiAttribute.label,
       MultiSelect(
-        Signal(Seq(MultiSelectOption("true", Signal("Yes")), MultiSelectOption("false", Signal("No")))),
+        Signal(Seq(SelectOption("true", Signal("Yes")), SelectOption("false", Signal("No")))),
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,

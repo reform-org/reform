@@ -106,9 +106,9 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(options =
+      .select(
         repositories.hiwis.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(HiwisPage())
@@ -148,9 +148,9 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(options =
+      .select(
         repositories.supervisors.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(SupervisorsPage())
@@ -169,9 +169,9 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(options =
+      .select(
         repositories.contractSchemas.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(ContractSchemasPage())
@@ -239,9 +239,9 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(options =
+      .select(
         repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(PaymentLevelsPage())
@@ -260,9 +260,9 @@ object ContractsPage {
       indexeddb: IIndexedDB,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
-      .checkboxList(options =
+      .checkboxList(
         repositories.requiredDocuments.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withLabel("Required Documents")
@@ -291,7 +291,7 @@ object ContractsPage {
                                 .find(doc => doc.id == fileId)
                                 .map(file => {
                                   println(file.signal.value.name.get)
-                                  CheckboxListOption(
+                                  SelectOption(
                                     fileId,
                                     file.signal.map(s => s.name.get.getOrElse("")),
                                     if (!requiredDocuments.contains(fileId)) Seq(cls := "italic", checked := true)

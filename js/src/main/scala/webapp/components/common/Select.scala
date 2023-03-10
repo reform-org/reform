@@ -10,19 +10,6 @@ import webapp.components.icons
 import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 
-class SelectOption(
-    override val id: String,
-    override val name: Signal[String],
-    override val props: VMod*,
-) extends BasicOption(id, name, props) {
-  override def render: VNode = {
-    div(
-      cls := "peer-checked:bg-blue-400 peer-checked:text-white px-2 py-0.5",
-      name,
-    )
-  }
-}
-
 def Select(
     options: Signal[Seq[SelectOption]],
     onInput: (value: String) => Unit,
@@ -129,7 +116,10 @@ def Select(
                       }),
                     ),
                     tabIndex := 0,
-                    uiOption.render,
+                    div(
+                      cls := "peer-checked:bg-blue-400 peer-checked:text-white px-2 py-0.5",
+                      uiOption.render,
+                    ),
                     forId := s"$id-${uiOption.id}",
                   ),
                 )
