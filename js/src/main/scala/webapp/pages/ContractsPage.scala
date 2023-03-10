@@ -291,7 +291,6 @@ object ContractsPage {
                               documents
                                 .find(doc => doc.id == fileId)
                                 .map(file => {
-                                  println(file.signal.value.name.get)
                                   SelectOption(
                                     fileId,
                                     file.signal.map(s => s.name.get.getOrElse("")),
@@ -300,7 +299,12 @@ object ContractsPage {
                                   )
                                 })
                             })
-                            .toSeq,
+                            .toSeq
+                            .sortWith(
+                              _.getOrElse(SelectOption("", Signal(""))).id < _.getOrElse(
+                                SelectOption("", Signal("")),
+                              ).id,
+                            ),
                         )
                     }),
                   ),
