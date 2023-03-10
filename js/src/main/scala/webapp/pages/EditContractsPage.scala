@@ -44,6 +44,7 @@ import webapp.npm.JSUtils.dateDiffHumanReadable
 import webapp.npm.JSUtils.dateDiffMonth
 import webapp.npm.JSUtils.toMoneyString
 import webapp.npm.JSUtils.stickyButton
+import org.scalajs.dom.KeyboardEvent
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -232,7 +233,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
-  ): VNode =
+  ): VNode = {
+    document.addEventListener(
+      "keydown",
+      (e: KeyboardEvent) => {
+        if (e.keyCode == 83 && e.ctrlKey) {
+          e.preventDefault()
+          createOrUpdate(false, true)
+        }
+      },
+    )
     navigationHeader(
       div(
         div(
@@ -788,5 +798,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
         ),
       ),
     )
+  }
 
 }
