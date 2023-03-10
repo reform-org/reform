@@ -17,3 +17,4 @@
 !/utils.js
 !/vite.config.js
 !/.sbtopts
+!/.env
