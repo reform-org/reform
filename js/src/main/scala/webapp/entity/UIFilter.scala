@@ -169,9 +169,8 @@ class UIMultiSelectFilter[EntityType](
       ),
       MultiSelect(
         uiAttribute match {
-          case x: UIMultiSelectAttribute[EntityType] => x.optionsForFilter
-          case x: UICheckboxListAttribute[EntityType] =>
-            x.optionsForFilter.map(_.map(option => SelectOption(option.id, option.name, option.props)))
+          case x: UIMultiSelectAttribute[EntityType]  => x.optionsForFilter
+          case x: UICheckboxListAttribute[EntityType] => x.optionsForFilter
         },
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
