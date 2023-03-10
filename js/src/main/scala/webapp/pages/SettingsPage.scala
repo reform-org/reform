@@ -103,117 +103,114 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
     navigationHeader(
       div(
         h1(cls := "text-3xl mt-4 text-center", "Settings Page"),
-        cls := "flex flex-col gap-2 max-w-sm",
-        p("Color scheme:"),
-        Select(
-          Signal(
-            Seq(
-              SelectOption("dark", Signal("Dark mode")),
-              SelectOption("light", Signal("Light mode")),
-              SelectOption("default", Signal("Use browser preferences")),
+        cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]", // "flex flex-col gap-2 max-w-sm",
+        div(
+          cls := "border rounded-2xl m-4 border-purple-200 dark:text-gray-200",
+          div(
+            cls := "bg-purple-200 p-4 rounded-t-2xl dark:text-gray-600",
+            p("Color scheme:"),
+          ),
+          div(
+            cls := "p-4 space-y-4 w-[400px]",
+            Select(
+              Signal(
+                Seq(
+                  SelectOption("dark", Signal("Dark mode")),
+                  SelectOption("light", Signal("Light mode")),
+                  SelectOption("default", Signal("Use browser preferences")),
+                ),
+              ),
+              (value) => {
+                window.localStorage.setItem("theme", value)
+                theme.set(value)
+              },
+              theme,
+              false,
             ),
           ),
-          (value) => {
-            window.localStorage.setItem("theme", value)
-            theme.set(value)
-          },
-          theme,
-          false,
         ),
-        Button(
-          ButtonStyle.LightDefault,
-          // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-          "Make me a boring normal toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Default)
-          }),
-        ),
-        Button(
-          ButtonStyle.Success,
-          "Make me a successful toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Success)
-          }),
-        ),
-        Button(
-          ButtonStyle.Warning,
-          "Make me a warning toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Warning)
-          }),
-        ),
-        Button(
-          ButtonStyle.Error,
-          "Make me an error toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make(
-              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 🍞",
-              ToastMode.Short,
-              ToastType.Error,
-            )
-          }),
-        ),
-        Button(
-          ButtonStyle.Error,
-          "Make me a persistent error toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
-          }),
-        ),
-        Button(
-          ButtonStyle.Primary,
-          "Export DB",
-          onClick.foreach(_ => {
-            val json = exportIndexedDBJson
-            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
-            toaster.make("Database exported", ToastMode.Short, ToastType.Success)
-          }),
-        ),
-        FileInput(tpe := "file", idAttr := "import-file"),
-        Button(
-          ButtonStyle.Primary,
-          "Import DB",
-          onClick.foreach(_ => {
-            val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
-            if (fileList.nonEmpty)
-              fileList(0)
-                .text()
-                .toFuture
-                .onComplete(value => {
-                  if (value.isFailure) {
-                    value.failed.get.printStackTrace()
-                    toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
-                  }
-                  val json = value.getOrElse("")
-                  importIndexedDBJson(json)(using repositories).onComplete {
-                    case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
-                    case Failure(exception) =>
-                      toaster
-                        .make("Failed to import database! " + exception.toString, ToastMode.Long, ToastType.Error)
-                  }
-                })
-          }),
-        ),
-        Button(
-          ButtonStyle.Error,
-          "Delete DB",
-          onClick.foreach(_ => {
-            val json = exportIndexedDBJson
-            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
-            deleteDBModal.open()
-
-          }),
-        ),
-        deleteDBModal.render,
-        /*MultiSelect(
-          Signal(List(MultiSelectOption("test", Signal("test")), MultiSelectOption("test2", Signal("test2")))),
-          (value) => multiSelectValue.set(value),
-          multiSelectValue,
-        ),*/
-        Select(
-          Signal(List(SelectOption("test3", Signal("test")), SelectOption("test4", Signal("test2")))),
-          (value) => selectValue.set(value),
-          selectValue,
+        div(
+          cls := "border rounded-2xl m-4 border-purple-200 dark:text-gray-200",
+          div(
+            cls := "bg-purple-200 p-4 rounded-t-2xl dark:text-gray-600",
+            p("Manage DB:"),
+          ),
+          div(
+            cls := "flex flex-col p-4 space-y-4",
+            div(
+              cls := "flex flex-row justify-between",
+              Button(
+                ButtonStyle.Primary,
+                "Export DB",
+                onClick.foreach(_ => {
+                  val json = exportIndexedDBJson
+                  downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
+                  toaster.make("Database exported", ToastMode.Short, ToastType.Success)
+                }),
+              ),
+              p(
+                cls := "mx-10 p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                "EXPORT DB: Export the DB",
+              ),
+            ),
+            hr,
+            div(
+              cls := "flex flex-col md:flex-row justify-between",
+              div(
+                FileInput(cls := "file-input-bordered", tpe := "file", idAttr := "import-file"),
+                Button(
+                  ButtonStyle.Primary,
+                  "Import DB",
+                  onClick.foreach(_ => {
+                    val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
+                    if (fileList.nonEmpty)
+                      fileList(0)
+                        .text()
+                        .toFuture
+                        .onComplete(value => {
+                          if (value.isFailure) {
+                            value.failed.get.printStackTrace()
+                            toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
+                          }
+                          val json = value.getOrElse("")
+                          importIndexedDBJson(json)(using repositories).onComplete {
+                            case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
+                            case Failure(exception) =>
+                              toaster
+                                .make(
+                                  "Failed to import database! " + exception.toString,
+                                  ToastMode.Long,
+                                  ToastType.Error,
+                                )
+                          }
+                        })
+                  }),
+                ),
+              ),
+              p(
+                cls := "mx-10 p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                "IMPORT DB: Import a DB",
+              ),
+            ),
+            hr,
+            div(
+              cls := "flex flex-col md:flex-row justify-between",
+              Button(
+                ButtonStyle.Error,
+                "Delete DB",
+                onClick.foreach(_ => {
+                  val json = exportIndexedDBJson
+                  downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
+                  deleteDBModal.open()
+                }),
+              ),
+              p(
+                cls := "mx-10 p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                "DELETE DB: Delete the DB",
+              ),
+            ),
+            deleteDBModal.render,
+          ),
         ),
       ),
     )
