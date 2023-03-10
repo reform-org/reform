@@ -261,7 +261,7 @@ object ContractsPage {
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
       .checkboxList(
-        repositories.requiredDocuments.all.map(list =>
+        repositories.requiredDocuments.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -279,9 +279,10 @@ object ContractsPage {
                   .flatMap(value =>
                     value.signal.value.files.get.flatMap(requiredDocuments => {
                       val documents = repositories.requiredDocuments.all.value
-                      val checkedDocuments = contract.requiredDocuments.get
-                      println(checkedDocuments)
-                      println(requiredDocuments)
+                      val checkedDocuments =
+                        if (contract.requiredDocuments.get.nonEmpty) contract.requiredDocuments.get
+                        else Some(Seq.empty)
+
                       checkedDocuments
                         .map(_ ++ requiredDocuments)
                         .map(files =>
