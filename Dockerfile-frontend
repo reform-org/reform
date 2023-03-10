@@ -34,8 +34,5 @@ RUN VITE_ALWAYS_ONLINE_PEER_PROTOCOL=$VITE_ALWAYS_ONLINE_PEER_PROTOCOL \
 
 FROM docker.io/library/nginx
 WORKDIR /app
-# TODO FIXME we don't need a template, we could directly put the image there
-RUN cat /etc/nginx/nginx.conf
-RUN ls /etc/nginx/conf.d/
-RUN cat /etc/nginx/conf.d/*.conf
+# TODO FIXME we don't need a template, we could directly put the config there
 COPY --from=npm /app/dist /app/dist

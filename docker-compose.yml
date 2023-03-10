@@ -50,7 +50,7 @@ services:
       - traefik_default
   reform-discovery:
     build:
-      context: https://github.com/reform-org/reform_discovery.git#deployment
+      context: https://github.com/reform-org/reform-discovery-ts.git
     volumes:
       - reform_discovery:/app/data
     env_file:
