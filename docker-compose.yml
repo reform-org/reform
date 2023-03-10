@@ -29,7 +29,7 @@ services:
       - ./docker/templates:/etc/nginx/templates
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform.rule=Host(`$VITE_SERVER_HOST`)"
+      - "traefik.http.routers.reform.rule=Host(`$VITE_SERVER_HOST`) && PathPrefix(`$VITE_SERVER_PATH`)"
       - "traefik.http.routers.reform.entrypoints=web-$VITE_SERVER_PORT"
     networks:
       - traefik_default
@@ -44,7 +44,7 @@ services:
       - test.env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`)"
+      - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`) && Path(`$VITE_ALWAYS_ONLINE_PEER_PATH`)"
       - "traefik.http.routers.reform-always-online-peer.entrypoints=web-$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
     networks:
       - traefik_default
@@ -63,11 +63,11 @@ services:
       - test.env
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`)"
+      - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`) && PathPrefix(`$VITE_DISCOVERY_SERVER_PATH`)"
       - "traefik.http.routers.reform-discovery.entrypoints=web-$VITE_DISCOVERY_SERVER_PUBLIC_PORT"
       - "traefik.http.routers.reform-discovery.service=reform-discovery"
       - "traefik.http.services.reform-discovery.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_LISTEN_PORT"
-      - "traefik.http.routers.reform-discovery-ws.rule=Host(`$VITE_DISCOVERY_SERVER_WEBSOCKET_HOST`)"
+      - "traefik.http.routers.reform-discovery-ws.rule=Host(`$VITE_DISCOVERY_SERVER_WEBSOCKET_HOST`) && Path(`$VITE_DISCOVERY_SERVER_WEBSOCKET_PATH`)"
       - "traefik.http.routers.reform-discovery-ws.entrypoints=web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT"
       - "traefik.http.routers.reform-discovery-ws.service=reform-discovery-ws"
       - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT"
