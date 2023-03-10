@@ -43,6 +43,7 @@ import ContractsPage.*
 import webapp.npm.JSUtils.dateDiffHumanReadable
 import webapp.npm.JSUtils.dateDiffMonth
 import webapp.npm.JSUtils.toMoneyString
+import webapp.npm.JSUtils.stickyButton
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -116,7 +117,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def createOrUpdate(finalize: Boolean = false): Unit = {
+  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Unit = {
     indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -138,10 +139,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               ToastMode.Short,
               ToastType.Success,
             )
-            if (value.isDraft.get.getOrElse(true)) {
-              routing.to(ContractDraftsPage())
-            } else {
-              routing.to(ContractsPage())
+            if (!stayOnPage) {
+              if (value.isDraft.get.getOrElse(true)) {
+                routing.to(ContractDraftsPage())
+              } else {
+                routing.to(ContractsPage())
+              }
             }
           })
           .toastOnError(ToastMode.Infinit)
@@ -185,6 +188,42 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 
   var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
     Option(existingValue.get.signal.now, Var(existingValue.get.signal.now)),
+  )
+
+  val actions = Seq(
+    Button(
+      ButtonStyle.LightPrimary,
+      "Save",
+      Signal.dynamic {
+        if (
+          existingValue.flatMap(existingValue =>
+            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
+          ) == Some(false)
+        ) span(cls := "inline-block ml-1", icons.Circle(cls := "w-3 h-3"))
+        else span(cls := "inline-block ml-1", icons.Check(cls := "w-3 h-3"))
+      },
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate(false, true)
+      }),
+    ),
+    Button(
+      ButtonStyle.LightPrimary,
+      "Save and return",
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate()
+      }),
+    ),
+    Button(
+      ButtonStyle.LightPrimary,
+      "Save and finalize",
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate(true)
+      }),
+    ),
+    Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
   )
 
   def render(using
@@ -735,47 +774,17 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               ),
             ),
             div(
+              idAttr := "static_buttons",
               cls := "pl-8 space-x-4",
-              Button(
-                ButtonStyle.LightPrimary,
-                "Save and return",
-                onClick.foreach(e => {
-                  e.preventDefault()
-                  createOrUpdate()
-                }),
-              ),
-              Button(
-                ButtonStyle.LightPrimary,
-                "Save and finalize",
-                onClick.foreach(e => {
-                  e.preventDefault()
-                  createOrUpdate(true)
-                }),
-              ),
-              Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+              actions,
             ),
           ),
         ),
         div(
           idAttr := "sticky_buttons",
-          cls := "left-4 space-x-4 fixed bottom-4 p-3 bg-white shadow-lg rounded-xl border border-slate-200",
-          Button(
-            ButtonStyle.LightPrimary,
-            "Save and return",
-            onClick.foreach(e => {
-              e.preventDefault()
-              createOrUpdate()
-            }),
-          ),
-          Button(
-            ButtonStyle.LightPrimary,
-            "Save and finalize",
-            onClick.foreach(e => {
-              e.preventDefault()
-              createOrUpdate(true)
-            }),
-          ),
-          Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+          onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
+          cls := "left-4 space-x-4 fixed bottom-4 p-3 bg-white shadow-lg rounded-xl border border-slate-200 hidden",
+          actions,
         ),
       ),
     )
