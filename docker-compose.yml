@@ -70,7 +70,7 @@ services:
   # https://doc.traefik.io/traefik/routing/providers/docker/
   # turnutils_uclient -t -x -y localhost
   coturn:
-    image: coturn/coturn
+    image: docker.io/coturn/coturn
     environment:
       - DETECT_EXTERNAL_IP=yes
       - DETECT_RELAY_IP=yes

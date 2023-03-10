@@ -86,11 +86,13 @@ sbt webappJS/test
 
 ## Deployment
 
-Using docker-compose (or e.g. podman):
+Using podman-compose-git
 ```
-docker compose --env-file test.env --project-name traefik --file docker-compose-local-traefik.yml up --build --remove-orphans
-docker compose --env-file test.env --project-name reform --file docker-compose.yml up --build --remove-orphans
-docker compose --env-file test.env --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
+export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
+
+podman-compose --env-file test.env --project-name traefik --file docker-compose-local-traefik.yml up --build --remove-orphans
+podman-compose --env-file test.env --project-name reform --file docker-compose.yml up --build --remove-orphans
+podman-compose --env-file test.env --project-name reform --file docker-compose.yml run reform-discovery npm run user:add
 ```
 
 The application is available on http://reform.localhost:2001/ by default
