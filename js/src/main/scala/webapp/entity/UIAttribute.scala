@@ -445,10 +445,8 @@ class UIMultiSelectAttribute[EntityType](
         isRequired,
         formId := _formId,
         cls := "!rounded-none",
-      ).render,
       ),
     )
-
   }
 }
 
