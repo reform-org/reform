@@ -131,7 +131,7 @@ class Login() {
               onClick.foreach(_ => {
                 discovery.logout()
               }),
-              cls := "w-full",
+              cls := "w-full mt-2",
             )
           else
             div(
@@ -157,7 +157,7 @@ class Login() {
               Button(
                 ButtonStyle.Primary,
                 "Login",
-                cls := "w-full",
+                cls := "w-full mt-2",
                 disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
                 onClick
                   .foreach(_ =>
