@@ -13,18 +13,6 @@ services:
   reform:
     build:
       dockerfile: Dockerfile-frontend
-      args:
-        VITE_ALWAYS_ONLINE_PEER_PROTOCOL: $VITE_ALWAYS_ONLINE_PEER_PROTOCOL
-        VITE_ALWAYS_ONLINE_PEER_HOST: $VITE_ALWAYS_ONLINE_PEER_HOST
-        VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT: $VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT
-        VITE_DISCOVERY_SERVER_PROTOCOL: $VITE_DISCOVERY_SERVER_PROTOCOL
-        VITE_DISCOVERY_SERVER_HOST: $VITE_DISCOVERY_SERVER_HOST
-        VITE_DISCOVERY_SERVER_PORT: $VITE_DISCOVERY_SERVER_PORT
-        VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL: $VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL
-        VITE_DISCOVERY_SERVER_WEBSOCKET_HOST: $VITE_DISCOVERY_SERVER_WEBSOCKET_HOST
-        VITE_DISCOVERY_SERVER_WEBSOCKET_PORT: $VITE_DISCOVERY_SERVER_WEBSOCKET_PORT
-        VITE_TURN_SERVER_HOST: $VITE_TURN_SERVER_HOST
-        VITE_TURN_SERVER_PORT: $VITE_TURN_SERVER_PORT
     volumes:
       - ./docker/templates:/etc/nginx/templates
     labels:
@@ -41,7 +29,7 @@ services:
     volumes:
       - reform_always_online_peer:/app/data
     env_file:
-      - test.env
+      - .env.podman
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`) && Path(`$VITE_ALWAYS_ONLINE_PEER_PATH`)"
@@ -60,7 +48,7 @@ services:
     volumes:
       - reform_discovery:/app/data
     env_file:
-      - test.env
+      - .env.podman
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`) && PathPrefix(`$VITE_DISCOVERY_SERVER_PATH`)"
