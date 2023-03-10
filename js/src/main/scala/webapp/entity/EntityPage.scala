@@ -46,6 +46,10 @@ import webapp.npm.JSUtils.downloadFile
 case class Title(singular: String) {
 
   val plural: String = singular + "s"
+
+  def ofCardinal(card: Int): String =
+    if (card == 1) singular
+    else plural
 }
 
 sealed trait EntityValue[T]
@@ -126,7 +130,14 @@ class EntityRow[T <: Entity[T]](
           uiAttributes
             .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
             .map(ui => {
-              td(cls := "p-0 border-none", ui.renderEdit(id, editingValue))
+              td(
+                cls := "p-0 border-none",
+                styleAttr := (ui.width match {
+                  case None    => "min-width: 200px"
+                  case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                }),
+                ui.renderEdit(id, editingValue),
+              )
             }),
         ),
       td(
@@ -233,9 +244,9 @@ class EntityRow[T <: Entity[T]](
                 .map(ui => {
                   td(
                     cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
-                    cls := (ui.width match {
-                      case None    => "min-w-[200px]"
-                      case Some(v) => s"max-w-[$v] min-w-[$v]"
+                    styleAttr := (ui.width match {
+                      case None    => "min-width: 200px"
+                      case Some(v) => s"max-width: $v; min-width: $v; width: $v"
                     }),
                     ui.render(synced.id, p),
                   )
@@ -313,7 +324,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
   private val filters = uiAttributes.map(_.uiFilter)
 
-  def render: VNode = tr(
+  def render: VNode = div(
     filters.map(_.render),
   )
 
@@ -394,7 +405,10 @@ abstract class EntityPage[T <: Entity[T]](
                 tabIndex := 0,
                 "Filter",
                 idAttr := "filter-btn",
-                div(cls := "ml-3 badge", "0"),
+                div(
+                  cls := "ml-3 badge",
+                  routing.countQueryParameters(uiAttributes.map(attr => toQueryParameterName(attr.label))),
+                ),
                 icons.Filter(cls := "ml-1 w-6 h-6"),
                 cls := "!mt-0",
                 onClick.foreach(e => {
@@ -408,7 +422,7 @@ abstract class EntityPage[T <: Entity[T]](
                 "Columns",
                 MultiSelect(
                   Signal(
-                    uiAttributes.map(attr => MultiSelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
+                    uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
                   ),
                   value => routing.updateQueryParameters(Map("columns" -> value)),
                   routing.getQueryParameterAsSeq("columns"),
@@ -421,10 +435,9 @@ abstract class EntityPage[T <: Entity[T]](
               ),
             ),
             div(
-              countFilteredEntities,
-              " / ",
-              countEntities,
-              " " + title.plural,
+              Signal.dynamic {
+                s"${countFilteredEntities.value} / ${countEntities.value} ${title.plural}"
+              },
             ),
             Button(
               ButtonStyle.LightDefault,
@@ -450,6 +463,10 @@ abstract class EntityPage[T <: Entity[T]](
                         .map(a =>
                           th(
                             cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
+                            styleAttr := (a.width match {
+                              case None    => "min-width: 200px"
+                              case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                            }),
                             a.label,
                           ),
                         ),

@@ -14,7 +14,7 @@ case class SalaryChange(
     fromDate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[SalaryChange]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields

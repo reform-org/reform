@@ -122,7 +122,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
     div(
       uiAttribute.label,
       MultiSelect(
-        uiAttribute.options.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
+        uiAttribute.optionsForFilter.map(option => option.map(selOpt => SelectOption(selOpt.id, selOpt.name))),
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,
@@ -141,7 +141,9 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
   }
 }
 
-class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[EntityType])(using
+class UIMultiSelectFilter[EntityType](
+    uiAttribute: UIMultiSelectAttribute[EntityType] | UICheckboxListAttribute[EntityType],
+)(using
     routing: RoutingService,
 ) extends UIFilter[EntityType] {
 
@@ -166,7 +168,10 @@ class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[Entity
         cls := "rounded-md",
       ),
       MultiSelect(
-        uiAttribute.options,
+        uiAttribute match {
+          case x: UIMultiSelectAttribute[EntityType]  => x.optionsForFilter
+          case x: UICheckboxListAttribute[EntityType] => x.optionsForFilter
+        },
         value => routing.updateQueryParameters(Map(name -> value)),
         routing.getQueryParameterAsSeq(name),
         5,
@@ -211,20 +216,29 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 ) extends UIFilter[EntityType] {
 
   // has not been tested and is currently not usable over URL becuase we do not have any Boolean field sadly
+  private val name = toQueryParameterName(uiAttribute.label)
 
   private val selected = Var("")
 
   def render: VNode = {
-    select(
-      cls := "input valid:input-success",
-      onInput.value --> selected,
-      option(value := "both", "Both"),
-      option(value := "true", "Yes"),
-      option(value := "false", "No"),
+    div(
+      uiAttribute.label,
+      MultiSelect(
+        Signal(Seq(SelectOption("true", Signal("Yes")), SelectOption("false", Signal("No")))),
+        value => routing.updateQueryParameters(Map(name -> value)),
+        routing.getQueryParameterAsSeq(name),
+        5,
+        true,
+        span("Nothing found..."),
+        false,
+        cls := "rounded-md",
+      ),
     )
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    selected.map(s => e => uiAttribute.getter(e).get.forall(v => s.isBlank || s == "both" || s.toBoolean == v))
+    routing
+      .getQueryParameterAsSeq(name)
+      .map(s => e => uiAttribute.getter(e).get.forall(v => s.isEmpty || s.map(p => p.toBoolean).contains(v)))
   }
 }

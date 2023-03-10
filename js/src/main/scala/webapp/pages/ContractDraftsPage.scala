@@ -29,6 +29,7 @@ import ContractsPage.*
 import webapp.utils.Seqnal.*
 import webapp.repo.Synced
 import outwatch.dsl.*
+import webapp.npm.JSUtils.toMoneyString
 
 def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
   repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
@@ -50,6 +51,11 @@ case class ContractDraftsPage()(using
         contractAssociatedSupervisor,
         contractStartDate,
         contractEndDate,
+        signed,
+        submitted,
+        moneyPerHour,
+        contractHoursPerMonth,
+        ContractDraftsPage.forms,
       ),
       DetailPageEntityRowBuilder(),
       true,
@@ -57,5 +63,50 @@ case class ContractDraftsPage()(using
         ButtonStyle.LightPrimary,
         "Add new contract draft",
         onClick.foreach(_ => routing.to(NewContractPage())),
+        cls := "!mt-0",
       ),
     ) {}
+
+object ContractDraftsPage {
+  private def countForms(contract: Contract, predicate: String => Boolean)(using
+      repositories: Repositories,
+  ): Signal[Int] =
+    Signal.dynamic {
+      val contractTypeId = contract.contractType.get.getOrElse("")
+      val contractSchema =
+        repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
+      contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).count(predicate)
+    }
+
+  private def forms(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Contract, String](
+      label = "Forms",
+      getter = (id, contract) =>
+        Signal {
+          s"${countForms(contract, id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id)).value} of ${countForms(contract, _ => true).value}"
+        },
+      readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (_, contract) =>
+            Signal {
+              countForms(
+                contract,
+                id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+              ).value == countForms(contract, _ => true).value
+            },
+          "text-green-500 font-bold",
+        ),
+        UIFormat(
+          (_, contract) =>
+            Signal {
+              countForms(
+                contract,
+                id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+              ).value != countForms(contract, _ => true).value
+            },
+          "text-red-500 font-bold",
+        ),
+      ),
+    )
+}

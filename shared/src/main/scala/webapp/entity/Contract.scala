@@ -17,9 +17,11 @@ case class Contract(
     contractHoursPerMonth: Attribute[Int] = Attribute.empty,
     isDraft: Attribute[Boolean] = Attribute.empty,
     requiredDocuments: Attribute[Seq[String]] = Attribute.empty,
+    isSigned: Attribute[Boolean] = Attribute.empty,
+    isSubmitted: Attribute[Boolean] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Contract]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   def identifier: Attribute[String] = contractAssociatedHiwi
@@ -42,6 +44,8 @@ case class Contract(
       Attribute.empty,
       Attribute(true),
       Attribute.empty,
+      Attribute(false),
+      Attribute(false),
       Attribute(true),
     )
 

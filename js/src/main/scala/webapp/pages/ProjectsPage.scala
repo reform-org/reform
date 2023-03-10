@@ -38,7 +38,14 @@ case class ProjectsPage()(using
       None,
       repositories.projects,
       repositories.projects.all,
-      Seq[UIBasicAttribute[Project]](ProjectsPage.name, maxHours, accountName, contractCount),
+      Seq[UIBasicAttribute[Project]](
+        ProjectsPage.name,
+        maxHours,
+        accountName,
+        contractCount,
+        plannedHours,
+        assignedHours,
+      ),
       DefaultEntityRow(),
     ) {}
 
@@ -78,6 +85,51 @@ object ProjectsPage {
           .map(contracts =>
             contracts.count(contract => contract.contractAssociatedProject.get.contains(id)).toString + " Contract(s)",
           ),
+      readConverter = identity,
+      formats = Seq(
+        UIFormat(
+          (id, project) => {
+            Signal.dynamic {
+              val contracts = repositories.contracts.all.value.map(_.signal.value)
+              contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
+            }
+          },
+          "text-slate-400 italic",
+        ),
+      ),
+    )
+
+  private def assignedHours(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Project, String](
+      label = "assigned Hours",
+      getter = (id, project) =>
+        Signal.dynamic {
+          repositories.contracts.all.value
+            .filter(contract =>
+              contract.signal.value.contractAssociatedProject.get.contains(id) && !contract.signal.value.isDraft.get
+                .getOrElse(true),
+            )
+            .map(contract => contract.signal.value.contractHoursPerMonth.get.getOrElse(0))
+            .fold[Int](0)((acc: Int, x: Int) => acc + x)
+            .toString + " h"
+        },
+      readConverter = identity,
+    )
+
+  private def plannedHours(using repositories: Repositories) =
+    new UIReadOnlyAttribute[Project, String](
+      label = "planned Hours",
+      getter = (id, project) =>
+        Signal.dynamic {
+          repositories.contracts.all.value
+            .filter(contract =>
+              contract.signal.value.contractAssociatedProject.get.contains(id) && contract.signal.value.isDraft.get
+                .getOrElse(false),
+            )
+            .map(contract => contract.signal.value.contractHoursPerMonth.get.getOrElse(0))
+            .fold[Int](0)((acc: Int, x: Int) => acc + x)
+            .toString + " h"
+        },
       readConverter = identity,
     )
 }
