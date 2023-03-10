@@ -123,6 +123,26 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 	}, 100));
 };
 
+const resizeObservers = [];
+
+export const stickyButton = async (trigger, element, toggleClass) => {
+	await Promise.all([waitForElement(trigger), waitForElement(element)]);
+	const observer = new IntersectionObserver(entries => {
+		if (entries.every(entry => entry.isIntersecting)) {
+			document.querySelector(element).classList.add(toggleClass)
+		} else {
+			document.querySelector(element).classList.remove(toggleClass)
+		}
+	})
+
+	resizeObservers.push(observer)
+	observer.observe(document.querySelector(trigger))
+}
+
+export const cleanStickyButtons = () => {
+	resizeObservers.forEach(o => o.disconnect())
+}
+
 export const toGermanDate = (/** @type {number} */ input) => {
 	return DateTime.fromMillis(Number(input)).setLocale("de").toFormat("dd.LL.yyyy");
 };
