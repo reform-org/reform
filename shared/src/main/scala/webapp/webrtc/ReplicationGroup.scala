@@ -51,7 +51,7 @@ case class DeltaFor[A](name: String, delta: A)
   */
 class ReplicationGroup[A](name: String)(using
     registry: Registry,
-    dcl: DecomposeLattice[A],
+    dcl: Lattice[A],
     bottom: Bottom[A],
     codec: JsonValueCodec[A],
     storage: Storage[A],
@@ -167,7 +167,7 @@ class ReplicationGroup[A](name: String)(using
         val deltaStateList = List(s) ++ resendBuffer.get(remoteRef).toList
 
         // reduce the state change to a single state for efficiency
-        val combinedState = deltaStateList.reduceOption(DecomposeLattice[A].merge)
+        val combinedState = deltaStateList.reduceOption(Lattice[A].merge)
 
         combinedState.foreach(sendUpdate)
       }

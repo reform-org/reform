@@ -10,7 +10,7 @@ case class PaymentLevel(
     pdfCheckboxName: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[PaymentLevel]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields

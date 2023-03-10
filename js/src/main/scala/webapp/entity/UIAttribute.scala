@@ -116,6 +116,7 @@ class UITextAttribute[EntityType, AttributeType](
       attr: Signal[Attribute[AttributeType]],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
+      entity: EntityType,
   ): VMod =
     TableInput(
       // cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
@@ -148,12 +149,15 @@ class UITextAttribute[EntityType, AttributeType](
         val (editStart, entityVar) = editing
         val editStartAttr = getter(editStart)
         div(
-          renderEditInput(
-            formId,
-            entityVar.map(getter(_)),
-            x => set(entityVar, x),
-            Some(s"$formId-conflicting-values"),
-          ),
+          Signal {
+            renderEditInput(
+              formId,
+              entityVar.map(getter(_)),
+              x => set(entityVar, x),
+              Some(s"$formId-conflicting-values"),
+              entityVar.value,
+            )
+          },
           if (editStartAttr.getAll.size > 1) {
             Some(
               Seq(
@@ -238,6 +242,7 @@ class UIDateAttribute[EntityType](
       attr: Signal[Attribute[Long]],
       set: Long => Unit,
       datalist: Option[String] = None,
+      entity: EntityType,
   ): VMod = TableInput(
     cls := "input valid:input-success",
     placeholder := "dd.mm.yyyy",
@@ -289,6 +294,7 @@ class UICheckboxAttribute[EntityType](
       attr: Signal[Attribute[Boolean]],
       set: Boolean => Unit,
       datalist: Option[String] = None,
+      entity: EntityType,
   ): VMod = Checkbox(
     CheckboxStyle.Default,
     formId := _formId,
@@ -306,7 +312,8 @@ class UISelectAttribute[EntityType, AttributeType](
     writeConverter: String => AttributeType,
     label: String,
     isRequired: Boolean,
-    val options: Signal[Seq[SelectOption]],
+    val options: EntityType => Signal[Seq[SelectOption]],
+    val optionsForFilter: Signal[Seq[SelectOption]],
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
@@ -329,7 +336,7 @@ class UISelectAttribute[EntityType, AttributeType](
     div(
       // cls := "!rounded-none",
       formats.map(f => cls <-- f.apply(id, entity)),
-      duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
+      duplicateValuesHandler(attr.getAll.map(x => options(entity).map(o => o.filter(p => p.id == x).map(v => v.name)))),
     )
   }
 
@@ -340,9 +347,10 @@ class UISelectAttribute[EntityType, AttributeType](
       attr: Signal[Attribute[AttributeType]],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
+      entity: EntityType,
   ): VMod = {
     Select(
-      options,
+      options(entity),
       v => {
         set(writeConverter(v))
       },
@@ -368,10 +376,91 @@ class UIMultiSelectAttribute[EntityType](
     writeConverter: String => Seq[String],
     label: String,
     isRequired: Boolean,
-    val options: Signal[Seq[MultiSelectOption]],
+    val options: EntityType => Signal[Seq[SelectOption]],
+    val optionsForFilter: Signal[Seq[SelectOption]],
     showItems: Int = 5,
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
+    override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
+)(using routing: RoutingService)
+    extends UITextAttribute[EntityType, Seq[String]](
+      getter = getter,
+      setter = setter,
+      readConverter = readConverter,
+      editConverter = _.toString,
+      writeConverter = writeConverter,
+      label = label,
+      width = Some("400px"),
+      isRequired = isRequired,
+      fieldType = "select",
+      formats = formats,
+    ) {
+
+  override def render(id: String, entity: EntityType): VMod = {
+    val attr = getter(entity)
+    div(
+      formats.map(f => cls <-- f.apply(id, entity)),
+      duplicateValuesHandler(
+        Seq(
+          div(
+            cls := "flex flex-row gap-2 flex-wrap",
+            attr.getAll
+              .map(x =>
+                x.map(id =>
+                  options(entity).map(o =>
+                    o.filter(p => p.id.equals(id)).map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name)),
+                  ),
+                ),
+              ),
+          ),
+        ),
+      ),
+    )
+  }
+
+  override def uiFilter: UIFilter[EntityType] = UIMultiSelectFilter(this)
+
+  override def renderEditInput(
+      _formId: String,
+      attr: Signal[Attribute[Seq[String]]],
+      set: Seq[String] => Unit,
+      datalist: Option[String] = None,
+      entity: EntityType,
+  ): VMod = {
+    Seq(
+      MultiSelect(
+        options(entity),
+        v => {
+          set(v)
+        },
+        attr.map(_.get.getOrElse(Seq())),
+        showItems,
+        searchEnabled, {
+          createPage match {
+            case Some(createPage) =>
+              a(href := routing.linkPath(createPage), target := "_blank", "Nothing found. Click here to create.")
+            case None => span("Nothing found...")
+          }
+        },
+        isRequired,
+        formId := _formId,
+        cls := "!rounded-none",
+      ).render,
+      ),
+    )
+
+  }
+}
+
+class UICheckboxListAttribute[EntityType](
+    getter: EntityType => Attribute[Seq[String]],
+    setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+    readConverter: Seq[String] => String,
+    writeConverter: String => Seq[String],
+    label: String,
+    isRequired: Boolean,
+    val options: EntityType => Signal[Seq[SelectOption]],
+    val optionsForFilter: Signal[Seq[SelectOption]],
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
 )(using routing: RoutingService)
     extends UITextAttribute[EntityType, Seq[String]](
@@ -397,11 +486,7 @@ class UIMultiSelectAttribute[EntityType](
             cls := "flex flex-row gap-2 flex-wrap",
             attr.getAll
               .map(x =>
-                x.map(id =>
-                  options.map(o =>
-                    o.filter(p => p.id.equals(id)).map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name)),
-                  ),
-                ),
+                x.map(id => options(entity).map(o => o.filter(p => p.id.equals(id)).map(v => v.name).mkString(", "))),
               ),
           ),
         ),
@@ -416,26 +501,19 @@ class UIMultiSelectAttribute[EntityType](
       attr: Signal[Attribute[Seq[String]]],
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
+      entity: EntityType,
   ): VMod = {
     Seq(
-      MultiSelect(
-        options,
+      CheckboxList(
+        options(entity),
         v => {
           set(v)
         },
         attr.map(_.get.getOrElse(Seq())),
-        showItems,
-        searchEnabled, {
-          createPage match {
-            case Some(createPage) =>
-              a(href := routing.linkPath(createPage), target := "_blank", "Nothing found. Click here to create.")
-            case None => span("Nothing found...")
-          }
-        },
+        div("Nothing found..."),
         isRequired,
         formId := _formId,
-        cls := "!rounded-none",
-      ).render,
+      ),
     )
 
   }

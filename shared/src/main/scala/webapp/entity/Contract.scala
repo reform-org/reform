@@ -21,7 +21,7 @@ case class Contract(
     isSubmitted: Attribute[Boolean] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Contract]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   def identifier: Attribute[String] = contractAssociatedHiwi

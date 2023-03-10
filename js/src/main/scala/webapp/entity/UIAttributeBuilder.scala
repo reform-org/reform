@@ -13,12 +13,12 @@ case class UIAttributeBuilder[AttributeType](
     writeConverter: String => AttributeType,
     label: String = "",
     isRequired: Boolean = false,
+    options: Signal[Seq[SelectOption]] = Signal(Seq.empty),
     min: String = "",
     stepSize: String = "1",
     regex: String = ".*",
     fieldType: String = "text",
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
-    options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
 )(using routing: RoutingService) {
@@ -91,13 +91,19 @@ object UIAttributeBuilder {
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
-  def select(options: Signal[Seq[(String, Signal[String])]])(using
+  def select(options: Signal[Seq[SelectOption]])(using
       routing: RoutingService,
   ): UIAttributeBuilder[String] =
     string.copy(options = options)
 
   def multiSelect(
-      options: Signal[Seq[(String, Signal[String])]],
+      options: Signal[Seq[SelectOption]],
+  )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
+      .copy(options = options)
+
+  def checkboxList(
+      options: Signal[Seq[SelectOption]],
   )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
@@ -154,6 +160,7 @@ object UIAttributeBuilder {
     def bindAsMultiSelect[EntityType](
         getter: EntityType => Attribute[Seq[String]],
         setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
     )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
       UIMultiSelectAttribute(
         getter,
@@ -161,10 +168,35 @@ object UIAttributeBuilder {
         readConverter = self.readConverter,
         writeConverter = self.writeConverter,
         label = self.label,
-        options = self.options.mapInside { case (k, v) => MultiSelectOption(k, v) },
+        options =
+          if (filteredOptions.nonEmpty)
+            filteredOptions.get
+          else
+            _ => self.options,
+        optionsForFilter = self.options,
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
         createPage = self.createPage,
+      )
+
+    def bindAsCheckboxList[EntityType](
+        getter: EntityType => Attribute[Seq[String]],
+        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+    )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
+      UICheckboxListAttribute(
+        getter,
+        setter,
+        readConverter = self.readConverter,
+        writeConverter = self.writeConverter,
+        label = self.label,
+        options =
+          if (filteredOptions.nonEmpty)
+            filteredOptions.get
+          else
+            _ => self.options,
+        optionsForFilter = self.options,
+        isRequired = self.isRequired,
       )
   }
 
@@ -173,6 +205,7 @@ object UIAttributeBuilder {
     def bindAsSelect[EntityType](
         getter: EntityType => Attribute[String],
         setter: (EntityType, Attribute[String]) => EntityType,
+        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
     )(using routing: RoutingService): UIAttribute[EntityType, String] =
       UISelectAttribute(
         getter,
@@ -180,7 +213,11 @@ object UIAttributeBuilder {
         readConverter = self.readConverter,
         writeConverter = self.writeConverter,
         label = self.label,
-        options = self.options.mapInside { case (k, v) => SelectOption(k, v) },
+        options =
+          if (filteredOptions.nonEmpty)
+            filteredOptions.get
+          else _ => self.options,
+        optionsForFilter = self.options,
         isRequired = self.isRequired,
         searchEnabled = self.searchEnabled,
         createPage = self.createPage,

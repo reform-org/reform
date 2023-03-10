@@ -68,33 +68,42 @@ case class ContractDraftsPage()(using
     ) {}
 
 object ContractDraftsPage {
-  private def getNumberOfForms(contract: Contract)(using repositories: Repositories): Signal[Int] = Signal.dynamic {
-    val contractTypeId = contract.contractType.get.getOrElse("")
-    val contractSchema =
-      repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
-    contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).size
-  }
+  private def countForms(contract: Contract, predicate: String => Boolean)(using
+      repositories: Repositories,
+  ): Signal[Int] =
+    Signal.dynamic {
+      val contractTypeId = contract.contractType.get.getOrElse("")
+      val contractSchema =
+        repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
+      contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).count(predicate)
+    }
 
   private def forms(using repositories: Repositories) =
     new UIReadOnlyAttribute[Contract, String](
       label = "Forms",
       getter = (id, contract) =>
         Signal {
-          s"${contract.requiredDocuments.get.getOrElse(Seq.empty).size} of ${getNumberOfForms(contract).value}"
+          s"${countForms(contract, id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id)).value} of ${countForms(contract, _ => true).value}"
         },
       readConverter = identity,
       formats = Seq(
         UIFormat(
-          (id, project) =>
+          (_, contract) =>
             Signal {
-              project.requiredDocuments.get.getOrElse(Seq.empty).size == getNumberOfForms(project).value
+              countForms(
+                contract,
+                id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+              ).value == countForms(contract, _ => true).value
             },
           "text-green-500 font-bold",
         ),
         UIFormat(
-          (id, project) =>
+          (_, contract) =>
             Signal {
-              project.requiredDocuments.get.getOrElse(Seq.empty).size != getNumberOfForms(project).value
+              countForms(
+                contract,
+                id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+              ).value != countForms(contract, _ => true).value
             },
           "text-red-500 font-bold",
         ),

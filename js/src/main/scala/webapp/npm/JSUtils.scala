@@ -28,6 +28,11 @@ object JSUtils {
     NativeImpl.cleanPopper()
   }
 
+  def stickyButton(trigger: String, element: String, toggleClass: String): Unit =
+    NativeImpl.stickyButton(trigger, element, toggleClass)
+
+  def cleanStickyButtons(): Unit = NativeImpl.cleanStickyButtons()
+
   def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
 
   def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
@@ -55,8 +60,11 @@ object JSUtils {
     def createPopper(trigger: String, element: String, placement: String, sameWidth: Boolean): Unit =
       js.native
 
-    def cleanPopper(): Unit =
-      js.native
+    def cleanPopper(): Unit = js.native
+
+    def stickyButton(trigger: String, element: String, toggleClass: String): Unit = js.native
+
+    def cleanStickyButtons(): Unit = js.native
 
     def toGermanDate(input: String): String = js.native
 

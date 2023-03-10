@@ -23,7 +23,7 @@ object GrowOnlySet {
     override def empty: GrowOnlySet[E] = GrowOnlySet.empty
   }
 
-  implicit def GrowOnlySetLattice[A]: DecomposeLattice[GrowOnlySet[A]] = new DecomposeLattice[GrowOnlySet[A]] {
+  implicit def GrowOnlySetLattice[A]: Lattice[GrowOnlySet[A]] = new Lattice[GrowOnlySet[A]] {
     def merge(left: GrowOnlySet[A], right: GrowOnlySet[A]): GrowOnlySet[A] = left.union(right)
 
     override def decompose(a: GrowOnlySet[A]): Iterable[GrowOnlySet[A]] = List(a)
