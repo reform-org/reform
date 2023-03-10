@@ -562,101 +562,64 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     e.preventDefault()
                     document.getElementById("loadPDF").classList.add("loading")
 
-                    editingValue.now match {
-                      case None => {
-                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
-                        document.getElementById("loadPDF").classList.remove("loading")
+                    editingValue.now.map((_, contractOption) => {
+                      val contract = contractOption.now
+                      val hiwiOption =
+                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
+
+                      if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty) {
+                        val hiwi = hiwiOption.get.signal.now
+                        val paymentLevel = paymentLevelOption.get.signal.now
+                        js.dynamicImport {
+                          PDF
+                            .fill(
+                              "/contract_unlocked.pdf",
+                              "arbeitsvertrag.pdf",
+                              Seq(
+                                PDFTextField(
+                                  "Vorname Nachname (Studentische Hilfskraft)",
+                                  s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
+                                ),
+                                PDFTextField(
+                                  "Geburtsdatum (Studentische Hilfskraft)",
+                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                ),
+                                PDFTextField(
+                                  "Vertragsbeginn",
+                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "Vertragsende",
+                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "Arbeitszeit Kästchen 1",
+                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
+                                ),
+                                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                                PDFCheckboxField(
+                                  paymentLevel.pdfCheckboxName.get.getOrElse(""),
+                                  true,
+                                ),
+                              ),
+                            )
+                            .andThen(s => {
+                              document.getElementById("loadPDF").classList.remove("loading")
+                            })
+                            .toastOnError()
+                        }.toFuture
+                          .toastOnError()
+                      } else {
+                        toaster.make(
+                          "The PDF could not be created because not all required fields are filled in!",
+                          ToastMode.Long,
+                          ToastType.Error,
+                        )
+                        document.getElementById("loadLetter").classList.remove("loading")
                       }
-                      case Some(editingValue) => {
-                        val contract = editingValue._2.now
-                        contract.contractAssociatedHiwi.get match {
-                          case None => {
-                            toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
-                            document.getElementById("loadPDF").classList.remove("loading")
-                          }
-                          case Some(hiwiId) => {
-                            val hiwis = repositories.hiwis.all.now
-                            val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
-                            hiwi match {
-                              case None => {
-                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
-                                document.getElementById("loadPDF").classList.remove("loading")
-                              }
-                              case Some(_hiwi) => {
-                                val hiwi = _hiwi.signal.now
-                                contract.contractAssociatedPaymentLevel.get match {
-                                  case None => {
-                                    toaster.make(
-                                      "No payment level associated with contract!",
-                                      ToastMode.Long,
-                                      ToastType.Error,
-                                    )
-                                    document.getElementById("loadPDF").classList.remove("loading")
-                                  }
-                                  case Some(paymentLevelId) => {
-                                    val paymentLevels = repositories.paymentLevels.all.now
-                                    val paymentLevel =
-                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
-                                    paymentLevel match {
-                                      case None => {
-                                        toaster.make(
-                                          "This payment level does not seem to exist!",
-                                          ToastMode.Long,
-                                          ToastType.Error,
-                                        )
-                                        document.getElementById("loadPDF").classList.remove("loading")
-                                      }
-                                      case Some(_paymentLevel) => {
-                                        val paymentLevel = _paymentLevel.signal.now
-                                        js.dynamicImport {
-                                          PDF
-                                            .fill(
-                                              "/contract_unlocked.pdf",
-                                              "arbeitsvertrag.pdf",
-                                              Seq(
-                                                PDFTextField(
-                                                  "Vorname Nachname (Studentische Hilfskraft)",
-                                                  s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
-                                                ),
-                                                PDFTextField(
-                                                  "Geburtsdatum (Studentische Hilfskraft)",
-                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
-                                                ),
-                                                PDFTextField(
-                                                  "Vertragsbeginn",
-                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField(
-                                                  "Vertragsende",
-                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField(
-                                                  "Arbeitszeit Kästchen 1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
-                                                ),
-                                                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                                                PDFCheckboxField(
-                                                  paymentLevel.pdfCheckboxName.get.getOrElse(""),
-                                                  true,
-                                                ),
-                                              ),
-                                            )
-                                            .andThen(s => {
-                                              document.getElementById("loadPDF").classList.remove("loading")
-                                            })
-                                            .toastOnError()
-                                        }.toFuture
-                                          .toastOnError()
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    }): @nowarn
                   }),
                 ),
                 signed.renderEdit("", editingValue),
@@ -675,107 +638,86 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     e.preventDefault()
                     document.getElementById("loadLetter").classList.add("loading")
 
-                    editingValue.now match {
-                      case None => {
-                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
+                    editingValue.now.map((_, contractOption) => {
+                      val contract = contractOption.now
+                      val hiwiOption =
+                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
+                      val projectOption =
+                        repositories.projects.all.now.find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
+
+                      if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
+                        val hiwi = hiwiOption.get.signal.now
+                        val paymentLevel = paymentLevelOption.get.signal.now
+                        val project = projectOption.get.signal.now
+                        val moneyPerHour =
+                          toMoneyString(
+                            getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).now,
+                          )
+                        val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                        val totalHours = dateDiffMonth(
+                          contract.contractStartDate.get.getOrElse(0L),
+                          contract.contractEndDate.get.getOrElse(0L),
+                        ) * hoursPerMonth
+                        js.dynamicImport {
+                          PDF
+                            .fill(
+                              "/letter_editable.pdf",
+                              "letter.pdf",
+                              Seq(
+                                PDFTextField(
+                                  "Name VornameRow1",
+                                  s"${hiwi.lastName.get.getOrElse("")}, ${hiwi.firstName.get.getOrElse("")}",
+                                ),
+                                PDFTextField(
+                                  "GebDatumRow1",
+                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                ),
+                                PDFTextField(
+                                  "Vertrags beginnRow1",
+                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "Vertrags endeRow1",
+                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "€StdRow1",
+                                  moneyPerHour,
+                                ),
+                                PDFTextField("Stunden gesamtRow1", totalHours.toString),
+                                PDFTextField("Stunden gesamtSumme", totalHours.toString),
+                                PDFTextField(
+                                  "Std MonatRow1",
+                                  hoursPerMonth.toString,
+                                ),
+                                PDFTextField(
+                                  "Account",
+                                  project.accountName.get.flatten.getOrElse(""),
+                                ),
+                                PDFTextField(
+                                  "Datum",
+                                  toGermanDate(js.Date.now().toLong),
+                                ),
+                              ),
+                            )
+                            .andThen(s => {
+                              console.log(s)
+                              document.getElementById("loadLetter").classList.remove("loading")
+                            })
+                            .toastOnError()
+                        }.toFuture
+                          .toastOnError()
+                      } else {
+                        toaster.make(
+                          "The PDF could not be created because not all required fields are filled in!",
+                          ToastMode.Long,
+                          ToastType.Error,
+                        )
                         document.getElementById("loadLetter").classList.remove("loading")
                       }
-                      case Some(editingValue) => {
-                        val contract = editingValue._2.now
-                        contract.contractAssociatedHiwi.get match {
-                          case None => {
-                            toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
-                            document.getElementById("loadLetter").classList.remove("loading")
-                          }
-                          case Some(hiwiId) => {
-                            val hiwis = repositories.hiwis.all.now
-                            val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
-                            hiwi match {
-                              case None => {
-                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
-                                document.getElementById("loadLetter").classList.remove("loading")
-                              }
-                              case Some(_hiwi) => {
-                                val hiwi = _hiwi.signal.now
-                                contract.contractAssociatedPaymentLevel.get match {
-                                  case None => {
-                                    toaster.make(
-                                      "No payment level associated with contract!",
-                                      ToastMode.Long,
-                                      ToastType.Error,
-                                    )
-                                    document.getElementById("loadLetter").classList.remove("loading")
-                                  }
-                                  case Some(paymentLevelId) => {
-                                    val paymentLevels = repositories.paymentLevels.all.now
-                                    val paymentLevel =
-                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
-                                    paymentLevel match {
-                                      case None => {
-                                        toaster.make(
-                                          "This payment level does not seem to exist!",
-                                          ToastMode.Long,
-                                          ToastType.Error,
-                                        )
-                                        document.getElementById("loadLetter").classList.remove("loading")
-                                      }
-                                      case Some(_paymentLevel) => {
-                                        val paymentLevel = _paymentLevel.signal.now
-                                        js.dynamicImport {
-                                          PDF
-                                            .fill(
-                                              "/letter_editable.pdf",
-                                              "letter.pdf",
-                                              Seq(
-                                                PDFTextField(
-                                                  "Name VornameRow1",
-                                                  s"${hiwi.lastName.get.getOrElse("")}, ${hiwi.firstName.get.getOrElse("")}",
-                                                ),
-                                                PDFTextField(
-                                                  "GebDatumRow1",
-                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
-                                                ),
-                                                PDFTextField(
-                                                  "Vertrags beginnRow1",
-                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField(
-                                                  "Vertrags endeRow1",
-                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField("€StdRow1", 0.toString),
-                                                PDFTextField("Stunden gesamtRow1", 0.toString),
-                                                PDFTextField("Stunden gesamtSumme", 0.toString),
-                                                PDFTextField(
-                                                  "Std MonatRow1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
-                                                ),
-                                                PDFTextField(
-                                                  "Account",
-                                                  contract.contractAssociatedProject.get.getOrElse(""),
-                                                ),
-                                                PDFTextField(
-                                                  "Datum",
-                                                  toGermanDate(js.Date.now().toLong),
-                                                ),
-                                              ),
-                                            )
-                                            .andThen(s => {
-                                              document.getElementById("loadLetter").classList.remove("loading")
-                                            })
-                                            .toastOnError()
-                                        }.toFuture
-                                          .toastOnError()
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    }): @nowarn
                   }),
                 ),
                 submitted.renderEdit("", editingValue),
