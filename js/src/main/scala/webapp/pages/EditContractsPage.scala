@@ -494,8 +494,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
-                // TODO only show documents that are included by contract schema
                 requiredDocuments.renderEdit("", editingValue),
+                i(
+                  "Documents written in italic have been checked in an older contract type and will be removed from this list once unchecked.",
+                ),
               ),
             ),
             editStep(

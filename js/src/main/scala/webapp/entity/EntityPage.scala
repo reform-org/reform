@@ -324,7 +324,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
   private val filters = uiAttributes.map(_.uiFilter)
 
-  def render: VNode = tr(
+  def render: VNode = div(
     filters.map(_.render),
   )
 
@@ -422,7 +422,7 @@ abstract class EntityPage[T <: Entity[T]](
                 "Columns",
                 MultiSelect(
                   Signal(
-                    uiAttributes.map(attr => MultiSelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
+                    uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
                   ),
                   value => routing.updateQueryParameters(Map("columns" -> value)),
                   routing.getQueryParameterAsSeq("columns"),

@@ -206,7 +206,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
         ),
         deleteDBModal.render,
         MultiSelect(
-          Signal(List(MultiSelectOption("test", Signal("test")), MultiSelectOption("test2", Signal("test2")))),
+          Signal(List(SelectOption("test", Signal("test")), SelectOption("test2", Signal("test2")))),
           (value) => multiSelectValue.set(value),
           multiSelectValue,
         ),
