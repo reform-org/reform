@@ -327,6 +327,7 @@ class UISelectAttribute[EntityType, AttributeType](
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     div(
+      // cls := "!rounded-none",
       formats.map(f => cls <-- f.apply(id, entity)),
       duplicateValuesHandler(attr.getAll.map(x => options.map(o => o.filter(p => p.id == x).map(v => v.name)))),
     )
@@ -355,6 +356,7 @@ class UISelectAttribute[EntityType, AttributeType](
       },
       isRequired,
       formId := _formId,
+      cls := "!rounded-none",
     )
   }
 }
@@ -432,6 +434,7 @@ class UIMultiSelectAttribute[EntityType](
         },
         isRequired,
         formId := _formId,
+        cls := "!rounded-none",
       ).render,
     )
 
