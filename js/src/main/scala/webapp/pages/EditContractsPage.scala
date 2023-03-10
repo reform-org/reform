@@ -642,7 +642,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                                               ),
                                             )
                                             .andThen(s => {
-                                              console.log(s)
                                               document.getElementById("loadPDF").classList.remove("loading")
                                             })
                                             .toastOnError()
@@ -762,7 +761,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                                               ),
                                             )
                                             .andThen(s => {
-                                              console.log(s)
                                               document.getElementById("loadLetter").classList.remove("loading")
                                             })
                                             .toastOnError()

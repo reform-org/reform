@@ -129,7 +129,6 @@ export const stickyButton = async (trigger, element, toggleClass) => {
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	const observer = new IntersectionObserver(entries => {
 		if (entries.every(entry => entry.isIntersecting)) {
-			console.log("he")
 			document.querySelector(element).classList.add(toggleClass)
 		} else {
 			document.querySelector(element).classList.remove(toggleClass)
