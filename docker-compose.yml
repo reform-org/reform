@@ -13,6 +13,7 @@ services:
   reform:
     build:
       dockerfile: Dockerfile-frontend
+    restart: on-failure
     volumes:
       - ./docker/templates:/etc/nginx/templates
     labels:
@@ -26,6 +27,7 @@ services:
       dockerfile: Dockerfile-always-online-peer
       args:
         VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT: $VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
+    restart: on-failure
     volumes:
       - reform_always_online_peer:/app/data
     env_file:
@@ -39,12 +41,14 @@ services:
   reform-discovery:
     build:
       context: ../reform-discovery-ts
+      # TODO FIXME the secret values need to be set here
       args:
         VITE_DISCOVERY_SERVER_PATH: $VITE_DISCOVERY_SERVER_PATH
         VITE_DISCOVERY_SERVER_LISTEN_PORT: $VITE_DISCOVERY_SERVER_LISTEN_PORT
         VITE_DISCOVERY_SERVER_WEBSOCKET_PATH: $VITE_DISCOVERY_SERVER_WEBSOCKET_PATH
         VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL: $VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL
         VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT: $VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT
+    restart: on-failure
     volumes:
       - reform_discovery:/app/data
     env_file:
@@ -65,6 +69,7 @@ services:
   # turnutils_uclient -t -x -y localhost
   coturn:
     image: docker.io/coturn/coturn
+    restart: on-failure
     environment:
       - DETECT_EXTERNAL_IP=yes
       - DETECT_RELAY_IP=yes

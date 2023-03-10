@@ -4,6 +4,7 @@ services:
   # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/#docker-compose-basic-example
   traefik:
     image: "docker.io/library/traefik:v2.9"
+    restart: on-failure
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
