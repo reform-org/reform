@@ -23,6 +23,7 @@ private class MultiSelect(
     searchEnabled: Boolean = true,
     emptyState: VMod = span("Nothing found..."),
     required: Boolean = false,
+    styleValidity: Boolean = false,
     props: VMod*,
 ) {
 
@@ -80,7 +81,7 @@ private class MultiSelect(
       props,
       idAttr := id,
       div(
-        cls := "multiselect-select flex flex-row w-full h-full items-center pl-2",
+        cls := "multiselect-select flex flex-row w-full h-full items-center",
         onClick.foreach(_ => {
           dropdownOpen.transform(!_)
         }),
@@ -89,7 +90,7 @@ private class MultiSelect(
             outwatch.dsl.value := value.value.mkString(", "),
             tpe := "text",
             outwatch.dsl.required := required,
-            cls := "w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
+            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
             tabIndex := -1,
             formId := props
               .collectFirst {
@@ -101,51 +102,57 @@ private class MultiSelect(
           )
         },
         div(
-          cls := "flex flex-row gap-2 multiselect-value-wrapper",
-          Signal {
-            options.value
-              .filter(v => value.value.contains(v.id))
-              .slice(0, visibleItems.value)
-              .map(option => {
-                div(
-                  cls := "bg-slate-300 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
-                  option.name,
+          cls := "flex flex-row w-full h-full items-center pl-2 text-slate-400 ",
+          if (styleValidity)
+            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600 peer-valid/multiselect:bg-green-100"
+          else None,
+          div(
+            cls := "flex flex-row gap-2 multiselect-value-wrapper",
+            Signal {
+              options.value
+                .filter(v => value.value.contains(v.id))
+                .slice(0, visibleItems.value)
+                .map(option => {
                   div(
-                    icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
-                    cls := "cursor-pointer",
-                    onClick.foreach(_ => {
-                      onInput(
-                        getIds(onlyChecked = true)
-                          .filter(id => id != option.id)
-                          .asInstanceOf[Seq[String]],
-                      )
-                    }),
+                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
+                    option.name,
+                    div(
+                      icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
+                      cls := "cursor-pointer",
+                      onClick.foreach(_ => {
+                        onInput(
+                          getIds(onlyChecked = true)
+                            .filter(id => id != option.id)
+                            .asInstanceOf[Seq[String]],
+                        )
+                      }),
+                    ),
+                  )
+                })
+            },
+            Signal {
+              if (value.value.size > visibleItems.value) {
+                Some(
+                  div(
+                    cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
+                    s"+${value.value.size - visibleItems.value}",
                   ),
                 )
-              })
-          },
-          Signal {
-            if (value.value.size > visibleItems.value) {
-              Some(
-                div(
-                  cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
-                  s"+${value.value.size - visibleItems.value}",
-                ),
-              )
-            } else if (value.value.isEmpty) {
-              Some(
-                div(
-                  cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
-                  "Select...",
-                ),
-              )
-            } else None
-          },
-        ),
-        label(
-          tabIndex := 0,
-          cls := "grow relative pr-7 h-full",
-          div(cls := "absolute right-2 top-1/2 -translate-y-1/2", icons.Notch(cls := "w-4 h-4")),
+              } else if (value.value.isEmpty) {
+                Some(
+                  div(
+                    cls := "flex items-center justify-center",
+                    "Select...",
+                  ),
+                )
+              } else None
+            },
+          ),
+          label(
+            tabIndex := 0,
+            cls := "grow relative pr-7 h-full",
+            div(cls := "absolute right-2 top-1/2 -translate-y-1/2", icons.Notch(cls := "w-4 h-4")),
+          ),
         ),
       ),
       div(
@@ -258,6 +265,7 @@ object MultiSelect {
     showItems,
     searchEnabled,
     emptyState,
+    required,
     required,
     props,
   ).render

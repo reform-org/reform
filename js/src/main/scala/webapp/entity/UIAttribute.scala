@@ -363,6 +363,7 @@ class UISelectAttribute[EntityType, AttributeType](
         }
       },
       isRequired,
+      isRequired,
       formId := _formId,
       cls := "!rounded-none",
     )

@@ -165,6 +165,7 @@ class UIMultiSelectFilter[EntityType](
         false,
         span("Nothing found..."),
         false,
+        false,
         cls := "rounded-md",
       ),
       MultiSelect(
