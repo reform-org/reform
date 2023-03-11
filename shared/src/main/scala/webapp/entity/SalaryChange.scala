@@ -10,6 +10,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 
 case class SalaryChange(
     value: Attribute[BigDecimal] = Attribute.empty,
+    limit: Attribute[BigDecimal] = Attribute.empty,
     paymentLevel: Attribute[String] = Attribute.empty,
     fromDate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
@@ -18,7 +19,8 @@ case class SalaryChange(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: SalaryChange = SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
+  def default: SalaryChange =
+    SalaryChange(Attribute.empty, Attribute.empty, Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = paymentLevel
 

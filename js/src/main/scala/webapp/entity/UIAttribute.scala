@@ -149,6 +149,7 @@ class UITextAttribute[EntityType, AttributeType](
         val (editStart, entityVar) = editing
         val editStartAttr = getter(editStart)
         div(
+          cls := "relative min-w-[1rem]",
           Signal {
             renderEditInput(
               formId,
@@ -297,6 +298,7 @@ class UICheckboxAttribute[EntityType](
       entity: EntityType,
   ): VMod = Checkbox(
     CheckboxStyle.Default,
+    cls := "absolute top-1/2 -translate-y-1/2",
     formId := _formId,
     checked <-- attr.map(_.get.getOrElse(false)),
     onClick.foreach(_ => set(!attr.now.get.getOrElse(false))),
