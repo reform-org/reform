@@ -239,7 +239,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     val ctrlSListener: js.Function1[KeyboardEvent, Unit] = (e: KeyboardEvent) => {
       if (e.keyCode == 83 && e.ctrlKey) {
         e.preventDefault()
-        console.log("test")
         createOrUpdate(false, true)
       }
     }
