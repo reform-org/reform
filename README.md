@@ -90,7 +90,10 @@ Using podman-compose-git
 ```
 export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
 
+podman-compose --env-file .env.podman --project-name traefik --file docker-compose-local-traefik.yml down
 podman-compose --env-file .env.podman --project-name traefik --file docker-compose-local-traefik.yml up --pull --build --remove-orphans
+
+podman-compose --env-file .env.podman --project-name reform --file docker-compose.yml down
 podman-compose --env-file .env.podman --project-name reform --file docker-compose.yml up --pull --build --remove-orphans
 podman-compose --env-file .env.podman --project-name reform --file docker-compose.yml exec reform-discovery npm run user:add
 ```

@@ -22,6 +22,6 @@ import webapp.npm.SqliteDB
   server.addConnector(connector)
   registry.listen(WS(context, s"$path")).get
   server.start()
-  println(s"!!listening on ws://localhost:$port$path")
+  println(s"listening on ws://localhost:$port$path")
   server.join()
 }
