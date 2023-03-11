@@ -437,7 +437,7 @@ abstract class EntityPage[T <: Entity[T]](
               ),
               ul(
                 idAttr := "filter-dropdown",
-                cls := "dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-96 dark:bg-gray-700",
+                cls := "dropdown-content menu max-w-[90%] p-2 shadow-xl bg-base-100 rounded-box w-96 dark:bg-gray-700",
                 filter.render,
                 "Columns",
                 MultiSelect(
