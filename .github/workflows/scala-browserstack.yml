@@ -37,7 +37,7 @@ jobs:
       - name: Build ScalaJS
         run: sbt fastLinkJS
       - name: Build JavaScript
-        run: npm run build
+        run: npm run build -- --mode production
       - name: Preview
         run: npm run preview &
       - name: Workflow tests

@@ -13,23 +13,12 @@ services:
   reform:
     build:
       dockerfile: Dockerfile-frontend
-      args:
-        VITE_ALWAYS_ONLINE_PEER_PROTOCOL: $VITE_ALWAYS_ONLINE_PEER_PROTOCOL
-        VITE_ALWAYS_ONLINE_PEER_HOST: $VITE_ALWAYS_ONLINE_PEER_HOST
-        VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT: $VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT
-        VITE_DISCOVERY_SERVER_PROTOCOL: $VITE_DISCOVERY_SERVER_PROTOCOL
-        VITE_DISCOVERY_SERVER_HOST: $VITE_DISCOVERY_SERVER_HOST
-        VITE_DISCOVERY_SERVER_PORT: $VITE_DISCOVERY_SERVER_PORT
-        VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL: $VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL
-        VITE_DISCOVERY_SERVER_WEBSOCKET_HOST: $VITE_DISCOVERY_SERVER_WEBSOCKET_HOST
-        VITE_DISCOVERY_SERVER_WEBSOCKET_PORT: $VITE_DISCOVERY_SERVER_WEBSOCKET_PORT
-        VITE_TURN_SERVER_HOST: $VITE_TURN_SERVER_HOST
-        VITE_TURN_SERVER_PORT: $VITE_TURN_SERVER_PORT
+    restart: on-failure
     volumes:
       - ./docker/templates:/etc/nginx/templates
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform.rule=Host(`$VITE_SERVER_HOST`)"
+      - "traefik.http.routers.reform.rule=Host(`$VITE_SERVER_HOST`) && PathPrefix(`$VITE_SERVER_PATH`)"
       - "traefik.http.routers.reform.entrypoints=web-$VITE_SERVER_PORT"
     networks:
       - traefik_default
@@ -38,39 +27,49 @@ services:
       dockerfile: Dockerfile-always-online-peer
       args:
         VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT: $VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
+    restart: on-failure
     volumes:
       - reform_always_online_peer:/app/data
     env_file:
-      - test.env
+      - .env.podman
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`)"
+      - "traefik.http.routers.reform-always-online-peer.rule=Host(`$VITE_ALWAYS_ONLINE_PEER_HOST`) && Path(`$VITE_ALWAYS_ONLINE_PEER_PATH`)"
       - "traefik.http.routers.reform-always-online-peer.entrypoints=web-$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
     networks:
       - traefik_default
   reform-discovery:
     build:
-      context: https://github.com/reform-org/reform_discovery.git#deployment
+      context: ../reform_discovery # ../reform-discovery-ts
+      # TODO FIXME the secret values need to be set here
+      args:
+        VITE_DISCOVERY_SERVER_PATH: $VITE_DISCOVERY_SERVER_PATH
+        VITE_DISCOVERY_SERVER_LISTEN_PORT: $VITE_DISCOVERY_SERVER_LISTEN_PORT
+        VITE_DISCOVERY_SERVER_WEBSOCKET_PATH: $VITE_DISCOVERY_SERVER_WEBSOCKET_PATH
+        VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL: $VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL
+        VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT: $VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT
+    restart: on-failure
     volumes:
       - reform_discovery:/app/data
     env_file:
-      - test.env
+      - .env.podman
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`)"
-      - "traefik.http.routers.reform-discovery.entrypoints=web-$VITE_DISCOVERY_SERVER_PORT"
+      - "traefik.http.routers.reform-discovery.rule=Host(`$VITE_DISCOVERY_SERVER_HOST`) && PathPrefix(`$VITE_DISCOVERY_SERVER_PATH`)"
+      - "traefik.http.routers.reform-discovery.entrypoints=web-$VITE_DISCOVERY_SERVER_PUBLIC_PORT"
       - "traefik.http.routers.reform-discovery.service=reform-discovery"
-      - "traefik.http.services.reform-discovery.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_PORT"
-      - "traefik.http.routers.reform-discovery-ws.rule=Host(`$VITE_DISCOVERY_SERVER_WEBSOCKET_HOST`)"
-      - "traefik.http.routers.reform-discovery-ws.entrypoints=web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
+      - "traefik.http.services.reform-discovery.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_LISTEN_PORT"
+      - "traefik.http.routers.reform-discovery-ws.rule=Host(`$VITE_DISCOVERY_SERVER_WEBSOCKET_HOST`) && Path(`$VITE_DISCOVERY_SERVER_WEBSOCKET_PATH`)"
+      - "traefik.http.routers.reform-discovery-ws.entrypoints=web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT"
       - "traefik.http.routers.reform-discovery-ws.service=reform-discovery-ws"
-      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
+      - "traefik.http.services.reform-discovery-ws.loadbalancer.server.port=$VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT"
     networks:
       - traefik_default
   # https://doc.traefik.io/traefik/routing/providers/docker/
   # turnutils_uclient -t -x -y localhost
   coturn:
-    image: coturn/coturn
+    image: docker.io/coturn/coturn
+    restart: on-failure
     environment:
       - DETECT_EXTERNAL_IP=yes
       - DETECT_RELAY_IP=yes

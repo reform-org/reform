@@ -20,8 +20,8 @@ import webapp.npm.SqliteDB
   val context = new ServletContextHandler(ServletContextHandler.SESSIONS)
   server.setHandler(context)
   server.addConnector(connector)
-  registry.listen(WS(context, s"$path/")).get
+  registry.listen(WS(context, s"$path")).get
   server.start()
-  println(s"listening on ws://localhost:$port$path/")
+  println(s"listening on ws://localhost:$port$path")
   server.join()
 }
