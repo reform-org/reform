@@ -34,6 +34,7 @@ import webapp.given_ExecutionContext
 import webapp.utils.Futures.*
 import webapp.npm.JSUtils.toMoneyString
 import scala.scalajs.js
+import webapp.npm.JSUtils.dateDiffMonth
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
@@ -317,9 +318,9 @@ object ContractsPage {
       )
   }
 
-  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+  def getSalaryChange(id: String, contract: Contract, date: Long)(using
       repositories: Repositories,
-  ): Signal[BigDecimal] =
+  ): Signal[Option[SalaryChange]] =
     Signal.dynamic {
       val salaryChanges = repositories.salaryChanges.all.value
       salaryChanges
@@ -328,7 +329,30 @@ object ContractsPage {
         .filter(_.fromDate.get.getOrElse(0L) <= date)
         .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
         .headOption
+    }
+
+  def getTotalHours(id: String, contract: Contract): Int = {
+    contract.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+      contract.contractStartDate.get.getOrElse(0L),
+      contract.contractEndDate.get.getOrElse(0L),
+    )
+  }
+
+  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      getSalaryChange(id, contract, date).value
         .flatMap(_.value.get)
+        .getOrElse(BigDecimal(0))
+    }
+
+  def getLimit(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      getSalaryChange(id, contract, date).value
+        .flatMap(_.limit.get)
         .getOrElse(BigDecimal(0))
     }
 

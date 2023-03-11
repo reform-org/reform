@@ -45,7 +45,7 @@ object Main {
     helpers.OutwatchTracing.error.unsafeForeach { throwable =>
       toaster.make(
         s"Unknown internal exception: ${throwable.getMessage}",
-        ToastMode.Persistent,
+        ToastMode.Infinit,
         ToastType.Error,
       )
     }: @nowarn
