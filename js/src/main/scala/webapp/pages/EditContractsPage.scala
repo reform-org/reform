@@ -622,7 +622,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     }): @nowarn
                   }),
                 ),
-                signed.renderEdit("", editingValue),
+                label(
+                  signed.renderEdit("", editingValue),
+                  " The contract has been signed",
+                  cls := "mt-2 flex gap-2",
+                ),
               ),
             ),
             editStep(
@@ -720,7 +724,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     }): @nowarn
                   }),
                 ),
-                submitted.renderEdit("", editingValue),
+                label(
+                  submitted.renderEdit("", editingValue),
+                  " The letter has been submitted",
+                  cls := "mt-2 flex gap-2",
+                ),
               ),
             ),
             div(
