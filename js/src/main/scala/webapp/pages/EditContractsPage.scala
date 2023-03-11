@@ -45,6 +45,7 @@ import webapp.npm.JSUtils.dateDiffMonth
 import webapp.npm.JSUtils.toMoneyString
 import webapp.npm.JSUtils.stickyButton
 import org.scalajs.dom.KeyboardEvent
+import scala.math.BigDecimal.RoundingMode
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -348,18 +349,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           case None => "-"
                           case Some(c) => {
                             val contract = c(1).value
-                            contract.contractAssociatedPaymentLevel.get match {
-                              case None => ""
-                              case Some(contractAssociatedPaymentLevel) => {
-                                val hourlyWage = getMoneyPerHour(
-                                  contractAssociatedPaymentLevel,
-                                  contract,
-                                  contract.contractStartDate.get.getOrElse(0L),
-                                ).value
-                                s"${toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage)} (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has bin created)"
-                              }
-                            }
-
+                            val limit =
+                              getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                            val hourlyWage =
+                              getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                            val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                            s"${toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage)} (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}"
                           }
                         }
                       },

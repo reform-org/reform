@@ -317,9 +317,9 @@ object ContractsPage {
       )
   }
 
-  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+  def getSalaryChange(id: String, contract: Contract, date: Long)(using
       repositories: Repositories,
-  ): Signal[BigDecimal] =
+  ): Signal[Option[SalaryChange]] =
     Signal.dynamic {
       val salaryChanges = repositories.salaryChanges.all.value
       salaryChanges
@@ -328,7 +328,23 @@ object ContractsPage {
         .filter(_.fromDate.get.getOrElse(0L) <= date)
         .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
         .headOption
+    }
+
+  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      getSalaryChange(id, contract, date).value
         .flatMap(_.value.get)
+        .getOrElse(BigDecimal(0))
+    }
+
+  def getLimit(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      getSalaryChange(id, contract, date).value
+        .flatMap(_.limit.get)
         .getOrElse(BigDecimal(0))
     }
 
