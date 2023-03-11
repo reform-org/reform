@@ -396,30 +396,41 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
                         val hourlyWage =
                           getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
-                        val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                        val maxHoursForTax = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                        val month = dateDiffMonth(
+                          contract.contractStartDate.get.getOrElse(0L),
+                          contract.contractEndDate.get.getOrElse(0L),
+                        )
 
                         project.map(project => {
+                          val totalHoursWithoutThisContract = countContractHours(
+                            contract.contractAssociatedProject.get.getOrElse(""),
+                            project.signal.value,
+                            (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                          ).value +
+                            countContractHours(
+                              contract.contractAssociatedProject.get.getOrElse(""),
+                              project.signal.value,
+                              (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                            ).value
+
+                          val maxHoursForProject =
+                            (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month
+
                           contract.contractHoursPerMonth.get.getOrElse(0) match {
-                            case x if x > maxHours =>
+                            case x if x > maxHoursForTax =>
                               p(
                                 cls := "bg-yellow-100 text-yellow-600 flex flex-row",
                                 icons.WarningTriangle(cls := "w-6 h-6"),
-                                s"The monthly wage is above the minijob limit which is ${limit}. You might want to reduce the hours to ${maxHours} hours.",
+                                s"The monthly wage is above the minijob limit which is ${limit}. You might want to reduce the hours to ${maxHoursForTax} hours.",
                               )
                             case x
-                                if x + countContractHours(
-                                  contract.contractAssociatedProject.get.getOrElse(""),
-                                  project.signal.value,
-                                  true,
-                                ).value + countContractHours(
-                                  contract.contractAssociatedProject.get.getOrElse(""),
-                                  project.signal.value,
-                                  false,
-                                ).value > project.signal.value.maxHours.get.getOrElse(0) =>
+                                if x * month + totalHoursWithoutThisContract > project.signal.value.maxHours.get
+                                  .getOrElse(0) =>
                               p(
                                 cls := "bg-yellow-100 text-yellow-600 flex flex-row",
                                 icons.WarningTriangle(cls := "w-6 h-6"),
-                                s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded!",
+                                s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! You might want to reduce the monthly hours to ${maxHoursForProject}.",
                               )
                             case _ => p()
                           }
@@ -460,7 +471,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              (countContractHours(id, project.signal.value, false).value).toString() + " h",
+                              (countContractHours(
+                                id,
+                                project.signal.value,
+                                (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                              ).value).toString() + " h",
                             ),
                         ),
                       )
@@ -484,7 +499,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              (countContractHours(id, project.signal.value, true).value).toString() + " h",
+                              (countContractHours(
+                                id,
+                                project.signal.value,
+                                (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                              ).value).toString() + " h",
                             ),
                         ),
                       )
