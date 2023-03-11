@@ -25,4 +25,4 @@ jobs:
           distribution: "temurin"
           cache: "sbt"
       - name: Test
-        run: sbt webappJVM/test
+        run: export $(cat .env.production | xargs) && sbt webappJVM/test
