@@ -236,16 +236,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       discovery: DiscoveryService,
       toaster: Toaster,
   ): VNode = {
-    document.addEventListener(
-      "keydown",
-      (e: KeyboardEvent) => {
-        if (e.keyCode == 83 && e.ctrlKey) {
-          e.preventDefault()
-          createOrUpdate(false, true)
-        }
-      },
-    )
+    val ctrlSListener: js.Function1[KeyboardEvent, Unit] = (e: KeyboardEvent) => {
+      if (e.keyCode == 83 && e.ctrlKey) {
+        e.preventDefault()
+        console.log("test")
+        createOrUpdate(false, true)
+      }
+    }
     navigationHeader(
+      onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
+      onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
       div(
         div(
           cls := "p-1",
