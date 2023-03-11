@@ -399,14 +399,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               "1b",
               "Select project",
               div(
-                cls := "flex p-4 space-x-4",
+                cls := "flex flex-col md:flex-row p-4 space-x-4",
                 div(
                   cls := "basis-1/2",
                   label(cls := "font-bold", "Project:"),
                   contractAssociatedProject.renderEdit("", editingValue),
                 ),
                 div(
-                  cls := "basis-[12.5%] flex flex-col",
+                  cls := "basis-[12.5%] flex flex-row md:flex-col",
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
