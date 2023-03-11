@@ -27,6 +27,7 @@ import webapp.{*, given}
 import rescala.default.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.npm.JSUtils.dateDiffMonth
 
 case class ProjectsPage()(using
     repositories: Repositories,
@@ -99,19 +100,36 @@ object ProjectsPage {
       ),
     )
 
+  def countContractHours(id: String, project: Project, draftsOnly: Boolean)(using
+      repositories: Repositories,
+  ): Signal[Int] = {
+    Signal.dynamic {
+      repositories.contracts.all.value
+        .filter(contract => {
+          if (draftsOnly)
+            contract.signal.value.contractAssociatedProject.get.contains(id) && contract.signal.value.isDraft.get
+              .getOrElse(true)
+          else
+            contract.signal.value.contractAssociatedProject.get.contains(id) && !contract.signal.value.isDraft.get
+              .getOrElse(true)
+        })
+        .map(x => {
+          val contract = x.signal.value
+          contract.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+            contract.contractStartDate.get.getOrElse(0L),
+            contract.contractEndDate.get.getOrElse(0L),
+          )
+        })
+        .fold[Int](0)((acc: Int, x: Int) => acc + x)
+    }
+  }
+
   private def assignedHours(using repositories: Repositories) =
     new UIReadOnlyAttribute[Project, String](
       label = "assigned Hours",
       getter = (id, project) =>
-        Signal.dynamic {
-          repositories.contracts.all.value
-            .filter(contract =>
-              contract.signal.value.contractAssociatedProject.get.contains(id) && !contract.signal.value.isDraft.get
-                .getOrElse(true),
-            )
-            .map(contract => contract.signal.value.contractHoursPerMonth.get.getOrElse(0))
-            .fold[Int](0)((acc: Int, x: Int) => acc + x)
-            .toString + " h"
+        Signal {
+          countContractHours(id, project, false).value.toString + " h"
         },
       readConverter = identity,
     )
@@ -120,15 +138,8 @@ object ProjectsPage {
     new UIReadOnlyAttribute[Project, String](
       label = "planned Hours",
       getter = (id, project) =>
-        Signal.dynamic {
-          repositories.contracts.all.value
-            .filter(contract =>
-              contract.signal.value.contractAssociatedProject.get.contains(id) && contract.signal.value.isDraft.get
-                .getOrElse(false),
-            )
-            .map(contract => contract.signal.value.contractHoursPerMonth.get.getOrElse(0))
-            .fold[Int](0)((acc: Int, x: Int) => acc + x)
-            .toString + " h"
+        Signal {
+          countContractHours(id, project, true).value.toString + " h"
         },
       readConverter = identity,
     )
