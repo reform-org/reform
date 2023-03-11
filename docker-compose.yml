@@ -40,7 +40,7 @@ services:
       - traefik_default
   reform-discovery:
     build:
-      context: ../reform-discovery-ts
+      context: ../reform_discovery # ../reform-discovery-ts
       # TODO FIXME the secret values need to be set here
       args:
         VITE_DISCOVERY_SERVER_PATH: $VITE_DISCOVERY_SERVER_PATH
