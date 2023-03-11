@@ -105,9 +105,9 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
         h1(cls := "text-3xl my-4 text-center", "Settings Page"),
         cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]", // "flex flex-col gap-2 max-w-sm",
         div(
-          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:text-gray-200",
+          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200",
           div(
-            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:text-gray-600",
+            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:bg-gray-700 dark:text-gray-200",
             p("Color scheme:"),
           ),
           div(
@@ -130,9 +130,9 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
           ),
         ),
         div(
-          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:text-gray-200",
+          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200",
           div(
-            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:text-gray-600",
+            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:bg-gray-700 dark:text-gray-200",
             p("Manage DB:"),
           ),
           div(
