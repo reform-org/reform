@@ -102,16 +102,16 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
 
     navigationHeader(
       div(
-        h1(cls := "text-3xl mt-4 text-center", "Settings Page"),
-        cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]", // "flex flex-col gap-2 max-w-sm",
+        h1(cls := "text-3xl my-4 text-center", "Settings Page"),
+        cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]", // "flex flex-col gap-2 max-w-sm",
         div(
-          cls := "border rounded-2xl m-4 border-purple-200 dark:text-gray-200",
+          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:text-gray-200",
           div(
-            cls := "bg-purple-200 p-4 rounded-t-2xl dark:text-gray-600",
+            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:text-gray-600",
             p("Color scheme:"),
           ),
           div(
-            cls := "p-4 space-y-4 w-[400px]",
+            cls := "p-4 space-y-4 md:w-[400px]",
             Select(
               Signal(
                 Seq(
@@ -130,15 +130,15 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
           ),
         ),
         div(
-          cls := "border rounded-2xl m-4 border-purple-200 dark:text-gray-200",
+          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:text-gray-200",
           div(
-            cls := "bg-purple-200 p-4 rounded-t-2xl dark:text-gray-600",
+            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:text-gray-600",
             p("Manage DB:"),
           ),
           div(
             cls := "flex flex-col p-4 space-y-4",
             div(
-              cls := "flex flex-row justify-between",
+              cls := "flex flex-col md:flex-row justify-between",
               Button(
                 ButtonStyle.Primary,
                 "Export DB",
@@ -149,7 +149,7 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                 }),
               ),
               p(
-                cls := "mx-10 p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                cls := "m-4 p-4 bg-gray-100 dark:bg-gray-200 dark:text-gray-600",
                 "EXPORT DB: Export the DB",
               ),
             ),
@@ -157,9 +157,27 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
             div(
               cls := "flex flex-col md:flex-row justify-between",
               div(
-                FileInput(cls := "file-input-bordered", tpe := "file", idAttr := "import-file"),
+                /*FileInput(
+                  cls := "file-input-bordered bg-purple-400 hover:bg-purple-400 text-purple-800 btn btn-active p-2 h-fit min-h-10 border-0 disabled:dark:bg-gray-500 disabled:dark:text-gray-300",
+                  tpe := "file",
+                  idAttr := "import-file",
+                ),*/
+                label(
+                  cls := "block",
+                  span(cls := "sr-only", "Choose profile photo"),
+                  input(
+                    tpe := "file",
+                    cls := """block w-full text-sm text-slate-500
+                            file:mr-4 file:py-2 file:px-4
+                            file:rounded-full file:border-0
+                            file:text-sm file:font-semibold
+                            file:bg-purple-400 file:text-purple-800
+                            hover:file:bg-purple-400""",
+                  ),
+                ),
                 Button(
                   ButtonStyle.Primary,
+                  cls := "mt-4",
                   "Import DB",
                   onClick.foreach(_ => {
                     val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
@@ -174,7 +192,8 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                           }
                           val json = value.getOrElse("")
                           importIndexedDBJson(json)(using repositories).onComplete {
-                            case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
+                            case Success(value) =>
+                              toaster.make("Database imported", ToastMode.Long, ToastType.Success)
                             case Failure(exception) =>
                               toaster
                                 .make(
@@ -188,7 +207,7 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                 ),
               ),
               p(
-                cls := "mx-10 p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                cls := "m-4 p-4 bg-gray-100 dark:bg-gray-200 dark:text-gray-600",
                 "IMPORT DB: Import a DB",
               ),
             ),
@@ -205,7 +224,7 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                 }),
               ),
               p(
-                cls := "mx-10 p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                cls := "m-4 p-4 bg-gray-100 dark:bg-gray-200 dark:text-gray-600",
                 "DELETE DB: Delete the DB",
               ),
             ),
