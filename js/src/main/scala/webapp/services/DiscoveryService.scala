@@ -31,7 +31,7 @@ class AvailableConnection(
     val mutualTrust: Boolean,
 )
 
-class DiscoveryService {
+class DiscoveryService(using toaster: Toaster) {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
 
@@ -55,16 +55,15 @@ class DiscoveryService {
 
   val online: Var[Boolean] = Var(false)
 
-  def setAutoconnect(
+  def setAutoconnect(using webrtc: WebRTCService)(
       value: Boolean,
-  )(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster): Unit = {
+  ): Unit = {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
-      discovery
-        .connect()
+      connect()
         .toastOnError()
     } else {
-      discovery.close()
+      close()
     }
   }
 
@@ -102,9 +101,9 @@ class DiscoveryService {
     updateToken(None)
   }
 
-  def login(
+  def login(using webrtc: WebRTCService)(
       loginInfo: LoginInfo,
-  )(using webrtc: WebRTCService, toaster: Toaster, discovery: DiscoveryService): Future[String] = {
+  ): Future[String] = {
     val promise = Promise[String]()
 
     if (!tokenIsValid(token.now)) {
@@ -132,8 +131,7 @@ class DiscoveryService {
             } else {
               val newToken = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
               updateToken(Some(newToken))
-              this
-                .connect()
+              connect()
                 .toastOnError()
               promise.success(newToken)
             }
@@ -145,7 +143,7 @@ class DiscoveryService {
     promise.future
   }
 
-  def disconnect(ref: RemoteRef)(using webrtc: WebRTCService): Unit = {
+  def disconnect(using webrtc: WebRTCService)(ref: RemoteRef): Unit = {
     reportClosedConnection(webrtc.getInformation(ref).connectionId)
     ref.disconnect()
   }
@@ -175,10 +173,7 @@ class DiscoveryService {
     ws.send(JSON.stringify(event))
   }
 
-  private def handle(ws: WebSocket, name: String, payload: js.Dynamic)(using
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-  ) = {
+  private def handle(using webrtc: WebRTCService)(ws: WebSocket, name: String, payload: js.Dynamic) = {
     if (name != "ping") console.log(name, payload)
     name match {
       case "request_host_token" => {
@@ -283,10 +278,7 @@ class DiscoveryService {
     ws = None
   }
 
-  def connect(resetWebsocket: Boolean = false, force: Boolean = false)(using
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-  ): Future[Boolean] = {
+  def connect(using webrtc: WebRTCService)(resetWebsocket: Boolean = false, force: Boolean = false): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
     if (resetWebsocket) ws = None

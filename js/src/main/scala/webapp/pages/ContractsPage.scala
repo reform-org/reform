@@ -120,7 +120,7 @@ class ContractPageAttributes(using
 ) {
 
   def contractAssociatedHiwi: UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .select(
         repositories.hiwis.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
@@ -136,7 +136,7 @@ class ContractPageAttributes(using
   }
 
   def contractAssociatedProject: UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .select(options =
         repositories.projects.existing.map(
           _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
@@ -152,7 +152,7 @@ class ContractPageAttributes(using
   }
 
   def contractAssociatedSupervisor: UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .select(
         repositories.supervisors.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
@@ -168,7 +168,7 @@ class ContractPageAttributes(using
   }
 
   def contractAssociatedType: UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .select(
         repositories.contractSchemas.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
@@ -183,7 +183,7 @@ class ContractPageAttributes(using
       )
   }
 
-  def contractStartDate: UIAttribute[Contract, Long] = UIAttributeBuilder.date
+  def contractStartDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
     .withLabel("Start")
     .require
     .bindAsDatePicker[Contract](
@@ -191,7 +191,7 @@ class ContractPageAttributes(using
       (h, a) => h.copy(contractStartDate = a),
     )
 
-  def contractEndDate: UIAttribute[Contract, Long] = UIAttributeBuilder.date
+  def contractEndDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
     .withLabel("End")
     .require
     .bindAsDatePicker[Contract](
@@ -199,7 +199,7 @@ class ContractPageAttributes(using
       (h, a) => h.copy(contractEndDate = a),
     )
 
-  def contractHoursPerMonth: UIAttribute[Contract, Int] = UIAttributeBuilder.int
+  def contractHoursPerMonth: UIAttribute[Contract, Int] = BuildUIAttribute().int
     .withLabel("h/month")
     .withMin("0")
     .require
@@ -208,7 +208,7 @@ class ContractPageAttributes(using
       (h, a) => h.copy(contractHoursPerMonth = a),
     )
 
-  def contractDraft: UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+  def contractDraft: UIAttribute[Contract, Boolean] = BuildUIAttribute().boolean
     .withLabel("Draft?")
     .require
     .bindAsCheckbox[Contract](
@@ -216,7 +216,7 @@ class ContractPageAttributes(using
       (h, a) => h.copy(isDraft = a),
     )
 
-  def signed: UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+  def signed: UIAttribute[Contract, Boolean] = BuildUIAttribute().boolean
     .withLabel("Signed?")
     .require
     .bindAsCheckbox[Contract](
@@ -224,7 +224,7 @@ class ContractPageAttributes(using
       (h, a) => h.copy(isSigned = a),
     )
 
-  def submitted: UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+  def submitted: UIAttribute[Contract, Boolean] = BuildUIAttribute().boolean
     .withLabel("Submitted?")
     .require
     .bindAsCheckbox[Contract](
@@ -233,7 +233,7 @@ class ContractPageAttributes(using
     )
 
   def contractAssociatedPaymentLevel: UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .select(
         repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
@@ -249,7 +249,7 @@ class ContractPageAttributes(using
   }
 
   def requiredDocuments: UIAttribute[Contract, Seq[String]] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .checkboxList(
         repositories.requiredDocuments.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),

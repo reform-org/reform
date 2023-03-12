@@ -69,7 +69,7 @@ object PendingConnection {
   def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)
 }
 
-class WebRTCService(using registry: Registry, toaster: Toaster) {
+class WebRTCService(using registry: Registry, toaster: Toaster, discovery: DiscoveryService) {
 
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
@@ -108,7 +108,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
       })
   }
 
-  def closeConnectionById(id: String)(using discovery: DiscoveryService): Unit = {
+  def closeConnectionById(id: String): Unit = {
     connectionRefs.get(id) match {
       case None =>
       case Some(ref) => {

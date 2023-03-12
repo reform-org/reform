@@ -40,12 +40,12 @@ case class HiwisPage()(using
       None,
       repositories.hiwis,
       repositories.hiwis.all,
-      Seq(firstName, lastName, eMail, birthdate),
+      Seq(HiwiAttributes().firstName, HiwiAttributes().lastName, HiwiAttributes().eMail, HiwiAttributes().birthdate),
       DefaultEntityRow(),
     ) {}
 
-object HiwisPage {
-  private def firstName(using routing: RoutingService) = UIAttributeBuilder.string
+class HiwiAttributes(using routing: RoutingService) {
+  def firstName = BuildUIAttribute().string
     .withLabel("First Name")
     .require
     .bindAsText[Hiwi](
@@ -53,7 +53,7 @@ object HiwisPage {
       (h, a) => h.copy(firstName = a),
     )
 
-  private def lastName(using routing: RoutingService) = UIAttributeBuilder.string
+  def lastName = BuildUIAttribute().string
     .withLabel("Last Name")
     .require
     .bindAsText[Hiwi](
@@ -61,7 +61,7 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
+  def eMail = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Hiwi](
@@ -69,7 +69,7 @@ object HiwisPage {
       (h, a) => h.copy(eMail = a),
     )
 
-  private def birthdate(using routing: RoutingService) = UIAttributeBuilder.date
+  def birthdate = BuildUIAttribute().date
     .withLabel("Birthdate")
     .require
     .bindAsDatePicker[Hiwi](

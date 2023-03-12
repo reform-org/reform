@@ -59,7 +59,7 @@ class SalaryChangeAttributes(using
     webrtc: WebRTCService,
     discovery: DiscoveryService,
 ) {
-  def salaryChangeValue = UIAttributeBuilder.money
+  def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
     .withMin("0")
     .require
@@ -68,7 +68,7 @@ class SalaryChangeAttributes(using
       (s, a) => s.copy(value = a),
     )
 
-  def salaryChangeLimit = UIAttributeBuilder.money
+  def salaryChangeLimit = BuildUIAttribute().money
     .withLabel("Limit")
     .withMin("0")
     .require
@@ -78,7 +78,7 @@ class SalaryChangeAttributes(using
     )
 
   def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
-    UIAttributeBuilder
+    BuildUIAttribute()
       .select(
         repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
@@ -93,7 +93,7 @@ class SalaryChangeAttributes(using
       )
   }
 
-  def salaryChangeFromDate = UIAttributeBuilder.date
+  def salaryChangeFromDate = BuildUIAttribute().date
     .withLabel("From")
     .require
     .bindAsDatePicker[SalaryChange](

@@ -15,7 +15,7 @@ import outwatch.*
 import outwatch.dsl.*
 import cats.effect.SyncIO
 
-class MailService {
+class MailService(using webrtc: WebRTCService, toaster: Toaster, discovery: DiscoveryService) {
 
   class MailBody(val reciever: String, val replyTo: String, val html: String) {}
   object MailBody {
@@ -26,7 +26,7 @@ class MailService {
       reciever: String,
       replyTo: String,
       html: VNode,
-  )(using webrtc: WebRTCService, toaster: Toaster, discovery: DiscoveryService): Future[String] = {
+  ): Future[String] = {
     val promise = Promise[String]()
     val element = document.createElement("div")
     Outwatch.renderInto[SyncIO](element, html).unsafeRunSync()

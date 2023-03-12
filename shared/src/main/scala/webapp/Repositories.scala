@@ -18,7 +18,7 @@ case class Repositories(
     val requiredDocuments: Repository[Document],
     val contracts: Repository[Contract],
 )(using registry: Registry) {
-  val _ = PingService(using registry)
+  val _ = PingService()
 }
 
 object Repositories {

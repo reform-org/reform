@@ -58,7 +58,7 @@ enum ToastType(
       )
 }
 
-class Toast(
+class Toast(using toaster: Toaster)(
     val text: VNode,
     val toastMode: ToastMode,
     val toastType: ToastType,
@@ -120,7 +120,7 @@ class Toast(
     animationRef = Some(window.requestAnimationFrame(t => animate(t)))
   }
 
-  def render(using toaster: Toaster): VNode = {
+  def render: VNode = {
     div(
       cls := s"${toastType.primaryBgClass} ${toastType.textClass} toast-elem shadow-md alert relative overflow-hidden w-fit",
       onMouseEnter.foreach(_ =>
@@ -214,14 +214,14 @@ class Toaster() {
 
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
     if (Globals.VITE_SELENIUM && style != ToastType.Error) return
-    val toast = new Toast(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
+    val toast = new Toast(using this)(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
     this.addToast.fire(toast);
   }
 
   def render: VNode = {
     div(
       cls := "toast toast-end items-end !p-0 bottom-4 right-4",
-      toasts.map(_.map(toast => { toast.render(using this) })),
+      toasts.map(_.map(toast => { toast.render })),
     )
   }
 }

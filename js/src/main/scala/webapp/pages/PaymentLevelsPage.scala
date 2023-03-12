@@ -42,12 +42,16 @@ case class PaymentLevelsPage()(using
       Some("Paymentlevel Description..."),
       repositories.paymentLevels,
       repositories.paymentLevels.all,
-      Seq(title, pdfCheckboxName, currentValue),
+      Seq(
+        PaymentLevelAttributes().title,
+        PaymentLevelAttributes().pdfCheckboxName,
+        PaymentLevelAttributes().currentValue,
+      ),
       DefaultEntityRow(),
     ) {}
 
-object PaymentLevelsPage {
-  private def title(using routing: RoutingService) = UIAttributeBuilder.string
+class PaymentLevelAttributes(using routing: RoutingService, repositories: Repositories) {
+  def title = BuildUIAttribute().string
     .withLabel("Title")
     .require
     .bindAsText[PaymentLevel](
@@ -55,7 +59,7 @@ object PaymentLevelsPage {
       (p, a) => p.copy(title = a),
     )
 
-  private def pdfCheckboxName(using routing: RoutingService) = UIAttributeBuilder.string
+  def pdfCheckboxName = BuildUIAttribute().string
     .withLabel("PDF Checkbox Name")
     .require
     .bindAsText[PaymentLevel](
@@ -63,7 +67,7 @@ object PaymentLevelsPage {
       (p, a) => p.copy(pdfCheckboxName = a),
     )
 
-  private def currentValue(using repositories: Repositories) =
+  def currentValue =
     new UIReadOnlyAttribute[PaymentLevel, String](
       label = "Current Value",
       getter = (id, paymentLevel) =>
