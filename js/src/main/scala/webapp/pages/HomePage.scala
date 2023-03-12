@@ -172,6 +172,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
                 table(
                   thead(
                     tr(
+                      th(),
                       th("Hiwi"),
                       th("Supervisor"),
                       th("From"),
@@ -191,6 +192,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
                       val supervisor = supervisors
                         .find((id, supervisor) => id == contract.contractAssociatedSupervisor.get.getOrElse(""))
                       tr(
+                        td(),
                         td(
                           hiwi.map((_, hiwi) =>
                             s"${hiwi.firstName.get.getOrElse("")} ${hiwi.firstName.get.getOrElse("")}",
@@ -204,6 +206,30 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
                         td(toMoneyString(moneyPerMonth)),
                       )
                     }),
+                  ),
+                  tfoot(
+                    tr(
+                      td("Σ"),
+                      td(colSpan := 5),
+                      td(
+                        contractsPerProject(id)
+                          .map((_, contract) => contract.contractHoursPerMonth.get.getOrElse(0))
+                          .fold[Int](0)((a, b) => a + b),
+                        " h",
+                      ),
+                      td(
+                        toMoneyString(
+                          contractsPerProject(id)
+                            .map((id, contract) => {
+                              val moneyPerHour =
+                                getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                              val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                              moneyPerHour * hoursPerMonth
+                            })
+                            .fold[BigDecimal](0)((a, b) => a + b),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
               )
