@@ -60,7 +60,7 @@ def importIndexedDBJson(
               while ({
                 val key = in.readKeyAsString()
                 val repository = repositoryCodecs(key)
-                mb += (key -> repository.decodeRepository(in)): @nowarn
+                mb += (key -> repository.decodeRepository(in))
                 in.isNextToken(',')
               }) ()
               if (in.isCurrentToken('}')) mb.result()

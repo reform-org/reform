@@ -33,7 +33,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
             discovery
               .connect(true, true)
               .transform(res => {
-                window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000): @nowarn
+                window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
                 res
               })
               .toastOnError()
@@ -59,7 +59,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
     )
   }
 
-  def render(using toaster: Toaster): VNode = {
+  def render: VNode = {
     ul(
       tabIndex := 0,
       cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52 dark:bg-gray-600 dark:text-gray-200",
@@ -124,11 +124,11 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
   }
 }
 
-class Login() {
+class Login(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster) {
   private val username = Var("")
   private val password = Var("")
 
-  def render(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster): VNode = {
+  def render: VNode = {
     div(
       discovery.token
         .map(token =>

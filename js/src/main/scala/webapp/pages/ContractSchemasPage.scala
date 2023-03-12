@@ -21,26 +21,39 @@ import webapp.services.Toaster
 import rescala.default.*
 import webapp.components.common.*
 
-import ContractSchemasPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class ContractSchemasPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
 ) extends EntityPage[ContractSchema](
       Title("Contract Schema"),
       Some("Contractschemas Description..."),
       repositories.contractSchemas,
       repositories.contractSchemas.all,
-      Seq(name, files),
+      Seq(ContractSchemaAttributes().name, ContractSchemaAttributes().files),
       DefaultEntityRow(),
     ) {}
 
-object ContractSchemasPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class ContractSchemaAttributes(using
+    repositories: Repositories,
+    routing: RoutingService,
+    toaster: Toaster,
+    indexeddb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+) {
+  def name = UIAttributeBuilder.string
     .withLabel("Name")
     .require
     .bindAsText[ContractSchema](
@@ -48,12 +61,7 @@ object ContractSchemasPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def files(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[ContractSchema, Seq[String]] =
+  def files: UIAttribute[ContractSchema, Seq[String]] =
     UIAttributeBuilder
       .multiSelect(
         repositories.requiredDocuments.existing.map(list =>

@@ -40,7 +40,7 @@ object MainSharedTest extends TestSuite {
 
   def testE[T <: Entity[T]](value: Synced[T]): T = {
     val now = value.signal.now
-    now.identifier.getAll: @nowarn
+    now.identifier.getAll
     assert(!now.withExists(false).exists)
     now.default
   }

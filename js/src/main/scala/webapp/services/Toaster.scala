@@ -85,7 +85,7 @@ class Toast(
         start match {
           case None => {
             start = Some(timestamp)
-            window.requestAnimationFrame(t => animate(t)): @nowarn
+            window.requestAnimationFrame(t => animate(t))
           }
           case Some(startValue) => {
             val elapsed = timestamp - startValue

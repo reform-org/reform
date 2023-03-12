@@ -24,23 +24,42 @@ import webapp.npm.IIndexedDB
 
 import SalaryChangesPage.*
 import webapp.services.RoutingService
+import webapp.services.MailService
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class SalaryChangesPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
       Some("Salary Changes Description..."),
       repositories.salaryChanges,
       repositories.salaryChanges.all,
-      Seq(salaryChangeValue, salaryChangeLimit, salaryChangePaymentLevel, salaryChangeFromDate),
+      Seq(
+        SalaryChangeAttributes().salaryChangeValue,
+        SalaryChangeAttributes().salaryChangeLimit,
+        SalaryChangeAttributes().salaryChangePaymentLevel,
+        SalaryChangeAttributes().salaryChangeFromDate,
+      ),
       DefaultEntityRow(),
     ) {}
 
-object SalaryChangesPage {
-  private def salaryChangeValue(using routing: RoutingService) = UIAttributeBuilder.money
+class SalaryChangeAttributes(using
+    repositories: Repositories,
+    routing: RoutingService,
+    toaster: Toaster,
+    indexeddb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+) {
+  def salaryChangeValue = UIAttributeBuilder.money
     .withLabel("Value")
     .withMin("0")
     .require
@@ -49,7 +68,7 @@ object SalaryChangesPage {
       (s, a) => s.copy(value = a),
     )
 
-  private def salaryChangeLimit(using routing: RoutingService) = UIAttributeBuilder.money
+  def salaryChangeLimit = UIAttributeBuilder.money
     .withLabel("Limit")
     .withMin("0")
     .require
@@ -58,12 +77,7 @@ object SalaryChangesPage {
       (s, a) => s.copy(limit = a),
     )
 
-  private def salaryChangePaymentLevel(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[SalaryChange, String] = {
+  def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.existing.map(list =>
@@ -79,7 +93,7 @@ object SalaryChangesPage {
       )
   }
 
-  private def salaryChangeFromDate(using RoutingService) = UIAttributeBuilder.date
+  def salaryChangeFromDate = UIAttributeBuilder.date
     .withLabel("From")
     .require
     .bindAsDatePicker[SalaryChange](

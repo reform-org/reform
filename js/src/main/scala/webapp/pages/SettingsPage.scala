@@ -40,16 +40,19 @@ import rescala.default.*
 
 import scala.util.Success
 import scala.util.Failure
+import webapp.services.MailService
 
-case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
+case class SettingsPage()(using
+    indexeddb: IIndexedDB,
+    mailing: MailService,
+    routing: RoutingService,
+    repositories: Repositories,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+    toaster: Toaster,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     val deleteButtonActive = Var(false)
     val deleteDBModal = new Modal(
       "Do you really want to drop the Database?",

@@ -9,15 +9,17 @@ import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
 
-case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
+case class ErrorPage()(using
+    indexeddb: IIndexedDB,
+    routing: RoutingService,
+    repositories: Repositories,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+    toaster: Toaster,
+    mailing: MailService,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     navigationHeader(
       div(
         cls := "flex items-center justify-center h-full w-full flex-col gap-6",

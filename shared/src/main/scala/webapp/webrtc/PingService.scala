@@ -38,7 +38,7 @@ class PingService(using registry: Registry) {
       0,
       10000,
     )
-  }): @nowarn("msg=discarded expression")
+  })
 
   registry.bindSbj(binding) { (_: RemoteRef, _: String) => {} }
 }
