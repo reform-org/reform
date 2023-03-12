@@ -31,7 +31,7 @@ class AvailableConnection(
     val mutualTrust: Boolean,
 )
 
-class DiscoveryService(using webrtc: WebRTCService, toaster: Toaster) {
+class DiscoveryService(using toaster: Toaster) {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
 
@@ -55,7 +55,7 @@ class DiscoveryService(using webrtc: WebRTCService, toaster: Toaster) {
 
   val online: Var[Boolean] = Var(false)
 
-  def setAutoconnect(
+  def setAutoconnect(using webrtc: WebRTCService)(
       value: Boolean,
   ): Unit = {
     Settings.set[Boolean]("autoconnect", value)
@@ -101,7 +101,7 @@ class DiscoveryService(using webrtc: WebRTCService, toaster: Toaster) {
     updateToken(None)
   }
 
-  def login(
+  def login(using webrtc: WebRTCService)(
       loginInfo: LoginInfo,
   ): Future[String] = {
     val promise = Promise[String]()
@@ -143,7 +143,7 @@ class DiscoveryService(using webrtc: WebRTCService, toaster: Toaster) {
     promise.future
   }
 
-  def disconnect(ref: RemoteRef): Unit = {
+  def disconnect(using webrtc: WebRTCService)(ref: RemoteRef): Unit = {
     reportClosedConnection(webrtc.getInformation(ref).connectionId)
     ref.disconnect()
   }
@@ -173,7 +173,7 @@ class DiscoveryService(using webrtc: WebRTCService, toaster: Toaster) {
     ws.send(JSON.stringify(event))
   }
 
-  private def handle(ws: WebSocket, name: String, payload: js.Dynamic) = {
+  private def handle(using webrtc: WebRTCService)(ws: WebSocket, name: String, payload: js.Dynamic) = {
     if (name != "ping") console.log(name, payload)
     name match {
       case "request_host_token" => {
@@ -278,7 +278,7 @@ class DiscoveryService(using webrtc: WebRTCService, toaster: Toaster) {
     ws = None
   }
 
-  def connect(resetWebsocket: Boolean = false, force: Boolean = false): Future[Boolean] = {
+  def connect(using webrtc: WebRTCService)(resetWebsocket: Boolean = false, force: Boolean = false): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
     if (resetWebsocket) ws = None
