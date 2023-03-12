@@ -84,12 +84,7 @@ import java.util as ju
   securityHandler.setAuthenticator(authenticator);
   server.setHandler(servletContextHandler)
   server.addConnector(connector)
-    <<<<<<< HEAD
-  val listener = WS(servletContextHandler, "/registry/*")
-  registry.listen(listener).get
-    =======
-      registry.listen(WS(context, s"$path")).get
-      >>>>>>> origin / main
+  registry.listen(WS(servletContextHandler, s"$path")).get
   server.start()
   println(s"listening on ws://localhost:$port$path")
   server.join()
