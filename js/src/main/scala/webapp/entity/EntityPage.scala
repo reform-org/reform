@@ -161,7 +161,7 @@ class EntityRow[T <: Entity[T]](
                     idAttr := "add-entity-button",
                     icons.Save(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Save"),
-                    cls := "h-7 tooltip tooltip-top",
+                    cls := "h-7 tooltip tooltip-top entity-save",
                     data.tip := "Save",
                   ),
                   TableButton(
@@ -169,7 +169,7 @@ class EntityRow[T <: Entity[T]](
                     icons.Close(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Cancel"),
                     onClick.foreach(_ => cancelEdit()),
-                    cls := "h-7 tooltip tooltip-top",
+                    cls := "h-7 tooltip tooltip-top entity-cancel",
                     data.tip := "Cancel",
                   ),
                 )
@@ -182,7 +182,7 @@ class EntityRow[T <: Entity[T]](
                   idAttr := "add-entity-button",
                   icons.Add(cls := "w-4 h-4 md:hidden"),
                   span(cls := "hidden md:block", "Add " + this.title.singular),
-                  cls := "h-7 tooltip tooltip-top",
+                  cls := "h-7 tooltip tooltip-top entity-add",
                   data.tip := "Add" + this.title.singular,
                 )
               }
@@ -273,14 +273,14 @@ class EntityRow[T <: Entity[T]](
                 ButtonStyle.LightPrimary,
                 icons.Edit(cls := "w-4 h-4 md:hidden"),
                 span(cls := "hidden md:block", "Edit"),
-                cls := "h-7 tooltip tooltip-top",
+                cls := "h-7 tooltip tooltip-top entity-edit",
                 data.tip := "Edit",
                 onClick.foreach(_ => startEditing()),
               ),
               TableButton(
                 ButtonStyle.LightError,
                 icons.Delete(cls := "text-red-600 w-4 h-4"),
-                cls := "h-7 tooltip tooltip-top",
+                cls := "h-7 tooltip tooltip-top entity-delete",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               ),

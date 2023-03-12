@@ -225,7 +225,7 @@ export class Peer {
 		);
 
 		let editProjectButton = await row.findElement(
-			By.xpath(`.//button[text()="Edit"]`),
+			By.css(".entity-edit"),
 		);
 		await editProjectButton.click();
 
@@ -253,7 +253,7 @@ export class Peer {
 		await accountInput.sendKeys(account);
 
 		await (
-			await row.findElement(By.xpath('//button[text()="Save"]'))
+			await row.findElement(By.css(".entity-save"))
 		).click();
 
 		let oldProject = this.projects.value.get(projectId)!;
