@@ -47,6 +47,8 @@ import webapp.npm.JSUtils.stickyButton
 import org.scalajs.dom.KeyboardEvent
 import scala.math.BigDecimal.RoundingMode
 import webapp.pages.ProjectsPage.countContractHours
+import scala.concurrent.Promise
+import scala.concurrent.Future
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -120,7 +122,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Unit = {
+  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Future[String] = {
     indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -136,7 +138,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             }
           })
           .map(value => {
-            // editingValue.set(None)
             toaster.make(
               "Contract saved!",
               ToastMode.Short,
@@ -149,8 +150,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 routing.to(ContractsPage())
               }
             }
+
+            existing.id
           })
-          .toastOnError(ToastMode.Infinit)
       }
       case None => {
         repositories.contracts
@@ -168,8 +170,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             } else {
               routing.to(ContractsPage())
             }
+
+            entity.id
           })
-          .toastOnError(ToastMode.Infinit)
       }
     }
   }
@@ -208,6 +211,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
+          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -215,7 +220,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       "Save and return",
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate()
+        createOrUpdate().toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -223,7 +228,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       "Save and finalize",
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate(true)
+        createOrUpdate(true).toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
@@ -244,6 +249,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
+          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -252,7 +259,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       icons.Save(cls := "w-4 h-4"),
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate()
+        createOrUpdate().toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -261,7 +268,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       icons.Save(cls := "w-4 h-4"),
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate(true)
+        createOrUpdate(true).toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -283,6 +290,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       if (e.keyCode == 83 && e.ctrlKey) {
         e.preventDefault()
         createOrUpdate(false, true)
+          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .toastOnError(ToastMode.Infinit)
       }
     }
     navigationHeader(
