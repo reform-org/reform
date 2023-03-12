@@ -169,6 +169,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             .map((id, project) => {
               div(
                 project.name.get,
+                project.accountName.get,
                 table(
                   thead(
                     tr(
