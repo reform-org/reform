@@ -148,25 +148,17 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                   toaster.make("Database exported", ToastMode.Short, ToastType.Success)
                 }),
               ),
-              p(
-                cls := "m-4 p-4 bg-gray-100 dark:bg-gray-200 dark:text-gray-600",
-                "EXPORT DB: Export the DB",
-              ),
             ),
             hr,
             div(
               cls := "flex flex-col md:flex-row justify-between",
               div(
-                /*FileInput(
-                  cls := "file-input-bordered bg-purple-400 hover:bg-purple-400 text-purple-800 btn btn-active p-2 h-fit min-h-10 border-0 disabled:dark:bg-gray-500 disabled:dark:text-gray-300",
-                  tpe := "file",
-                  idAttr := "import-file",
-                ),*/
                 label(
                   cls := "block",
                   span(cls := "sr-only", "Choose profile photo"),
                   input(
                     tpe := "file",
+                    idAttr := "import-file",
                     cls := """block w-full text-sm text-slate-500
                             file:mr-4 file:py-2 file:px-4
                             file:rounded-full file:border-0
@@ -206,10 +198,6 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                   }),
                 ),
               ),
-              p(
-                cls := "m-4 p-4 bg-gray-100 dark:bg-gray-200 dark:text-gray-600",
-                "IMPORT DB: Import a DB",
-              ),
             ),
             hr,
             div(
@@ -222,10 +210,6 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                   downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
                   deleteDBModal.open()
                 }),
-              ),
-              p(
-                cls := "m-4 p-4 bg-gray-100 dark:bg-gray-200 dark:text-gray-600",
-                "DELETE DB: Delete the DB",
               ),
             ),
             deleteDBModal.render,
