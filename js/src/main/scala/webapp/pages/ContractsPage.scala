@@ -108,7 +108,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.hiwis.all.map(list =>
+        repositories.hiwis.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -129,7 +129,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(options =
-        repositories.projects.all.map(
+        repositories.projects.existing.map(
           _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -150,7 +150,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.supervisors.all.map(list =>
+        repositories.supervisors.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -171,7 +171,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.contractSchemas.all.map(list =>
+        repositories.contractSchemas.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -241,7 +241,7 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        repositories.paymentLevels.all.map(list =>
+        repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )

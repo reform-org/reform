@@ -38,7 +38,7 @@ def Checkbox(style: CheckboxStyle, props: VMod*): VNode = {
     style.props,
     styleAttr := "--chkbg:360 0% 100%",
     tpe := "checkbox",
-    cls := "checkbox checkbox-xs rounded bg-white dark:bg-gray-700 dark:border-none",
+    cls := "checkbox checkbox-xs rounded bg-white dark:bg-gray-700 dark:border-none !animate-none",
   )
 }
 

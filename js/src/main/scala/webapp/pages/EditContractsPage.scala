@@ -47,6 +47,8 @@ import webapp.npm.JSUtils.stickyButton
 import org.scalajs.dom.KeyboardEvent
 import scala.math.BigDecimal.RoundingMode
 import webapp.pages.ProjectsPage.countContractHours
+import scala.concurrent.Promise
+import scala.concurrent.Future
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -120,7 +122,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Unit = {
+  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Future[String] = {
     indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -136,7 +138,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             }
           })
           .map(value => {
-            // editingValue.set(None)
             toaster.make(
               "Contract saved!",
               ToastMode.Short,
@@ -149,8 +150,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 routing.to(ContractsPage())
               }
             }
+
+            existing.id
           })
-          .toastOnError(ToastMode.Infinit)
       }
       case None => {
         repositories.contracts
@@ -168,8 +170,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             } else {
               routing.to(ContractsPage())
             }
+
+            entity.id
           })
-          .toastOnError(ToastMode.Infinit)
       }
     }
   }
@@ -180,9 +183,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 
   private def editStep(number: String, title: String, props: VMod*): VNode = {
     div(
-      cls := "border rounded-2xl m-4 border-purple-200 dark:text-gray-200",
+      cls := "border rounded-2xl m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200",
       div(
-        cls := "bg-purple-200 p-4 rounded-t-2xl dark:text-gray-600",
+        cls := "bg-purple-200 p-4 rounded-t-2xl dark:bg-gray-700 dark:text-gray-200",
         p("STEP " + number + ": " + title),
       ),
       props,
@@ -208,6 +211,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
+          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -215,7 +220,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       "Save and return",
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate()
+        createOrUpdate().toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(
@@ -223,10 +228,55 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       "Save and finalize",
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate(true)
+        createOrUpdate(true).toastOnError(ToastMode.Infinit)
       }),
     ),
     Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+  )
+
+  val mobileActions = Seq(
+    Button(
+      ButtonStyle.LightPrimary,
+      cls := "min-h-8",
+      Signal.dynamic {
+        if (
+          existingValue.flatMap(existingValue =>
+            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
+          ) == Some(false)
+        ) span(cls := "inline-block", icons.Save(cls := "w-4 h-4"))
+        else span(cls := "inline-block", icons.Check(cls := "w-4 h-4"))
+      },
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate(false, true)
+          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .toastOnError(ToastMode.Infinit)
+      }),
+    ),
+    Button(
+      ButtonStyle.LightPrimary,
+      cls := "min-h-8",
+      icons.Save(cls := "w-4 h-4"),
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate().toastOnError(ToastMode.Infinit)
+      }),
+    ),
+    Button(
+      ButtonStyle.LightPrimary,
+      cls := "min-h-8",
+      icons.Save(cls := "w-4 h-4"),
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate(true).toastOnError(ToastMode.Infinit)
+      }),
+    ),
+    Button(
+      ButtonStyle.LightDefault,
+      cls := "min-h-8",
+      icons.Close(cls := "w-4 h-4"),
+      onClick.foreach(_ => cancelEdit()),
+    ),
   )
 
   def render(using
@@ -240,6 +290,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       if (e.keyCode == 83 && e.ctrlKey) {
         e.preventDefault()
         createOrUpdate(false, true)
+          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .toastOnError(ToastMode.Infinit)
       }
     }
     navigationHeader(
@@ -266,7 +318,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               div(
                 cls := "p-4 space-y-4",
                 div(
-                  cls := "flex space-x-4",
+                  cls := "flex flex-col md:flex-row md:space-x-4",
                   div(
                     cls := "basis-1/2",
                     label(cls := "font-bold", "Hiwi:"),
@@ -279,7 +331,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                 ),
                 div(
-                  cls := "flex space-x-4",
+                  cls := "flex flex-col md:flex-row md:space-x-4",
                   div(
                     cls := "basis-2/5",
                     label(cls := "font-bold", "Start date:"),
@@ -338,15 +390,15 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   // Todo Warning
                 ),
                 div(
-                  cls := "flex space-x-4",
+                  cls := "flex flex-col md:flex-row md:space-x-4",
                   div( // TODO calculation of monthly base salary and total hours
                     cls := "basis-1/2",
                     p(
-                      cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                      cls := "p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
                       "Monthly base salary: ",
                       Signal.dynamic {
                         editingValue.value match {
-                          case None => "-"
+                          case None => span()
                           case Some(c) => {
                             val contract = c(1).value
                             val limit =
@@ -354,25 +406,37 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                             val hourlyWage =
                               getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
                             val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
-                            s"${toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage)} (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}"
+                            span(
+                              toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                              span(
+                                cls := "text-gray-500 text-sm",
+                                s" (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}",
+                              ),
+                            )
                           }
                         }
                       },
                     ),
                     br,
                     p(
-                      cls := "bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
+                      cls := "p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
                       "Total Hours: ",
                       Signal.dynamic {
                         editingValue.value match {
-                          case None => "-"
+                          case None => span()
                           case Some(c) => {
                             val contract = c(1).value
                             val month = dateDiffMonth(
                               contract.contractStartDate.get.getOrElse(0L),
                               contract.contractEndDate.get.getOrElse(0L),
                             )
-                            s"${contract.contractHoursPerMonth.get.getOrElse(0) * month} (calculating with ${month} month)"
+                            span(
+                              (contract.contractHoursPerMonth.get.getOrElse(0) * month),
+                              span(
+                                cls := "text-gray-500 text-sm",
+                                s"(calculating with ${month} month)",
+                              ),
+                            )
                           }
                         }
                       },
@@ -429,7 +493,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                               p(
                                 cls := "bg-yellow-100 text-yellow-600 flex flex-row",
                                 icons.WarningTriangle(cls := "w-6 h-6"),
-                                s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! You might want to reduce the monthly hours to ${maxHoursForProject}.",
+                                s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! You might want to reduce the monthly hours to ${if (maxHoursForProject < 0) 0 else maxHoursForProject}.",
                               )
                             case _ => p()
                           }
@@ -447,19 +511,19 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               "1b",
               "Select project",
               div(
-                cls := "flex p-4 space-x-4",
+                cls := "flex flex-col md:flex-row p-4 md:space-x-4",
                 div(
                   cls := "basis-1/2",
                   label(cls := "font-bold", "Project:"),
                   contractAssociatedProject.renderEdit("", editingValue),
                 ),
                 div(
-                  cls := "basis-[12.5%] flex flex-col",
+                  cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
                       editingValue.value.map((_, value) =>
-                        if (value.value.isDraft.get.getOrElse(true)) "Contracts" else "Other Contracts",
+                        if (value.value.isDraft.get.getOrElse(true)) "Contracts:" else "Other Contracts:",
                       )
                     },
                   ),
@@ -482,12 +546,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                 ),
                 div(
-                  cls := "basis-[12.5%] flex flex-col",
+                  cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
                       editingValue.value.map((_, value) =>
-                        if (value.value.isDraft.get.getOrElse(true)) "Other Drafts" else "Drafts",
+                        if (value.value.isDraft.get.getOrElse(true)) "Other Drafts:" else "Drafts:",
                       )
                     },
                   ),
@@ -510,12 +574,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                 ),
                 div(
-                  cls := "basis-[12.5%] flex flex-col",
+                  cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
                   label(
                     cls := "font-bold",
                     Signal.dynamic {
                       editingValue.value.map((_, value) =>
-                        if (value.value.isDraft.get.getOrElse(true)) "This Draft" else "This Contract",
+                        if (value.value.isDraft.get.getOrElse(true)) "This Draft:" else "This Contract:",
                       )
                     },
                   ),
@@ -526,7 +590,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                 ),
                 div(
-                  cls := "basis-[12.5%] flex flex-col",
+                  cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
                   label(cls := "font-bold", "Max. hours"),
                   div(Signal.dynamic {
                     editingValue.value.flatMap((_, value) =>
@@ -758,7 +822,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             ),
             div(
               idAttr := "static_buttons",
-              cls := "pl-8 space-x-4",
+              cls := "md:pl-8 md:space-x-4 flex flex-col md:flex-row gap-2",
               actions,
             ),
           ),
@@ -766,8 +830,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
         div(
           idAttr := "sticky_buttons",
           onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
-          cls := "left-4 space-x-4 fixed bottom-4 p-3 bg-white shadow-lg rounded-xl border border-slate-200 hidden",
-          actions,
+          cls := "left-4 md:space-x-4 fixed bottom-4 p-3 bg-slate-50/75 dark:bg-gray-500/75 dark:border-gray-500 shadow-lg rounded-xl border border-slate-200 hidden",
+          div(cls := "flex-row gap-2 hidden md:flex", actions),
+          div(cls := "flex flex-row gap-2 md:hidden", mobileActions),
         ),
       ),
     )

@@ -52,8 +52,8 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
     ),
     li(
       a(
-        cls := "btn btn-ghost normal-case	font-normal rounded-md	",
-        "Settings",
+        cls := "btn btn-ghost active:!text-sm active:!text-gray-800 dark:active:!text-gray-200 normal-case	font-normal rounded-md",
+        "Setup",
         icons.Expand(cls := "w-4 h-4"),
       ),
       ul(
@@ -71,6 +71,9 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
           navigationLink(DocumentsPage(), "Documents"),
         ),
       ),
+    ),
+    li(
+      navigationIconLink(SettingsPage(), icons.Settings(cls := "h-5 w-5")),
     ),
   )
 }
