@@ -180,8 +180,10 @@ class Login() {
                               input.reportValidity()
                             })
                           }
-                          case Failure(_)     => console.log("some login error has happened")
-                          case Success(value) => {}
+                          case Failure(_) => console.log("some login error has happened")
+                          case Success(value) => {
+                            discovery.setAutoconnect(true)
+                          }
                         }
                       }),
                   ),
