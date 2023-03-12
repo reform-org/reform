@@ -1,1 +1,2 @@
--J-Xmx4G
+-J-Xmx16G
+-J-XX:+UseG1GC
