@@ -37,6 +37,7 @@ import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
 import webapp.npm.JSUtils.downloadFile
 import org.scalajs.dom.HTMLInputElement
 import rescala.default.*
+import webapp.components.*
 
 import scala.util.Success
 import scala.util.Failure
@@ -77,35 +78,37 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
     navigationHeader(
       div(
         cls := "flex flex-col gap-2 max-w-sm",
-        Signal { toHumanMonth(month.value) },
-        year,
-        Button(
-          ButtonStyle.LightDefault,
-          "Next",
-          onClick.foreach(_ => {
-            val m = month.now
-            val y = year.now
-            routing.updateQueryParameters(
-              Map(
-                ("month" -> (if (m == 12) "1" else (m + 1).toString)),
-                ("year" -> (if (m == 12) (y + 1).toString else y.toString)),
-              ),
-            )
-          }),
-        ),
-        Button(
-          ButtonStyle.LightDefault,
-          "Prev",
-          onClick.foreach(_ => {
-            val m = month.now
-            val y = year.now
-            routing.updateQueryParameters(
-              Map(
-                ("month" -> (if (m == 1) "12" else (m - 1).toString)),
-                ("year" -> (if (m == 1) (y - 1).toString else y.toString)),
-              ),
-            )
-          }),
+        div(
+          cls := "flex flex-row gap-2 items-center",
+          IconButton(
+            ButtonStyle.LightDefault,
+            icons.Previous(cls := "w-6 h-6"),
+            onClick.foreach(_ => {
+              val m = month.now
+              val y = year.now
+              routing.updateQueryParameters(
+                Map(
+                  ("month" -> (if (m == 1) "12" else (m - 1).toString)),
+                  ("year" -> (if (m == 1) (y - 1).toString else y.toString)),
+                ),
+              )
+            }),
+          ),
+          div(Signal { toHumanMonth(month.value) }, " ", year),
+          IconButton(
+            ButtonStyle.LightDefault,
+            icons.Next(cls := "w-6 h-6"),
+            onClick.foreach(_ => {
+              val m = month.now
+              val y = year.now
+              routing.updateQueryParameters(
+                Map(
+                  ("month" -> (if (m == 12) "1" else (m + 1).toString)),
+                  ("year" -> (if (m == 12) (y + 1).toString else y.toString)),
+                ),
+              )
+            }),
+          ),
         ),
         "Total Contracts:",
         Signal.dynamic {
