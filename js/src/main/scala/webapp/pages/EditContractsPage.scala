@@ -44,6 +44,10 @@ import webapp.npm.JSUtils.dateDiffHumanReadable
 import webapp.npm.JSUtils.dateDiffMonth
 import webapp.npm.JSUtils.toMoneyString
 import loci.registry.Registry
+import webapp.npm.JSUtils.stickyButton
+import org.scalajs.dom.KeyboardEvent
+import scala.math.BigDecimal.RoundingMode
+import webapp.pages.ProjectsPage.countContractHours
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -120,7 +124,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def createOrUpdate(finalize: Boolean = false): Unit = {
+  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Unit = {
     indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -142,10 +146,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               ToastMode.Short,
               ToastType.Success,
             )
-            if (value.isDraft.get.getOrElse(true)) {
-              routing.to(ContractDraftsPage())
-            } else {
-              routing.to(ContractsPage())
+            if (!stayOnPage) {
+              if (value.isDraft.get.getOrElse(true)) {
+                routing.to(ContractDraftsPage())
+              } else {
+                routing.to(ContractsPage())
+              }
             }
           })
           .toastOnError(ToastMode.Infinit)
@@ -191,15 +197,52 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     Option(existingValue.get.signal.now, Var(existingValue.get.signal.now)),
   )
 
+  val actions = Seq(
+    Button(
+      ButtonStyle.LightPrimary,
+      "Save",
+      Signal.dynamic {
+        if (
+          existingValue.flatMap(existingValue =>
+            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
+          ) == Some(false)
+        ) span(cls := "inline-block ml-1", icons.Circle(cls := "w-3 h-3"))
+        else span(cls := "inline-block ml-1", icons.Check(cls := "w-3 h-3"))
+      },
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate(false, true)
+      }),
+    ),
+    Button(
+      ButtonStyle.LightPrimary,
+      "Save and return",
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate()
+      }),
+    ),
+    Button(
+      ButtonStyle.LightPrimary,
+      "Save and finalize",
+      onClick.foreach(e => {
+        e.preventDefault()
+        createOrUpdate(true)
+      }),
+    ),
+    Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+  )
+
   def render(using
       routing: RoutingService,
       repositories: Repositories,
       webrtc: WebRTCService,
       discovery: DiscoveryService,
       toaster: Toaster,
-      registry: Registry,
   ): VNode =
     navigationHeader(
+      onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
+      onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
       div(
         div(
           cls := "p-1",
@@ -304,18 +347,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           case None => "-"
                           case Some(c) => {
                             val contract = c(1).value
-                            contract.contractAssociatedPaymentLevel.get match {
-                              case None => ""
-                              case Some(contractAssociatedPaymentLevel) => {
-                                val hourlyWage = getMoneyPerHour(
-                                  contractAssociatedPaymentLevel,
-                                  contract,
-                                  contract.contractStartDate.get.getOrElse(0L),
-                                ).value
-                                s"${toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage)} (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has bin created)"
-                              }
-                            }
-
+                            val limit =
+                              getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                            val hourlyWage =
+                              getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                            val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                            s"${toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage)} (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}"
                           }
                         }
                       },
@@ -345,6 +382,59 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     contractAssociatedPaymentLevel.renderEdit("", editingValue),
                     label(cls := "font-bold", "Hours per month:"),
                     contractHoursPerMonth.renderEdit("", editingValue),
+                    Signal.dynamic {
+                      editingValue.value.map((_, contractSignal) => {
+                        val contract = contractSignal.value
+                        val project = contract.contractAssociatedProject.get.flatMap(id =>
+                          repositories.projects.all.value
+                            .find(project => project.id == id),
+                        )
+                        val limit =
+                          getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                        val hourlyWage =
+                          getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                        val maxHoursForTax = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                        val month = dateDiffMonth(
+                          contract.contractStartDate.get.getOrElse(0L),
+                          contract.contractEndDate.get.getOrElse(0L),
+                        )
+
+                        project.map(project => {
+                          val totalHoursWithoutThisContract = countContractHours(
+                            contract.contractAssociatedProject.get.getOrElse(""),
+                            project.signal.value,
+                            (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                          ).value +
+                            countContractHours(
+                              contract.contractAssociatedProject.get.getOrElse(""),
+                              project.signal.value,
+                              (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                            ).value
+
+                          val maxHoursForProject =
+                            (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month
+
+                          contract.contractHoursPerMonth.get.getOrElse(0) match {
+                            case x if x > maxHoursForTax =>
+                              p(
+                                cls := "bg-yellow-100 text-yellow-600 flex flex-row",
+                                icons.WarningTriangle(cls := "w-6 h-6"),
+                                s"The monthly wage is above the minijob limit which is ${limit}. You might want to reduce the hours to ${maxHoursForTax} hours.",
+                              )
+                            case x
+                                if x * month + totalHoursWithoutThisContract > project.signal.value.maxHours.get
+                                  .getOrElse(0) =>
+                              p(
+                                cls := "bg-yellow-100 text-yellow-600 flex flex-row",
+                                icons.WarningTriangle(cls := "w-6 h-6"),
+                                s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! You might want to reduce the monthly hours to ${maxHoursForProject}.",
+                              )
+                            case _ => p()
+                          }
+                        })
+
+                      })
+                    },
                   ),
                 ),
               ),
@@ -378,20 +468,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              s"${repositories.contracts.all.value
-                                  .filter(c => c.id != contractId)
-                                  .map(c => c.signal.value)
-                                  .filter(c =>
-                                    c.contractAssociatedProject.get.getOrElse("") == project.id && !c.isDraft.get
-                                      .getOrElse(true),
-                                  )
-                                  .map(c =>
-                                    c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-                                      c.contractStartDate.get.getOrElse(0L),
-                                      c.contractEndDate.get.getOrElse(0L),
-                                    ),
-                                  )
-                                  .fold[Int](0)((a, b) => a + b)} h",
+                              (countContractHours(
+                                id,
+                                project.signal.value,
+                                (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                              ).value).toString() + " h",
                             ),
                         ),
                       )
@@ -415,20 +496,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              s"${repositories.contracts.all.value
-                                  .filter(c => c.id != contractId)
-                                  .map(c => c.signal.value)
-                                  .filter(c =>
-                                    c.contractAssociatedProject.get.getOrElse("") == project.id && c.isDraft.get
-                                      .getOrElse(true),
-                                  )
-                                  .map(c =>
-                                    c.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-                                      c.contractStartDate.get.getOrElse(0L),
-                                      c.contractEndDate.get.getOrElse(0L),
-                                    ),
-                                  )
-                                  .fold[Int](0)((a, b) => a + b)} h",
+                              (countContractHours(
+                                id,
+                                project.signal.value,
+                                (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                              ).value).toString() + " h",
                             ),
                         ),
                       )
@@ -447,12 +519,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                   div(
                     Signal.dynamic {
-                      editingValue.value.map((_, value) =>
-                        s"${value.value.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-                            value.value.contractStartDate.get.getOrElse(0L),
-                            value.value.contractEndDate.get.getOrElse(0L),
-                          )} h",
-                      )
+                      editingValue.value.map((_, value) => s"${getTotalHours(contractId, value.value)} h")
                     },
                   ),
                 ),
@@ -499,8 +566,10 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
-                // TODO only show documents that are included by contract schema
                 requiredDocuments.renderEdit("", editingValue),
+                i(
+                  "Documents written in italic have been checked in an older contract type and will be removed from this list once unchecked.",
+                ),
               ),
             ),
             editStep(
@@ -516,105 +585,71 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     e.preventDefault()
                     document.getElementById("loadPDF").classList.add("loading")
 
-                    editingValue.now match {
-                      case None => {
-                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
-                        document.getElementById("loadPDF").classList.remove("loading")
+                    editingValue.now.map((_, contractOption) => {
+                      val contract = contractOption.now
+                      val hiwiOption =
+                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
+
+                      if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty) {
+                        val hiwi = hiwiOption.get.signal.now
+                        val paymentLevel = paymentLevelOption.get.signal.now
+                        js.dynamicImport {
+                          PDF
+                            .fill(
+                              "/contract_unlocked.pdf",
+                              "arbeitsvertrag.pdf",
+                              Seq(
+                                PDFTextField(
+                                  "Vorname Nachname (Studentische Hilfskraft)",
+                                  s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
+                                ),
+                                PDFTextField(
+                                  "Geburtsdatum (Studentische Hilfskraft)",
+                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                ),
+                                PDFTextField(
+                                  "Vertragsbeginn",
+                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "Vertragsende",
+                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "Arbeitszeit Kästchen 1",
+                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
+                                ),
+                                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+                                PDFCheckboxField(
+                                  paymentLevel.pdfCheckboxName.get.getOrElse(""),
+                                  true,
+                                ),
+                              ),
+                            )
+                            .andThen(s => {
+                              document.getElementById("loadPDF").classList.remove("loading")
+                            })
+                            .toastOnError()
+                        }.toFuture
+                          .toastOnError()
+                      } else {
+                        toaster.make(
+                          "The PDF could not be created because not all required fields are filled in!",
+                          ToastMode.Long,
+                          ToastType.Error,
+                        )
+                        document.getElementById("loadLetter").classList.remove("loading")
                       }
-                      case Some(editingValue) => {
-                        val contract = editingValue._2.now
-                        contract.contractAssociatedHiwi.get match {
-                          case None => {
-                            toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
-                            document.getElementById("loadPDF").classList.remove("loading")
-                          }
-                          case Some(hiwiId) => {
-                            val hiwis = repositories.hiwis.all.now
-                            val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
-                            hiwi match {
-                              case None => {
-                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
-                                document.getElementById("loadPDF").classList.remove("loading")
-                              }
-                              case Some(_hiwi) => {
-                                val hiwi = _hiwi.signal.now
-                                contract.contractAssociatedPaymentLevel.get match {
-                                  case None => {
-                                    toaster.make(
-                                      "No payment level associated with contract!",
-                                      ToastMode.Long,
-                                      ToastType.Error,
-                                    )
-                                    document.getElementById("loadPDF").classList.remove("loading")
-                                  }
-                                  case Some(paymentLevelId) => {
-                                    val paymentLevels = repositories.paymentLevels.all.now
-                                    val paymentLevel =
-                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
-                                    paymentLevel match {
-                                      case None => {
-                                        toaster.make(
-                                          "This payment level does not seem to exist!",
-                                          ToastMode.Long,
-                                          ToastType.Error,
-                                        )
-                                        document.getElementById("loadPDF").classList.remove("loading")
-                                      }
-                                      case Some(_paymentLevel) => {
-                                        val paymentLevel = _paymentLevel.signal.now
-                                        js.dynamicImport {
-                                          PDF
-                                            .fill(
-                                              "/contract_unlocked.pdf",
-                                              "arbeitsvertrag.pdf",
-                                              Seq(
-                                                PDFTextField(
-                                                  "Vorname Nachname (Studentische Hilfskraft)",
-                                                  s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
-                                                ),
-                                                PDFTextField(
-                                                  "Geburtsdatum (Studentische Hilfskraft)",
-                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
-                                                ),
-                                                PDFTextField(
-                                                  "Vertragsbeginn",
-                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField(
-                                                  "Vertragsende",
-                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField(
-                                                  "Arbeitszeit Kästchen 1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
-                                                ),
-                                                PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                                                PDFCheckboxField(
-                                                  paymentLevel.pdfCheckboxName.get.getOrElse(""),
-                                                  true,
-                                                ),
-                                              ),
-                                            )
-                                            .andThen(s => {
-                                              console.log(s)
-                                              document.getElementById("loadPDF").classList.remove("loading")
-                                            })
-                                            .toastOnError()
-                                        }.toFuture
-                                          .toastOnError()
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    }): @nowarn
                   }),
                 ),
-                signed.renderEdit("", editingValue),
+                label(
+                  signed.renderEdit("", editingValue),
+                  " The contract has been signed",
+                  cls := "mt-2 flex gap-2",
+                ),
               ),
             ),
             editStep(
@@ -630,136 +665,110 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     e.preventDefault()
                     document.getElementById("loadLetter").classList.add("loading")
 
-                    editingValue.now match {
-                      case None => {
-                        toaster.make("No contract is being edited!", ToastMode.Long, ToastType.Error)
+                    editingValue.now.map((_, contractOption) => {
+                      val contract = contractOption.now
+                      val hiwiOption =
+                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
+                      val projectOption =
+                        repositories.projects.all.now.find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
+
+                      if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
+                        val hiwi = hiwiOption.get.signal.now
+                        val paymentLevel = paymentLevelOption.get.signal.now
+                        val project = projectOption.get.signal.now
+                        val moneyPerHour =
+                          toMoneyString(
+                            getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).now,
+                          )
+                        val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                        val totalHours = dateDiffMonth(
+                          contract.contractStartDate.get.getOrElse(0L),
+                          contract.contractEndDate.get.getOrElse(0L),
+                        ) * hoursPerMonth
+                        js.dynamicImport {
+                          PDF
+                            .fill(
+                              "/letter_editable.pdf",
+                              "letter.pdf",
+                              Seq(
+                                PDFTextField(
+                                  "Name VornameRow1",
+                                  s"${hiwi.lastName.get.getOrElse("")}, ${hiwi.firstName.get.getOrElse("")}",
+                                ),
+                                PDFTextField(
+                                  "GebDatumRow1",
+                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
+                                ),
+                                PDFTextField(
+                                  "Vertrags beginnRow1",
+                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "Vertrags endeRow1",
+                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
+                                ),
+                                PDFTextField(
+                                  "€StdRow1",
+                                  moneyPerHour,
+                                ),
+                                PDFTextField("Stunden gesamtRow1", totalHours.toString),
+                                PDFTextField("Stunden gesamtSumme", totalHours.toString),
+                                PDFTextField(
+                                  "Std MonatRow1",
+                                  hoursPerMonth.toString,
+                                ),
+                                PDFTextField(
+                                  "Account",
+                                  project.accountName.get.flatten.getOrElse(""),
+                                ),
+                                PDFTextField(
+                                  "Datum",
+                                  toGermanDate(js.Date.now().toLong),
+                                ),
+                              ),
+                            )
+                            .andThen(s => {
+                              console.log(s)
+                              document.getElementById("loadLetter").classList.remove("loading")
+                            })
+                            .toastOnError()
+                        }.toFuture
+                          .toastOnError()
+                      } else {
+                        toaster.make(
+                          "The PDF could not be created because not all required fields are filled in!",
+                          ToastMode.Long,
+                          ToastType.Error,
+                        )
                         document.getElementById("loadLetter").classList.remove("loading")
                       }
-                      case Some(editingValue) => {
-                        val contract = editingValue._2.now
-                        contract.contractAssociatedHiwi.get match {
-                          case None => {
-                            toaster.make("No HiWi associated with contract!", ToastMode.Long, ToastType.Error)
-                            document.getElementById("loadLetter").classList.remove("loading")
-                          }
-                          case Some(hiwiId) => {
-                            val hiwis = repositories.hiwis.all.now
-                            val hiwi = hiwis.find(hiwi => hiwi.id == hiwiId)
-                            hiwi match {
-                              case None => {
-                                toaster.make("This HiWi does not seem to exist!", ToastMode.Long, ToastType.Error)
-                                document.getElementById("loadLetter").classList.remove("loading")
-                              }
-                              case Some(_hiwi) => {
-                                val hiwi = _hiwi.signal.now
-                                contract.contractAssociatedPaymentLevel.get match {
-                                  case None => {
-                                    toaster.make(
-                                      "No payment level associated with contract!",
-                                      ToastMode.Long,
-                                      ToastType.Error,
-                                    )
-                                    document.getElementById("loadLetter").classList.remove("loading")
-                                  }
-                                  case Some(paymentLevelId) => {
-                                    val paymentLevels = repositories.paymentLevels.all.now
-                                    val paymentLevel =
-                                      paymentLevels.find(paymentLevel => paymentLevel.id == paymentLevelId)
-                                    paymentLevel match {
-                                      case None => {
-                                        toaster.make(
-                                          "This payment level does not seem to exist!",
-                                          ToastMode.Long,
-                                          ToastType.Error,
-                                        )
-                                        document.getElementById("loadLetter").classList.remove("loading")
-                                      }
-                                      case Some(_paymentLevel) => {
-                                        val paymentLevel = _paymentLevel.signal.now
-                                        js.dynamicImport {
-                                          PDF
-                                            .fill(
-                                              "/letter_editable.pdf",
-                                              "letter.pdf",
-                                              Seq(
-                                                PDFTextField(
-                                                  "Name VornameRow1",
-                                                  s"${hiwi.lastName.get.getOrElse("")}, ${hiwi.firstName.get.getOrElse("")}",
-                                                ),
-                                                PDFTextField(
-                                                  "GebDatumRow1",
-                                                  s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
-                                                ),
-                                                PDFTextField(
-                                                  "Vertrags beginnRow1",
-                                                  toGermanDate(contract.contractStartDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField(
-                                                  "Vertrags endeRow1",
-                                                  toGermanDate(contract.contractEndDate.get.getOrElse(0)),
-                                                ),
-                                                PDFTextField("€StdRow1", 0.toString),
-                                                PDFTextField("Stunden gesamtRow1", 0.toString),
-                                                PDFTextField("Stunden gesamtSumme", 0.toString),
-                                                PDFTextField(
-                                                  "Std MonatRow1",
-                                                  contract.contractHoursPerMonth.get.getOrElse(0).toString,
-                                                ),
-                                                PDFTextField(
-                                                  "Account",
-                                                  contract.contractAssociatedProject.get.getOrElse(""),
-                                                ),
-                                                PDFTextField(
-                                                  "Datum",
-                                                  toGermanDate(js.Date.now().toLong),
-                                                ),
-                                              ),
-                                            )
-                                            .andThen(s => {
-                                              console.log(s)
-                                              document.getElementById("loadLetter").classList.remove("loading")
-                                            })
-                                            .toastOnError()
-                                        }.toFuture
-                                          .toastOnError()
-                                      }
-                                    }
-                                  }
-                                }
-                              }
-                            }
-                          }
-                        }
-                      }
-                    }
+                    }): @nowarn
                   }),
                 ),
-                submitted.renderEdit("", editingValue),
+                label(
+                  submitted.renderEdit("", editingValue),
+                  " The letter has been submitted",
+                  cls := "mt-2 flex gap-2",
+                ),
               ),
             ),
             div(
+              idAttr := "static_buttons",
               cls := "pl-8 space-x-4",
-              Button(
-                ButtonStyle.LightPrimary,
-                "Save and return",
-                onClick.foreach(e => {
-                  e.preventDefault()
-                  createOrUpdate()
-                }),
-              ),
-              Button(
-                ButtonStyle.LightPrimary,
-                "Save and finalize",
-                onClick.foreach(e => {
-                  e.preventDefault()
-                  createOrUpdate(true)
-                }),
-              ),
-              Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+              actions,
             ),
           ),
         ),
+        div(
+          idAttr := "sticky_buttons",
+          onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
+          cls := "left-4 space-x-4 fixed bottom-4 p-3 bg-white shadow-lg rounded-xl border border-slate-200 hidden",
+          actions,
+        ),
       ),
     )
+  }
 
 }

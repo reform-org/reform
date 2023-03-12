@@ -25,6 +25,8 @@ object Globals {
 
   lazy val VITE_SERVER_HOST: String = js.`import`.meta.env.VITE_SERVER_HOST.asInstanceOf[String]
 
+  lazy val VITE_SERVER_PATH: String = js.`import`.meta.env.VITE_SERVER_PATH.asInstanceOf[String]
+
   lazy val VITE_SERVER_PORT: String = js.`import`.meta.env.VITE_SERVER_PORT.asInstanceOf[String]
 
   lazy val VITE_DISCOVERY_SERVER_PROTOCOL: String =
@@ -32,7 +34,13 @@ object Globals {
 
   lazy val VITE_DISCOVERY_SERVER_HOST: String = js.`import`.meta.env.VITE_DISCOVERY_SERVER_HOST.asInstanceOf[String]
 
-  lazy val VITE_DISCOVERY_SERVER_PORT: String = js.`import`.meta.env.VITE_DISCOVERY_SERVER_PORT.asInstanceOf[String]
+  lazy val VITE_DISCOVERY_SERVER_PATH: String = js.`import`.meta.env.VITE_DISCOVERY_SERVER_PATH.asInstanceOf[String]
+
+  lazy val VITE_DISCOVERY_SERVER_LISTEN_PORT: String =
+    js.`import`.meta.env.VITE_DISCOVERY_SERVER_LISTEN_PORT.asInstanceOf[String]
+
+  lazy val VITE_DISCOVERY_SERVER_PUBLIC_PORT: String =
+    js.`import`.meta.env.VITE_DISCOVERY_SERVER_PUBLIC_PORT.asInstanceOf[String]
 
   lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL: String =
     js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL.asInstanceOf[String]
@@ -40,8 +48,17 @@ object Globals {
   lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_HOST: String =
     js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST.asInstanceOf[String]
 
-  lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_PORT: String =
-    js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_PORT.asInstanceOf[String]
+  lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_PATH: String =
+    js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_PATH.asInstanceOf[String]
+
+  lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL: String =
+    js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL.asInstanceOf[String]
+
+  lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT: String =
+    js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT.asInstanceOf[String]
+
+  lazy val VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT: String =
+    js.`import`.meta.env.VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT.asInstanceOf[String]
 
   lazy val VITE_TURN_SERVER_HOST: String = js.`import`.meta.env.VITE_TURN_SERVER_HOST.asInstanceOf[String]
 
@@ -52,5 +69,11 @@ object Globals {
 
   lazy val VITE_ALWAYS_ONLINE_PEER_HOST: String = js.`import`.meta.env.VITE_ALWAYS_ONLINE_PEER_HOST.asInstanceOf[String]
 
-  lazy val VITE_ALWAYS_ONLINE_PEER_PORT: String = js.`import`.meta.env.VITE_ALWAYS_ONLINE_PEER_PORT.asInstanceOf[String]
+  lazy val VITE_ALWAYS_ONLINE_PEER_PATH: String = js.`import`.meta.env.VITE_ALWAYS_ONLINE_PEER_PATH.asInstanceOf[String]
+
+  lazy val VITE_ALWAYS_ONLINE_PEER_SUBPROTOCOL: String =
+    js.`import`.meta.env.VITE_ALWAYS_ONLINE_PEER_SUBPROTOCOL.asInstanceOf[String]
+
+  lazy val VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT: String =
+    js.`import`.meta.env.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT.asInstanceOf[String]
 }

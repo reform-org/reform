@@ -83,7 +83,7 @@ def navigationMenu(using
 }
 
 def navigationHeader(
-    content: VNode,
+    content: VMod*,
 )(using
     routing: RoutingService,
     repositories: Repositories,

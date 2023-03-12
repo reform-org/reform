@@ -3,29 +3,34 @@ version: "3.9"
 services:
   # https://doc.traefik.io/traefik/user-guides/docker-compose/basic-example/#docker-compose-basic-example
   traefik:
-    image: "traefik:v2.9"
-    container_name: "traefik"
+    image: "docker.io/library/traefik:v2.9"
+    restart: on-failure
     command:
       - "--log.level=DEBUG"
       - "--api.insecure=true"
       - "--providers.docker=true"
       - "--providers.docker.exposedbydefault=false"
       - "--entrypoints.web-$VITE_SERVER_PORT.address=:$VITE_SERVER_PORT"
-      - "--entrypoints.web-$VITE_DISCOVERY_SERVER_PORT.address=:$VITE_DISCOVERY_SERVER_PORT"
-      - "--entrypoints.web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT.address=:$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
-      - "--entrypoints.web-$VITE_ALWAYS_ONLINE_PEER_PORT.address=:$VITE_ALWAYS_ONLINE_PEER_PORT"
+      - "--entrypoints.web-$VITE_DISCOVERY_SERVER_PUBLIC_PORT.address=:$VITE_DISCOVERY_SERVER_PUBLIC_PORT"
+      - "--entrypoints.web-$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT.address=:$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT"
+      - "--entrypoints.web-$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT.address=:$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
       #- "--entrypoints.tcp-3478.address=:3478"
       #- "--entrypoints.udp-3478.address=:3478/udp"
       #- "--entrypoints.tcp-5349.address=:5349"
       #- "--entrypoints.udp-5349.address=:5349/udp"
     ports:
-      - "$VITE_SERVER_PORT:$VITE_SERVER_PORT"
-      - "$VITE_DISCOVERY_SERVER_PORT:$VITE_DISCOVERY_SERVER_PORT"
-      - "$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT:$VITE_DISCOVERY_SERVER_WEBSOCKET_PORT"
-      - "$VITE_ALWAYS_ONLINE_PEER_PORT:$VITE_ALWAYS_ONLINE_PEER_PORT"
-      - "8080:8080"
+      - target: "$VITE_SERVER_PORT"
+        published: "$VITE_SERVER_PORT"
+      - target: "$VITE_DISCOVERY_SERVER_PUBLIC_PORT"
+        published: "$VITE_DISCOVERY_SERVER_PUBLIC_PORT"
+      - target: "$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT"
+        published: "$VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT"
+      - target: "$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
+        published: "$VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT"
+      - target: 8080
+        published: 8080
     volumes:
-      - "/var/run/docker.sock:/var/run/docker.sock:ro"
+      - "$XDG_RUNTIME_DIR/podman/podman.sock:/var/run/docker.sock:ro"
   #whoami:
   #  image: "traefik/whoami"
   #  labels:

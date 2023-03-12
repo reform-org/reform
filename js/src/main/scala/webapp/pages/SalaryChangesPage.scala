@@ -37,7 +37,7 @@ case class SalaryChangesPage()(using
       Some("Salary Changes Description..."),
       repositories.salaryChanges,
       repositories.salaryChanges.all,
-      Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
+      Seq(salaryChangeValue, salaryChangeLimit, salaryChangePaymentLevel, salaryChangeFromDate),
       DefaultEntityRow(),
     ) {}
 
@@ -51,6 +51,15 @@ object SalaryChangesPage {
       (s, a) => s.copy(value = a),
     )
 
+  private def salaryChangeLimit(using routing: RoutingService) = UIAttributeBuilder.money
+    .withLabel("Limit")
+    .withMin("0")
+    .require
+    .bindAsNumber[SalaryChange](
+      _.limit,
+      (s, a) => s.copy(limit = a),
+    )
+
   private def salaryChangePaymentLevel(using
       repositories: Repositories,
       routing: RoutingService,
@@ -61,7 +70,7 @@ object SalaryChangesPage {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(PaymentLevelsPage())

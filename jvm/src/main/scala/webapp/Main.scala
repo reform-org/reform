@@ -32,7 +32,12 @@ import java.util as ju
 
   val server = new Server()
   val connector = new ServerConnector(server)
+<<<<<<< HEAD
   val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").getOrElse("1334").toInt
+=======
+  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").get.toInt
+  val path = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PATH").get
+>>>>>>> origin/main
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler().nn
@@ -83,9 +88,13 @@ import java.util as ju
   securityHandler.setAuthenticator(authenticator);
   server.setHandler(servletContextHandler)
   server.addConnector(connector)
+<<<<<<< HEAD
   val listener = WS(servletContextHandler, "/registry/*")
   registry.listen(listener).get
+=======
+  registry.listen(WS(context, s"$path")).get
+>>>>>>> origin/main
   server.start()
-  println(s"listening on ws://localhost:$port/registry/")
+  println(s"listening on ws://localhost:$port$path")
   server.join()
 }

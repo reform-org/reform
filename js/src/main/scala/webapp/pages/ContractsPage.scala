@@ -35,6 +35,7 @@ import webapp.utils.Futures.*
 import webapp.npm.JSUtils.toMoneyString
 import scala.scalajs.js
 import loci.registry.Registry
+import webapp.npm.JSUtils.dateDiffMonth
 
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
@@ -113,7 +114,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.hiwis.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(HiwisPage())
@@ -133,8 +134,10 @@ object ContractsPage {
       registry: Registry,
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
-      .select(
-        repositories.projects.all.map(_.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse("")))),
+      .select(options =
+        repositories.projects.all.map(
+          _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
+        ),
       )
       .withCreatePage(ProjectsPage())
       .withLabel("Project")
@@ -154,8 +157,8 @@ object ContractsPage {
   ): UIAttribute[Contract, String] = {
     UIAttributeBuilder
       .select(
-        options = repositories.supervisors.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+        repositories.supervisors.all.map(list =>
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(SupervisorsPage())
@@ -177,7 +180,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.contractSchemas.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(ContractSchemasPage())
@@ -248,7 +251,7 @@ object ContractsPage {
     UIAttributeBuilder
       .select(
         repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
       .withCreatePage(PaymentLevelsPage())
@@ -268,23 +271,66 @@ object ContractsPage {
       registry: Registry,
   ): UIAttribute[Contract, Seq[String]] = {
     UIAttributeBuilder
-      .multiSelect(
+      .checkboxList(
         repositories.requiredDocuments.existing.map(list =>
-          list.map(value => value.id -> value.signal.map(_.identifier.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
-      .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")
       .require
-      .bindAsMultiSelect[Contract](
+      .bindAsCheckboxList[Contract](
         _.requiredDocuments,
         (c, a) => c.copy(requiredDocuments = a),
+        filteredOptions = Some(contract =>
+          Signal.dynamic {
+            contract.contractType.get
+              .flatMap(contractTypeId =>
+                repositories.contractSchemas.all.value
+                  .find(contractType => contractType.id == contractTypeId)
+                  .flatMap(value =>
+                    value.signal.value.files.get.flatMap(requiredDocuments => {
+                      val documents = repositories.requiredDocuments.all.value
+                      val checkedDocuments =
+                        if (contract.requiredDocuments.get.nonEmpty) contract.requiredDocuments.get
+                        else Some(Seq.empty)
+
+                      checkedDocuments
+                        .map(_ ++ requiredDocuments)
+                        .map(files =>
+                          files.toSet
+                            .map(fileId => {
+                              documents
+                                .find(doc => doc.id == fileId)
+                                .map(file => {
+                                  SelectOption(
+                                    fileId,
+                                    file.signal.map(s => s.name.get.getOrElse("")),
+                                    if (!requiredDocuments.contains(fileId)) Seq(cls := "italic", checked := true)
+                                    else None,
+                                  )
+                                })
+                            })
+                            .toSeq
+                            .sortWith(
+                              _.getOrElse(SelectOption("", Signal(""))).id < _.getOrElse(
+                                SelectOption("", Signal("")),
+                              ).id,
+                            ),
+                        )
+                    }),
+                  ),
+              )
+              .getOrElse(Seq.empty)
+              .filter(x => x.nonEmpty)
+              .map(_.get)
+          },
+        ),
       )
   }
 
-  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+  def getSalaryChange(id: String, contract: Contract, date: Long)(using
       repositories: Repositories,
-  ): Signal[BigDecimal] =
+  ): Signal[Option[SalaryChange]] =
     Signal.dynamic {
       val salaryChanges = repositories.salaryChanges.all.value
       salaryChanges
@@ -293,7 +339,30 @@ object ContractsPage {
         .filter(_.fromDate.get.getOrElse(0L) <= date)
         .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
         .headOption
+    }
+
+  def getTotalHours(id: String, contract: Contract): Int = {
+    contract.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
+      contract.contractStartDate.get.getOrElse(0L),
+      contract.contractEndDate.get.getOrElse(0L),
+    )
+  }
+
+  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      getSalaryChange(id, contract, date).value
         .flatMap(_.value.get)
+        .getOrElse(BigDecimal(0))
+    }
+
+  def getLimit(id: String, contract: Contract, date: Long)(using
+      repositories: Repositories,
+  ): Signal[BigDecimal] =
+    Signal.dynamic {
+      getSalaryChange(id, contract, date).value
+        .flatMap(_.limit.get)
         .getOrElse(BigDecimal(0))
     }
 

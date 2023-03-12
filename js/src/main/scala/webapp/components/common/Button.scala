@@ -19,7 +19,7 @@ enum ButtonStyle(val props: VMod) {
 
 def Button(style: ButtonStyle, props: VMod*): VNode = {
   button(
-    cls := "btn btn-active p-2 h-fit min-h-10 mt-2 border-0 disabled:dark:bg-gray-500 disabled:dark:text-gray-300",
+    cls := "btn btn-active p-2 h-fit min-h-10 border-0 disabled:dark:bg-gray-500 disabled:dark:text-gray-300",
     props,
     style.props,
   )

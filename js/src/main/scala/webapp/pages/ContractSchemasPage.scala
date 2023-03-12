@@ -60,7 +60,7 @@ object ContractSchemasPage {
     UIAttributeBuilder
       .multiSelect(
         repositories.requiredDocuments.existing.map(list =>
-          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
+          list.map(value => SelectOption(value.id, value.signal.map(_.name.get.getOrElse("")))),
         ),
       )
       .withCreatePage(DocumentsPage())

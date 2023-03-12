@@ -15,19 +15,12 @@ given ExecutionContext =
 
 // https://github.com/scala-loci/scala-loci/blob/master/communication/shared/src/main/scala/loci/logging/package.scala
 // https://github.com/outr/scribe/wiki/Features
-val _ = Logger("scala-loci").clearHandlers().replace()
+// val _ = Logger("scala-loci").clearHandlers().replace()
 
 object Globals {
-  val properties = {
-    val properties: Properties = new Properties()
-    val source = Source.fromFile(File("../.env"))
-    properties.load(source.bufferedReader())
-    properties
-  }
-
   val VITE_DATABASE_VERSION: String =
-    sys.env.get("VITE_DATABASE_VERSION").orElse(Option(properties.getProperty("VITE_DATABASE_VERSION"))).get.nn
+    sys.env.get("VITE_DATABASE_VERSION").get.nn
 
   val VITE_PROTOCOL_VERSION: String =
-    sys.env.get("VITE_PROTOCOL_VERSION").orElse(Option(properties.getProperty("VITE_PROTOCOL_VERSION"))).get.nn
+    sys.env.get("VITE_PROTOCOL_VERSION").get.nn
 }
