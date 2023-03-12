@@ -46,7 +46,6 @@ import webapp.npm.JSUtils.toMoneyString
 import webapp.npm.JSUtils.stickyButton
 import org.scalajs.dom.KeyboardEvent
 import scala.math.BigDecimal.RoundingMode
-import webapp.pages.ProjectsPage.countContractHours
 import scala.concurrent.Promise
 import scala.concurrent.Future
 import webapp.services.MailService
@@ -466,16 +465,20 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         )
 
                         project.map(project => {
-                          val totalHoursWithoutThisContract = countContractHours(
-                            contract.contractAssociatedProject.get.getOrElse(""),
-                            project.signal.value,
-                            (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
-                          ).value +
-                            countContractHours(
+                          val totalHoursWithoutThisContract = ProjectAttributes()
+                            .countContractHours(
                               contract.contractAssociatedProject.get.getOrElse(""),
                               project.signal.value,
-                              (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
-                            ).value
+                              (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                            )
+                            .value +
+                            ProjectAttributes()
+                              .countContractHours(
+                                contract.contractAssociatedProject.get.getOrElse(""),
+                                project.signal.value,
+                                (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                              )
+                              .value
 
                           val maxHoursForProject =
                             (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month
@@ -534,11 +537,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              (countContractHours(
-                                id,
-                                project.signal.value,
-                                (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
-                              ).value).toString() + " h",
+                              (ProjectAttributes()
+                                .countContractHours(
+                                  id,
+                                  project.signal.value,
+                                  (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                                )
+                                .value)
+                                .toString() + " h",
                             ),
                         ),
                       )
@@ -562,11 +568,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              (countContractHours(
-                                id,
-                                project.signal.value,
-                                (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
-                              ).value).toString() + " h",
+                              (ProjectAttributes()
+                                .countContractHours(
+                                  id,
+                                  project.signal.value,
+                                  (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                                )
+                                .value)
+                                .toString() + " h",
                             ),
                         ),
                       )
