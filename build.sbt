@@ -30,7 +30,9 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     /*Test / scalaJSModuleInitializers := Seq(
       {ModuleInitializer.mainMethod("webapp.MainJSTest", "main").withModuleID("main")}
     ),*/
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule).withOptimizer(false) /* deactivated because of compiler bug */
+    },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
