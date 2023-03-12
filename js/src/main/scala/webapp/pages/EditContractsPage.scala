@@ -383,14 +383,19 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                               ContractPageAttributes()
                                 .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
                                 .value
-                            val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
-                            span(
-                              toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                            if (hourlyWage != 0 && limit != 0) {
+                              val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
                               span(
-                                cls := "text-gray-500 text-sm",
-                                s" (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}",
-                              ),
-                            )
+                                toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                                span(
+                                  cls := "text-gray-500 text-sm",
+                                  s" (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}",
+                                ),
+                              )
+                            } else {
+                              span(
+                              )
+                            }
                           }
                         }
                       },
@@ -412,7 +417,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                               (contract.contractHoursPerMonth.get.getOrElse(0) * month),
                               span(
                                 cls := "text-gray-500 text-sm",
-                                s"(calculating with ${month} month)",
+                                s" (calculating with ${month} month)",
                               ),
                             )
                           }
@@ -437,11 +442,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           ContractPageAttributes()
                             .getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
                             .value
-                        val hourlyWage =
-                          ContractPageAttributes()
-                            .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
-                            .value
-                        val maxHoursForTax = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                        val hourlyWage = ContractPageAttributes()
+                          .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                          .value
+                        var maxHoursForTax =
+                          if (hourlyWage != 0) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                          else { BigDecimal(0) }
                         val month = dateDiffMonth(
                           contract.contractStartDate.get.getOrElse(0L),
                           contract.contractEndDate.get.getOrElse(0L),
@@ -484,7 +490,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                             case _ => p()
                           }
                         })
-
                       })
                     },
                   ),
