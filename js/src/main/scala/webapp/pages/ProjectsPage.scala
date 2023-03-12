@@ -46,18 +46,18 @@ case class ProjectsPage()(using
       repositories.projects,
       repositories.projects.all,
       Seq[UIBasicAttribute[Project]](
-        ProjectsPage.name,
-        maxHours,
-        accountName,
-        contractCount,
-        plannedHours,
-        assignedHours,
+        ProjectAttributes().name,
+        ProjectAttributes().maxHours,
+        ProjectAttributes().accountName,
+        ProjectAttributes().contractCount,
+        ProjectAttributes().plannedHours,
+        ProjectAttributes().assignedHours,
       ),
       DefaultEntityRow(),
     ) {}
 
-object ProjectsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class ProjectAttributes(using routing: RoutingService, repositories: Repositories) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Project](
@@ -65,7 +65,7 @@ object ProjectsPage {
       (p, a) => p.copy(name = a),
     )
 
-  private def maxHours(using routing: RoutingService) = UIAttributeBuilder.int
+  def maxHours = BuildUIAttribute().int
     .withLabel("Max Hours")
     .withMin("0")
     .require
@@ -74,7 +74,7 @@ object ProjectsPage {
       (p, a) => p.copy(maxHours = a),
     )
 
-  private def accountName(using routing: RoutingService) = UIAttributeBuilder.string
+  def accountName = BuildUIAttribute().string
     .withLabel("Account")
     .withDefaultValue("")
     .bindAsText[Project](
@@ -82,7 +82,7 @@ object ProjectsPage {
       (p, a) => p.copy(accountName = a),
     )
 
-  private def contractCount(using repositories: Repositories) =
+  def contractCount =
     new UIReadOnlyAttribute[Project, String](
       label = "Contracts",
       getter = (id, project) =>
@@ -106,8 +106,10 @@ object ProjectsPage {
       ),
     )
 
-  def countContractHours(id: String, project: Project, pred: (contractId: String, contract: Contract) => Boolean)(using
-      repositories: Repositories,
+  def countContractHours(
+      id: String,
+      project: Project,
+      pred: (contractId: String, contract: Contract) => Boolean,
   ): Signal[Int] = {
     Signal.dynamic {
       repositories.contracts.all.value
@@ -124,7 +126,7 @@ object ProjectsPage {
     }
   }
 
-  private def assignedHours(using repositories: Repositories) =
+  def assignedHours =
     new UIReadOnlyAttribute[Project, String](
       label = "assigned Hours",
       getter = (id, project) =>
@@ -138,7 +140,7 @@ object ProjectsPage {
       readConverter = identity,
     )
 
-  private def plannedHours(using repositories: Repositories) =
+  def plannedHours =
     new UIReadOnlyAttribute[Project, String](
       label = "planned Hours",
       getter = (id, project) =>

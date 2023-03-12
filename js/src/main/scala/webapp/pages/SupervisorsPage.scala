@@ -40,12 +40,12 @@ case class SupervisorsPage()(using
       None,
       repositories.supervisors,
       repositories.supervisors.all,
-      Seq(name, eMail),
+      Seq(SupervisorAttributes().name, SupervisorAttributes().eMail),
       DefaultEntityRow(),
     ) {}
 
-object SupervisorsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class SupervisorAttributes(using routing: RoutingService) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Supervisor](
@@ -53,7 +53,7 @@ object SupervisorsPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
+  def eMail(using routing: RoutingService) = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](

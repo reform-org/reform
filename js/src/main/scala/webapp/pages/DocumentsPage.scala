@@ -41,12 +41,12 @@ case class DocumentsPage()(using
       Some("Document Description..."),
       repositories.requiredDocuments,
       repositories.requiredDocuments.all,
-      Seq(name),
+      Seq(DocumentAttributes().name),
       DefaultEntityRow(),
     ) {}
 
-object DocumentsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class DocumentAttributes(using routing: RoutingService) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Document](

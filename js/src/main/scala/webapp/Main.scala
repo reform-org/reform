@@ -67,19 +67,16 @@ object Main {
       discovery
         .connect()
         .toastOnError()
-    Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
+    Outwatch
+      .renderInto[SyncIO](
+        "#app",
+        body(
+          routing.render,
+          toaster.render,
+        ),
+      )
+      .unsafeRunSync()
   }
-
-  private def app(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ) = body(
-    routing.render,
-    toaster.render,
-  )
 }
 
 val _ = Main.main()
