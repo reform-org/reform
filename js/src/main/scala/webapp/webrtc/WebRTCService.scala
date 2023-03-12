@@ -60,7 +60,7 @@ case class PendingConnection(
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String): PendingConnection = {
     val p = Promise[ConnectionInformation]()
-    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
+    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
     PendingConnection(answer, p.future, answer.connection)
   }
   private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make: @nowarn
@@ -142,7 +142,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
 
     removeConnection.fire(remoteRef)
-  }): @nowarn("msg=discarded expression")
+  })
 
   Try(
     registry
@@ -154,5 +154,5 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
       .toastOnError(ToastMode.Short, ToastType.Warning),
   ).toastOnError(ToastMode.Short, ToastType.Warning)
 
-  registry.connect(BroadcastChannel("default")): @nowarn
+  registry.connect(BroadcastChannel("default"))
 }

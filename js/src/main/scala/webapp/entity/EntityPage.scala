@@ -42,6 +42,7 @@ import scala.collection.mutable
 import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
 import webapp.npm.JSUtils.downloadFile
+import webapp.services.MailService
 
 case class Title(singular: String) {
 
@@ -72,6 +73,9 @@ abstract class EntityRowBuilder[T <: Entity[T]] {
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
+      mailing: MailService,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
   ): EntityRow[T]
 }
 
@@ -84,6 +88,9 @@ class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
       routing: RoutingService,
       repositories: Repositories,
       indexedb: IIndexedDB,
+      mailing: MailService,
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
   ): EntityRow[T] = EntityRow[T](title, repository, value, uiAttributes)
 }
 
@@ -371,6 +378,9 @@ abstract class EntityPage[T <: Entity[T]](
     routing: RoutingService,
     repositories: Repositories,
     indexedb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =
@@ -395,13 +405,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val filter = Filter[T](uiAttributes)
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     val filterDropdownOpen = Var(false)
 
     createPopper(s"#filter-btn", s"#filter-dropdown", "bottom-start", false)
@@ -625,7 +629,7 @@ abstract class EntityPage[T <: Entity[T]](
                           case _ => {}
                         }
                       }),
-                  ): @nowarn
+                  )
 
                 if (csvHeader.isEmpty) csvHeader = selectedHeaders
                 if (csvRow.nonEmpty)
@@ -633,7 +637,7 @@ abstract class EntityPage[T <: Entity[T]](
               })
           }
         })
-      }): @nowarn
+      })
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")

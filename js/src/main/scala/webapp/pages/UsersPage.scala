@@ -21,13 +21,19 @@ import webapp.entity.*
 import UsersPage.*
 import webapp.services.Toaster
 import webapp.services.RoutingService
+import webapp.services.MailService
 import webapp.npm.IIndexedDB
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class UsersPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexeddb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
 ) extends EntityPage[User](
       Title("User"),
       None,

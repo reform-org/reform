@@ -25,12 +25,18 @@ import webapp.npm.IIndexedDB
 import rescala.default.*
 import webapp.utils.Seqnal.*
 import webapp.npm.JSUtils.toMoneyString
+import webapp.services.MailService
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class PaymentLevelsPage()(using
     repositories: Repositories,
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
       Some("Paymentlevel Description..."),

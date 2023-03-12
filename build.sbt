@@ -7,7 +7,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 name := "Reform"
 ThisBuild / version := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.2.2"
+ThisBuild / scalaVersion := "3.2.0"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -30,7 +30,9 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     /*Test / scalaJSModuleInitializers := Seq(
       {ModuleInitializer.mainMethod("webapp.MainJSTest", "main").withModuleID("main")}
     ),*/
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule)
+    },
     scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
@@ -74,7 +76,6 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.21.2",
     ),
-    libraryDependencies += compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.5" cross CrossVersion.full),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
       "-no-indent",

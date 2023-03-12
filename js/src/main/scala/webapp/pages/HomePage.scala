@@ -40,16 +40,19 @@ import rescala.default.*
 
 import scala.util.Success
 import scala.util.Failure
+import webapp.services.MailService
 
-case class HomePage()(using indexeddb: IIndexedDB) extends Page {
+case class HomePage()(using
+    indexeddb: IIndexedDB,
+    routing: RoutingService,
+    repositories: Repositories,
+    toaster: Toaster,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
 
     navigationHeader(
       div(
