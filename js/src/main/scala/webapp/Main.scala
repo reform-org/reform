@@ -34,31 +34,32 @@ import scala.annotation.nowarn
 
 object Main {
   def main(): Unit = {
-    lazy val toaster: Toaster = Toaster()
-    lazy val mailing: MailService = MailService()
-    lazy val routing: RoutingService = RoutingService(using jsImplicits)
-    lazy val indexedDb: IIndexedDB = IndexedDB(using jsImplicits)
-    lazy val registry: Registry = Registry()
-    lazy val webrtc: WebRTCService = WebRTCService(using registry, toaster, discovery)
-    lazy val repositories: Repositories = Repositories()(using registry, indexedDb)
-    lazy val discovery: DiscoveryService = DiscoveryService(using toaster)
     lazy val jsImplicits: JSImplicits =
-      JSImplicits(toaster, mailing, routing, indexedDb, registry, webrtc, repositories, discovery)
+      new JSImplicits() {
+        lazy val toaster: Toaster = Toaster()
+        lazy val mailing: MailService = MailService()
+        lazy val routing: RoutingService = RoutingService(using jsImplicits)
+        lazy val indexeddb: IIndexedDB = IndexedDB(using jsImplicits)
+        lazy val registry: Registry = Registry()
+        lazy val webrtc: WebRTCService = WebRTCService(using registry, toaster, discovery)
+        lazy val repositories: Repositories = Repositories()(using registry, indexeddb)
+        lazy val discovery: DiscoveryService = DiscoveryService(using toaster)
+      }
     // we could assign the members later if this doesn't work?
 
     helpers.OutwatchTracing.error.unsafeForeach { throwable =>
-      toaster.make(
+      jsImplicits.toaster.make(
         s"Unknown internal exception: ${throwable.getMessage}",
         ToastMode.Infinit,
         ToastType.Error,
       )
     }
 
-    indexedDb
+    jsImplicits.indexeddb
       .update[String]("test", _ => "test")
       .onComplete(value => {
         if (value.isFailure) {
-          toaster.make(
+          jsImplicits.toaster.make(
             "Application unusable because storage is not available. Your Browser does not support IndexedDB! Private tabs in Firefox don't work.",
             ToastMode.Persistent,
             ToastType.Error,
@@ -66,16 +67,16 @@ object Main {
         }
       })
 
-    if (discovery.tokenIsValid(discovery.token.now))
-      discovery
+    if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.now))
+      jsImplicits.discovery
         .connect(using jsImplicits)()
         .toastOnError(using jsImplicits)()
     Outwatch
       .renderInto[SyncIO](
         "#app",
         body(
-          routing.render,
-          toaster.render,
+          jsImplicits.routing.render,
+          jsImplicits.toaster.render,
         ),
       )
       .unsafeRunSync()

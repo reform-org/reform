@@ -12,6 +12,8 @@ import webapp.*
 import webapp.given
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
+import webapp.services.LoginException
+import webapp.services.LoginInfo
 import webapp.services.Toaster
 
 import webapp.given_ExecutionContext
@@ -173,10 +175,10 @@ class Login(using jsImplicits: JSImplicits) {
                 onClick
                   .foreach(_ =>
                     jsImplicits.discovery
-                      .login(new jsImplicits.discovery.LoginInfo(username.now, password.now))
+                      .login(new LoginInfo(username.now, password.now))
                       .onComplete(result => {
                         result match {
-                          case Failure(exception: jsImplicits.discovery.LoginException) => {
+                          case Failure(exception: LoginException) => {
                             exception.fields.foreach(field => {
                               val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
                               input.setCustomValidity(exception.message)

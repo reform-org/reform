@@ -35,21 +35,21 @@ class AvailableConnection(
     val mutualTrust: Boolean,
 )
 
+class LoginException(val message: String, val fields: Seq[String]) extends Throwable(message)
+
+class LoginInfo(val username: String, val password: String)
+object LoginInfo {
+  val codec: JsonValueCodec[LoginInfo] = JsonCodecMaker.make
+}
+
 class DiscoveryService(using toaster: Toaster) {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
-
-  class LoginInfo(val username: String, val password: String)
-  object LoginInfo {
-    val codec: JsonValueCodec[LoginInfo] = JsonCodecMaker.make
-  }
 
   class LoginRepsonse(val token: String, val username: String)
   object LoginRepsonse {
     val codec: JsonValueCodec[LoginRepsonse] = JsonCodecMaker.make
   }
-
-  class LoginException(val message: String, val fields: Seq[String]) extends Throwable(message)
 
   class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
 

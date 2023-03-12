@@ -49,7 +49,7 @@ class MailService {
             if (s.status > 400 && s.status < 500) {
               val error = (json.get.asInstanceOf[js.Dynamic]).error;
               promise.failure(
-                new jsImplicits.discovery.LoginException(
+                new LoginException(
                   error.message.asInstanceOf[String],
                   error.fields.asInstanceOf[js.Array[String]].toSeq,
                 ),

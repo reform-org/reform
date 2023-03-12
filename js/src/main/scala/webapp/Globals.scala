@@ -18,16 +18,16 @@ import loci.registry.Registry
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
 
-case class JSImplicits(
-    toaster: Toaster,
-    mailing: MailService,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    registry: Registry,
-    webrtc: WebRTCService,
-    repositories: Repositories,
-    discovery: DiscoveryService,
-) {}
+abstract case class JSImplicits() {
+  lazy val toaster: Toaster
+  lazy val mailing: MailService
+  lazy val routing: RoutingService
+  lazy val indexeddb: IIndexedDB
+  lazy val registry: Registry
+  lazy val webrtc: WebRTCService
+  lazy val repositories: Repositories
+  lazy val discovery: DiscoveryService
+}
 
 object Globals {
   lazy val VITE_SELENIUM: Boolean = js.`import`.meta.env.VITE_SELENIUM.asInstanceOf[String] == "true"
