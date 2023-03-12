@@ -26,24 +26,20 @@ import webapp.npm.IIndexedDB
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class UsersPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[User](
       Title("User"),
       None,
-      repositories.users,
-      repositories.users.all,
+      jsImplicits.repositories.users,
+      jsImplicits.repositories.users.all,
       Seq(UserAttributes().username, UserAttributes().role, UserAttributes().comment),
       DefaultEntityRow(),
     ) {}
 
-class UserAttributes(using routing: RoutingService) {
+class UserAttributes(using jsImplicits: JSImplicits) {
   def username = BuildUIAttribute().string
     .withLabel("Username")
     .require

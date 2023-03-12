@@ -27,16 +27,10 @@ import webapp.services.MailService
 import webapp.npm.IIndexedDB
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
-
+import webapp.JSImplicits
 object Routes {
   def fromPath(using
-      repositories: Repositories,
-      toaster: Toaster,
-      routing: RoutingService,
-      indexedb: IIndexedDB,
-      mailing: MailService,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
+      jsImplicits: JSImplicits,
   ): Path => Page = {
     case Root                         => HomePage()
     case Root / "projects"            => ProjectsPage()

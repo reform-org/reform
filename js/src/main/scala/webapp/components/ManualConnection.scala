@@ -36,7 +36,7 @@ private sealed trait State {
   def render(using state: Var[State]): VNode
 }
 
-private def showConnectionToken(connection: PendingConnection)(using toaster: Toaster) = {
+private def showConnectionToken(connection: PendingConnection)(using jsImplicits: JSImplicits) = {
   connection.session.map(session => {
     div(
       cls := "flex gap-1 mt-2",
@@ -67,7 +67,7 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
   })
 }
 
-private case class Init()(using webrtc: WebRTCService, toaster: Toaster) extends State {
+private case class Init()(using jsImplicits: JSImplicits) extends State {
   private def initializeHostSession(using state: Var[State]): Unit = {
     val pendingConnection =
       PendingConnection.webrtcIntermediate(WebRTC.offer(webrtcConfig), alias.now)
@@ -95,7 +95,7 @@ private case class Init()(using webrtc: WebRTCService, toaster: Toaster) extends
   }
 }
 
-private case class ClientAskingForHostSessionToken()(using webrtc: WebRTCService, toaster: Toaster) extends State {
+private case class ClientAskingForHostSessionToken()(using jsImplicits: JSImplicits) extends State {
   private val sessionToken = Var("")
   private val alias = Var("")
   override def render(using state: Var[State]): VNode = div(
@@ -126,10 +126,9 @@ private case class ClientAskingForHostSessionToken()(using webrtc: WebRTCService
 
 private case class ClientWaitingForHostConfirmation(connection: PendingConnection, alias: String)(using
     state: Var[State],
-    webrtc: WebRTCService,
-    toaster: Toaster,
+    jsImplicits: JSImplicits,
 ) extends State {
-  webrtc
+  jsImplicits.webrtc
     .registerConnection(connection.connector, alias, "manual", connection.connection)
     .foreach(_ => onConnected())
 
@@ -149,12 +148,11 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
 
 private case class HostPending(connection: PendingConnection)(using
     state: Var[State],
-    webrtc: WebRTCService,
-    toaster: Toaster,
+    jsImplicits: JSImplicits,
 ) extends State {
   private val sessionTokenFromClient = Var("")
 
-  webrtc
+  jsImplicits.webrtc
     .registerConnection(
       connection.connector,
       "Anonymous",
@@ -195,14 +193,13 @@ private case class HostPending(connection: PendingConnection)(using
 
   private def onConnected(ref: RemoteRef)(using state: Var[State]): Unit = {
     println(PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
-    webrtc.setAlias(ref, PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
+    jsImplicits.webrtc.setAlias(ref, PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
     state.set(Init())
   }
 }
 
 class ManualConnectionDialog(using
-    webrtc: WebRTCService,
-    toaster: Toaster,
+    jsImplicits: JSImplicits,
 )(private val state: Var[State] = Var(Init())) {
 
   private val mode = Var("host")

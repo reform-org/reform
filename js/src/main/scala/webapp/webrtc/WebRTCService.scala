@@ -144,15 +144,5 @@ class WebRTCService(using registry: Registry, toaster: Toaster, discovery: Disco
     removeConnection.fire(remoteRef)
   })
 
-  Try(
-    registry
-      .connect(
-        WS(
-          s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}${Globals.VITE_ALWAYS_ONLINE_PEER_PATH}",
-        ),
-      )
-      .toastOnError(ToastMode.Short, ToastType.Warning),
-  ).toastOnError(ToastMode.Short, ToastType.Warning)
-
   registry.connect(BroadcastChannel("default"))
 }

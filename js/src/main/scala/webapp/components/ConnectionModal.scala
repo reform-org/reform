@@ -12,6 +12,8 @@ import webapp.*
 import webapp.given
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
+import webapp.services.LoginException
+import webapp.services.LoginInfo
 import webapp.services.Toaster
 
 import webapp.given_ExecutionContext
@@ -21,7 +23,7 @@ import webapp.components.common.*
 import webapp.utils.Futures.*
 import scala.annotation.nowarn
 
-class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, toaster: Toaster) {
+class ConnectionModal(using jsImplicits: JSImplicits) {
   val offlineBanner = {
     div(
       cls := "bg-amber-100 flex flex-col items-center",
@@ -30,7 +32,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
         onClick.foreach(e => {
           if (Settings.get[Boolean]("autoconnect").getOrElse(true)) {
             e.target.classList.add("animate-spin")
-            discovery
+            jsImplicits.discovery
               .connect(true, true)
               .transform(res => {
                 window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
@@ -53,7 +55,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
       span(
         cls := "text-green-600 font-semibold text-center",
         "You are connected to the discovery server as ",
-        i(Signal { discovery.token.value.map(t => discovery.decodeToken(t).username) }),
+        i(Signal { jsImplicits.discovery.token.value.map(t => jsImplicits.discovery.decodeToken(t).username) }),
         "!",
       ),
     )
@@ -67,11 +69,11 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
         "Connections",
         cls := "font-bold text-lg p-2",
       ),
-      webrtc.connections.map(_.map(ref => {
-        val info = webrtc.getInformation(ref)
+      jsImplicits.webrtc.connections.map(_.map(ref => {
+        val info = jsImplicits.webrtc.getInformation(ref)
         connectionRow(info.alias, info.source, info.uuid, info.displayId, ref)
       })),
-      webrtc.connections.map(connections => {
+      jsImplicits.webrtc.connections.map(connections => {
         var emptyState: VNode = div()
         if (connections.size == 0) {
           emptyState = div(
@@ -86,7 +88,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
         cls := "divider uppercase text-slate-300 font-bold text-xs mb-2 after:dark:bg-gray-300 before:dark:bg-gray-300",
         "Auto",
       ), {
-        discovery.online.map(online => {
+        jsImplicits.discovery.online.map(online => {
           if (online) {
             li(
               onlineBanner,
@@ -100,8 +102,9 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
       },
       Login().render,
       Signal {
-        val connections = webrtc.connections.value.map(webrtc.getInformation(_).uuid)
-        val availableConnections = discovery.availableConnections.value.filter(p => !connections.contains(p.uuid))
+        val connections = jsImplicits.webrtc.connections.value.map(jsImplicits.webrtc.getInformation(_).uuid)
+        val availableConnections =
+          jsImplicits.discovery.availableConnections.value.filter(p => !connections.contains(p.uuid))
         availableConnections.map(connection => availableConnectionRow(connection))
       },
       label(
@@ -111,7 +114,9 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
           CheckboxStyle.Primary,
           cls := "checkbox-sm",
           checked := Settings.get[Boolean]("autoconnect").getOrElse(true),
-          onClick.foreach(e => discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked)),
+          onClick.foreach(e =>
+            jsImplicits.discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked),
+          ),
         ),
       ),
       div(
@@ -124,20 +129,20 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
   }
 }
 
-class Login(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster) {
+class Login(using jsImplicits: JSImplicits) {
   private val username = Var("")
   private val password = Var("")
 
   def render: VNode = {
     div(
-      discovery.token
+      jsImplicits.discovery.token
         .map(token =>
-          if (discovery.tokenIsValid(token))
+          if (jsImplicits.discovery.tokenIsValid(token))
             Button(
               ButtonStyle.Primary,
               "Logout",
               onClick.foreach(_ => {
-                discovery.logout()
+                jsImplicits.discovery.logout()
               }),
               cls := "w-full mt-2",
             )
@@ -169,11 +174,11 @@ class Login(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: T
                 disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
                 onClick
                   .foreach(_ =>
-                    discovery
-                      .login(new discovery.LoginInfo(username.now, password.now))
+                    jsImplicits.discovery
+                      .login(new LoginInfo(username.now, password.now))
                       .onComplete(result => {
                         result match {
-                          case Failure(exception: discovery.LoginException) => {
+                          case Failure(exception: LoginException) => {
                             exception.fields.foreach(field => {
                               val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
                               input.setCustomValidity(exception.message)
@@ -182,7 +187,7 @@ class Login(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: T
                           }
                           case Failure(_) => console.log("some login error has happened")
                           case Success(value) => {
-                            discovery.setAutoconnect(true)
+                            jsImplicits.discovery.setAutoconnect(true)
                           }
                         }
                       }),

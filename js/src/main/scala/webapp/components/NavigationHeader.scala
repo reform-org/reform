@@ -29,15 +29,10 @@ import webapp.pages.DocumentsPage
 import webapp.npm.IIndexedDB
 import rescala.default.*
 import webapp.services.MailService
+import webapp.JSImplicits
 
 def navigationMenu(using
-    routing: RoutingService,
-    repositories: Repositories,
-    toaster: Toaster,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 )(
     classes: String,
 ) = {
@@ -90,13 +85,7 @@ def navigationMenu(using
 def navigationHeader(
     content: VMod*,
 )(using
-    routing: RoutingService,
-    repositories: Repositories,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
+    jsImplicits: JSImplicits,
 ) = {
   val dropdownOpen = Var(false)
   div(
@@ -134,7 +123,7 @@ def navigationHeader(
             onClick.foreach(e => {
               e.preventDefault()
               e.target.asInstanceOf[HTMLElement].blur()
-              routing.to(HomePage())
+              jsImplicits.routing.to(HomePage())
             }),
           ),
         ),
@@ -152,7 +141,7 @@ def navigationHeader(
               icons.Connections(cls := "h-6 w-6"),
               span(
                 cls := "badge badge-sm indicator-item",
-                webrtc.connections.map(_.size),
+                jsImplicits.webrtc.connections.map(_.size),
               ),
             ),
           ),

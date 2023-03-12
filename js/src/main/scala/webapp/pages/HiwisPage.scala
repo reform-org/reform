@@ -27,24 +27,20 @@ import webapp.services.MailService
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class HiwisPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Hiwi](
       Title("Hiwi"),
       None,
-      repositories.hiwis,
-      repositories.hiwis.all,
+      jsImplicits.repositories.hiwis,
+      jsImplicits.repositories.hiwis.all,
       Seq(HiwiAttributes().firstName, HiwiAttributes().lastName, HiwiAttributes().eMail, HiwiAttributes().birthdate),
       DefaultEntityRow(),
     ) {}
 
-class HiwiAttributes(using routing: RoutingService) {
+class HiwiAttributes(using jsImplicits: JSImplicits) {
   def firstName = BuildUIAttribute().string
     .withLabel("First Name")
     .require

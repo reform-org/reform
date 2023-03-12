@@ -8,15 +8,10 @@ import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
+import webapp.JSImplicits
 
 case class ErrorPage()(using
-    indexeddb: IIndexedDB,
-    routing: RoutingService,
-    repositories: Repositories,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
-    toaster: Toaster,
-    mailing: MailService,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
   def render: VNode = {
@@ -30,9 +25,9 @@ case class ErrorPage()(using
           onClick.foreach(e => {
             e.preventDefault()
             e.target.asInstanceOf[HTMLElement].blur()
-            routing.to(HomePage())
+            jsImplicits.routing.to(HomePage())
           }),
-          href := routing.linkPath(HomePage()),
+          href := jsImplicits.routing.linkPath(HomePage()),
         ),
       ),
     )

@@ -7,6 +7,7 @@ import webapp.components.common.*
 import webapp.services.RoutingService
 import webapp.npm.JSUtils
 import webapp.services.Page
+import webapp.JSImplicits
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -21,7 +22,7 @@ case class UIAttributeBuilder[AttributeType](
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
-)(using routing: RoutingService) {
+)(using jsImplicits: JSImplicits) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
 
@@ -69,8 +70,8 @@ case class UIAttributeBuilder[AttributeType](
 
 }
 
-implicit class BindToInt[AttributeType](using routing: RoutingService)(self: UIAttributeBuilder[AttributeType])(implicit
-    ordering: Ordering[AttributeType],
+implicit class BindToInt[AttributeType](using jsImplicits: JSImplicits)(self: UIAttributeBuilder[AttributeType])(
+    implicit ordering: Ordering[AttributeType],
 ) {
   def bindAsNumber[EntityType](
       getter: EntityType => Attribute[AttributeType],
@@ -89,7 +90,7 @@ implicit class BindToInt[AttributeType](using routing: RoutingService)(self: UIA
   )
 }
 
-implicit class BindToLong(using routing: RoutingService)(self: UIAttributeBuilder[Long]) {
+implicit class BindToLong(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Long]) {
   def bindAsDatePicker[EntityType](
       getter: EntityType => Attribute[Long],
       setter: (EntityType, Attribute[Long]) => EntityType,
@@ -104,7 +105,7 @@ implicit class BindToLong(using routing: RoutingService)(self: UIAttributeBuilde
   )
 }
 
-implicit class BindToBoolean(using routing: RoutingService)(self: UIAttributeBuilder[Boolean]) {
+implicit class BindToBoolean(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Boolean]) {
   def bindAsCheckbox[EntityType](
       getter: EntityType => Attribute[Boolean],
       setter: (EntityType, Attribute[Boolean]) => EntityType,
@@ -116,7 +117,7 @@ implicit class BindToBoolean(using routing: RoutingService)(self: UIAttributeBui
   )
 }
 
-implicit class BindToSeqOfString(using routing: RoutingService)(self: UIAttributeBuilder[Seq[String]]) {
+implicit class BindToSeqOfString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Seq[String]]) {
 
   def bindAsMultiSelect[EntityType](
       getter: EntityType => Attribute[Seq[String]],
@@ -161,7 +162,7 @@ implicit class BindToSeqOfString(using routing: RoutingService)(self: UIAttribut
     )
 }
 
-implicit class BindToString(using routing: RoutingService)(self: UIAttributeBuilder[String]) {
+implicit class BindToString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[String]) {
 
   def bindAsSelect[EntityType](
       getter: EntityType => Attribute[String],
@@ -186,7 +187,7 @@ implicit class BindToString(using routing: RoutingService)(self: UIAttributeBuil
 
 }
 
-class BuildUIAttribute(using routing: RoutingService) {
+class BuildUIAttribute(using jsImplicits: JSImplicits) {
 
   def string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
 

@@ -28,24 +28,20 @@ import webapp.services.MailService
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class DocumentsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Document](
       Title("Document"),
       Some("Document Description..."),
-      repositories.requiredDocuments,
-      repositories.requiredDocuments.all,
+      jsImplicits.repositories.requiredDocuments,
+      jsImplicits.repositories.requiredDocuments.all,
       Seq(DocumentAttributes().name),
       DefaultEntityRow(),
     ) {}
 
-class DocumentAttributes(using routing: RoutingService) {
+class DocumentAttributes(using jsImplicits: JSImplicits) {
   def name = BuildUIAttribute().string
     .withLabel("Name")
     .require

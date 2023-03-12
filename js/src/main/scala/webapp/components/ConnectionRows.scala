@@ -9,15 +9,15 @@ import webapp.given
 import webapp.services.AvailableConnection
 import webapp.services.DiscoveryService
 import webapp.webrtc.WebRTCService
+import webapp.JSImplicits
 
 import webapp.given_ExecutionContext
 
 def connectionRow(name: String, source: String, uuid: String, displayId: String, ref: RemoteRef)(using
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) = {
   if (source == "discovery") {
-    val own = discovery.decodeToken(discovery.token.now.get)
+    val own = jsImplicits.discovery.decodeToken(jsImplicits.discovery.token.now.get)
     div(
       cls := "flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-gray-600 rounded-md",
       div(
@@ -47,7 +47,7 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
             "Connection: ",
             cls := "text-slate-400",
           ),
-          Signal.fromFuture(webrtc.getConnectionMode(ref)),
+          Signal.fromFuture(jsImplicits.webrtc.getConnectionMode(ref)),
           cls := "text-slate-500 text-xs",
         ),
       ),
@@ -60,7 +60,7 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
               cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-1 h-fit w-fit cursor-pointer",
               data.tip := "Remove from Whitelist",
               onClick.foreach(_ => {
-                discovery.deleteFromWhitelist(uuid)
+                jsImplicits.discovery.deleteFromWhitelist(uuid)
               }),
             ),
           )
@@ -70,7 +70,7 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
           cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
           data.tip := "Close Connection",
           onClick.foreach(_ => {
-            discovery.disconnect(ref)
+            jsImplicits.discovery.disconnect(ref)
           }),
         ),
       ),
@@ -97,7 +97,7 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
             "Connection: ",
             cls := "text-slate-400",
           ),
-          Signal.fromFuture(webrtc.getConnectionMode(ref)),
+          Signal.fromFuture(jsImplicits.webrtc.getConnectionMode(ref)),
           cls := "text-slate-500 text-xs",
         ),
       ),
@@ -105,14 +105,14 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
         icons.Close(cls := "text-red-600 w-4 h-4"),
         cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
         data.tip := "Close Connection",
-        onClick.foreach(_ => discovery.disconnect(ref)),
+        onClick.foreach(_ => jsImplicits.discovery.disconnect(ref)),
       ),
     )
 }
 
 def availableConnectionRow(
     connection: AvailableConnection,
-)(using discovery: DiscoveryService) = {
+)(using jsImplicits: JSImplicits) = {
   div(
     cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
     div(
@@ -145,7 +145,7 @@ def availableConnectionRow(
         icons.Check(cls := "w-4 h-4 text-green-600"),
         cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
         data.tip := "Add to Whitelist",
-        onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
+        onClick.foreach(_ => jsImplicits.discovery.addToWhitelist(connection.uuid)),
       )
     } else None,
     if (connection.trusted && connection.mutualTrust) {
@@ -153,7 +153,7 @@ def availableConnectionRow(
         icons.Check(cls := "w-4 h-4 text-green-600"),
         cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
         data.tip := "Connect",
-        onClick.foreach(_ => discovery.connectTo(connection.uuid)),
+        onClick.foreach(_ => jsImplicits.discovery.connectTo(connection.uuid)),
       )
     } else None,
   )

@@ -31,25 +31,20 @@ import webapp.repo.Synced
 import outwatch.dsl.*
 import webapp.npm.JSUtils.toMoneyString
 import webapp.services.MailService
+import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
-def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
-  repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
+def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = {
+  jsImplicits.repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
 }
 
 case class ContractDraftsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Contract](
       Title("Contract Draft"),
       None,
-      repositories.contracts,
+      jsImplicits.repositories.contracts,
       onlyDrafts,
       Seq(
         ContractPageAttributes().contractAssociatedProject,
@@ -68,17 +63,17 @@ case class ContractDraftsPage()(using
       Button(
         ButtonStyle.LightPrimary,
         "Add new contract draft",
-        onClick.foreach(_ => routing.to(NewContractPage())),
+        onClick.foreach(_ => jsImplicits.routing.to(NewContractPage())),
         cls := "!mt-0",
       ),
     ) {}
 
-class ContractDraftAttributes(using repositories: Repositories) {
+class ContractDraftAttributes(using jsImplicits: JSImplicits) {
   def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
     Signal.dynamic {
       val contractTypeId = contract.contractType.get.getOrElse("")
       val contractSchema =
-        repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
+        jsImplicits.repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
       contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).count(predicate)
     }
 

@@ -43,7 +43,7 @@ abstract class UIAttribute[EntityType, AttributeType](
     override val label: String,
     override val width: Option[String] = None,
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UIBasicAttribute[EntityType](label, width, formats) {
 
   override def render(id: String, entity: EntityType): VMod = {
@@ -95,7 +95,7 @@ class UITextAttribute[EntityType, AttributeType](
     val stepSize: String = "1",
     val min: String = "",
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UIAttribute[EntityType, AttributeType](
       getter = getter,
       readConverter = readConverter,
@@ -195,7 +195,7 @@ class UINumberAttribute[EntityType, AttributeType](
     regex: String,
     stepSize: String,
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)(implicit ordering: Ordering[AttributeType])
+)(using jsImplicits: JSImplicits)(implicit ordering: Ordering[AttributeType])
     extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -224,7 +224,7 @@ class UIDateAttribute[EntityType](
     isRequired: Boolean,
     min: String = "",
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UITextAttribute[EntityType, Long](
       getter = getter,
       setter = setter,
@@ -268,7 +268,7 @@ class UICheckboxAttribute[EntityType](
     label: String,
     isRequired: Boolean,
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UITextAttribute[EntityType, Boolean](
       getter = getter,
       setter = setter,
@@ -319,7 +319,7 @@ class UISelectAttribute[EntityType, AttributeType](
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UITextAttribute[EntityType, AttributeType](
       getter = getter,
       setter = setter,
@@ -360,7 +360,11 @@ class UISelectAttribute[EntityType, AttributeType](
       searchEnabled, {
         createPage match {
           case Some(createPage) =>
-            a(href := routing.linkPath(createPage), target := "_blank", "Nothing found. Click here to create.")
+            a(
+              href := jsImplicits.routing.linkPath(createPage),
+              target := "_blank",
+              "Nothing found. Click here to create.",
+            )
           case None => span("Nothing found...")
         }
       },
@@ -385,7 +389,7 @@ class UIMultiSelectAttribute[EntityType](
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UITextAttribute[EntityType, Seq[String]](
       getter = getter,
       setter = setter,
@@ -441,7 +445,11 @@ class UIMultiSelectAttribute[EntityType](
         searchEnabled, {
           createPage match {
             case Some(createPage) =>
-              a(href := routing.linkPath(createPage), target := "_blank", "Nothing found. Click here to create.")
+              a(
+                href := jsImplicits.routing.linkPath(createPage),
+                target := "_blank",
+                "Nothing found. Click here to create.",
+              )
             case None => span("Nothing found...")
           }
         },
@@ -463,7 +471,7 @@ class UICheckboxListAttribute[EntityType](
     val options: EntityType => Signal[Seq[SelectOption]],
     val optionsForFilter: Signal[Seq[SelectOption]],
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
-)(using routing: RoutingService)
+)(using jsImplicits: JSImplicits)
     extends UITextAttribute[EntityType, Seq[String]](
       getter = getter,
       setter = setter,

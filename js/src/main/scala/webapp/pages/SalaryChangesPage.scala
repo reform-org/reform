@@ -28,19 +28,15 @@ import webapp.services.MailService
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class SalaryChangesPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
       Some("Salary Changes Description..."),
-      repositories.salaryChanges,
-      repositories.salaryChanges.all,
+      jsImplicits.repositories.salaryChanges,
+      jsImplicits.repositories.salaryChanges.all,
       Seq(
         SalaryChangeAttributes().salaryChangeValue,
         SalaryChangeAttributes().salaryChangeLimit,
@@ -51,13 +47,7 @@ case class SalaryChangesPage()(using
     ) {}
 
 class SalaryChangeAttributes(using
-    repositories: Repositories,
-    routing: RoutingService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) {
   def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
@@ -80,7 +70,7 @@ class SalaryChangeAttributes(using
   def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
     BuildUIAttribute()
       .select(
-        repositories.paymentLevels.existing.map(list =>
+        jsImplicits.repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )

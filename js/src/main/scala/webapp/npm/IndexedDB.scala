@@ -18,6 +18,7 @@ import webapp.services.Toaster
 import webapp.services.ToastMode
 import webapp.services.ToastType
 import webapp.Globals
+import webapp.JSImplicits
 
 // manually extracted from scalablytyped
 
@@ -180,7 +181,7 @@ object IDBTransactionMode {
     "versionchange".asInstanceOf[stdStrings.versionchange]
 }
 
-class IndexedDB(using toaster: Toaster) extends IIndexedDB {
+class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
 
   val database =
     mod
