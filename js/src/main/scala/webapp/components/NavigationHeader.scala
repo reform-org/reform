@@ -28,8 +28,17 @@ import webapp.services.Toaster
 import webapp.pages.DocumentsPage
 import webapp.npm.IIndexedDB
 import rescala.default.*
+import webapp.services.MailService
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB)(
+def navigationMenu(using
+    routing: RoutingService,
+    repositories: Repositories,
+    toaster: Toaster,
+    indexedb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+)(
     classes: String,
 ) = {
   ul(
@@ -87,6 +96,7 @@ def navigationHeader(
     discovery: DiscoveryService,
     toaster: Toaster,
     indexeddb: IIndexedDB,
+    mailing: MailService,
 ) = {
   val dropdownOpen = Var(false)
   div(

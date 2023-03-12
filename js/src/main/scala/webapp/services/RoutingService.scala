@@ -33,16 +33,17 @@ import scala.annotation.nowarn
 import scalajs.js.JSConverters.JSRichOption
 
 trait Page {
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode
+  def render: VNode
 }
 
-class RoutingService(using repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB) {
+class RoutingService(using
+    repositories: Repositories,
+    toaster: Toaster,
+    indexedb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
+) {
   given RoutingService = this;
 
   private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
@@ -51,13 +52,7 @@ class RoutingService(using repositories: Repositories, toaster: Toaster, indexed
 
   val queryParameters: Signal[Map[String, String | Seq[String]]] = query.map(identity)
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): Signal[VNode] =
+  def render: Signal[VNode] =
     page.map(_.render)
 
   def to(

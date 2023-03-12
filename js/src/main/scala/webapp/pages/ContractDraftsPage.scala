@@ -32,6 +32,8 @@ import outwatch.dsl.*
 import webapp.npm.JSUtils.toMoneyString
 import webapp.services.MailService
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
   repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
 }
@@ -41,22 +43,25 @@ case class ContractDraftsPage()(using
     toaster: Toaster,
     routing: RoutingService,
     indexedb: IIndexedDB,
+    mailing: MailService,
+    webrtc: WebRTCService,
+    discovery: DiscoveryService,
 ) extends EntityPage[Contract](
       Title("Contract Draft"),
       None,
       repositories.contracts,
       onlyDrafts,
       Seq(
-        contractAssociatedProject,
-        contractAssociatedHiwi,
-        contractAssociatedSupervisor,
-        contractStartDate,
-        contractEndDate,
-        signed,
-        submitted,
-        moneyPerHour,
-        contractHoursPerMonth,
-        ContractDraftsPage.forms,
+        ContractPageAttributes().contractAssociatedProject,
+        ContractPageAttributes().contractAssociatedHiwi,
+        ContractPageAttributes().contractAssociatedSupervisor,
+        ContractPageAttributes().contractStartDate,
+        ContractPageAttributes().contractEndDate,
+        ContractPageAttributes().signed,
+        ContractPageAttributes().submitted,
+        ContractPageAttributes().moneyPerHour,
+        ContractPageAttributes().contractHoursPerMonth,
+        ContractDraftAttributes().forms,
       ),
       DetailPageEntityRowBuilder(),
       true,
@@ -68,10 +73,8 @@ case class ContractDraftsPage()(using
       ),
     ) {}
 
-object ContractDraftsPage {
-  private def countForms(contract: Contract, predicate: String => Boolean)(using
-      repositories: Repositories,
-  ): Signal[Int] =
+class ContractDraftAttributes(using repositories: Repositories) {
+  def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
     Signal.dynamic {
       val contractTypeId = contract.contractType.get.getOrElse("")
       val contractSchema =
@@ -79,7 +82,7 @@ object ContractDraftsPage {
       contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).count(predicate)
     }
 
-  private def forms(using repositories: Repositories) =
+  def forms =
     new UIReadOnlyAttribute[Contract, String](
       label = "Forms",
       getter = (id, contract) =>

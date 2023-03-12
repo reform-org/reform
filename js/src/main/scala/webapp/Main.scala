@@ -35,6 +35,7 @@ import scala.annotation.nowarn
 object Main {
   def main(): Unit = {
     given toaster: Toaster = Toaster()
+    given mailing: MailService = MailService()
     given routing: RoutingService = RoutingService()
     given indexedDb: IIndexedDB = IndexedDB()
     given registry: Registry = Registry()
