@@ -24,6 +24,7 @@ import webapp.components.common.*
 import ContractSchemasPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
 
 case class ContractSchemasPage()(using
     repositories: Repositories,

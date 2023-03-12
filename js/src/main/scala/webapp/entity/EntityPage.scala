@@ -42,6 +42,7 @@ import scala.collection.mutable
 import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
 import webapp.npm.JSUtils.downloadFile
+import webapp.services.MailService
 
 case class Title(singular: String) {
 

@@ -49,6 +49,7 @@ import scala.math.BigDecimal.RoundingMode
 import webapp.pages.ProjectsPage.countContractHours
 import scala.concurrent.Promise
 import scala.concurrent.Future
+import webapp.services.MailService
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -622,7 +623,31 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               "Contract requirements - reminder mail",
               div(
                 cls := "p-4",
-                "Send a reminder e-mail to Hiwi",
+                Button(
+                  ButtonStyle.Primary,
+                  "Send Reminder",
+                  onClick.foreach(_ => {
+                    editingValue.now.map((contract, _) => {
+                      val supervisorOption = repositories.supervisors.all.now.find(p =>
+                        p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
+                      )
+                      val hiwiOption =
+                        repositories.hiwis.all.now.find(p => p.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+
+                      if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
+                        val hiwi = hiwiOption.get.signal.now
+                        val supervisor = supervisorOption.get.signal.now
+
+                        // mailing.sendMail(
+                        //   hiwi.eMail.get.getOrElse(""),
+                        //   supervisor.eMail.get.getOrElse(""),
+                        //   h1("A very cool mail ", hiwi.firstName.get.getOrElse(""), cls := "color:red"),
+                        // )
+                      }
+
+                    }): @nowarn
+                  }),
+                ),
               ),
             ),
             // Check requirements

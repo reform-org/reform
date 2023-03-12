@@ -24,6 +24,7 @@ import DocumentsPage.*
 import webapp.entity.Document
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
 case class DocumentsPage()(using
     repositories: Repositories,
     toaster: Toaster,
