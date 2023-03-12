@@ -58,7 +58,7 @@ case class NewContractPage()(using
 
   def render: VNode = {
     div(
-      repositories.contracts
+      jsImplicits.repositories.contracts
         .create(Contract.empty.default)
         .map(currentContract => {
           InnerEditContractsPage(Some(currentContract), "").render()
@@ -68,16 +68,10 @@ case class NewContractPage()(using
 }
 
 case class EditContractsPage(contractId: String)(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
-  private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
+  private val existingValue = jsImplicits.repositories.contracts.all.map(_.find(c => c.id == contractId))
 
   def render: VNode = {
     div(
@@ -104,18 +98,12 @@ case class EditContractsPage(contractId: String)(using
 }
 
 case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contractId: String)(using
-    toaster: Toaster,
-    repositories: Repositories,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
   private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Future[String] = {
-    indexeddb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
     existingValue match {
@@ -130,16 +118,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             }
           })
           .map(value => {
-            toaster.make(
+            jsImplicits.toaster.make(
               "Contract saved!",
               ToastMode.Short,
               ToastType.Success,
             )
             if (!stayOnPage) {
               if (value.isDraft.get.getOrElse(true)) {
-                routing.to(ContractDraftsPage())
+                jsImplicits.routing.to(ContractDraftsPage())
               } else {
-                routing.to(ContractsPage())
+                jsImplicits.routing.to(ContractsPage())
               }
             }
 
@@ -147,7 +135,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
           })
       }
       case None => {
-        repositories.contracts
+        jsImplicits.repositories.contracts
           .create({
             if (finalize) {
               editingNow.copy(isDraft = editingNow.isDraft.set(false))
@@ -158,9 +146,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
           .map(entity => {
             editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
             if (entity.signal.now.isDraft.get.getOrElse(true)) {
-              routing.to(ContractDraftsPage())
+              jsImplicits.routing.to(ContractDraftsPage())
             } else {
-              routing.to(ContractsPage())
+              jsImplicits.routing.to(ContractsPage())
             }
 
             entity.id
@@ -170,7 +158,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
   }
 
   private def cancelEdit(): Unit = {
-    routing.to(ContractsPage())
+    jsImplicits.routing.to(ContractsPage())
   }
 
   private def editStep(number: String, title: String, props: VMod*): VNode = {
@@ -203,7 +191,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
-          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
           .toastOnError(ToastMode.Infinit)
       }),
     ),
@@ -241,7 +229,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
-          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
           .toastOnError(ToastMode.Infinit)
       }),
     ),
@@ -276,7 +264,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       if (e.keyCode == 83 && e.ctrlKey) {
         e.preventDefault()
         createOrUpdate(false, true)
-          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
           .toastOnError(ToastMode.Infinit)
       }
     }
@@ -442,7 +430,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                       editingValue.value.map((_, contractSignal) => {
                         val contract = contractSignal.value
                         val project = contract.contractAssociatedProject.get.flatMap(id =>
-                          repositories.projects.all.value
+                          jsImplicits.repositories.projects.all.value
                             .find(project => project.id == id),
                         )
                         val limit =
@@ -529,7 +517,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     Signal.dynamic {
                       editingValue.value.flatMap((_, value) =>
                         value.value.contractAssociatedProject.get.flatMap(id =>
-                          repositories.projects.all.value
+                          jsImplicits.repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
                               (ProjectAttributes()
@@ -560,7 +548,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     Signal.dynamic {
                       editingValue.value.flatMap((_, value) =>
                         value.value.contractAssociatedProject.get.flatMap(id =>
-                          repositories.projects.all.value
+                          jsImplicits.repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
                               (ProjectAttributes()
@@ -601,7 +589,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   div(Signal.dynamic {
                     editingValue.value.flatMap((_, value) =>
                       value.value.contractAssociatedProject.get.flatMap(id =>
-                        repositories.projects.all.value
+                        jsImplicits.repositories.projects.all.value
                           .find(project => project.id == id)
                           .map(value => s"${value.signal.value.maxHours.get.getOrElse(0)} h"),
                       ),
@@ -633,17 +621,19 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   "Send Reminder",
                   onClick.foreach(_ => {
                     editingValue.now.map((contract, _) => {
-                      val supervisorOption = repositories.supervisors.all.now.find(p =>
+                      val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
                         p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
                       )
                       val hiwiOption =
-                        repositories.hiwis.all.now.find(p => p.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                        jsImplicits.repositories.hiwis.all.now.find(p =>
+                          p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
+                        )
 
                       if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
                         val hiwi = hiwiOption.get.signal.now
                         val supervisor = supervisorOption.get.signal.now
 
-                        mailing.sendMail(
+                        jsImplicits.mailing.sendMail(
                           hiwi.eMail.get.getOrElse(""),
                           supervisor.eMail.get.getOrElse(""),
                           h1("A very cool mail ", hiwi.firstName.get.getOrElse(""), cls := "color:red"),
@@ -684,8 +674,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     editingValue.now.map((_, contractOption) => {
                       val contract = contractOption.now
                       val hiwiOption =
-                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
-                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        jsImplicits.repositories.hiwis.all.now
+                          .find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
                         .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
 
                       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty) {
@@ -731,7 +722,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         }.toFuture
                           .toastOnError()
                       } else {
-                        toaster.make(
+                        jsImplicits.toaster.make(
                           "The PDF could not be created because not all required fields are filled in!",
                           ToastMode.Long,
                           ToastType.Error,
@@ -764,11 +755,13 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     editingValue.now.map((_, contractOption) => {
                       val contract = contractOption.now
                       val hiwiOption =
-                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
-                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        jsImplicits.repositories.hiwis.all.now
+                          .find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
                         .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
                       val projectOption =
-                        repositories.projects.all.now.find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
+                        jsImplicits.repositories.projects.all.now
+                          .find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
 
                       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
                         val hiwi = hiwiOption.get.signal.now
@@ -835,7 +828,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         }.toFuture
                           .toastOnError()
                       } else {
-                        toaster.make(
+                        jsImplicits.toaster.make(
                           "The PDF could not be created because not all required fields are filled in!",
                           ToastMode.Long,
                           ToastType.Error,

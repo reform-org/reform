@@ -14,8 +14,8 @@ import webapp.utils.Futures.*
 import outwatch.*
 import outwatch.dsl.*
 import cats.effect.SyncIO
-
-class MailService(using webrtc: WebRTCService, toaster: Toaster, discovery: DiscoveryService) {
+import webapp.JSImplicits
+class MailService(using jsImplicits: JSImplicits) {
 
   class MailBody(val reciever: String, val replyTo: String, val html: String) {}
   object MailBody {
@@ -32,7 +32,7 @@ class MailService(using webrtc: WebRTCService, toaster: Toaster, discovery: Disc
     Outwatch.renderInto[SyncIO](element, html).unsafeRunSync()
     val htmlString = element.innerHTML
 
-    if (discovery.tokenIsValid(discovery.token.now)) {
+    if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.now)) {
       val requestHeaders = new Headers();
       requestHeaders.set("content-type", "application/json");
       fetch(
@@ -49,7 +49,7 @@ class MailService(using webrtc: WebRTCService, toaster: Toaster, discovery: Disc
             if (s.status > 400 && s.status < 500) {
               val error = (json.get.asInstanceOf[js.Dynamic]).error;
               promise.failure(
-                new discovery.LoginException(
+                new jsImplicits.discovery.LoginException(
                   error.message.asInstanceOf[String],
                   error.fields.asInstanceOf[js.Array[String]].toSeq,
                 ),

@@ -25,9 +25,9 @@ case class ErrorPage()(using
           onClick.foreach(e => {
             e.preventDefault()
             e.target.asInstanceOf[HTMLElement].blur()
-            routing.to(HomePage())
+            jsImplicits.routing.to(HomePage())
           }),
-          href := routing.linkPath(HomePage()),
+          href := jsImplicits.routing.linkPath(HomePage()),
         ),
       ),
     )

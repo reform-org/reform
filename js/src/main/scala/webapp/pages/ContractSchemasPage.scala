@@ -53,7 +53,7 @@ class ContractSchemaAttributes(using
   def files: UIAttribute[ContractSchema, Seq[String]] =
     BuildUIAttribute()
       .multiSelect(
-        repositories.requiredDocuments.existing.map(list =>
+        jsImplicits.repositories.requiredDocuments.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(_.name.get.getOrElse("")))),
         ),
       )

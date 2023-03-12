@@ -38,8 +38,8 @@ case class ProjectsPage()(using
 ) extends EntityPage[Project](
       Title("Project"),
       None,
-      repositories.projects,
-      repositories.projects.all,
+      jsImplicits.repositories.projects,
+      jsImplicits.repositories.projects.all,
       Seq[UIBasicAttribute[Project]](
         ProjectAttributes().name,
         ProjectAttributes().maxHours,
@@ -51,7 +51,7 @@ case class ProjectsPage()(using
       DefaultEntityRow(),
     ) {}
 
-class ProjectAttributes(using routing: RoutingService, repositories: Repositories) {
+class ProjectAttributes(using jsImplicits: JSImplicits) {
   def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
@@ -81,7 +81,7 @@ class ProjectAttributes(using routing: RoutingService, repositories: Repositorie
     new UIReadOnlyAttribute[Project, String](
       label = "Contracts",
       getter = (id, project) =>
-        repositories.contracts.all
+        jsImplicits.repositories.contracts.all
           .map(_.map(_.signal))
           .flatten
           .map(contracts =>
@@ -92,7 +92,7 @@ class ProjectAttributes(using routing: RoutingService, repositories: Repositorie
         UIFormat(
           (id, project) => {
             Signal.dynamic {
-              val contracts = repositories.contracts.all.value.map(_.signal.value)
+              val contracts = jsImplicits.repositories.contracts.all.value.map(_.signal.value)
               contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
             }
           },
@@ -107,7 +107,7 @@ class ProjectAttributes(using routing: RoutingService, repositories: Repositorie
       pred: (contractId: String, contract: Contract) => Boolean,
   ): Signal[Int] = {
     Signal.dynamic {
-      repositories.contracts.all.value
+      jsImplicits.repositories.contracts.all.value
         .filter(contract => contract.signal.value.contractAssociatedProject.get.contains(id))
         .filter(contract => pred(contract.id, contract.signal.value))
         .map(x => {

@@ -47,13 +47,7 @@ case class SalaryChangesPage()(using
     ) {}
 
 class SalaryChangeAttributes(using
-    repositories: Repositories,
-    routing: RoutingService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) {
   def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
@@ -76,7 +70,7 @@ class SalaryChangeAttributes(using
   def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
     BuildUIAttribute()
       .select(
-        repositories.paymentLevels.existing.map(list =>
+        jsImplicits.repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )

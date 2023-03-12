@@ -51,12 +51,12 @@ class DetailPageEntityRow[T <: Entity[T]](
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
+      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
       case New(value)                    =>
     }
   }
 
-  override protected def afterCreated(id: String): Unit = routing.to(EditContractsPage(id))
+  override protected def afterCreated(id: String): Unit = jsImplicits.routing.to(EditContractsPage(id))
 }
 
 class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
@@ -68,8 +68,8 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
   ): EntityRow[T] = DetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
-def onlyFinalizedContracts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
-  repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
+def onlyFinalizedContracts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = {
+  jsImplicits.repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
 }
 
 case class ContractsPage()(using
@@ -77,7 +77,7 @@ case class ContractsPage()(using
 ) extends EntityPage[Contract](
       Title("Contract"),
       None,
-      repositories.contracts,
+      jsImplicits.repositories.contracts,
       onlyFinalizedContracts,
       Seq(
         ContractPageAttributes().contractAssociatedProject,
@@ -99,7 +99,7 @@ class ContractPageAttributes(using
   def contractAssociatedHiwi: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        repositories.hiwis.existing.map(list =>
+        jsImplicits.repositories.hiwis.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -115,7 +115,7 @@ class ContractPageAttributes(using
   def contractAssociatedProject: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(options =
-        repositories.projects.existing.map(
+        jsImplicits.repositories.projects.existing.map(
           _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -131,7 +131,7 @@ class ContractPageAttributes(using
   def contractAssociatedSupervisor: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        repositories.supervisors.existing.map(list =>
+        jsImplicits.repositories.supervisors.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -147,7 +147,7 @@ class ContractPageAttributes(using
   def contractAssociatedType: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        repositories.contractSchemas.existing.map(list =>
+        jsImplicits.repositories.contractSchemas.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -212,7 +212,7 @@ class ContractPageAttributes(using
   def contractAssociatedPaymentLevel: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        repositories.paymentLevels.existing.map(list =>
+        jsImplicits.repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -228,7 +228,7 @@ class ContractPageAttributes(using
   def requiredDocuments: UIAttribute[Contract, Seq[String]] = {
     BuildUIAttribute()
       .checkboxList(
-        repositories.requiredDocuments.existing.map(list =>
+        jsImplicits.repositories.requiredDocuments.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -241,11 +241,11 @@ class ContractPageAttributes(using
           Signal.dynamic {
             contract.contractType.get
               .flatMap(contractTypeId =>
-                repositories.contractSchemas.all.value
+                jsImplicits.repositories.contractSchemas.all.value
                   .find(contractType => contractType.id == contractTypeId)
                   .flatMap(value =>
                     value.signal.value.files.get.flatMap(requiredDocuments => {
-                      val documents = repositories.requiredDocuments.all.value
+                      val documents = jsImplicits.repositories.requiredDocuments.all.value
                       val checkedDocuments =
                         if (contract.requiredDocuments.get.nonEmpty) contract.requiredDocuments.get
                         else Some(Seq.empty)
@@ -286,7 +286,7 @@ class ContractPageAttributes(using
 
   def getSalaryChange(id: String, contract: Contract, date: Long): Signal[Option[SalaryChange]] =
     Signal.dynamic {
-      val salaryChanges = repositories.salaryChanges.all.value
+      val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
       salaryChanges
         .map(_.signal.value)
         .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)

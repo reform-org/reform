@@ -33,13 +33,13 @@ case class UsersPage()(using
 ) extends EntityPage[User](
       Title("User"),
       None,
-      repositories.users,
-      repositories.users.all,
+      jsImplicits.repositories.users,
+      jsImplicits.repositories.users.all,
       Seq(UserAttributes().username, UserAttributes().role, UserAttributes().comment),
       DefaultEntityRow(),
     ) {}
 
-class UserAttributes(using routing: RoutingService) {
+class UserAttributes(using jsImplicits: JSImplicits) {
   def username = BuildUIAttribute().string
     .withLabel("Username")
     .require

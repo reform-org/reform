@@ -37,12 +37,7 @@ trait Page {
 }
 
 class RoutingService(using
-    repositories: Repositories,
-    toaster: Toaster,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) {
   given RoutingService = this;
 

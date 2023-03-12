@@ -35,8 +35,8 @@ case class PaymentLevelsPage()(using
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
       Some("Paymentlevel Description..."),
-      repositories.paymentLevels,
-      repositories.paymentLevels.all,
+      jsImplicits.repositories.paymentLevels,
+      jsImplicits.repositories.paymentLevels.all,
       Seq(
         PaymentLevelAttributes().title,
         PaymentLevelAttributes().pdfCheckboxName,
@@ -45,7 +45,7 @@ case class PaymentLevelsPage()(using
       DefaultEntityRow(),
     ) {}
 
-class PaymentLevelAttributes(using routing: RoutingService, repositories: Repositories) {
+class PaymentLevelAttributes(using jsImplicits: JSImplicits) {
   def title = BuildUIAttribute().string
     .withLabel("Title")
     .require
@@ -67,7 +67,7 @@ class PaymentLevelAttributes(using routing: RoutingService, repositories: Reposi
       label = "Current Value",
       getter = (id, paymentLevel) =>
         Signal.dynamic {
-          val salaryChanges = repositories.salaryChanges.all.value
+          val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
           toMoneyString(
             salaryChanges
               .map(_.signal.value)

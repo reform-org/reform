@@ -35,13 +35,13 @@ case class DocumentsPage()(using
 ) extends EntityPage[Document](
       Title("Document"),
       Some("Document Description..."),
-      repositories.requiredDocuments,
-      repositories.requiredDocuments.all,
+      jsImplicits.repositories.requiredDocuments,
+      jsImplicits.repositories.requiredDocuments.all,
       Seq(DocumentAttributes().name),
       DefaultEntityRow(),
     ) {}
 
-class DocumentAttributes(using routing: RoutingService) {
+class DocumentAttributes(using jsImplicits: JSImplicits) {
   def name = BuildUIAttribute().string
     .withLabel("Name")
     .require

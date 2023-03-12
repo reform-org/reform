@@ -34,13 +34,13 @@ case class HiwisPage()(using
 ) extends EntityPage[Hiwi](
       Title("Hiwi"),
       None,
-      repositories.hiwis,
-      repositories.hiwis.all,
+      jsImplicits.repositories.hiwis,
+      jsImplicits.repositories.hiwis.all,
       Seq(HiwiAttributes().firstName, HiwiAttributes().lastName, HiwiAttributes().eMail, HiwiAttributes().birthdate),
       DefaultEntityRow(),
     ) {}
 
-class HiwiAttributes(using routing: RoutingService) {
+class HiwiAttributes(using jsImplicits: JSImplicits) {
   def firstName = BuildUIAttribute().string
     .withLabel("First Name")
     .require

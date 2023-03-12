@@ -34,13 +34,13 @@ case class SupervisorsPage()(using
 ) extends EntityPage[Supervisor](
       Title("Supervisor"),
       None,
-      repositories.supervisors,
-      repositories.supervisors.all,
+      jsImplicits.repositories.supervisors,
+      jsImplicits.repositories.supervisors.all,
       Seq(SupervisorAttributes().name, SupervisorAttributes().eMail),
       DefaultEntityRow(),
     ) {}
 
-class SupervisorAttributes(using routing: RoutingService) {
+class SupervisorAttributes(using jsImplicits: JSImplicits) {
   def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
@@ -49,7 +49,7 @@ class SupervisorAttributes(using routing: RoutingService) {
       (s, a) => s.copy(name = a),
     )
 
-  def eMail(using routing: RoutingService) = BuildUIAttribute().email
+  def eMail = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](
