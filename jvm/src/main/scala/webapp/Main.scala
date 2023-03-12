@@ -32,12 +32,8 @@ import java.util as ju
 
   val server = new Server()
   val connector = new ServerConnector(server)
-    <<<<<<< HEAD
-  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PORT").getOrElse("1334").toInt
-  =======
   val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").get.toInt
   val path = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PATH").get
-    >>>>>>> origin / main
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler().nn
