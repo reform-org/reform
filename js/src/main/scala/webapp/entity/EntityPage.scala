@@ -144,9 +144,9 @@ class EntityRow[T <: Entity[T]](
             }),
         ),
       td(
-        cls := "py min-w-[185px] max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
+        cls := "py min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
-          cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
+          cls := "h-full w-full flex flex-row items-center gap-2 justify-center md:px-4",
           form(
             idAttr := id,
             onSubmit.foreach(e => {
@@ -162,9 +162,19 @@ class EntityRow[T <: Entity[T]](
                     formId := id,
                     `type` := "submit",
                     idAttr := "add-entity-button",
-                    "Save",
+                    icons.Save(cls := "w-4 h-4 md:hidden"),
+                    span(cls := "hidden md:block", "Save"),
+                    cls := "h-7 tooltip tooltip-top entity-save",
+                    data.tip := "Save",
                   ),
-                  TableButton(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
+                  TableButton(
+                    ButtonStyle.LightDefault,
+                    icons.Close(cls := "w-4 h-4 md:hidden"),
+                    span(cls := "hidden md:block", "Cancel"),
+                    onClick.foreach(_ => cancelEdit()),
+                    cls := "h-7 tooltip tooltip-top entity-cancel",
+                    data.tip := "Cancel",
+                  ),
                 )
               }
               case None => {
@@ -173,7 +183,10 @@ class EntityRow[T <: Entity[T]](
                   formId := id,
                   `type` := "submit",
                   idAttr := "add-entity-button",
-                  "Add " + this.title.singular,
+                  icons.Add(cls := "w-4 h-4 md:hidden"),
+                  span(cls := "hidden md:block", "Add " + this.title.singular),
+                  cls := "h-7 tooltip tooltip-top entity-add",
+                  data.tip := "Add" + this.title.singular,
                 )
               }
             }
@@ -196,10 +209,10 @@ class EntityRow[T <: Entity[T]](
             )
             deleteModal.set(Some(modal))
             val res = {
-              IconButton(
+              TableButton(
                 ButtonStyle.LightError,
-                icons.Close(cls := "text-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-left",
+                icons.Delete(cls := "text-red-600 w-4 h-4"),
+                cls := "h-7 tooltip tooltip-top",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               )
@@ -256,14 +269,21 @@ class EntityRow[T <: Entity[T]](
                 }),
             ),
           td(
-            cls := "min-w-[185px] max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
+            cls := "min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
-              TableButton(ButtonStyle.LightPrimary, "Edit", onClick.foreach(_ => startEditing())),
-              IconButton(
+              TableButton(
+                ButtonStyle.LightPrimary,
+                icons.Edit(cls := "w-4 h-4 md:hidden"),
+                span(cls := "hidden md:block", "Edit"),
+                cls := "h-7 tooltip tooltip-top entity-edit",
+                data.tip := "Edit",
+                onClick.foreach(_ => startEditing()),
+              ),
+              TableButton(
                 ButtonStyle.LightError,
-                icons.Close(cls := "text-red-600 w-4 h-4"),
-                cls := "tooltip tooltip-top",
+                icons.Delete(cls := "text-red-600 w-4 h-4"),
+                cls := "h-7 tooltip tooltip-top entity-delete",
                 data.tip := "Delete",
                 onClick.foreach(_ => modal.open()),
               ),
@@ -400,7 +420,7 @@ abstract class EntityPage[T <: Entity[T]](
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
           div(
-            cls := "flex flex-row gap-2 items-center mb-4",
+            cls := "flex flex-col sm:flex-row gap-2 items-left md:items-center mb-4",
             div(
               cls := "dropdown",
               cls <-- filterDropdownOpen.map(if (_) Some("dropdown-open") else None),
@@ -421,7 +441,7 @@ abstract class EntityPage[T <: Entity[T]](
               ),
               ul(
                 idAttr := "filter-dropdown",
-                cls := "dropdown-content menu p-2 shadow-xl bg-base-100 rounded-box w-96 dark:bg-gray-700",
+                cls := "dropdown-content menu max-w-[90%] p-2 shadow-xl bg-base-100 rounded-box w-96 dark:bg-gray-700",
                 filter.render,
                 "Columns",
                 MultiSelect(
@@ -476,7 +496,7 @@ abstract class EntityPage[T <: Entity[T]](
                         ),
                     ),
                   th(
-                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[185px] max-w-[185px] !z-[1]",
+                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] !z-[1]",
                   ),
                 ),
               ),

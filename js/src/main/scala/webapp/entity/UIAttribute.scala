@@ -246,6 +246,7 @@ class UIDateAttribute[EntityType](
       entity: EntityType,
   ): VMod = TableInput(
     cls := "input valid:input-success",
+    placeholder := "dd.mm.yyyy",
     `type` := "date",
     formId := _formId,
     required := isRequired,
@@ -335,6 +336,7 @@ class UISelectAttribute[EntityType, AttributeType](
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     div(
+      // cls := "!rounded-none",
       formats.map(f => cls <-- f.apply(id, entity)),
       duplicateValuesHandler(attr.getAll.map(x => options(entity).map(o => o.filter(p => p.id == x).map(v => v.name)))),
     )
@@ -363,7 +365,9 @@ class UISelectAttribute[EntityType, AttributeType](
         }
       },
       isRequired,
+      isRequired,
       formId := _formId,
+      cls := "!rounded-none",
     )
   }
 }
@@ -443,9 +447,9 @@ class UIMultiSelectAttribute[EntityType](
         },
         isRequired,
         formId := _formId,
+        cls := "!rounded-none",
       ),
     )
-
   }
 }
 

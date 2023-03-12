@@ -29,14 +29,16 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
       icons.Reload(
         cls := "h-8 w-8 animate-reload text-amber-600",
         onClick.foreach(e => {
-          e.target.classList.add("animate-spin")
-          discovery
-            .connect(true, true)
-            .transform(res => {
-              window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000): @nowarn
-              res
-            })
-            .toastOnError()
+          if (Settings.get[Boolean]("autoconnect").getOrElse(true)) {
+            e.target.classList.add("animate-spin")
+            discovery
+              .connect(true, true)
+              .transform(res => {
+                window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000): @nowarn
+                res
+              })
+              .toastOnError()
+          }
         }),
       ),
       span(
@@ -51,7 +53,9 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
       cls := "bg-green-100 flex flex-col	items-center",
       span(
         cls := "text-green-600 font-semibold text-center",
-        "You are connected to the discovery server!",
+        "You are connected to the discovery server as ",
+        i(Signal { discovery.token.value.map(t => discovery.decodeToken(t).username) }),
+        "!",
       ),
     )
   }
@@ -66,7 +70,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
       ),
       webrtc.connections.map(_.map(ref => {
         val info = webrtc.getInformation(ref)
-        connectionRow(info.alias, info.source, info.uuid, ref)
+        connectionRow(info.alias, info.source, info.uuid, info.displayId, ref)
       })),
       webrtc.connections.map(connections => {
         var emptyState: VNode = div()
@@ -96,7 +100,11 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
         })
       },
       Login().render,
-      discovery.availableConnections.map(_.map(connection => availableConnectionRow(connection))),
+      Signal {
+        val connections = webrtc.connections.value.map(webrtc.getInformation(_).uuid)
+        val availableConnections = discovery.availableConnections.value.filter(p => !connections.contains(p.uuid))
+        availableConnections.map(connection => availableConnectionRow(connection))
+      },
       label(
         cls := "label cursor-pointer",
         span(cls := "label-text dark:text-gray-300", "Autoconnect"),
@@ -132,7 +140,7 @@ class Login() {
               onClick.foreach(_ => {
                 discovery.logout()
               }),
-              cls := "w-full",
+              cls := "w-full mt-2",
             )
           else
             div(
@@ -158,7 +166,7 @@ class Login() {
               Button(
                 ButtonStyle.Primary,
                 "Login",
-                cls := "w-full",
+                cls := "w-full mt-2",
                 disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
                 onClick
                   .foreach(_ =>
@@ -173,8 +181,10 @@ class Login() {
                               input.reportValidity()
                             })
                           }
-                          case Failure(_)     => console.log("some login error has happened")
-                          case Success(value) => {}
+                          case Failure(_) => console.log("some login error has happened")
+                          case Success(value) => {
+                            discovery.setAutoconnect(true)
+                          }
                         }
                       }),
                   ),

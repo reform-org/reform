@@ -158,6 +158,7 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       connection.connection,
       "",
       "",
+      "",
       onConnected,
     )
     .foreach(ref => onConnected(ref))

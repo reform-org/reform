@@ -39,3 +39,20 @@ def navigationLink(using routing: RoutingService)(page: Page, label: String): VN
     href := routing.linkPath(page),
   )
 }
+
+def navigationIconLink(using routing: RoutingService)(page: Page, icon: VNode): VNode = {
+  a(
+    cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+    icon,
+    onClick.foreach(e => {
+      e.preventDefault()
+      e.target.asInstanceOf[HTMLElement].blur()
+      if (e.ctrlKey) {
+        routing.to(page, true)
+      } else {
+        routing.to(page, false)
+      }
+    }),
+    href := routing.linkPath(page),
+  )
+}

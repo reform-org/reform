@@ -22,11 +22,14 @@ import webapp.utils.Futures.*
 import scala.util.Try
 import loci.communicator.ws.webnative.WS
 import loci.registry.Registry
+import loci.transmitter.RemoteRef
+import webapp.{*, given}
+import scala.annotation.nowarn
 
 class AvailableConnection(
     val name: String,
     val uuid: String,
-    val online: Boolean,
+    val displayId: String,
     val trusted: Boolean,
     val mutualTrust: Boolean,
 )
@@ -60,10 +63,11 @@ class DiscoveryService {
   )(using discovery: DiscoveryService, webrtc: WebRTCService, toaster: Toaster, registry: Registry): Unit = {
     Settings.set[Boolean]("autoconnect", value)
     if (value == true) {
-      console.log("should connect")
       discovery
         .connect()
         .toastOnError()
+    } else {
+      discovery.close()
     }
   }
 
@@ -101,7 +105,9 @@ class DiscoveryService {
     updateToken(None)
   }
 
-  def login(loginInfo: LoginInfo)(using webrtc: WebRTCService, toaster: Toaster, registry: Registry): Future[String] = {
+  def login(
+      loginInfo: LoginInfo,
+  )(using webrtc: WebRTCService, toaster: Toaster, registry: Registry, discovery: DiscoveryService): Future[String] = {
     val promise = Promise[String]()
 
     if (!tokenIsValid(token.now)) {
@@ -129,7 +135,6 @@ class DiscoveryService {
             } else {
               val newToken = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
               updateToken(Some(newToken))
-              console.log("Fetched a new token.")
               this
                 .connect()
                 .toastOnError()
@@ -143,8 +148,21 @@ class DiscoveryService {
     promise.future
   }
 
+  def disconnect(ref: RemoteRef)(using webrtc: WebRTCService): Unit = {
+    reportClosedConnection(webrtc.getInformation(ref).connectionId)
+    ref.disconnect()
+  }
+
   def addToWhitelist(uuid: String): Unit = {
     ws.foreach(emit(_, "whitelist_add", js.Dynamic.literal("uuid" -> uuid)))
+  }
+
+  def connectTo(uuid: String): Unit = {
+    ws.foreach(emit(_, "connect_to", js.Dynamic.literal("uuid" -> uuid)))
+  }
+
+  def reportClosedConnection(id: String): Unit = {
+    ws.foreach(emit(_, "connection_closed", js.Dynamic.literal("connection" -> id)))
   }
 
   def deleteFromWhitelist(uuid: String): Unit = {
@@ -160,16 +178,19 @@ class DiscoveryService {
     ws.send(JSON.stringify(event))
   }
 
-  private def handle(ws: WebSocket, name: String, payload: js.Dynamic)(using webrtc: WebRTCService) = {
-    console.log(name, payload)
+  private def handle(ws: WebSocket, name: String, payload: js.Dynamic)(using
+      webrtc: WebRTCService,
+      discovery: DiscoveryService,
+  ) = {
+    if (name != "ping") console.log(name, payload)
     name match {
       case "request_host_token" => {
         val config = new RTCConfiguration {
           iceServers = js.Array(
             new RTCIceServer {
               urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
-              username = payload.host.turn.username.asInstanceOf[String];
-              credential = payload.host.turn.credential.asInstanceOf[String];
+              username = payload.host.turnKey.username.asInstanceOf[String];
+              credential = payload.host.turnKey.credential.asInstanceOf[String];
             },
           );
         }
@@ -189,7 +210,8 @@ class DiscoveryService {
           payload.client.user.name.asInstanceOf[String],
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
-          payload.client.user.uuid.asInstanceOf[String],
+          payload.client.user.id.asInstanceOf[String],
+          payload.client.user.displayId.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
       }
@@ -197,8 +219,8 @@ class DiscoveryService {
         val config = new RTCConfiguration {
           iceServers = js.Array(new RTCIceServer {
             urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
-            username = payload.client.turn.username.asInstanceOf[String];
-            credential = payload.client.turn.credential.asInstanceOf[String];
+            username = payload.client.turnKey.username.asInstanceOf[String];
+            credential = payload.client.turnKey.credential.asInstanceOf[String];
           });
         }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
@@ -220,7 +242,8 @@ class DiscoveryService {
           payload.host.user.name.asInstanceOf[String],
           "discovery",
           pendingConnections(payload.id.asInstanceOf[String]).connection,
-          payload.host.user.uuid.asInstanceOf[String],
+          payload.host.user.id.asInstanceOf[String],
+          payload.host.user.displayId.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
       }
@@ -230,8 +253,8 @@ class DiscoveryService {
           .map(client =>
             new AvailableConnection(
               client.name.asInstanceOf[String],
-              client.uuid.asInstanceOf[String],
-              client.online.asInstanceOf[Int] != 0,
+              client.id.asInstanceOf[String],
+              client.displayId.asInstanceOf[String],
               client.trusted.asInstanceOf[Int] != 0,
               client.mutualTrust.asInstanceOf[Int] != 0,
             ),
@@ -258,11 +281,15 @@ class DiscoveryService {
     }
   }
 
-  def connect(resetWebsocket: Boolean = false, force: Boolean = false)(using
-      webrtc: WebRTCService,
-      registry: Registry,
-      toaster: Toaster,
-  ): Future[Boolean] = {
+  def close() = {
+    ws.map(ws => ws.close()): @nowarn
+    ws = None
+  }
+
+  def connect(
+      resetWebsocket: Boolean = false,
+      force: Boolean = false,
+  )(using webrtc: WebRTCService, discovery: DiscoveryService, registry: Registry, toaster: Toaster): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
     if (resetWebsocket) ws = None
@@ -281,7 +308,6 @@ class DiscoveryService {
         }
 
         ws.get.onopen = (_) => {
-          console.log("opened websocket")
           online.set(true)
           emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
           promise.success(true)
@@ -294,7 +320,6 @@ class DiscoveryService {
 
         ws.get.onclose = (_) => {
           online.set(false)
-          console.log("closed websocket")
         }
 
         ws.get.onerror = (_) => {
@@ -303,7 +328,7 @@ class DiscoveryService {
 
         Try({
           val ws = WS(
-            s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PORT}/registry/?${token.now
+            s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}/registry/?${token.now
                 .getOrElse("")}",
           )
           registry

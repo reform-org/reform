@@ -6,6 +6,7 @@ module.exports = {
 		minHeight: {
 			10: "2.5rem",
 			9: "2.25rem",
+			8: "2rem",
 		},
 		extend: {},
 	},
