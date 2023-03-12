@@ -64,7 +64,7 @@ val browserThemeDark = {
       (event: MediaQueryList) => {
         browserThemeDark.set(event.matches)
       },
-    ): @nowarn
+    )
   browserThemeDark
 }
 

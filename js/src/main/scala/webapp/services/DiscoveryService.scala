@@ -279,7 +279,7 @@ class DiscoveryService {
   }
 
   def close() = {
-    ws.map(ws => ws.close()): @nowarn
+    ws.map(ws => ws.close())
     ws = None
   }
 

@@ -629,7 +629,7 @@ abstract class EntityPage[T <: Entity[T]](
                           case _ => {}
                         }
                       }),
-                  ): @nowarn
+                  )
 
                 if (csvHeader.isEmpty) csvHeader = selectedHeaders
                 if (csvRow.nonEmpty)
@@ -637,7 +637,7 @@ abstract class EntityPage[T <: Entity[T]](
               })
           }
         })
-      }): @nowarn
+      })
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")

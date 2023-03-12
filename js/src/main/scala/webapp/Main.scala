@@ -49,7 +49,7 @@ object Main {
         ToastMode.Infinit,
         ToastType.Error,
       )
-    }: @nowarn
+    }
 
     indexedDb
       .update[String]("test", _ => "test")

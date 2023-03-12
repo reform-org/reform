@@ -173,13 +173,13 @@ class RoutingService(using
 
   query.map(query => {
     window.history.replaceState(null.asInstanceOf[js.Any], "", linkPath(page.now, query))
-  }): @nowarn
+  })
 
   window.onpopstate = _ => {
     page.set(Routes.fromPath(Path(window.location.pathname)))
     query.set(decodeQueryParameters(window.location.search))
   }
 
-  query.observe(t => page.map(page => linkPath(page, t))): @nowarn
+  query.observe(t => page.map(page => linkPath(page, t)))
 
 }

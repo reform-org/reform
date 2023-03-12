@@ -646,7 +646,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         )
                       }
 
-                    }): @nowarn
+                    })
                   }),
                 ),
               ),
@@ -734,7 +734,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         )
                         document.getElementById("loadLetter").classList.remove("loading")
                       }
-                    }): @nowarn
+                    })
                   }),
                 ),
                 label(
@@ -838,7 +838,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         )
                         document.getElementById("loadLetter").classList.remove("loading")
                       }
-                    }): @nowarn
+                    })
                   }),
                 ),
                 label(

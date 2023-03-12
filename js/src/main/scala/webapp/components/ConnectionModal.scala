@@ -33,7 +33,7 @@ class ConnectionModal(using webrtc: WebRTCService, discovery: DiscoveryService, 
             discovery
               .connect(true, true)
               .transform(res => {
-                window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000): @nowarn
+                window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
                 res
               })
               .toastOnError()
