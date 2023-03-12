@@ -265,8 +265,8 @@ object MultiSelect {
     showItems,
     searchEnabled,
     emptyState,
-    required,
-    required,
+    required = required,
+    styleValidity = required,
     props,
   ).render
 
