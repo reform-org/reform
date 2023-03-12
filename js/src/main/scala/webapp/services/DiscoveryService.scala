@@ -179,6 +179,7 @@ class DiscoveryService {
       webrtc: WebRTCService,
       discovery: DiscoveryService,
   ) = {
+    console.log(name, payload)
     name match {
       case "request_host_token" => {
         val config = new RTCConfiguration {
