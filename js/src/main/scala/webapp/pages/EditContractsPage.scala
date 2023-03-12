@@ -397,7 +397,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                                 .getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
                                 .value
                             val hourlyWage =
-                            ContractPageAttributes()
+                              ContractPageAttributes()
                                 .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
                                 .value
                             if (hourlyWage != 0 && limit != 0) {
@@ -460,8 +460,8 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                             .getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
                             .value
                         val hourlyWage = ContractPageAttributes()
-                            .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
-                            .value
+                          .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                          .value
                         var maxHoursForTax =
                           if (hourlyWage != 0) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
                           else { BigDecimal(0) }
