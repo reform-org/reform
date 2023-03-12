@@ -12,7 +12,7 @@ import webapp.webrtc.WebRTCService
 
 import webapp.given_ExecutionContext
 
-def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(using
+def connectionRow(name: String, source: String, uuid: String, displayId: String, ref: RemoteRef)(using
     webrtc: WebRTCService,
     discovery: DiscoveryService,
 ) = {
@@ -31,7 +31,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
             "ID: ",
             cls := "text-slate-400",
           ),
-          uuid.split("-").nn(0).nn,
+          displayId,
           cls := "text-slate-500 text-xs",
         ),
         i(
@@ -70,7 +70,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
           cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
           data.tip := "Close Connection",
           onClick.foreach(_ => {
-            ref.disconnect()
+            discovery.disconnect(ref)
           }),
         ),
       ),
@@ -105,7 +105,7 @@ def connectionRow(name: String, source: String, uuid: String, ref: RemoteRef)(us
         icons.Close(cls := "text-red-600 w-4 h-4"),
         cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
         data.tip := "Close Connection",
-        onClick.foreach(_ => ref.disconnect()),
+        onClick.foreach(_ => discovery.disconnect(ref)),
       ),
     )
 }
@@ -126,7 +126,7 @@ def availableConnectionRow(
           "ID: ",
           cls := "text-slate-400",
         ),
-        connection.uuid.split("-").nn(0).nn,
+        connection.displayId,
         cls := "text-slate-500 text-xs",
       ),
       i(
@@ -134,15 +134,27 @@ def availableConnectionRow(
           "Trust: ",
           cls := "text-slate-400",
         ),
-        if (connection.trusted && !connection.mutualTrust) "wait for trust" else "no trust",
+        if (connection.trusted && !connection.mutualTrust) s"wait for ${connection.name} to trust you"
+        else if (!connection.trusted) s"you do not trust ${connection.name} "
+        else "you trust each other",
         cls := "text-slate-500 text-xs",
       ),
     ),
-    div(
-      icons.Check(cls := "w-4 h-4 text-green-600"),
-      cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-      data.tip := "Add to Whitelist",
-      onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
-    ),
+    if (!connection.trusted) {
+      div(
+        icons.Check(cls := "w-4 h-4 text-green-600"),
+        cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+        data.tip := "Add to Whitelist",
+        onClick.foreach(_ => discovery.addToWhitelist(connection.uuid)),
+      )
+    } else None,
+    if (connection.trusted && connection.mutualTrust) {
+      div(
+        icons.Check(cls := "w-4 h-4 text-green-600"),
+        cls := "tooltip tooltip-left hover:bg-green-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+        data.tip := "Connect",
+        onClick.foreach(_ => discovery.connectTo(connection.uuid)),
+      )
+    } else None,
   )
 }

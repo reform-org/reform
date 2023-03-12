@@ -32,4 +32,4 @@ jobs:
       - name: Build ScalaJS
         run: sbt fastLinkJS
       - name: Build JavaScript
-        run: npm run build -- --mode production
+        run: npm run build -- --mode lukasschreiber

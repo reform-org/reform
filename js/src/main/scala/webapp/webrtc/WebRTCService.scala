@@ -41,12 +41,14 @@ import loci.communicator.broadcastchannel.BroadcastChannel
 import org.scalajs.dom.RTCPeerConnection
 import webapp.utils.Futures.*
 import scala.util.Try
+import webapp.services.DiscoveryService
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
     var alias: String,
     val source: String = "manual",
     val uuid: String = "",
+    val displayId: String = "",
     val connectionId: String = "",
 ) {} // different object for discovery and manual
 
@@ -86,13 +88,14 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
       source: String,
       connection: RTCPeerConnection,
       uuid: String = "",
+      displayId: String = "",
       connectionId: String = "",
       onConnected: (ref: RemoteRef) => Unit = (_) => {},
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
-        val storedConnection = StoredConnectionInformation(alias, source, uuid, connectionId)
+        val storedConnection = StoredConnectionInformation(alias, source, uuid, displayId, connectionId)
         connectionInfo += (r.get -> storedConnection)
         connectionRefs += (connectionId -> r.get)
         webRTCConnections += (r.get -> connection)
@@ -105,10 +108,13 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
       })
   }
 
-  def closeConnectionById(id: String): Unit = {
+  def closeConnectionById(id: String)(using discovery: DiscoveryService): Unit = {
     connectionRefs.get(id) match {
-      case None      =>
-      case Some(ref) => ref.disconnect()
+      case None =>
+      case Some(ref) => {
+        ref.disconnect()
+        discovery.reportClosedConnection(id)
+      }
     }
   }
 
