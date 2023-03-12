@@ -16,9 +16,9 @@ object Futures {
 
   implicit class FutureOps[T](self: Future[T]) {
 
-    def toastOnError(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error)(using
+    def toastOnError(using
         jsImplicits: JSImplicits,
-    ): Unit = {
+    )(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error): Unit = {
       self
         .onComplete(value => {
           if (value.isFailure) {

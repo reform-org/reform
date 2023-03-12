@@ -15,14 +15,14 @@ import outwatch.*
 import outwatch.dsl.*
 import cats.effect.SyncIO
 import webapp.JSImplicits
-class MailService(using jsImplicits: JSImplicits) {
+class MailService {
 
   class MailBody(val reciever: String, val replyTo: String, val html: String) {}
   object MailBody {
     val codec: JsonValueCodec[MailBody] = JsonCodecMaker.make
   }
 
-  def sendMail(
+  def sendMail(using jsImplicits: JSImplicits)(
       reciever: String,
       replyTo: String,
       html: VNode,

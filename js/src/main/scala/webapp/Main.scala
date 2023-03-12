@@ -34,16 +34,17 @@ import scala.annotation.nowarn
 
 object Main {
   def main(): Unit = {
-    given toaster: Toaster = Toaster()
-    given mailing: MailService = MailService()
-    given routing: RoutingService = RoutingService()
-    given indexedDb: IIndexedDB = IndexedDB()
-    given registry: Registry = Registry()
-    given webrtc: WebRTCService = WebRTCService()
-    given repositories: Repositories = Repositories()
-    given discovery: DiscoveryService = DiscoveryService()
-    given jsImplicits: JSImplicits =
+    lazy val toaster: Toaster = Toaster()
+    lazy val mailing: MailService = MailService()
+    lazy val routing: RoutingService = RoutingService(using jsImplicits)
+    lazy val indexedDb: IIndexedDB = IndexedDB(using jsImplicits)
+    lazy val registry: Registry = Registry()
+    lazy val webrtc: WebRTCService = WebRTCService(using registry, toaster, discovery)
+    lazy val repositories: Repositories = Repositories()(using registry, indexedDb)
+    lazy val discovery: DiscoveryService = DiscoveryService(using toaster)
+    lazy val jsImplicits: JSImplicits =
       JSImplicits(toaster, mailing, routing, indexedDb, registry, webrtc, repositories, discovery)
+    // we could assign the members later if this doesn't work?
 
     helpers.OutwatchTracing.error.unsafeForeach { throwable =>
       toaster.make(
@@ -67,8 +68,8 @@ object Main {
 
     if (discovery.tokenIsValid(discovery.token.now))
       discovery
-        .connect()
-        .toastOnError()
+        .connect(using jsImplicits)()
+        .toastOnError(using jsImplicits)()
     Outwatch
       .renderInto[SyncIO](
         "#app",
