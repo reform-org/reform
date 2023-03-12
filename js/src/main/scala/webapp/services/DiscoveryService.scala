@@ -22,6 +22,9 @@ import webapp.utils.Futures.*
 import loci.transmitter.RemoteRef
 import webapp.{*, given}
 import scala.annotation.nowarn
+import scala.util.Try
+import loci.communicator.ws.webnative.WS
+import loci.registry.Registry
 
 class AvailableConnection(
     val name: String,
@@ -278,7 +281,10 @@ class DiscoveryService(using toaster: Toaster) {
     ws = None
   }
 
-  def connect(using webrtc: WebRTCService)(resetWebsocket: Boolean = false, force: Boolean = false): Future[Boolean] = {
+  def connect(using
+      webrtc: WebRTCService,
+      registry: Registry,
+  )(resetWebsocket: Boolean = false, force: Boolean = false): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
     if (resetWebsocket) ws = None
@@ -314,6 +320,19 @@ class DiscoveryService(using toaster: Toaster) {
         ws.get.onerror = (_) => {
           promise.failure(new Exception("Connection failed"))
         }
+
+        Try({
+          val ws = WS(
+            s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}/registry/?${token.now
+                .getOrElse("")}",
+          )
+          registry
+            .connect(
+              ws,
+            )
+            .toastOnError(ToastMode.Short, ToastType.Warning)
+        }).toastOnError(ToastMode.Short, ToastType.Warning)
+
         promise.future
       } else {
         promise.failure(new Exception("Your token is wrong")).future
