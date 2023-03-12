@@ -26,14 +26,10 @@ import webapp.npm.IIndexedDB
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class UsersPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[User](
       Title("User"),
       None,

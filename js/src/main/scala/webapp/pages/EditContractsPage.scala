@@ -49,16 +49,11 @@ import scala.math.BigDecimal.RoundingMode
 import scala.concurrent.Promise
 import scala.concurrent.Future
 import webapp.services.MailService
+import webapp.JSImplicits
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
   def render: VNode = {

@@ -25,6 +25,7 @@ import scala.annotation.nowarn
 import scala.util.Try
 import loci.communicator.ws.webnative.WS
 import loci.registry.Registry
+import webapp.JSImplicits
 
 class AvailableConnection(
     val name: String,
@@ -58,7 +59,7 @@ class DiscoveryService(using toaster: Toaster) {
 
   val online: Var[Boolean] = Var(false)
 
-  def setAutoconnect(using webrtc: WebRTCService)(
+  def setAutoconnect(using jsImplicits: JSImplicits)(
       value: Boolean,
   ): Unit = {
     Settings.set[Boolean]("autoconnect", value)
@@ -104,7 +105,7 @@ class DiscoveryService(using toaster: Toaster) {
     updateToken(None)
   }
 
-  def login(using webrtc: WebRTCService)(
+  def login(using jsImplicits: JSImplicits)(
       loginInfo: LoginInfo,
   ): Future[String] = {
     val promise = Promise[String]()
@@ -146,8 +147,8 @@ class DiscoveryService(using toaster: Toaster) {
     promise.future
   }
 
-  def disconnect(using webrtc: WebRTCService)(ref: RemoteRef): Unit = {
-    reportClosedConnection(webrtc.getInformation(ref).connectionId)
+  def disconnect(using jsImplicits: JSImplicits)(ref: RemoteRef): Unit = {
+    reportClosedConnection(jsImplicits.webrtc.getInformation(ref).connectionId)
     ref.disconnect()
   }
 
@@ -176,7 +177,7 @@ class DiscoveryService(using toaster: Toaster) {
     ws.send(JSON.stringify(event))
   }
 
-  private def handle(using webrtc: WebRTCService)(ws: WebSocket, name: String, payload: js.Dynamic) = {
+  private def handle(using jsImplicits: JSImplicits)(ws: WebSocket, name: String, payload: js.Dynamic) = {
     if (name != "ping") console.log(name, payload)
     name match {
       case "request_host_token" => {
@@ -200,7 +201,7 @@ class DiscoveryService(using toaster: Toaster) {
             emit(ws, "host_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
           })
 
-        webrtc.registerConnection(
+        jsImplicits.webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           payload.client.user.name.asInstanceOf[String],
           "discovery",
@@ -232,7 +233,7 @@ class DiscoveryService(using toaster: Toaster) {
             emit(ws, "client_token", js.Dynamic.literal("token" -> token, "connection" -> payload.id))
           })
 
-        webrtc.registerConnection(
+        jsImplicits.webrtc.registerConnection(
           pendingConnections(payload.id.asInstanceOf[String]).connector,
           payload.host.user.name.asInstanceOf[String],
           "discovery",
@@ -271,7 +272,7 @@ class DiscoveryService(using toaster: Toaster) {
         emit(ws, "pong", null)
       }
       case "connection_closed" => {
-        webrtc.closeConnectionById(payload.id.asInstanceOf[String])
+        jsImplicits.webrtc.closeConnectionById(payload.id.asInstanceOf[String])
       }
     }
   }
@@ -282,8 +283,7 @@ class DiscoveryService(using toaster: Toaster) {
   }
 
   def connect(using
-      webrtc: WebRTCService,
-      registry: Registry,
+      jsImplicits: JSImplicits,
   )(resetWebsocket: Boolean = false, force: Boolean = false): Future[Boolean] = {
     val promise = Promise[Boolean]()
 
@@ -326,7 +326,7 @@ class DiscoveryService(using toaster: Toaster) {
             s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}/registry/?${token.now
                 .getOrElse("")}",
           )
-          registry
+          jsImplicits.registry
             .connect(
               ws,
             )

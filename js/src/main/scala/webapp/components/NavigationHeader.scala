@@ -29,6 +29,7 @@ import webapp.pages.DocumentsPage
 import webapp.npm.IIndexedDB
 import rescala.default.*
 import webapp.services.MailService
+import webapp.JSImplicits
 
 def navigationMenu(using
     routing: RoutingService,
@@ -90,13 +91,7 @@ def navigationMenu(using
 def navigationHeader(
     content: VMod*,
 )(using
-    routing: RoutingService,
-    repositories: Repositories,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
+    jsImplicits: JSImplicits,
 ) = {
   val dropdownOpen = Var(false)
   div(

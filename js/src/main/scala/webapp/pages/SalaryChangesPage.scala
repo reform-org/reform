@@ -28,19 +28,15 @@ import webapp.services.MailService
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class SalaryChangesPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
       Some("Salary Changes Description..."),
-      repositories.salaryChanges,
-      repositories.salaryChanges.all,
+      jsImplicits.repositories.salaryChanges,
+      jsImplicits.repositories.salaryChanges.all,
       Seq(
         SalaryChangeAttributes().salaryChangeValue,
         SalaryChangeAttributes().salaryChangeLimit,

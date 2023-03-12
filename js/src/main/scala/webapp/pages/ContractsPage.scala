@@ -35,6 +35,7 @@ import webapp.npm.JSUtils.toMoneyString
 import scala.scalajs.js
 import webapp.npm.JSUtils.dateDiffMonth
 import webapp.services.MailService
+import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
@@ -46,13 +47,7 @@ class DetailPageEntityRow[T <: Entity[T]](
 )(using
     bottom: Bottom[T],
     lattice: Lattice[T],
-    toaster: Toaster,
-    routing: RoutingService,
-    repositories: Repositories,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
@@ -69,13 +64,7 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
       using
       bottom: Bottom[T],
       lattice: Lattice[T],
-      toaster: Toaster,
-      routing: RoutingService,
-      repositories: Repositories,
-      indexedb: IIndexedDB,
-      mailing: MailService,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
+      jsImplicits: JSImplicits,
   ): EntityRow[T] = DetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
@@ -84,13 +73,7 @@ def onlyFinalizedContracts(using repositories: Repositories): Signal[Seq[Synced[
 }
 
 case class ContractsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Contract](
       Title("Contract"),
       None,
@@ -110,13 +93,7 @@ case class ContractsPage()(using
     ) {}
 
 class ContractPageAttributes(using
-    repositories: Repositories,
-    routing: RoutingService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) {
 
   def contractAssociatedHiwi: UIAttribute[Contract, String] = {

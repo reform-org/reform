@@ -8,15 +8,10 @@ import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
+import webapp.JSImplicits
 
 case class ErrorPage()(using
-    indexeddb: IIndexedDB,
-    routing: RoutingService,
-    repositories: Repositories,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
-    toaster: Toaster,
-    mailing: MailService,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
   def render: VNode = {

@@ -31,6 +31,7 @@ import webapp.repo.Synced
 import outwatch.dsl.*
 import webapp.npm.JSUtils.toMoneyString
 import webapp.services.MailService
+import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
@@ -39,17 +40,11 @@ def onlyDrafts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] 
 }
 
 case class ContractDraftsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Contract](
       Title("Contract Draft"),
       None,
-      repositories.contracts,
+      jsImplicits.repositories.contracts,
       onlyDrafts,
       Seq(
         ContractPageAttributes().contractAssociatedProject,

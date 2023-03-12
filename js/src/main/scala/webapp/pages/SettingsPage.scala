@@ -41,15 +41,10 @@ import rescala.default.*
 import scala.util.Success
 import scala.util.Failure
 import webapp.services.MailService
+import webapp.JSImplicits
 
 case class SettingsPage()(using
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    routing: RoutingService,
-    repositories: Repositories,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
-    toaster: Toaster,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
   def render: VNode = {

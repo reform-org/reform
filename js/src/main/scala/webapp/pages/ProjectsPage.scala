@@ -31,15 +31,10 @@ import webapp.npm.JSUtils.dateDiffMonth
 import webapp.services.MailService
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class ProjectsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Project](
       Title("Project"),
       None,

@@ -28,14 +28,10 @@ import webapp.services.MailService
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class DocumentsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Document](
       Title("Document"),
       Some("Document Description..."),

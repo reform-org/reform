@@ -10,19 +10,20 @@ import webapp.services.ToastType
 import scala.util.Try
 import scala.util.Success
 import scala.util.Failure
+import webapp.JSImplicits
 
 object Futures {
 
   implicit class FutureOps[T](self: Future[T]) {
 
     def toastOnError(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error)(using
-        toaster: Toaster,
+        jsImplicits: JSImplicits,
     ): Unit = {
       self
         .onComplete(value => {
           if (value.isFailure) {
             value.failed.get.printStackTrace()
-            toaster.make(value.failed.get.getMessage.nn, mode, style)
+            jsImplicits.toaster.make(value.failed.get.getMessage.nn, mode, style)
           }
         })
     }
@@ -30,13 +31,13 @@ object Futures {
 
   implicit class TryOps[T](self: Try[T]) {
     def toastOnError(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error)(using
-        toaster: Toaster,
+        jsImplicits: JSImplicits,
     ): Unit = {
       self match {
         case Success(value) =>
         case Failure(exception) =>
           exception.printStackTrace()
-          toaster.make(exception.getMessage.nn, mode, style)
+          jsImplicits.toaster.make(exception.getMessage.nn, mode, style)
       }
     }
   }

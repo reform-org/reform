@@ -42,6 +42,8 @@ object Main {
     given webrtc: WebRTCService = WebRTCService()
     given repositories: Repositories = Repositories()
     given discovery: DiscoveryService = DiscoveryService()
+    given jsImplicits: JSImplicits =
+      JSImplicits(toaster, mailing, routing, indexedDb, registry, webrtc, repositories, discovery)
 
     helpers.OutwatchTracing.error.unsafeForeach { throwable =>
       toaster.make(

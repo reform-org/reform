@@ -24,34 +24,23 @@ import webapp.components.common.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import webapp.services.MailService
+import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
 case class ContractSchemasPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[ContractSchema](
       Title("Contract Schema"),
       Some("Contractschemas Description..."),
-      repositories.contractSchemas,
-      repositories.contractSchemas.all,
+      jsImplicits.repositories.contractSchemas,
+      jsImplicits.repositories.contractSchemas.all,
       Seq(ContractSchemaAttributes().name, ContractSchemaAttributes().files),
       DefaultEntityRow(),
     ) {}
 
 class ContractSchemaAttributes(using
-    repositories: Repositories,
-    routing: RoutingService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
-    mailing: MailService,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
+    jsImplicits: JSImplicits,
 ) {
   def name = BuildUIAttribute().string
     .withLabel("Name")
