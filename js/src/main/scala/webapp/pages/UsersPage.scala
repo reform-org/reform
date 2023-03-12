@@ -44,7 +44,7 @@ case class UsersPage()(using
     ) {}
 
 object UsersPage {
-  private def username(using routing: RoutingService) = UIAttributeBuilder.string
+  private def username(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("Username")
     .require
     .bindAsText[User](
@@ -52,7 +52,7 @@ object UsersPage {
       (u, a) => u.copy(username = a),
     )
 
-  private def role(using routing: RoutingService) = UIAttributeBuilder.string
+  private def role(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("Role")
     .require
     .bindAsText[User](
@@ -60,7 +60,7 @@ object UsersPage {
       (u, a) => u.copy(role = a),
     )
 
-  private def comment(using routing: RoutingService) = UIAttributeBuilder.string
+  private def comment(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("Comment")
     .withDefaultValue("")
     .bindAsText[User](

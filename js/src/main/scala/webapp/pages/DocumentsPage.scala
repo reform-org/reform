@@ -46,7 +46,7 @@ case class DocumentsPage()(using
     ) {}
 
 object DocumentsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+  private def name(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Document](

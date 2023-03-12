@@ -47,7 +47,7 @@ case class PaymentLevelsPage()(using
     ) {}
 
 object PaymentLevelsPage {
-  private def title(using routing: RoutingService) = UIAttributeBuilder.string
+  private def title(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("Title")
     .require
     .bindAsText[PaymentLevel](
@@ -55,7 +55,7 @@ object PaymentLevelsPage {
       (p, a) => p.copy(title = a),
     )
 
-  private def pdfCheckboxName(using routing: RoutingService) = UIAttributeBuilder.string
+  private def pdfCheckboxName(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("PDF Checkbox Name")
     .require
     .bindAsText[PaymentLevel](

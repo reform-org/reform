@@ -45,7 +45,7 @@ case class SupervisorsPage()(using
     ) {}
 
 object SupervisorsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+  private def name(using routing: RoutingService) = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Supervisor](
@@ -53,7 +53,7 @@ object SupervisorsPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
+  private def eMail(using routing: RoutingService) = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](
