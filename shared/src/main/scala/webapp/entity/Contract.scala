@@ -5,6 +5,8 @@ import com.github.plokhotnyuk.jsoniter_scala.macros.*
 import kofre.base.*
 import webapp.BasicCodecs.*
 import webapp.webrtc.DeltaFor
+import webapp.npm.JSUtils.getYear
+import webapp.npm.JSUtils.getMonth
 
 case class Contract(
     contractAssociatedProject: Attribute[String] = Attribute.empty,
@@ -28,6 +30,21 @@ case class Contract(
 
   def withExists(exists: Boolean): Contract = {
     this.copy(_exists = _exists.set(exists))
+  }
+
+  def isInInterval(month: Int, year: Int): Boolean = {
+    if (contractStartDate.get.nonEmpty && contractEndDate.get.nonEmpty) {
+      val start = contractStartDate.get.get
+      val end = contractEndDate.get.get
+
+      if (
+        (getYear(start) < year || getYear(start) == year && getMonth(start) <= month) && (getYear(
+          end,
+        ) > year || getYear(end) == year && getMonth(end) >= month)
+      ) return true
+      else return false
+    }
+    false
   }
 
   override def exists: Boolean = _exists.get.getOrElse(true)
