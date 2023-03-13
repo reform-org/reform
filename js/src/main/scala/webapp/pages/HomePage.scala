@@ -196,7 +196,7 @@ case class HomePage()(using
             .filter((id, _) => contractsPerProject.get(id).map(c => c.size > 0).getOrElse(false))
 
           div(
-            cls := "flex flex-col gap-4 lg:items-center",
+            cls := "flex flex-col gap-4 md:items-center",
             if (projectsThisMonth.size > 0) {
               projectsThisMonth
                 .map((id, project) => {
