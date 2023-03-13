@@ -104,7 +104,7 @@ private class MultiSelect(
         div(
           cls := "flex flex-row w-full h-full items-center pl-2 text-slate-400 ",
           if (styleValidity)
-            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600 peer-valid/multiselect:bg-green-100"
+            cls := "peer-invalid/multiselect:bg-yellow-100/50 peer-invalid/multiselect:text-yellow-600 peer-valid/multiselect:bg-green-100/50"
           else None,
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",

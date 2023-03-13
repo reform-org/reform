@@ -92,9 +92,9 @@ def navigationHeader(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "drawer-content flex flex-col page-scroll-container overflow-x-hidden dark:bg-gray-600 dark:text-gray-200",
+      cls := "drawer-content h-full flex flex-col dark:bg-gray-600 dark:text-gray-200",
       div(
-        cls := "navbar bg-base-100 shadow dark:bg-gray-700",
+        cls := "navbar bg-base-100 shadow dark:bg-gray-700 fixed z-[10000]",
         div(
           cls := "flex-none",
           div(
@@ -147,7 +147,7 @@ def navigationHeader(
           ),
         ),
       ),
-      div(cls := "p-4", content),
+      div(cls := "p-4 mt-16 page-scroll-container overflow-x-hidden", content),
     ),
     div(
       cls := "drawer-side",

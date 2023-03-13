@@ -22,7 +22,7 @@ def Input(props: VMod*): VNode = {
 
 def TableInput(props: VMod*): VNode = {
   input(
-    cls := "dark:border-gray-500 input valid:bg-green-100 valid:text-green-600 valid:placeholder-green-600 invalid:bg-yellow-100 invalid:placeholder-yellow-600 invalid:text-yellow-600 dark:valid:bg-green-100 dark:valid:text-green-600 dark:valid:placeholder-green-600 dark:invalid:bg-yellow-100 dark:invalid:placeholder-yellow-600 dark:invalid:text-yellow-600 bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
+    cls := "dark:border-gray-500 input valid:bg-green-100/50 valid:text-green-600 valid:placeholder-green-600 invalid:bg-yellow-100/50 invalid:placeholder-yellow-600 invalid:text-yellow-600 dark:valid:bg-green-100 dark:valid:text-green-600 dark:valid:placeholder-green-600 dark:invalid:bg-yellow-100 dark:invalid:placeholder-yellow-600 dark:invalid:text-yellow-600 bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
     props,
   )
 }

@@ -109,15 +109,48 @@ abstract class Step(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using jsImplicits: JSImplicits) {
+
   protected def editStep(children: VMod*): VNode = {
     div(
-      cls := "border rounded-2xl m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200",
+      cls := "relative",
+      Signal {
+        if (
+          !disabledDescription
+            .isBlank() && disabled.value.map((pred, _) => pred).fold[Boolean](false)((a, b) => a || b)
+        ) {
+          var reasons: Seq[String] = Seq.empty
+          disabled.value.foreach((pred, reason) => if (pred) reasons = reasons :+ reason)
+
+          Some(
+            div(
+              icons.Info(cls := "w-6 h-6 shrink-0	"),
+              cls := "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm",
+              div(
+                if (reasons.length >= 2)
+                  s"To $disabledDescription you need ${reasons.take(reasons.length - 1).mkString(", ")} and you need ${reasons(reasons.length - 1)}."
+                else if (reasons.length == 1) s"To $disabledDescription you need ${reasons(0)}."
+                else "",
+              ),
+            ),
+          )
+        } else None
+      },
       div(
-        cls := "bg-purple-200 p-4 rounded-t-2xl dark:bg-gray-700 dark:text-gray-200",
-        p("STEP " + number + ": " + title),
+        cls := "border rounded-lg m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200 overflow-hidden",
+        cls <-- Signal {
+          if (disabled.value.map((pred, _) => pred).fold[Boolean](false)((a, b) => a || b))
+            "blur-[3px] pointer-events-none select-none	"
+          else ""
+        },
+        div(
+          cls := "bg-purple-200 p-4 dark:bg-gray-700 dark:text-gray-200 text-purple-600",
+          div(cls := "flex justify-between", div(title) /*, div(cls := "font-bold text-md", s"$number")*/ ),
+        ),
+        children,
       ),
-      children,
     )
   }
 
@@ -262,9 +295,11 @@ class BasicInformation(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("1", "Basic Information", existingId, existingValue, editingValue) {
+) extends Step("1", "Basic Information", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
@@ -481,9 +516,11 @@ class SelectProject(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("1b", "Select Project", existingId, existingValue, editingValue) {
+) extends Step("1b", "Select Project", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
@@ -595,15 +632,15 @@ class ContractType(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("2", "Contract Type", existingId, existingValue, editingValue) {
+) extends Step("2", "Contract Type", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
         cls := "p-4",
-        // TODO active contract checking
-        p("Hiwi did not have an active contract ..."),
         label(cls := "font-bold", "Contract type:"),
         ContractPageAttributes().contractAssociatedType.renderEdit("", editingValue),
       ),
@@ -615,9 +652,11 @@ class ContractRequirements(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("3", "Contract requirements", existingId, existingValue, editingValue) {
+) extends Step("3", "Contract requirements", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
@@ -625,6 +664,7 @@ class ContractRequirements(
         "Check all forms the hiwi has filled out and handed back.",
         ContractPageAttributes().requiredDocuments.renderEdit("", editingValue),
         i(
+          cls := "text-slate-400 text-xs",
           "Documents written in italic have been checked in an older contract type and will be removed from this list once unchecked.",
         ),
       ),
@@ -637,17 +677,28 @@ class ContractRequirementsMail(
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     save: () => Unit,
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("3a", "Contract requirements - reminder mail", existingId, existingValue, editingValue) {
+) extends Step(
+      "3a",
+      "Contract requirements - reminder mail",
+      existingId,
+      existingValue,
+      editingValue,
+      disabled,
+      disabledDescription,
+    ) {
   def render: VNode = {
     this.editStep(
       div(
-        cls := "p-4",
+        cls := "p-4 flex flex-col gap-2",
         Button(
-          ButtonStyle.Primary,
+          ButtonStyle.LightPrimary,
           "Send Reminder",
           idAttr := "sendReminder",
+          cls := "w-fit",
           onClick.foreach(e => {
             e.preventDefault()
             document.querySelector("#sendReminder").classList.add("loading")
@@ -716,14 +767,20 @@ class ContractRequirementsMail(
             })
           }),
         ),
-        "Last sent: ",
-        Signal.dynamic {
-          val date = editingValue.value
-            .flatMap((_, contract) => contract.value.reminderSentDate.get)
-            .getOrElse(0L)
+        div(
+          cls := "text-xs text-slate-400 italic",
+          "Last sent: ",
+          span(
+            cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+            Signal.dynamic {
+              val date = editingValue.value
+                .flatMap((_, contract) => contract.value.reminderSentDate.get)
+                .getOrElse(0L)
 
-          if (date > 0L) toGermanDate(date) else "Never"
-        },
+              if (date > 0L) toGermanDate(date) else "Never"
+            },
+          ),
+        ),
       ),
     )
   }
@@ -734,101 +791,117 @@ class CreateContract(
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     save: () => Unit,
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("4", "Create Documents", existingId, existingValue, editingValue) {
+) extends Step("4", "Create Documents", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
-        cls := "p-4",
-        Button(
-          ButtonStyle.LightDefault,
-          "Create Contract PDF",
-          idAttr := "loadPDF",
-          onClick.foreach(e => {
-            e.preventDefault()
-            document.getElementById("loadPDF").classList.add("loading")
-            this.contractPDF
-              .andThen(v => {
-                document.getElementById("loadPDF").classList.remove("loading")
-                if (v.isSuccess) {
-                  val buffer = v.get.get
-                  PDF.download("contract.pdf", buffer)
-                }
-              })
-              .toastOnError()
-          }),
-        ),
-        Button(
-          ButtonStyle.LightDefault,
-          "Send Contract PDF",
-          idAttr := "sendContract",
-          onClick.foreach(e => {
-            e.preventDefault()
-            document.querySelector("#sendContract").classList.add("loading")
+        cls := "p-4 flex flex-col",
+        div(
+          cls := "flex gap-2",
+          Button(
+            ButtonStyle.LightPrimary,
+            "Create Contract PDF",
+            idAttr := "loadPDF",
+            onClick.foreach(e => {
+              e.preventDefault()
+              document.getElementById("loadPDF").classList.add("loading")
+              this.contractPDF
+                .andThen(v => {
+                  document.getElementById("loadPDF").classList.remove("loading")
+                  if (v.isSuccess) {
+                    val buffer = v.get.get
+                    PDF.download("contract.pdf", buffer)
+                  }
+                })
+                .toastOnError()
+            }),
+          ),
+          div(
+            cls := "flex flex-col gap-2",
+            Button(
+              ButtonStyle.LightDefault,
+              "Send Contract PDF",
+              idAttr := "sendContract",
+              dsl.disabled <-- jsImplicits.discovery.online.map(!_),
+              onClick.foreach(e => {
+                e.preventDefault()
+                document.querySelector("#sendContract").classList.add("loading")
 
-            editingValue.now.map((contract, _) => {
-              val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
-              )
-              val hiwiOption =
-                jsImplicits.repositories.hiwis.all.now.find(p =>
-                  p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
-                )
+                editingValue.now.map((contract, _) => {
+                  val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
+                    p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
+                  )
+                  val hiwiOption =
+                    jsImplicits.repositories.hiwis.all.now.find(p =>
+                      p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
+                    )
 
-              if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
-                val hiwi = hiwiOption.get.signal.now
-                val supervisor = supervisorOption.get.signal.now
+                  if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
+                    val hiwi = hiwiOption.get.signal.now
+                    val supervisor = supervisorOption.get.signal.now
 
-                this.contractPDF
-                  .andThen(cotract => {
-                    jsImplicits.mailing
-                      .sendMail(
-                        hiwi.eMail.get.getOrElse(""),
-                        supervisor.eMail.get.getOrElse(""),
-                        supervisor.name.get.getOrElse(""),
-                        ContractEmail(
-                          hiwi,
-                          supervisor,
-                          (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
-                          cotract.get.get,
-                        ),
-                        Seq(supervisor.eMail.get.getOrElse("")),
-                      )
-                      .andThen(ans => {
-                        document.querySelector("#sendContract").classList.remove("loading")
-                        if (ans.get.rejected.length > 0) {
-                          jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
-                        }
-                        if (ans.get.accepted.length > 0) {
-                          Signal {
-                            editingValue.value
-                              .map((_, contract) => {
-                                contract
-                                  .transform(contract =>
-                                    contract.copy(contractSentDate = Attribute(js.Date.now.toLong)),
-                                  )
-                              })
-                            save()
-                          }
-                          jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
-                        }
+                    this.contractPDF
+                      .andThen(cotract => {
+                        jsImplicits.mailing
+                          .sendMail(
+                            hiwi.eMail.get.getOrElse(""),
+                            supervisor.eMail.get.getOrElse(""),
+                            supervisor.name.get.getOrElse(""),
+                            ContractEmail(
+                              hiwi,
+                              supervisor,
+                              (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
+                              cotract.get.get,
+                            ),
+                            Seq(supervisor.eMail.get.getOrElse("")),
+                          )
+                          .andThen(ans => {
+                            document.querySelector("#sendContract").classList.remove("loading")
+                            if (ans.get.rejected.length > 0) {
+                              jsImplicits.toaster
+                                .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
+                            }
+                            if (ans.get.accepted.length > 0) {
+                              Signal {
+                                editingValue.value
+                                  .map((_, contract) => {
+                                    contract
+                                      .transform(contract =>
+                                        contract.copy(contractSentDate = Attribute(js.Date.now.toLong)),
+                                      )
+                                  })
+                                save()
+                              }
+                              jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
+                            }
+                          })
+                          .toastOnError()
                       })
                       .toastOnError()
-                  })
-                  .toastOnError()
-              }
-            })
-          }),
-        ),
-        "Last sent: ",
-        Signal.dynamic {
-          val date = editingValue.value
-            .flatMap((_, contract) => contract.value.contractSentDate.get)
-            .getOrElse(0L)
+                  }
+                })
+              }),
+            ),
+            div(
+              cls := "text-xs text-slate-400 italic",
+              "Last sent: ",
+              span(
+                cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+                Signal.dynamic {
+                  val date = editingValue.value
+                    .flatMap((_, contract) => contract.value.contractSentDate.get)
+                    .getOrElse(0L)
 
-          if (date > 0L) toGermanDate(date) else "Never"
-        },
+                  if (date > 0L) toGermanDate(date) else "Never"
+                },
+              ),
+            ),
+          ),
+        ),
         label(
           ContractPageAttributes().signed.renderEdit("", editingValue),
           " The contract has been signed",
@@ -844,97 +917,115 @@ class CreateLetter(
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     save: () => Unit,
+    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+    disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("5", "Letter to Dekanat", existingId, existingValue, editingValue) {
+) extends Step("5", "Letter to Dekanat", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
-        cls := "p-4",
-        Button(
-          ButtonStyle.LightDefault,
-          "Create Letter",
-          idAttr := "loadLetter",
-          onClick.foreach(e => {
-            e.preventDefault()
-            document.getElementById("loadLetter").classList.add("loading")
-            this.letterPDF
-              .andThen(v => {
-                document.getElementById("loadPDF").classList.remove("loading")
-                if (v.isSuccess) {
-                  val buffer = v.get.get
-                  PDF.download("contract.pdf", buffer)
-                }
-              })
-              .toastOnError()
-          }),
-        ),
-        Button(
-          ButtonStyle.LightDefault,
-          "Send Letter",
-          idAttr := "sendLetter",
-          onClick.foreach(e => {
-            e.preventDefault()
-            document.querySelector("#sendLetter").classList.add("loading")
-            editingValue.now.map((contract, _) => {
-              val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
-              )
-              val hiwiOption =
-                jsImplicits.repositories.hiwis.all.now.find(p =>
-                  p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
-                )
+        cls := "p-4 flex flex-col",
+        div(
+          cls := "flex flex-row gap-2",
+          Button(
+            ButtonStyle.LightPrimary,
+            "Create Letter",
+            idAttr := "loadLetter",
+            onClick.foreach(e => {
+              e.preventDefault()
+              document.getElementById("loadLetter").classList.add("loading")
+              this.letterPDF
+                .andThen(v => {
+                  document.getElementById("loadPDF").classList.remove("loading")
+                  if (v.isSuccess) {
+                    val buffer = v.get.get
+                    PDF.download("contract.pdf", buffer)
+                  }
+                })
+                .toastOnError()
+            }),
+          ),
+          div(
+            cls := "flex flex-col gap-2",
+            Button(
+              ButtonStyle.LightDefault,
+              "Send Letter",
+              idAttr := "sendLetter",
+              dsl.disabled <-- jsImplicits.discovery.online.map(!_),
+              onClick.foreach(e => {
+                e.preventDefault()
+                document.querySelector("#sendLetter").classList.add("loading")
+                editingValue.now.map((contract, _) => {
+                  val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
+                    p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
+                  )
+                  val hiwiOption =
+                    jsImplicits.repositories.hiwis.all.now.find(p =>
+                      p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
+                    )
 
-              if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
-                val hiwi = hiwiOption.get.signal.now
-                val supervisor = supervisorOption.get.signal.now
+                  if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
+                    val hiwi = hiwiOption.get.signal.now
+                    val supervisor = supervisorOption.get.signal.now
 
-                this.letterPDF
-                  .andThen(letter => {
-                    jsImplicits.mailing
-                      .sendMail(
-                        Globals.VITE_DEKANAT_MAIL,
-                        supervisor.eMail.get.getOrElse(""),
-                        supervisor.name.get.getOrElse(""),
-                        DekanatMail(
-                          hiwi,
-                          supervisor,
-                          letter.get.get,
-                        ),
-                        Seq(supervisor.eMail.get.getOrElse("")),
-                      )
-                      .andThen(ans => {
-                        document.querySelector("#sendLetter").classList.remove("loading")
-                        if (ans.get.rejected.length > 0) {
-                          jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
-                        }
-                        if (ans.get.accepted.length > 0) {
-                          Signal {
-                            editingValue.value
-                              .map((_, contract) => {
-                                contract
-                                  .transform(contract => contract.copy(letterSentDate = Attribute(js.Date.now.toLong)))
-                              })
-                            save()
-                          }
-                          jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
-                        }
+                    this.letterPDF
+                      .andThen(letter => {
+                        jsImplicits.mailing
+                          .sendMail(
+                            Globals.VITE_DEKANAT_MAIL,
+                            supervisor.eMail.get.getOrElse(""),
+                            supervisor.name.get.getOrElse(""),
+                            DekanatMail(
+                              hiwi,
+                              supervisor,
+                              letter.get.get,
+                            ),
+                            Seq(supervisor.eMail.get.getOrElse("")),
+                          )
+                          .andThen(ans => {
+                            document.querySelector("#sendLetter").classList.remove("loading")
+                            if (ans.get.rejected.length > 0) {
+                              jsImplicits.toaster
+                                .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
+                            }
+                            if (ans.get.accepted.length > 0) {
+                              Signal {
+                                editingValue.value
+                                  .map((_, contract) => {
+                                    contract
+                                      .transform(contract =>
+                                        contract.copy(letterSentDate = Attribute(js.Date.now.toLong)),
+                                      )
+                                  })
+                                save()
+                              }
+                              jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
+                            }
+                          })
+                          .toastOnError()
                       })
                       .toastOnError()
-                  })
-                  .toastOnError()
-              }
-            })
-          }),
-        ),
-        "Last sent: ",
-        Signal.dynamic {
-          val date = editingValue.value
-            .flatMap((_, contract) => contract.value.letterSentDate.get)
-            .getOrElse(0L)
+                  }
+                })
+              }),
+            ),
+            div(
+              cls := "text-xs text-slate-400 italic",
+              "Last sent: ",
+              span(
+                cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+                Signal.dynamic {
+                  val date = editingValue.value
+                    .flatMap((_, contract) => contract.value.letterSentDate.get)
+                    .getOrElse(0L)
 
-          if (date > 0L) toGermanDate(date) else "Never"
-        },
+                  if (date > 0L) toGermanDate(date) else "Never"
+                },
+              ),
+            ),
+          ),
+        ),
         label(
           ContractPageAttributes().submitted.renderEdit("", editingValue),
           " The letter has been submitted",
@@ -949,6 +1040,35 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     jsImplicits: JSImplicits,
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
+
+  private def isCompleted: Signal[Boolean] = {
+    Signal.dynamic {
+      editingValue.value
+        .map((_, contractSignal) => {
+          val contract = contractSignal.value
+          val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
+            .find(s => s.id == contract.contractType.get.getOrElse(""))
+            .flatMap(t => t.signal.value.files.get)
+
+          !contract.contractAssociatedHiwi.get.nonEmpty ||
+          !contract.contractAssociatedSupervisor.get.nonEmpty ||
+          !contract.contractStartDate.get.nonEmpty ||
+          !contract.contractEndDate.get.nonEmpty ||
+          !contract.contractAssociatedProject.get.nonEmpty ||
+          !contract.contractHoursPerMonth.get.nonEmpty ||
+          contract.contractHoursPerMonth.get.getOrElse(0) < 0 ||
+          !contract.contractAssociatedPaymentLevel.get.nonEmpty ||
+          contract.contractStartDate.get.getOrElse(0L) > contract.contractEndDate.get.getOrElse(0L) ||
+          contract.contractEndDate.get.getOrElse(0L) < js.Date.now().toLong ||
+          !contract.requiredDocuments.get.nonEmpty ||
+          !requiredDocuments
+            .getOrElse(Seq.empty)
+            .forall(id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id))
+
+        })
+        .getOrElse(false)
+    }
+  }
 
   private def createOrUpdate(
       finalize: Boolean = false,
@@ -1052,8 +1172,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       "Save and finalize",
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate(true).toastOnError(ToastMode.Infinit)
+        // createOrUpdate(true).toastOnError(ToastMode.Infinit)
       }),
+      disabled <-- isCompleted,
     ),
     Button(ButtonStyle.LightDefault, "Cancel", onClick.foreach(_ => cancelEdit())),
   )
@@ -1139,12 +1260,67 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               existingValue,
               editingValue,
               () => createOrUpdate(false, true, false),
+              Signal.dynamic {
+                editingValue.value
+                  .map((_, contractSignal) => {
+                    val contract = contractSignal.value
+                    Seq(
+                      (!contract.contractAssociatedHiwi.get.nonEmpty -> "a hiwi"),
+                      (!contract.contractAssociatedSupervisor.get.nonEmpty -> "a supervisor"),
+                      (!contract.contractType.get.nonEmpty -> "a contract type"),
+                      (!jsImplicits.discovery.online.value -> "to be connected to the discovery server"),
+                    )
+                  })
+                  .getOrElse(Seq.empty)
+              },
+              "send a reminder email",
             ).render,
-            CreateContract(contractId, existingValue, editingValue, () => createOrUpdate(false, true, true)).render,
-            CreateLetter(contractId, existingValue, editingValue, () => createOrUpdate(false, true, true)).render,
+            CreateContract(
+              contractId,
+              existingValue,
+              editingValue,
+              () => createOrUpdate(false, true, true),
+              Signal.dynamic {
+                editingValue.value
+                  .map((_, contractSignal) => {
+                    val contract = contractSignal.value
+                    Seq(
+                      (!contract.contractAssociatedHiwi.get.nonEmpty -> "a hiwi"),
+                      (!contract.contractEndDate.get.nonEmpty -> "an end date"),
+                      (!contract.contractStartDate.get.nonEmpty -> "a start date"),
+                      (!contract.contractAssociatedPaymentLevel.get.nonEmpty -> "a payment level"),
+                      (!contract.contractHoursPerMonth.get.nonEmpty -> "to set hours per month"),
+                    )
+                  })
+                  .getOrElse(Seq.empty)
+              },
+              "create and download a contract",
+            ).render,
+            CreateLetter(
+              contractId,
+              existingValue,
+              editingValue,
+              () => createOrUpdate(false, true, true),
+              Signal.dynamic {
+                editingValue.value
+                  .map((_, contractSignal) => {
+                    val contract = contractSignal.value
+                    Seq(
+                      (!contract.contractAssociatedHiwi.get.nonEmpty -> "a hiwi"),
+                      (!contract.contractEndDate.get.nonEmpty -> "an end date"),
+                      (!contract.contractStartDate.get.nonEmpty -> "a start date"),
+                      (!contract.contractAssociatedPaymentLevel.get.nonEmpty -> "a payment level"),
+                      (!contract.contractHoursPerMonth.get.nonEmpty -> "to set hours per month"),
+                      (!contract.contractAssociatedProject.get.nonEmpty -> "a project"),
+                    )
+                  })
+                  .getOrElse(Seq.empty)
+              },
+              "create and download a letter",
+            ).render,
             div(
               idAttr := "static_buttons",
-              cls := "md:pl-8 md:space-x-4 flex flex-col md:flex-row gap-2",
+              cls := "pl-4 flex flex-col md:flex-row gap-2",
               actions,
             ),
           ),
@@ -1152,7 +1328,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
         div(
           idAttr := "sticky_buttons",
           onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
-          cls := "left-4 md:space-x-4 fixed bottom-4 p-3 bg-slate-50/75 dark:bg-gray-500/75 dark:border-gray-500 shadow-lg rounded-xl border border-slate-200 hidden",
+          cls := "left-4 md:space-x-4 fixed bottom-4 p-3 bg-slate-50/75 dark:bg-gray-500/75 dark:border-gray-500 shadow-lg rounded-xl border border-slate-200 hidden z-[200]",
           div(cls := "flex-row gap-2 hidden md:flex", actions),
           div(cls := "flex flex-row gap-2 md:hidden", mobileActions),
         ),
