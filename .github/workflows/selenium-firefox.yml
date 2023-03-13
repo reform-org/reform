@@ -9,7 +9,7 @@ on:
 
 jobs:
   selenium-firefox:
-    uses: ./.github/workflows/scala-selenium.yml
+    uses: ./.github/workflows/selenium.yml
     with:
       os: ubuntu-latest
       browser: firefox
