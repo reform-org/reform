@@ -27,9 +27,8 @@ import com.auth0.jwt.algorithms.Algorithm
 import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.JWT
 import com.auth0.jwt.exceptions.JWTVerificationException
+import org.eclipse.jetty.security.ServerAuthException
 
-// https://github.com/eclipse/jetty.project/issues/4123
-// https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java
 @main def runServer() = {
   val registry = Registry()
   val indexedDb = SqliteDB()
@@ -62,7 +61,6 @@ import com.auth0.jwt.exceptions.JWTVerificationException
       val token = request.getQueryString()
 
       if (token != null) {
-        println(token)
         try {
           val algorithm: Algorithm = Algorithm.HMAC256(secret).nn;
           val verifier: JWTVerifier = JWT
@@ -72,30 +70,31 @@ import com.auth0.jwt.exceptions.JWTVerificationException
             .nn;
 
           val decodedJWT: DecodedJWT = verifier.verify(token).nn;
-          println(decodedJWT.getClaims())
           val issuedAt = decodedJWT.getIssuedAt();
           val expiresAt = decodedJWT.getExpiresAt();
           val uuid = decodedJWT.getClaim("uuid").nn.asString();
           val device = decodedJWT.getClaim("device").nn.asString();
           val username = decodedJWT.getClaim("username").nn.asString();
           println(
-            s"connection from ${username} (${uuid}) from device ${device} issued ${issueAt} expiring ${expiresAt}",
+            s"connection from ${username} (${uuid}) from device ${device} issued ${issuedAt} expiring ${expiresAt}",
           )
+          return new Authentication.User {
+
+            override def logout(request: ServletRequest | Null): Authentication | Null = ???
+
+            override def getAuthMethod(): String | Null = ???
+
+            override def getUserIdentity(): UserIdentity | Null = ???
+
+            override def isUserInRole(scope: UserIdentity.Scope | Null, role: String | Null): Boolean = true
+
+          }
         } catch {
           case exception: JWTVerificationException =>
             // Invalid signature/claims
             println(exception)
-        }
-        return new Authentication.User {
-
-          override def logout(request: ServletRequest | Null): Authentication | Null = null
-
-          override def getAuthMethod(): String | Null = null
-
-          override def getUserIdentity(): UserIdentity | Null = null
-
-          override def isUserInRole(scope: UserIdentity.Scope | Null, role: String | Null): Boolean = true
-
+            // throw new ServerAuthException("invalid jwt token")
+            return new Authentication.ResponseSent {}
         }
       } else {
         println("not authenticated")
