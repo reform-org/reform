@@ -34,6 +34,11 @@ object JSUtils {
   def cleanStickyButtons(): Unit = NativeImpl.cleanStickyButtons()
 
   def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
+  def getMonth(input: Long) = NativeImpl.getMonth(input.toString())
+  def getYear(input: Long) = NativeImpl.getYear(input.toString())
+  def toMilliseconds(month: Int, year: Int) = NativeImpl.toMilliseconds(month, year)
+
+  def toHumanMonth(input: Int) = NativeImpl.toHumanMonth(input)
 
   def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
 
@@ -68,6 +73,11 @@ object JSUtils {
 
     def toGermanDate(input: String): String = js.native
 
+    def toHumanMonth(input: Int): String = js.native
+
+    def getYear(input: String): Int = js.native
+    def getMonth(input: String): Int = js.native
+    def toMilliseconds(month: Int, year: Int): Long = js.native
     def toYYYYMMDD(input: String): String = js.native
 
     def DateTimeFromISO(input: String): String = js.native

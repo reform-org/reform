@@ -505,6 +505,40 @@ object Filter extends Icon {
   }
 }
 
+object Previous extends Icon {
+  def apply(props: VMod*): VNode = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      fill := "none",
+      props,
+      stroke := "currentColor",
+      VMod.attr("stroke-width") := "2",
+      VMod.attr("stroke-linecap") := "round",
+      VMod.attr("stroke-linejoin") := "arcs",
+      path(d := "M15 18l-6-6 6-6"),
+    )
+  }
+}
+
+object Next extends Icon {
+  def apply(props: VMod*): VNode = {
+    import svg.*
+    svg(
+      xmlns := "http://www.w3.org/2000/svg",
+      viewBox := "0 0 24 24",
+      fill := "none",
+      props,
+      stroke := "currentColor",
+      VMod.attr("stroke-width") := "2",
+      VMod.attr("stroke-linecap") := "round",
+      VMod.attr("stroke-linejoin") := "arcs",
+      path(d := "M9 18l6-6-6-6"),
+    )
+  }
+}
+
 object Settings extends Icon {
   def apply(props: VMod*): VNode = {
     import svg.*
