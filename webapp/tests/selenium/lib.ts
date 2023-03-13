@@ -406,6 +406,9 @@ export class Peer {
 					);
 					await name.sendKeys(personNames[0]);
 
+					const screenshot = await driver.takeScreenshot();
+					await mkdir("screenshots", { recursive: true });
+					await writeFile(`screenshots/invitation-${(await driver.getSession()).getId()}.png`, screenshot, "base64");
 					let hostButton = await driver.wait(
 						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`)),
 						3000
@@ -447,7 +450,7 @@ export class Peer {
 			[this, other].map(async (peer, index) => {
 				const screenshot = await peer.driver.takeScreenshot();
 				await mkdir("screenshots", { recursive: true });
-				await writeFile(`screenshots/${index}.png`, screenshot, "base64");
+				await writeFile(`screenshots/connect-to-${(await peer.driver.getSession()).getId()}-${index}.png`, screenshot, "base64");
 				await peer.driver.wait(
 					until.elementLocated(By.xpath(`.//*[text()="${personNames[index]}"]`)),
 					10000,
