@@ -446,7 +446,7 @@ export class Peer {
 		await Promise.all(
 			[this, other].map(async (peer, index) => {
 				const screenshot = await peer.driver.takeScreenshot();
-				await mkdir("screenshots");
+				await mkdir("screenshots", { recursive: true });
 				await writeFile(`screenshots/${index}.png`, screenshot, "base64");
 				await peer.driver.wait(
 					until.elementLocated(By.xpath(`.//*[text()="${personNames[index]}"]`)),
