@@ -39,6 +39,8 @@ import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import webapp.npm.JSUtils.getYear
+import webapp.npm.JSUtils.getMonth
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
     override val repository: Repository[T],
@@ -282,6 +284,21 @@ class ContractPageAttributes(using
           },
         ),
       )
+  }
+
+  def isInInterval(contract: Contract, month: Int, year: Int): Boolean = {
+    if (contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty) {
+      val start = contract.contractStartDate.get.get
+      val end = contract.contractEndDate.get.get
+
+      if (
+        (getYear(start) < year || getYear(start) == year && getMonth(start) <= month) && (getYear(
+          end,
+        ) > year || getYear(end) == year && getMonth(end) >= month)
+      ) return true
+      else return false
+    }
+    false
   }
 
   def getSalaryChange(id: String, contract: Contract, date: Long): Signal[Option[SalaryChange]] =

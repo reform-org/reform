@@ -1,6 +1,6 @@
 import { createPopper as createPopperImpl } from '@popperjs/core';
 import { flip, preventOverflow } from '@popperjs/core/lib';
-import { DateTime, Duration, Settings } from 'luxon';
+import { DateTime, Duration, Settings, Info } from 'luxon';
 
 Settings.defaultLocale = "en"
 
@@ -150,6 +150,22 @@ export const toGermanDate = (/** @type {number} */ input) => {
 export const DateTimeFromISO = (/** @type {string} */ input) => {
 	return DateTime.fromISO(input).toMillis().toString();
 };
+
+export const toHumanMonth = (index) => {
+	return Info.months()[index - 1]
+}
+
+export const getMonth = (input) => {
+	return DateTime.fromMillis(Number(input)).month
+}
+
+export const toMilliseconds = (month, year) => {
+	return DateTime.fromObject({ month, year }).toMillis
+}
+
+export const getYear = (input) => {
+	return DateTime.fromMillis(Number(input)).year
+}
 
 export const toYYYYMMDD = (input) => {
 	return DateTime.fromMillis(Number(input)).toISODate();

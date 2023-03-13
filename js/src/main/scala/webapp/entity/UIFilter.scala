@@ -11,14 +11,14 @@ import webapp.services.RoutingService
 import webapp.JSImplicits
 
 trait UIFilter[EntityType] {
-  def render: VNode
+  def render: VMod
 
   val predicate: Signal[EntityType => Boolean]
 }
 
 class UIFilterNothing[EntityType]() extends UIFilter[EntityType] {
 
-  def render: VNode = td()
+  def render: VMod = None
 
   val predicate: Signal[EntityType => Boolean] = Signal(_ => true)
 }
@@ -29,8 +29,9 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
 
   private val name = toQueryParameterName(uiAttribute.label)
 
-  def render: VNode = {
+  def render: VMod = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
       Input(
         placeholder := "Filter here",
@@ -57,20 +58,25 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
 
   private val name = toQueryParameterName(uiAttribute.label)
 
-  def render: VNode = {
+  def render: VMod = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
-      Input(
-        placeholder := "Minimum value",
-        `type` := uiAttribute.fieldType,
-        value <-- jsImplicits.routing.getQueryParameterAsString(name + ":min"),
-        onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":min" -> v))),
-      ),
-      Input(
-        placeholder := "Maximum value",
-        `type` := uiAttribute.fieldType,
-        value <-- jsImplicits.routing.getQueryParameterAsString(name + ":max"),
-        onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":max" -> v))),
+      div(
+        cls := "flex flex-row gap-2 items-center",
+        Input(
+          placeholder := "Minimum value",
+          `type` := uiAttribute.fieldType,
+          value <-- jsImplicits.routing.getQueryParameterAsString(name + ":min"),
+          onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":min" -> v))),
+        ),
+        "-",
+        Input(
+          placeholder := "Maximum value",
+          `type` := uiAttribute.fieldType,
+          value <-- jsImplicits.routing.getQueryParameterAsString(name + ":max"),
+          onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":max" -> v))),
+        ),
       ),
     )
   }
@@ -121,6 +127,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
 
   def render: VNode = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
       MultiSelect(
         uiAttribute.optionsForFilter.map(option => option.map(selOpt => SelectOption(selOpt.id, selOpt.name))),
@@ -150,37 +157,41 @@ class UIMultiSelectFilter[EntityType](
 
   private val name = toQueryParameterName(uiAttribute.label)
 
-  def render: VNode = {
+  def render: VMod = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
-      Select(
-        Signal(
-          Seq(
-            SelectOption("or", Signal("Contains at least one")),
-            SelectOption("and", Signal("Contains all")),
-            SelectOption("exact", Signal("Exact match")),
+      div(
+        cls := "flex flex-col gap-2",
+        Select(
+          Signal(
+            Seq(
+              SelectOption("or", Signal("Contains at least one")),
+              SelectOption("and", Signal("Contains all")),
+              SelectOption("exact", Signal("Exact match")),
+            ),
           ),
+          value => jsImplicits.routing.updateQueryParameters(Map(name + ":mode" -> value)),
+          jsImplicits.routing.getQueryParameterAsString(name + ":mode"),
+          false,
+          span("Nothing found..."),
+          false,
+          false,
+          cls := "rounded-md",
         ),
-        value => jsImplicits.routing.updateQueryParameters(Map(name + ":mode" -> value)),
-        jsImplicits.routing.getQueryParameterAsString(name + ":mode"),
-        false,
-        span("Nothing found..."),
-        false,
-        false,
-        cls := "rounded-md",
-      ),
-      MultiSelect(
-        uiAttribute match {
-          case x: UIMultiSelectAttribute[EntityType]  => x.optionsForFilter
-          case x: UICheckboxListAttribute[EntityType] => x.optionsForFilter
-        },
-        value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
-        jsImplicits.routing.getQueryParameterAsSeq(name),
-        5,
-        true,
-        span("Nothing found..."),
-        false,
-        cls := "rounded-md",
+        MultiSelect(
+          uiAttribute match {
+            case x: UIMultiSelectAttribute[EntityType]  => x.optionsForFilter
+            case x: UICheckboxListAttribute[EntityType] => x.optionsForFilter
+          },
+          value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+          jsImplicits.routing.getQueryParameterAsSeq(name),
+          5,
+          true,
+          span("Nothing found..."),
+          false,
+          cls := "rounded-md",
+        ),
       ),
     )
   }
@@ -224,6 +235,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 
   def render: VNode = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
       MultiSelect(
         Signal(Seq(SelectOption("true", Signal("Yes")), SelectOption("false", Signal("No")))),
@@ -233,7 +245,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
         true,
         span("Nothing found..."),
         false,
-        cls := "rounded-md",
+        cls := "rounded-md min-w-full",
       ),
     )
   }
