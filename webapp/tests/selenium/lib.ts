@@ -4,6 +4,7 @@ import firefox from "selenium-webdriver/firefox.js";
 import safari from "selenium-webdriver/safari.js";
 import { Chance } from "chance";
 import { strict as assert } from "node:assert";
+import { writeFile, mkdir } from "fs/promises";
 
 export let seed = new Chance().integer();
 //export let seed = 769272762597376;
@@ -444,6 +445,9 @@ export class Peer {
 
 		await Promise.all(
 			[this, other].map(async (peer, index) => {
+				const screenshot = await peer.driver.takeScreenshot();
+				await mkdir("screenshots");
+				await writeFile(`screenshots/${index}.png`, screenshot, "base64");
 				await peer.driver.wait(
 					until.elementLocated(By.xpath(`.//*[text()="${personNames[index]}"]`)),
 					10000,

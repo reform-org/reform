@@ -43,7 +43,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         if: always()
         with:
-          name: screenshot
-          path: screenshot.png
+          name: screenshots
+          path: screenshots
       - name: Selenium
         run: SELENIUM_BROWSER=${{ inputs.browser }} npm run selenium

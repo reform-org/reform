@@ -70,12 +70,6 @@ describe.concurrent("safari-compatible", () => {
 	it("loads page", async () => {
 		await loadPage([peer]);
 	});
-
-	afterAll(async () => {
-		const screenshot = await peer.driver.takeScreenshot();
-		await writeFile("screenshot.png", screenshot, "base64");
-		await quitPeers([peer]);
-	});
 });
 
 describe
