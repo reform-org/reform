@@ -53,12 +53,10 @@ class DetailPageEntityRow[T <: Entity[T]](
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
+      case Existing(value, editingValue) => jsImplicits.routing.to(ExtendContractPage(value.id))
       case New(value)                    =>
     }
   }
-
-  override protected def afterCreated(id: String): Unit = jsImplicits.routing.to(EditContractsPage(id))
 }
 
 class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {

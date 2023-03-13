@@ -56,6 +56,7 @@ import webapp.services.ContractEmail
 import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import scala.util.Failure
+import webapp.components.icons.Edit
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -84,7 +85,7 @@ case class ExtendContractPage(contractId: String)(using
         .map(currentContract => {
           val result: VMod = currentContract match {
             case Some(currentContract) =>
-              InnerEditContractsPage(Some(currentContract), contractId).render()
+              InnerExtendContractsPage(Some(currentContract), contractId).render()
             case None =>
               navigationHeader(
                 div(
@@ -330,6 +331,7 @@ class BasicInformation(
     editingValue: Var[Option[(Contract, Var[Contract])]],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
+    extend: Boolean = false,
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("1", "Basic Information", existingId, existingValue, editingValue, disabled, disabledDescription) {
@@ -407,8 +409,46 @@ class BasicInformation(
               }),
             ),
           ),
-          // Todo Warning
         ),
+        Signal.dynamic {
+            val overlappingContract = editingValue.value.map((_, contractSignal) => {
+              val start = contractSignal.value.contractStartDate.get.getOrElse(0L)
+              val end = contractSignal.value.contractEndDate.get.getOrElse(0L)
+              val hiwi = contractSignal.value.contractAssociatedHiwi.get.getOrElse("")
+              val overlappingContracts = jsImplicits.repositories.contracts.existing.value.filter(c => {
+                val contract = c.signal.value
+                contract.isDraft.get.getOrElse(true) == false &&
+                contract.contractAssociatedHiwi.get.nonEmpty &&
+                contract.contractAssociatedHiwi.get.get == hiwi &&
+                contract.contractStartDate.get.nonEmpty &&
+                contract.contractEndDate.get.nonEmpty &&
+                (
+                  (
+                    contract.contractStartDate.get.getOrElse(0L) <= start &&
+                    contract.contractEndDate.get.getOrElse(0L) >= start
+                  ) || 
+                  (
+                    contract.contractStartDate.get.getOrElse(0L) <= end &&
+                    contract.contractEndDate.get.getOrElse(0L) >= end
+                  ) ||
+                  (
+                    contract.contractStartDate.get.getOrElse(0L) >= start &&
+                    contract.contractEndDate.get.getOrElse(0L) <= end
+                  )
+                )
+              })
+
+              overlappingContracts.size > 0
+            }).getOrElse(false)
+
+            if(overlappingContract) {
+              Some(p(
+                cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                "This hiwi aleady has a finalized contract that overlaps with your selected contract period.",
+              ))
+            } else None
+          },
         div(
           cls := "flex flex-col md:flex-row md:space-x-4",
           div(
@@ -553,7 +593,7 @@ class BasicInformation(
                       )
                     case x
                         if x * month + totalHoursWithoutThisContract > project.signal.value.maxHours.get
-                          .getOrElse(0) =>
+                          .getOrElse(0) && !extend =>
                       p(
                         cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
                         icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
@@ -1111,30 +1151,66 @@ class CreateLetter(
 class InnerExtendContractsPage(override val existingValue: Option[Synced[Contract]], override val contractId: String)(
     using jsImplicits: JSImplicits,
 ) extends InnerEditContractsPage(existingValue, contractId) {
+
+  protected def createDraft(): Future[String] = {
+    jsImplicits.indexeddb.requestPersistentStorage
+
+    val editingNow = editingValue.now.get._2.now
+    val draftContract = Contract(
+      Attribute.empty,
+      editingNow.contractAssociatedHiwi,
+      editingNow.contractAssociatedPaymentLevel,
+      editingNow.contractAssociatedSupervisor,
+      editingNow.contractStartDate,
+      editingNow.contractEndDate,
+      Attribute.empty,
+      editingNow.contractHoursPerMonth,
+      Attribute(true),
+      Attribute.empty,
+      Attribute(false),
+      Attribute(false),
+      Attribute.empty,
+      Attribute.empty,
+      Attribute.empty,
+      Attribute(true),
+    )
+    jsImplicits.repositories.contracts
+      .create({
+        draftContract
+      })
+      .map(entity => {
+        editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
+        jsImplicits.routing.to(EditContractsPage(entity.id))
+
+        entity.id
+      })
+  }
+
   override def render: VNode = {
     navigationHeader(
-      onDomMount.foreach(_ => document.addEventListener("keydown", this.ctrlSListener)),
-      onDomUnmount.foreach(_ => document.removeEventListener("keydown", this.ctrlSListener)),
       div(
         div(
           cls := "p-1",
           h1(
             cls := "text-3xl mt-4 text-center",
-            Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                if (value.value.isDraft.get.getOrElse(true)) "Edit Contract Draft" else "Edit Contract",
-              )
-            },
+            "Extend Contract",
           ),
         ),
         div(
           cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
           form(
-            BasicInformation(contractId, existingValue, editingValue).render,
+            BasicInformation(contractId, existingValue, editingValue, Signal(Seq.empty), "", true).render,
             div(
               idAttr := "static_buttons",
               cls := "pl-4 flex flex-col md:flex-row gap-2",
-              "Hier kommen mal buttons hin xD",
+              Button(
+                ButtonStyle.LightPrimary,
+                "Create Draft",
+                onClick.foreach(e => {
+                  e.preventDefault()
+                  createDraft()
+                }),
+              ),
             ),
           ),
         ),
@@ -1280,7 +1356,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       "Save and finalize",
       onClick.foreach(e => {
         e.preventDefault()
-        // createOrUpdate(true).toastOnError(ToastMode.Infinit)
+        createOrUpdate(true).toastOnError(ToastMode.Infinit)
       }),
       disabled <-- isCompleted,
     ),

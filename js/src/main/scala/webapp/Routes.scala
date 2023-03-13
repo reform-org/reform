@@ -44,7 +44,7 @@ object Routes {
     case Root / "contract-drafts"       => ContractDraftsPage()
     case Root / "edit-contracts" / id   => EditContractsPage(id)
     case Root / "new-contract"          => NewContractPage()
-    case Root / "extend-contracts" / id => ExtendContractPage()
+    case Root / "extend-contracts" / id => ExtendContractPage(id)
     case Root / "documents"             => DocumentsPage()
     case Root / "settings"              => SettingsPage()
     case _                              => ErrorPage()

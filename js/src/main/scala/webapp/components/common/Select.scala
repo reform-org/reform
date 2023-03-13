@@ -62,7 +62,7 @@ def Select(
       div(
         cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
         if (styleValidity)
-          cls := "peer-invalid/select:bg-yellow-100/50 peer-invalid/select:text-yellow-600 peer-invalid/select:border-yellow-600"
+          cls := "peer-invalid/select:bg-yellow-100 peer-invalid/select:text-yellow-600 peer-invalid/select:border-yellow-600"
         else None,
         Signal {
           if (value.value.isEmpty) {
