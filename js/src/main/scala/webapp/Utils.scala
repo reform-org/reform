@@ -6,6 +6,7 @@ import org.scalajs.dom.{document, window}
 import org.scalajs.dom.MediaQueryList
 import rescala.default.*
 import scala.annotation.nowarn
+import org.scalajs.dom.StorageEvent
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
@@ -46,12 +47,28 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
 
 val theme = {
   val theme = Var(Option(window.localStorage.getItem("theme")).getOrElse("light"))
-  window.onstorage = (event) => {
-    if (event.key == "theme") {
-      theme.set(event.newValue)
-    }
-  }
+  window.addEventListener(
+    "storage",
+    (event: StorageEvent) => {
+      if (event.key == "theme") {
+        theme.set(event.newValue)
+      }
+    },
+  )
   theme
+}
+
+val autoconnect = {
+  val autoconnect = Var(Option(window.localStorage.getItem("autoconnect")).getOrElse("true").toBoolean)
+  window.addEventListener(
+    "storage",
+    (event: StorageEvent) => {
+      if (event.key == "autoconnect") {
+        autoconnect.set(event.newValue.toBoolean)
+      }
+    },
+  )
+  autoconnect
 }
 
 val browserThemeDark = {
