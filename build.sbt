@@ -33,7 +33,6 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
     },
-    scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
     Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     libraryDependencies ++= Seq(
