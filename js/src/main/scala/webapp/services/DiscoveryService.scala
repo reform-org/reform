@@ -8,7 +8,6 @@ import org.scalajs.dom
 import org.scalajs.dom.*
 import rescala.default.*
 import webapp.Globals
-import webapp.Settings
 import webapp.webrtc.PendingConnection
 import webapp.webrtc.WebRTCService
 
@@ -62,7 +61,8 @@ class DiscoveryService(using toaster: Toaster) {
   def setAutoconnect(using jsImplicits: JSImplicits)(
       value: Boolean,
   ): Unit = {
-    Settings.set[Boolean]("autoconnect", value)
+    window.localStorage.setItem("autoconnect", value.toString)
+    autoconnect.set(value)
     if (value == true) {
       connect()
         .toastOnError()
@@ -289,7 +289,7 @@ class DiscoveryService(using toaster: Toaster) {
 
     if (resetWebsocket) ws = None
 
-    if (Settings.get[Boolean]("autoconnect").getOrElse(true) || force) {
+    if (Option(window.localStorage.getItem("autoconnect")).getOrElse("true").toBoolean || force) {
       if (tokenIsValid(token.now)) {
         ws match {
           case Some(socket) => {}
