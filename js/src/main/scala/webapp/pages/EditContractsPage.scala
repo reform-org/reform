@@ -113,6 +113,10 @@ abstract class Step(
     disabledDescription: String = "",
 )(using jsImplicits: JSImplicits) {
 
+  protected def updateHoursPerMonth(hours: Int) = {
+    editingValue.now.map((_, a) => a.transform(c => c.copy(contractHoursPerMonth = c.contractHoursPerMonth.set(hours))))
+  }
+
   protected def editStep(children: VMod*): VNode = {
     div(
       cls := "relative",
@@ -127,7 +131,7 @@ abstract class Step(
           Some(
             div(
               icons.Info(cls := "w-6 h-6 shrink-0	"),
-              cls := "absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm",
+              cls := "max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm",
               div(
                 if (reasons.length >= 2)
                   s"To $disabledDescription you need ${reasons.take(reasons.length - 1).mkString(", ")} and you need ${reasons(reasons.length - 1)}."
@@ -331,8 +335,8 @@ class BasicInformation(
                 ) {
                   Some(
                     dsl.p(
-                      cls := "bg-yellow-100 text-yellow-600 flex flex-row",
-                      icons.WarningTriangle(cls := "w-6 h-6"),
+                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
                       "Start date is in the past",
                     ),
                   )
@@ -365,8 +369,8 @@ class BasicInformation(
                 ) {
                   Some(
                     dsl.p(
-                      cls := "bg-yellow-100 text-yellow-600 flex flex-row",
-                      icons.WarningTriangle(cls := "w-6 h-6"),
+                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
                       "End date is in the past or before start date",
                     ),
                   )
@@ -378,63 +382,79 @@ class BasicInformation(
         ),
         div(
           cls := "flex flex-col md:flex-row md:space-x-4",
-          div( // TODO calculation of monthly base salary and total hours
+          div(
             cls := "basis-1/2",
             p(
-              cls := "p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
-              "Monthly base salary: ",
+              cls := "",
               Signal.dynamic {
-                editingValue.value match {
-                  case None => span()
-                  case Some(c) => {
-                    val contract = c(1).value
-                    val limit =
-                      ContractPageAttributes()
-                        .getLimit(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
-                        .value
-                    val hourlyWage =
-                      ContractPageAttributes()
-                        .getMoneyPerHour(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
-                        .value
-                    if (hourlyWage != 0 && limit != 0) {
-                      val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
-                      span(
-                        toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                editingValue.value.map((_, c) => {
+                  val contract = c.value
+                  val limit =
+                    ContractPageAttributes()
+                      .getLimit(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
+                      .value
+                  val hourlyWage =
+                    ContractPageAttributes()
+                      .getMoneyPerHour(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
+                      .value
+
+                  val month = dateDiffMonth(
+                    contract.contractStartDate.get.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
+                  )
+
+                  if (hourlyWage != 0 && limit != 0) {
+                    val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                    div(
+                      cls := "flex flex-col gap-2",
+                      div(
+                        cls := "flex flex-col gap-1",
                         span(
-                          cls := "text-gray-500 text-sm",
-                          s" (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}",
+                          span(cls := "text-sm text-slate-600", "Base Salary: "),
+                          span(
+                            cls := "font-bold",
+                            toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                          ),
                         ),
-                      )
-                    } else {
-                      span(
-                      )
-                    }
-                  }
-                }
-              },
-            ),
-            br,
-            p(
-              cls := "p-4 bg-blue-100 dark:bg-blue-200 dark:text-blue-600",
-              "Total Hours: ",
-              Signal.dynamic {
-                editingValue.value match {
-                  case None => span()
-                  case Some(c) => {
-                    val contract = c(1).value
-                    val month = dateDiffMonth(
-                      contract.contractStartDate.get.getOrElse(0L),
-                      contract.contractEndDate.get.getOrElse(0L),
-                    )
-                    span(
-                      (contract.contractHoursPerMonth.get.getOrElse(0) * month),
-                      span(
-                        cls := "text-gray-500 text-sm",
-                        s" (calculating with ${month} month)",
+                        span(
+                          cls := "text-slate-400 text-xs italic",
+                          s"calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started",
+                        ),
+                      ),
+                      div(
+                        cls := "flex flex-col gap-1",
+                        span(
+                          span(cls := "text-sm text-slate-600", "Minijob Limit: "),
+                          span(cls := "font-bold", toMoneyString(limit)),
+                        ),
+                        span(
+                          cls := "text-slate-400 text-xs italic",
+                          s"the limit when the contract has started",
+                        ),
+                      ),
+                      div(
+                        cls := "flex flex-col gap-1",
+                        span(
+                          span(cls := "text-sm text-slate-600", "Maxmimum Hours below Limit: "),
+                          span(cls := "font-bold", maxHours.toInt),
+                        ),
+                      ),
+                      div(
+                        cls := "flex flex-col gap-1",
+                        span(
+                          span(cls := "text-sm text-slate-600", "Total hours: "),
+                          span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
+                        ),
+                        span(
+                          cls := "text-slate-400 text-xs",
+                          s"calculating with ${month} month",
+                        ),
                       ),
                     )
+                  } else {
+                    span()
                   }
-                }
+                })
               },
             ),
           ),
@@ -488,17 +508,40 @@ class BasicInformation(
                   contract.contractHoursPerMonth.get.getOrElse(0) match {
                     case x if x > maxHoursForTax =>
                       p(
-                        cls := "bg-yellow-100 text-yellow-600 flex flex-row",
-                        icons.WarningTriangle(cls := "w-6 h-6"),
-                        s"The monthly wage is above the minijob limit which is ${limit}. You might want to reduce the hours to ${maxHoursForTax} hours.",
+                        cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                        icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                        span(
+                          s"The monthly wage is above the minijob limit which is ${toMoneyString(limit)}. You might want to ",
+                          span(
+                            cls := "underline cursor-pointer",
+                            onClick.foreach(_ => {
+                              this.updateHoursPerMonth(maxHoursForTax.toInt)
+
+                            }),
+                            s"reduce the hours to ${maxHoursForTax} hours.",
+                          ),
+                        ),
                       )
                     case x
                         if x * month + totalHoursWithoutThisContract > project.signal.value.maxHours.get
                           .getOrElse(0) =>
                       p(
-                        cls := "bg-yellow-100 text-yellow-600 flex flex-row",
-                        icons.WarningTriangle(cls := "w-6 h-6"),
-                        s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! You might want to reduce the monthly hours to ${if (maxHoursForProject < 0) 0 else maxHoursForProject}.",
+                        cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
+                        icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                        span(
+                          s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
+                          span(
+                            cls := "underline cursor-pointer",
+                            onClick.foreach(_ => {
+                              this.updateHoursPerMonth(
+                                if (maxHoursForProject < 0) 0
+                                else maxHoursForProject,
+                              )
+                            }),
+                            s"You might want to reduce the monthly hours to ${if (maxHoursForProject < 0) 0
+                              else maxHoursForProject}.",
+                          ),
+                        ),
                       )
                     case _ => p()
                   }
@@ -1061,6 +1104,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
           contract.contractStartDate.get.getOrElse(0L) > contract.contractEndDate.get.getOrElse(0L) ||
           contract.contractEndDate.get.getOrElse(0L) < js.Date.now().toLong ||
           !contract.requiredDocuments.get.nonEmpty ||
+          !contract.isSigned.get.getOrElse(false) ||
           !requiredDocuments
             .getOrElse(Seq.empty)
             .forall(id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id))
@@ -1312,6 +1356,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                       (!contract.contractAssociatedPaymentLevel.get.nonEmpty -> "a payment level"),
                       (!contract.contractHoursPerMonth.get.nonEmpty -> "to set hours per month"),
                       (!contract.contractAssociatedProject.get.nonEmpty -> "a project"),
+                      (!contract.isSigned.get.getOrElse(false) -> "a signed contract"),
                     )
                   })
                   .getOrElse(Seq.empty)
