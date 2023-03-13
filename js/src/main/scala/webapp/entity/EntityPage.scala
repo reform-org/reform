@@ -109,6 +109,8 @@ class EntityRow[T <: Entity[T]](
     case New(_)             => None
   }
 
+  protected val editLabel = "Edit"
+
   private def renderEdit: VMod = {
     val deleteModal = Var[Option[Modal]](None)
     val id = s"form-${existingValue.map(_.id).getOrElse("new")}"
@@ -264,9 +266,9 @@ class EntityRow[T <: Entity[T]](
               TableButton(
                 ButtonStyle.LightPrimary,
                 icons.Edit(cls := "w-4 h-4 md:hidden"),
-                span(cls := "hidden md:block", "Edit"),
+                span(cls := "hidden md:block", editLabel),
                 cls := "h-7 tooltip tooltip-top entity-edit",
-                data.tip := "Edit",
+                data.tip := editLabel,
                 onClick.foreach(_ => startEditing()),
               ),
               TableButton(
