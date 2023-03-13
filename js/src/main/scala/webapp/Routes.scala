@@ -32,38 +32,40 @@ object Routes {
   def fromPath(using
       jsImplicits: JSImplicits,
   ): Path => Page = {
-    case Root                         => HomePage()
-    case Root / "projects"            => ProjectsPage()
-    case Root / "users"               => UsersPage()
-    case Root / "hiwis"               => HiwisPage()
-    case Root / "payment-levels"      => PaymentLevelsPage()
-    case Root / "salary-changes"      => SalaryChangesPage()
-    case Root / "supervisors"         => SupervisorsPage()
-    case Root / "contract-schemas"    => ContractSchemasPage()
-    case Root / "contracts"           => ContractsPage()
-    case Root / "contract-drafts"     => ContractDraftsPage()
-    case Root / "edit-contracts" / id => EditContractsPage(id)
-    case Root / "new-contract"        => NewContractPage()
-    case Root / "documents"           => DocumentsPage()
-    case Root / "settings"            => SettingsPage()
-    case _                            => ErrorPage()
+    case Root                           => HomePage()
+    case Root / "projects"              => ProjectsPage()
+    case Root / "users"                 => UsersPage()
+    case Root / "hiwis"                 => HiwisPage()
+    case Root / "payment-levels"        => PaymentLevelsPage()
+    case Root / "salary-changes"        => SalaryChangesPage()
+    case Root / "supervisors"           => SupervisorsPage()
+    case Root / "contract-schemas"      => ContractSchemasPage()
+    case Root / "contracts"             => ContractsPage()
+    case Root / "contract-drafts"       => ContractDraftsPage()
+    case Root / "edit-contracts" / id   => EditContractsPage(id)
+    case Root / "new-contract"          => NewContractPage()
+    case Root / "extend-contracts" / id => ExtendContractPage(id)
+    case Root / "documents"             => DocumentsPage()
+    case Root / "settings"              => SettingsPage()
+    case _                              => ErrorPage()
   }
 
   def toPath: Page => Path = {
-    case HomePage()            => Root / ""
-    case ProjectsPage()        => Root / "projects"
-    case UsersPage()           => Root / "users"
-    case HiwisPage()           => Root / "hiwis"
-    case PaymentLevelsPage()   => Root / "payment-levels"
-    case SalaryChangesPage()   => Root / "salary-changes"
-    case SupervisorsPage()     => Root / "supervisors"
-    case ContractSchemasPage() => Root / "contract-schemas"
-    case ContractsPage()       => Root / "contracts"
-    case ContractDraftsPage()  => Root / "contract-drafts"
-    case EditContractsPage(id) => Root / "edit-contracts" / id
-    case NewContractPage()     => Root / "new-contract"
-    case DocumentsPage()       => Root / "documents"
-    case SettingsPage()        => Root / "settings"
-    case ErrorPage()           => Root / window.location.pathname.nn.substring(1).nn
+    case HomePage()             => Root / ""
+    case ProjectsPage()         => Root / "projects"
+    case UsersPage()            => Root / "users"
+    case HiwisPage()            => Root / "hiwis"
+    case PaymentLevelsPage()    => Root / "payment-levels"
+    case SalaryChangesPage()    => Root / "salary-changes"
+    case SupervisorsPage()      => Root / "supervisors"
+    case ContractSchemasPage()  => Root / "contract-schemas"
+    case ContractsPage()        => Root / "contracts"
+    case ContractDraftsPage()   => Root / "contract-drafts"
+    case EditContractsPage(id)  => Root / "edit-contracts" / id
+    case ExtendContractPage(id) => Root / "extend-contracts" / id
+    case NewContractPage()      => Root / "new-contract"
+    case DocumentsPage()        => Root / "documents"
+    case SettingsPage()         => Root / "settings"
+    case ErrorPage()            => Root / window.location.pathname.nn.substring(1).nn
   }
 }

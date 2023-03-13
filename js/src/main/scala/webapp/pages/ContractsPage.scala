@@ -51,14 +51,14 @@ class DetailPageEntityRow[T <: Entity[T]](
     lattice: Lattice[T],
     jsImplicits: JSImplicits,
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
+
+  override protected val editLabel: String = "Extend"
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
+      case Existing(value, editingValue) => jsImplicits.routing.to(ExtendContractPage(value.id))
       case New(value)                    =>
     }
   }
-
-  override protected def afterCreated(id: String): Unit = jsImplicits.routing.to(EditContractsPage(id))
 }
 
 class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {

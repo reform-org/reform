@@ -32,7 +32,7 @@ abstract class UIBasicAttribute[EntityType](
     div()
   }
 
-  def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]]): VMod
+  def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]], props: VMod*): VMod
 
   def uiFilter: UIFilter[EntityType] = UIFilterNothing()
 }
@@ -57,6 +57,7 @@ abstract class UIAttribute[EntityType, AttributeType](
   override def renderEdit(
       formId: String,
       editing: Var[Option[(EntityType, Var[EntityType])]],
+      props: VMod*,
   ): VMod
 
   override def uiFilter: UIFilter[EntityType] = UISubstringFilter(this)
@@ -74,7 +75,7 @@ class UIReadOnlyAttribute[EntityType, T](
     div(cls := "px-4", getter(id, entity), formats.map(f => cls <-- f.apply(id, entity)))
   }
 
-  override def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]]): VMod = {
+  override def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]], props: VMod*): VMod = {
     div()
   }
 
@@ -117,6 +118,7 @@ class UITextAttribute[EntityType, AttributeType](
       set: AttributeType => Unit,
       datalist: Option[String] = None,
       entity: EntityType,
+      props: VMod*,
   ): VMod =
     TableInput(
       // cls := "input valid:input-success bg-gray-50 input-ghost dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white !outline-0 rounded-none w-full border border-gray-300 h-9",
@@ -138,11 +140,13 @@ class UITextAttribute[EntityType, AttributeType](
           case Some(value) => listId := value
         }
       },
+      props,
     )
 
   def renderEdit(
       formId: String,
       editing: Var[Option[(EntityType, Var[EntityType])]],
+      props: VMod*,
   ): VMod = {
     editing.map(
       _.map(editing => {
@@ -157,6 +161,7 @@ class UITextAttribute[EntityType, AttributeType](
               x => set(entityVar, x),
               Some(s"$formId-conflicting-values"),
               entityVar.value,
+              props,
             )
           },
           if (editStartAttr.getAll.size > 1) {
@@ -244,6 +249,7 @@ class UIDateAttribute[EntityType](
       set: Long => Unit,
       datalist: Option[String] = None,
       entity: EntityType,
+      props: VMod*,
   ): VMod = TableInput(
     cls := "input",
     placeholder := "dd.mm.yyyy",
@@ -257,6 +263,7 @@ class UIDateAttribute[EntityType](
       ignoreDisconnectable(evt.observe(set.compose(writeConverter)))
       evt
     },
+    props,
   )
 
   override def uiFilter: UIFilter[EntityType] = UIIntervalFilter(this)
@@ -296,12 +303,14 @@ class UICheckboxAttribute[EntityType](
       set: Boolean => Unit,
       datalist: Option[String] = None,
       entity: EntityType,
+      props: VMod*,
   ): VMod = Checkbox(
     CheckboxStyle.Default,
     cls := "absolute top-1/2 -translate-y-1/2",
     formId := _formId,
     checked <-- attr.map(_.get.getOrElse(false)),
     onClick.foreach(_ => set(!attr.now.get.getOrElse(false))),
+    props,
   )
 
   override def uiFilter: UIFilter[EntityType] = UIBooleanFilter(this)
@@ -350,6 +359,7 @@ class UISelectAttribute[EntityType, AttributeType](
       set: AttributeType => Unit,
       datalist: Option[String] = None,
       entity: EntityType,
+      props: VMod*,
   ): VMod = {
     Select(
       options(entity),
@@ -371,7 +381,7 @@ class UISelectAttribute[EntityType, AttributeType](
       isRequired,
       isRequired,
       formId := _formId,
-      cls := " rounded-md",
+      props,
     )
   }
 }
@@ -433,6 +443,7 @@ class UIMultiSelectAttribute[EntityType](
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
       entity: EntityType,
+      props: VMod*,
   ): VMod = {
     Seq(
       MultiSelect(
@@ -455,7 +466,7 @@ class UIMultiSelectAttribute[EntityType](
         },
         isRequired,
         formId := _formId,
-        cls := " rounded-md",
+        props,
       ),
     )
   }
@@ -511,6 +522,7 @@ class UICheckboxListAttribute[EntityType](
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
       entity: EntityType,
+      props: VMod*,
   ): VMod = {
     Seq(
       CheckboxList(
@@ -522,8 +534,8 @@ class UICheckboxListAttribute[EntityType](
         div("Nothing found..."),
         isRequired,
         formId := _formId,
+        props,
       ),
-      cls := " rounded-md",
     )
 
   }
