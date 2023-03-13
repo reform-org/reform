@@ -73,6 +73,35 @@ case class NewContractPage()(using
   }
 }
 
+case class ExtendContractPage(contractId: String)(using
+    jsImplicits: JSImplicits,
+) extends Page {
+
+  private val existingValue = jsImplicits.repositories.contracts.all.map(_.find(c => c.id == contractId))
+  def render: VNode = {
+    div(
+      existingValue
+        .map(currentContract => {
+          val result: VMod = currentContract match {
+            case Some(currentContract) =>
+              InnerEditContractsPage(Some(currentContract), contractId).render()
+            case None =>
+              navigationHeader(
+                div(
+                  div(
+                    cls := "p-1",
+                    h1(cls := "text-4xl text-center", "Contract"),
+                  ),
+                  h2("Contract not found"),
+                ),
+              )
+          }
+          result
+        }),
+    )
+  }
+}
+
 case class EditContractsPage(contractId: String)(using
     jsImplicits: JSImplicits,
 ) extends Page {
@@ -1079,12 +1108,47 @@ class CreateLetter(
   }
 }
 
-case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contractId: String)(using
+class InnerExtendContractsPage(override val existingValue: Option[Synced[Contract]], override val contractId: String)(
+    using jsImplicits: JSImplicits,
+) extends InnerEditContractsPage(existingValue, contractId) {
+  override def render: VNode = {
+    navigationHeader(
+      onDomMount.foreach(_ => document.addEventListener("keydown", this.ctrlSListener)),
+      onDomUnmount.foreach(_ => document.removeEventListener("keydown", this.ctrlSListener)),
+      div(
+        div(
+          cls := "p-1",
+          h1(
+            cls := "text-3xl mt-4 text-center",
+            Signal.dynamic {
+              editingValue.value.map((_, value) =>
+                if (value.value.isDraft.get.getOrElse(true)) "Edit Contract Draft" else "Edit Contract",
+              )
+            },
+          ),
+        ),
+        div(
+          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          form(
+            BasicInformation(contractId, existingValue, editingValue).render,
+            div(
+              idAttr := "static_buttons",
+              cls := "pl-4 flex flex-col md:flex-row gap-2",
+              "Hier kommen mal buttons hin xD",
+            ),
+          ),
+        ),
+      ),
+    )
+  }
+}
+
+class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val contractId: String)(using
     jsImplicits: JSImplicits,
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def isCompleted: Signal[Boolean] = {
+  protected def isCompleted: Signal[Boolean] = {
     Signal.dynamic {
       editingValue.value
         .map((_, contractSignal) => {
@@ -1114,7 +1178,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     }
   }
 
-  private def createOrUpdate(
+  protected def createOrUpdate(
       finalize: Boolean = false,
       stayOnPage: Boolean = false,
       silent: Boolean = false,
@@ -1176,7 +1240,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     }
   }
 
-  private def cancelEdit(): Unit = {
+  protected def cancelEdit(): Unit = {
     jsImplicits.routing.to(ContractsPage())
   }
 
@@ -1268,15 +1332,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     ),
   )
 
-  def render: VNode = {
-    val ctrlSListener: js.Function1[KeyboardEvent, Unit] = (e: KeyboardEvent) => {
-      if (e.keyCode == 83 && e.ctrlKey) {
-        e.preventDefault()
-        createOrUpdate(false, true)
-          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
-          .toastOnError(ToastMode.Infinit)
-      }
+  protected val ctrlSListener: js.Function1[KeyboardEvent, Unit] = (e: KeyboardEvent) => {
+    if (e.keyCode == 83 && e.ctrlKey) {
+      e.preventDefault()
+      createOrUpdate(false, true)
+        .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
+        .toastOnError(ToastMode.Infinit)
     }
+  }
+
+  def render: VNode = {
     navigationHeader(
       onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
       onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
