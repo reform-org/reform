@@ -28,7 +28,11 @@ import com.auth0.jwt.JWTVerifier
 import com.auth0.jwt.JWT
 import com.auth0.jwt.exceptions.JWTVerificationException
 import org.eclipse.jetty.security.ServerAuthException
+import org.eclipse.jetty.server.UserIdentity.Scope
+import java.security.Principal
+import javax.security.auth.Subject
 
+// https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java#L50
 @main def runServer() = {
   val registry = Registry()
   val indexedDb = SqliteDB()
@@ -82,23 +86,35 @@ import org.eclipse.jetty.security.ServerAuthException
 
             override def logout(request: ServletRequest | Null): Authentication | Null = ???
 
-            override def getAuthMethod(): String | Null = ???
+            override def getAuthMethod(): String | Null = null
 
-            override def getUserIdentity(): UserIdentity | Null = ???
+            override def getUserIdentity(): UserIdentity | Null = new UserIdentity {
+
+              override def getSubject(): Subject | Null = ???
+
+              override def getUserPrincipal(): Principal | Null = new Principal {
+
+                override def getName(): String | Null = "test"
+
+              }
+
+              override def isUserInRole(role: String | Null, scope: Scope | Null): Boolean = true
+
+            }
 
             override def isUserInRole(scope: UserIdentity.Scope | Null, role: String | Null): Boolean = true
 
           }
         } catch {
           case exception: JWTVerificationException =>
-            // Invalid signature/claims
             println(exception)
-            // throw new ServerAuthException("invalid jwt token")
-            return new Authentication.ResponseSent {}
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+            return Authentication.SEND_FAILURE
         }
       } else {
         println("not authenticated")
-        return new Authentication.ResponseSent {}
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+        return Authentication.SEND_FAILURE
       }
     }
 
