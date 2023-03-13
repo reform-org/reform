@@ -57,7 +57,7 @@ case class HomePage()(using
     Signal.dynamic {
       jsImplicits.repositories.contracts.existing.value
         .map(p => (p.id -> p.signal.value))
-        .filter((id, p) => pred(id, p) && p.isInInterval(month, year))
+        .filter((id, p) => pred(id, p) && ContractPageAttributes().isInInterval(p, month, year))
     }
   }
 
@@ -140,7 +140,9 @@ case class HomePage()(using
             Signal.dynamic {
               val sum = jsImplicits.repositories.contracts.existing.value
                 .map(p => (p.id -> p.signal.value))
-                .filter((id, p) => !p.isDraft.get.getOrElse(true) && p.isInInterval(month.value, year.value))
+                .filter((id, p) =>
+                  !p.isDraft.get.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
+                )
                 .map((id, contract) => {
                   val hourlyWage = ContractPageAttributes()
                     .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
@@ -159,7 +161,7 @@ case class HomePage()(using
             Signal.dynamic {
               val sum = jsImplicits.repositories.contracts.existing.value
                 .map(p => (p.id -> p.signal.value))
-                .filter((id, p) => p.isInInterval(month.value, year.value))
+                .filter((id, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
                 .map((id, contract) => {
                   val hourlyWage = ContractPageAttributes()
                     .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
@@ -183,7 +185,7 @@ case class HomePage()(using
 
           val contracts = jsImplicits.repositories.contracts.existing.value
             .map(p => (p.id -> p.signal.value))
-            .filter((id, p) => p.isInInterval(month.value, year.value))
+            .filter((id, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
 
           projects.foreach((id, project) => {
             contractsPerProject += (id -> contracts
