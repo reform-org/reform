@@ -636,6 +636,7 @@ class ContractRequirementsMail(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    save: () => Unit,
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("3a", "Contract requirements - reminder mail", existingId, existingValue, editingValue) {
@@ -698,6 +699,14 @@ class ContractRequirementsMail(
                       jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                     }
                     if (ans.get.accepted.length > 0) {
+                      Signal {
+                        editingValue.value
+                          .map((_, contract) => {
+                            contract
+                              .transform(contract => contract.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
+                            save()
+                          })
+                      }
                       jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                     }
                   })
@@ -707,6 +716,14 @@ class ContractRequirementsMail(
             })
           }),
         ),
+        "Last sent: ",
+        Signal.dynamic {
+          val date = editingValue.value
+            .flatMap((_, contract) => contract.value.reminderSentDate.get)
+            .getOrElse(0L)
+
+          if (date > 0L) toGermanDate(date) else "Never"
+        },
       ),
     )
   }
@@ -716,6 +733,7 @@ class CreateContract(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    save: () => Unit,
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("4", "Create Documents", existingId, existingValue, editingValue) {
@@ -783,6 +801,16 @@ class CreateContract(
                           jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                         }
                         if (ans.get.accepted.length > 0) {
+                          Signal {
+                            editingValue.value
+                              .map((_, contract) => {
+                                contract
+                                  .transform(contract =>
+                                    contract.copy(contractSentDate = Attribute(js.Date.now.toLong)),
+                                  )
+                              })
+                            save()
+                          }
                           jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                         }
                       })
@@ -793,6 +821,14 @@ class CreateContract(
             })
           }),
         ),
+        "Last sent: ",
+        Signal.dynamic {
+          val date = editingValue.value
+            .flatMap((_, contract) => contract.value.contractSentDate.get)
+            .getOrElse(0L)
+
+          if (date > 0L) toGermanDate(date) else "Never"
+        },
         label(
           ContractPageAttributes().signed.renderEdit("", editingValue),
           " The contract has been signed",
@@ -807,6 +843,7 @@ class CreateLetter(
     existingId: String,
     existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
+    save: () => Unit,
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("5", "Letter to Dekanat", existingId, existingValue, editingValue) {
@@ -872,6 +909,14 @@ class CreateLetter(
                           jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                         }
                         if (ans.get.accepted.length > 0) {
+                          Signal {
+                            editingValue.value
+                              .map((_, contract) => {
+                                contract
+                                  .transform(contract => contract.copy(letterSentDate = Attribute(js.Date.now.toLong)))
+                              })
+                            save()
+                          }
                           jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                         }
                       })
@@ -882,6 +927,14 @@ class CreateLetter(
             })
           }),
         ),
+        "Last sent: ",
+        Signal.dynamic {
+          val date = editingValue.value
+            .flatMap((_, contract) => contract.value.letterSentDate.get)
+            .getOrElse(0L)
+
+          if (date > 0L) toGermanDate(date) else "Never"
+        },
         label(
           ContractPageAttributes().submitted.renderEdit("", editingValue),
           " The letter has been submitted",
@@ -897,7 +950,11 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
-  private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Future[String] = {
+  private def createOrUpdate(
+      finalize: Boolean = false,
+      stayOnPage: Boolean = false,
+      silent: Boolean = false,
+  ): Future[String] = {
     jsImplicits.indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
@@ -913,11 +970,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             }
           })
           .map(value => {
-            jsImplicits.toaster.make(
-              "Contract saved!",
-              ToastMode.Short,
-              ToastType.Success,
-            )
+            if (!silent) {
+              jsImplicits.toaster.make(
+                "Contract saved!",
+                ToastMode.Short,
+                ToastType.Success,
+              )
+            }
+
             if (!stayOnPage) {
               if (value.isDraft.get.getOrElse(true)) {
                 jsImplicits.routing.to(ContractDraftsPage())
@@ -1074,9 +1134,14 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             SelectProject(contractId, existingValue, editingValue).render,
             ContractType(contractId, existingValue, editingValue).render,
             ContractRequirements(contractId, existingValue, editingValue).render,
-            ContractRequirementsMail(contractId, existingValue, editingValue).render,
-            CreateContract(contractId, existingValue, editingValue).render,
-            CreateLetter(contractId, existingValue, editingValue).render,
+            ContractRequirementsMail(
+              contractId,
+              existingValue,
+              editingValue,
+              () => createOrUpdate(false, true, false),
+            ).render,
+            CreateContract(contractId, existingValue, editingValue, () => createOrUpdate(false, true, true)).render,
+            CreateLetter(contractId, existingValue, editingValue, () => createOrUpdate(false, true, true)).render,
             div(
               idAttr := "static_buttons",
               cls := "md:pl-8 md:space-x-4 flex flex-col md:flex-row gap-2",
