@@ -336,9 +336,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
   private val filters = uiAttributes.map(_.uiFilter)
 
-  def render: VNode = div(
-    filters.map(_.render),
-  )
+  def render: VMod = filters.map(_.render)
 
   val predicate: Signal[EntityType => Boolean] = {
     val preds = filters.map(_.predicate).seqToSignal
@@ -385,9 +383,7 @@ abstract class EntityPage[T <: Entity[T]](
   private val filter = Filter[T](uiAttributes)
 
   def render: VNode = {
-    val filterDropdownOpen = Var(false)
-
-    createPopper(s"#filter-btn", s"#filter-dropdown", "bottom-start", false)
+    val filterDropdownClosed = Var(true)
 
     navigationHeader(
       div(
@@ -401,8 +397,7 @@ abstract class EntityPage[T <: Entity[T]](
           div(
             cls := "flex flex-col sm:flex-row gap-2 items-left md:items-center mb-4",
             div(
-              cls := "dropdown",
-              cls <-- filterDropdownOpen.map(if (_) Some("dropdown-open") else None),
+              cls := "",
               Button(
                 ButtonStyle.LightDefault,
                 tabIndex := 0,
@@ -415,26 +410,8 @@ abstract class EntityPage[T <: Entity[T]](
                 icons.Filter(cls := "ml-1 w-6 h-6"),
                 cls := "!mt-0",
                 onClick.foreach(e => {
-                  filterDropdownOpen.transform(!_)
+                  filterDropdownClosed.transform(!_)
                 }),
-              ),
-              ul(
-                idAttr := "filter-dropdown",
-                cls := "dropdown-content menu max-w-[90%] p-2 shadow-xl bg-base-100 rounded-box w-96 dark:bg-gray-700",
-                filter.render,
-                "Columns",
-                MultiSelect(
-                  Signal(
-                    uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
-                  ),
-                  value => jsImplicits.routing.updateQueryParameters(Map("columns" -> value)),
-                  jsImplicits.routing.getQueryParameterAsSeq("columns"),
-                  4,
-                  true,
-                  span("Nothing found..."),
-                  false,
-                  cls := "rounded-md",
-                ),
               ),
             ),
             div(
@@ -451,6 +428,28 @@ abstract class EntityPage[T <: Entity[T]](
             if (addInPlace) {
               Some(addButton)
             } else None,
+          ),
+          div(
+            cls <-- filterDropdownClosed.map(if (_) Some("hidden") else None),
+            idAttr := "filter-dropdown",
+            cls := "menu p-2 mb-4 bg-base-100 dark:bg-gray-700 transition-none flex flex-row gap-2",
+            filter.render,
+            div(
+              cls := "max-w-[300px] min-w-[300px] min-w-[300px]",
+              "Columns",
+              MultiSelect(
+                Signal(
+                  uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
+                ),
+                value => jsImplicits.routing.updateQueryParameters(Map("columns" -> value)),
+                jsImplicits.routing.getQueryParameterAsSeq("columns"),
+                4,
+                true,
+                span("Nothing found..."),
+                false,
+                cls := "rounded-md min-w-full",
+              ),
+            ),
           ),
           div(
             cls := "overflow-x-auto custom-scrollbar",
