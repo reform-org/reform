@@ -22,6 +22,11 @@ import org.eclipse.jetty.security.LoginService
 import org.eclipse.jetty.security.IdentityService
 import org.eclipse.jetty.security.Authenticator.AuthConfiguration
 import java.util as ju
+import com.auth0.jwt.interfaces.DecodedJWT
+import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.JWT
+import com.auth0.jwt.exceptions.JWTVerificationException
 
 // https://github.com/eclipse/jetty.project/issues/4123
 // https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java
@@ -34,6 +39,7 @@ import java.util as ju
   val connector = new ServerConnector(server)
   val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").get.toInt
   val path = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PATH").get
+  val secret = sys.env.get("JWT_KEY").get
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler().nn
@@ -57,6 +63,29 @@ import java.util as ju
 
       if (token != null) {
         println(token)
+        try {
+          val algorithm: Algorithm = Algorithm.HMAC256(secret).nn;
+          val verifier: JWTVerifier = JWT
+            .require(algorithm)
+            .nn
+            .build()
+            .nn;
+
+          val decodedJWT: DecodedJWT = verifier.verify(token).nn;
+          println(decodedJWT.getClaims())
+          val issuedAt = decodedJWT.getIssuedAt();
+          val expiresAt = decodedJWT.getExpiresAt();
+          val uuid = decodedJWT.getClaim("uuid").nn.asString();
+          val device = decodedJWT.getClaim("device").nn.asString();
+          val username = decodedJWT.getClaim("username").nn.asString();
+          println(
+            s"connection from ${username} (${uuid}) from device ${device} issued ${issueAt} expiring ${expiresAt}",
+          )
+        } catch {
+          case exception: JWTVerificationException =>
+            // Invalid signature/claims
+            println(exception)
+        }
         return new Authentication.User {
 
           override def logout(request: ServletRequest | Null): Authentication | Null = null
