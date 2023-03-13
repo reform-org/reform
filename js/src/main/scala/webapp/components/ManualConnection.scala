@@ -86,7 +86,7 @@ private case class Init()(using jsImplicits: JSImplicits) extends State {
       ),
       Button(
         ButtonStyle.Primary,
-        cls := "w-full",
+        cls := "w-full mt-2",
         "Create Invitation",
         disabled <-- alias.map(_.isBlank()),
         onClick.foreach(_ => initializeHostSession),

@@ -22,6 +22,7 @@ import scala.util.Success
 import webapp.components.common.*
 import webapp.utils.Futures.*
 import scala.annotation.nowarn
+import org.scalajs.dom.StorageEvent
 
 class ConnectionModal(using jsImplicits: JSImplicits) {
   val offlineBanner = {
@@ -29,18 +30,20 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
       cls := "bg-amber-100 flex flex-col items-center",
       icons.Reload(
         cls := "h-8 w-8 animate-reload text-amber-600",
-        onClick.foreach(e => {
-          if (Settings.get[Boolean]("autoconnect").getOrElse(true)) {
-            e.target.classList.add("animate-spin")
-            jsImplicits.discovery
-              .connect(true, true)
-              .transform(res => {
-                window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
-                res
-              })
-              .toastOnError()
-          }
-        }),
+        onClick.foreach(e =>
+          Signal {
+            if (autoconnect.value) {
+              e.target.classList.add("animate-spin")
+              jsImplicits.discovery
+                .connect(true, true)
+                .transform(res => {
+                  window.setTimeout(() => e.target.classList.remove("animate-spin"), 1000)
+                  res
+                })
+                .toastOnError()
+            }
+          }: @nowarn,
+        ),
       ),
       span(
         cls := "text-amber-600 font-semibold text-center",
@@ -113,7 +116,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
         Checkbox(
           CheckboxStyle.Primary,
           cls := "checkbox-sm",
-          checked := Settings.get[Boolean]("autoconnect").getOrElse(true),
+          checked <-- autoconnect,
           onClick.foreach(e =>
             jsImplicits.discovery.setAutoconnect(e.target.asInstanceOf[dom.HTMLInputElement].checked),
           ),
