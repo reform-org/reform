@@ -1,4 +1,4 @@
-name: Scala Formatting
+name: Build
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  check-formatting:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,5 +23,13 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-      - name: Check formatting
-        run: sbt scalafmtCheckAll
+          cache: "sbt"
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 19
+          cache: "npm"
+      - run: npm ci
+      - name: Build ScalaJS
+        run: sbt fastLinkJS
+      - name: Build JavaScript
+        run: npm run build -- --mode lukasschreiber
