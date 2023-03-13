@@ -73,9 +73,9 @@ case class HomePage()(using
 
     navigationHeader(
       div(
-        cls := "flex flex-col gap-2 max-w-sm",
+        cls := "flex flex-col gap-4 w-full",
         div(
-          cls := "flex flex-row gap-2 items-center",
+          cls := "flex flex-row gap-4 items-center self-center",
           IconButton(
             ButtonStyle.LightDefault,
             icons.Previous(cls := "w-6 h-6"),
@@ -106,51 +106,74 @@ case class HomePage()(using
             }),
           ),
         ),
-        "Total Contracts:",
-        Signal.dynamic {
-          getContractsForInterval(month.value, year.value).map(a => a.size)
-        },
-        "Draft Contracts:",
-        Signal.dynamic {
-          getContractsForInterval(month.value, year.value, (_, p) => p.isDraft.get.getOrElse(true)).map(a => a.size)
-        },
-        "Actual Contracts:",
-        Signal.dynamic {
-          getContractsForInterval(month.value, year.value, (_, p) => !p.isDraft.get.getOrElse(true)).map(a => a.size)
+        div(
+          cls := "flex flex-wrap gap-4 items-stretch justify-center",
+          NumberCard(
+            "Total Contracts",
+            Signal.dynamic {
+              getContractsForInterval(month.value, year.value).map(a => a.size)
+            },
+            "all contracts",
+          ),
+          NumberCard(
+            "Draft Contracts:",
+            Signal.dynamic {
+              getContractsForInterval(month.value, year.value, (_, p) => p.isDraft.get.getOrElse(true)).map(a => a.size)
+            },
+            "only draft contracts",
+          ),
+          NumberCard(
+            "Contracts:",
+            Signal.dynamic {
+              getContractsForInterval(month.value, year.value, (_, p) => !p.isDraft.get.getOrElse(true)).map(a =>
+                a.size,
+              )
 
-        },
-        "Total Expenses:",
-        Signal.dynamic {
-          val sum = jsImplicits.repositories.contracts.existing.value
-            .map(p => (p.id -> p.signal.value))
-            .filter((id, p) => !p.isDraft.get.getOrElse(true) && p.isInInterval(month.value, year.value))
-            .map((id, contract) => {
-              val hourlyWage = ContractPageAttributes()
-                .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
-                .value
-              val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
-              hoursPerMonth * hourlyWage
-            })
-            .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
+            },
+            "only finalized contracts",
+          ),
+        ),
+        div(
+          cls := "flex flex-wrap gap-4 items-stretch justify-center",
+          MoneyCard(
+            "Expenses:",
+            Signal.dynamic {
+              val sum = jsImplicits.repositories.contracts.existing.value
+                .map(p => (p.id -> p.signal.value))
+                .filter((id, p) => !p.isDraft.get.getOrElse(true) && p.isInInterval(month.value, year.value))
+                .map((id, contract) => {
+                  val hourlyWage = ContractPageAttributes()
+                    .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                    .value
+                  val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                  hoursPerMonth * hourlyWage
+                })
+                .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
 
-          toMoneyString(sum)
-        },
-        "Total Expenses with drafts:",
-        Signal.dynamic {
-          val sum = jsImplicits.repositories.contracts.existing.value
-            .map(p => (p.id -> p.signal.value))
-            .filter((id, p) => p.isInInterval(month.value, year.value))
-            .map((id, contract) => {
-              val hourlyWage = ContractPageAttributes()
-                .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
-                .value
-              val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
-              hoursPerMonth * hourlyWage
-            })
-            .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
+              toMoneyString(sum).substring(0, toMoneyString(sum).length() - 2).nn
+            },
+            "only finalized contracts",
+          ),
+          MoneyCard(
+            "Planned Expenses:",
+            Signal.dynamic {
+              val sum = jsImplicits.repositories.contracts.existing.value
+                .map(p => (p.id -> p.signal.value))
+                .filter((id, p) => p.isInInterval(month.value, year.value))
+                .map((id, contract) => {
+                  val hourlyWage = ContractPageAttributes()
+                    .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                    .value
+                  val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                  hoursPerMonth * hourlyWage
+                })
+                .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
 
-          toMoneyString(sum)
-        },
+              toMoneyString(sum).substring(0, toMoneyString(sum).length() - 2).nn
+            },
+            "all contracts",
+          ),
+        ),
         Signal.dynamic {
           val projects = jsImplicits.repositories.projects.existing.value.map(p => (p.id -> p.signal.value))
           val hiwis = jsImplicits.repositories.hiwis.all.value.map(p => (p.id -> p.signal.value))
@@ -167,26 +190,18 @@ case class HomePage()(using
               .filter((_, contract) => contract.contractAssociatedProject.get.getOrElse("") == id))
           })
 
-          projects
+          val projectsThisMonth = projects
             .filter((id, _) => contractsPerProject.get(id).map(c => c.size > 0).getOrElse(false))
-            .map((id, project) => {
-              div(
-                project.name.get,
-                project.accountName.get,
-                table(
-                  thead(
-                    tr(
-                      th(),
-                      th("Hiwi"),
-                      th("Supervisor"),
-                      th("From"),
-                      th("To"),
-                      th("€/h"),
-                      th("h/mon"),
-                      th("€/mon"),
-                    ),
-                  ),
-                  tbody(
+
+          div(
+            cls := "flex flex-col gap-4 lg:items-center",
+            if (projectsThisMonth.size > 0) {
+              projectsThisMonth
+                .map((id, project) => {
+                  TableCard(
+                    project.name.get,
+                    project.accountName.get,
+                    Seq("", "Hiwi", "Supervisor", "From", "To", "€/h", "h/mon", "€/mon"),
                     contractsPerProject(id).map((contractId, contract) => {
                       val moneyPerHour =
                         ContractPageAttributes()
@@ -197,51 +212,48 @@ case class HomePage()(using
                       val hiwi = hiwis.find((id, hiwi) => id == contract.contractAssociatedHiwi.get.getOrElse(""))
                       val supervisor = supervisors
                         .find((id, supervisor) => id == contract.contractAssociatedSupervisor.get.getOrElse(""))
-                      tr(
-                        td(),
-                        td(
-                          hiwi.map((_, hiwi) =>
-                            s"${hiwi.firstName.get.getOrElse("")} ${hiwi.firstName.get.getOrElse("")}",
-                          ),
+
+                      Seq(
+                        "",
+                        hiwi.map((_, hiwi) =>
+                          s"${hiwi.firstName.get.getOrElse("")} ${hiwi.firstName.get.getOrElse("")}",
                         ),
-                        td(supervisor.map((_, supervisor) => supervisor.name.get.getOrElse(""))),
-                        td(toGermanDate(contract.contractStartDate.get.getOrElse(0L))),
-                        td(toGermanDate(contract.contractEndDate.get.getOrElse(0L))),
-                        td(toMoneyString(moneyPerHour)),
-                        td(hoursPerMonth, " h"),
-                        td(toMoneyString(moneyPerMonth)),
+                        supervisor.map((_, supervisor) => supervisor.name.get.getOrElse("")),
+                        toGermanDate(contract.contractStartDate.get.getOrElse(0L)),
+                        toGermanDate(contract.contractEndDate.get.getOrElse(0L)),
+                        toMoneyString(moneyPerHour),
+                        span(hoursPerMonth, " h"),
+                        toMoneyString(moneyPerMonth),
                       )
                     }),
-                  ),
-                  tfoot(
-                    tr(
-                      td("Σ"),
-                      td(colSpan := 5),
-                      td(
+                    Seq(
+                      "Σ",
+                      colSpan := 5,
+                      span(
                         contractsPerProject(id)
                           .map((_, contract) => contract.contractHoursPerMonth.get.getOrElse(0))
                           .fold[Int](0)((a, b) => a + b),
                         " h",
                       ),
-                      td(
-                        toMoneyString(
-                          contractsPerProject(id)
-                            .map((id, contract) => {
-                              val moneyPerHour =
-                                ContractPageAttributes()
-                                  .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
-                                  .value
-                              val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
-                              moneyPerHour * hoursPerMonth
-                            })
-                            .fold[BigDecimal](0)((a, b) => a + b),
-                        ),
+                      toMoneyString(
+                        contractsPerProject(id)
+                          .map((id, contract) => {
+                            val moneyPerHour =
+                              ContractPageAttributes()
+                                .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                                .value
+                            val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                            moneyPerHour * hoursPerMonth
+                          })
+                          .fold[BigDecimal](0)((a, b) => a + b),
                       ),
                     ),
-                  ),
-                ),
-              )
-            })
+                  )
+                })
+            } else {
+              div(cls := "text-slate-400", "No projects this month...")
+            },
+          )
         },
       ),
     )
