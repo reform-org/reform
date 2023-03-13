@@ -55,7 +55,7 @@ sbt webappJVM/run
 Then open linked instances in your browser:
 
 ```
-npm run spawn-test-instances -- --count 2 --url http://localhost:5173/
+npm run spawn-test-instances -- 2 http://localhost:5173/
 ```
 
 Or connect them manually, but use a temp dir:
