@@ -616,7 +616,7 @@ abstract class EntityPage[T <: Entity[T]](
               })
           }
         })
-      }): @nowarn
+      })
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")

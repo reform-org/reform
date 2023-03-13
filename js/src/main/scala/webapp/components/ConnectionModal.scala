@@ -42,7 +42,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
                 })
                 .toastOnError()
             }
-          }: @nowarn,
+          },
         ),
       ),
       span(
