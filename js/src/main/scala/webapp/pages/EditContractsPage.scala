@@ -856,7 +856,7 @@ class CreateLetter(
                   .andThen(letter => {
                     jsImplicits.mailing
                       .sendMail(
-                        "luke-schreiber@gmx.de",
+                        Globals.VITE_DEKANAT_MAIL,
                         supervisor.eMail.get.getOrElse(""),
                         supervisor.name.get.getOrElse(""),
                         DekanatMail(

@@ -94,4 +94,7 @@ object Globals {
 
   lazy val VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT: String =
     js.`import`.meta.env.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT.asInstanceOf[String]
+
+  lazy val VITE_DEKANAT_MAIL: String =
+    js.`import`.meta.env.VITE_DEKANAT_MAIL.asInstanceOf[String]
 }
