@@ -411,7 +411,8 @@ class BasicInformation(
           ),
         ),
         Signal.dynamic {
-            val overlappingContract = editingValue.value.map((_, contractSignal) => {
+          val overlappingContract = editingValue.value
+            .map((_, contractSignal) => {
               val start = contractSignal.value.contractStartDate.get.getOrElse(0L)
               val end = contractSignal.value.contractEndDate.get.getOrElse(0L)
               val hiwi = contractSignal.value.contractAssociatedHiwi.get.getOrElse("")
@@ -425,30 +426,33 @@ class BasicInformation(
                 (
                   (
                     contract.contractStartDate.get.getOrElse(0L) <= start &&
-                    contract.contractEndDate.get.getOrElse(0L) >= start
-                  ) || 
-                  (
-                    contract.contractStartDate.get.getOrElse(0L) <= end &&
-                    contract.contractEndDate.get.getOrElse(0L) >= end
+                      contract.contractEndDate.get.getOrElse(0L) >= start
                   ) ||
-                  (
-                    contract.contractStartDate.get.getOrElse(0L) >= start &&
-                    contract.contractEndDate.get.getOrElse(0L) <= end
-                  )
+                    (
+                      (contract.contractStartDate.get.getOrElse(0L) <= end) &&
+                        contract.contractEndDate.get.getOrElse(0L) >= end
+                    ) ||
+                    (
+                      contract.contractStartDate.get.getOrElse(0L) >= start &&
+                        contract.contractEndDate.get.getOrElse(0L) <= end
+                    )
                 )
               })
 
               overlappingContracts.size > 0
-            }).getOrElse(false)
+            })
+            .getOrElse(false)
 
-            if(overlappingContract) {
-              Some(p(
+          if (overlappingContract) {
+            Some(
+              p(
                 cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
                 icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
                 "This hiwi aleady has a finalized contract that overlaps with your selected contract period.",
-              ))
-            } else None
-          },
+              ),
+            )
+          } else None
+        },
         div(
           cls := "flex flex-col md:flex-row md:space-x-4",
           div(
