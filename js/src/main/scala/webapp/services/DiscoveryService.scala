@@ -177,21 +177,29 @@ class DiscoveryService(using toaster: Toaster) {
     ws.send(JSON.stringify(event))
   }
 
+  private def getRTCIceServers(payload: js.Dynamic): RTCConfiguration = {
+    // https://developer.mozilla.org/en-US/docs/Web/API/RTCIceServer/urls
+    new RTCConfiguration {
+      iceServers = js.Array(
+        new RTCIceServer {
+          urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
+        },
+        new RTCIceServer {
+          urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
+          username = payload.client.turnKey.username.asInstanceOf[String];
+          credential = payload.client.turnKey.credential.asInstanceOf[String];
+        },
+      );
+    }
+  }
+
   private def handle(using jsImplicits: JSImplicits)(ws: WebSocket, name: String, payload: js.Dynamic) = {
     if (name != "ping") console.log(name, payload)
+
     name match {
       case "request_host_token" => {
-        val config = new RTCConfiguration {
-          iceServers = js.Array(
-            new RTCIceServer {
-              urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
-              username = payload.host.turnKey.username.asInstanceOf[String];
-              credential = payload.host.turnKey.credential.asInstanceOf[String];
-            },
-          );
-        }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
-          WebRTC.offer(config),
+          WebRTC.offer(getRTCIceServers(payload)),
           payload.client.user.name.asInstanceOf[String],
         ))
 
@@ -212,15 +220,8 @@ class DiscoveryService(using toaster: Toaster) {
         )
       }
       case "request_client_token" => {
-        val config = new RTCConfiguration {
-          iceServers = js.Array(new RTCIceServer {
-            urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
-            username = payload.client.turnKey.username.asInstanceOf[String];
-            credential = payload.client.turnKey.credential.asInstanceOf[String];
-          });
-        }
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
-          WebRTC.answer(config),
+          WebRTC.answer(getRTCIceServers(payload)),
           payload.host.user.name.asInstanceOf[String],
         ))
 
