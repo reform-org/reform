@@ -205,6 +205,7 @@ class ContractPageAttributes(using
   def contractHoursPerMonth: UIAttribute[Contract, Int] = BuildUIAttribute().int
     .withLabel("h/month")
     .withMin("0")
+    .withRegex("\\d*")
     .require
     .bindAsNumber[Contract](
       _.contractHoursPerMonth,

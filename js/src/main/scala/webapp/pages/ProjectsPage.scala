@@ -63,6 +63,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
   def maxHours = BuildUIAttribute().int
     .withLabel("Max Hours")
     .withMin("0")
+    .withRegex("\\d*")
     .require
     .bindAsNumber[Project](
       _.maxHours,

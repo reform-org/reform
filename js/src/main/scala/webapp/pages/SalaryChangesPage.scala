@@ -52,6 +52,7 @@ class SalaryChangeAttributes(using
   def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
     .withMin("0")
+    .withRegex("[0-9]+([\\.,][0-9]+)?")
     .require
     .bindAsNumber[SalaryChange](
       _.value,
@@ -61,6 +62,7 @@ class SalaryChangeAttributes(using
   def salaryChangeLimit = BuildUIAttribute().money
     .withLabel("Limit")
     .withMin("0")
+    .withRegex("[0-9]+([\\.,][0-9]+)?")
     .require
     .bindAsNumber[SalaryChange](
       _.limit,
