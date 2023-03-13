@@ -76,7 +76,7 @@ private class MultiSelect(
     div(
       onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
       onDomUnmount.foreach(element => resizeObserver.disconnect()),
-      cls := "rounded multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
+      cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none",
       cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
       props,
       idAttr := id,
@@ -102,9 +102,9 @@ private class MultiSelect(
           )
         },
         div(
-          cls := "flex flex-row w-full h-full items-center pl-2 text-slate-400 ",
+          cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
           if (styleValidity)
-            cls := "peer-invalid/multiselect:bg-yellow-100/50 peer-invalid/multiselect:text-yellow-600 peer-valid/multiselect:bg-green-100/50"
+            cls := "peer-invalid/multiselect:bg-yellow-100/50 peer-invalid/multiselect:text-yellow-600"
           else None,
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",
@@ -141,6 +141,9 @@ private class MultiSelect(
               } else if (value.value.isEmpty) {
                 Some(
                   div(
+                    if (!styleValidity)
+                      cls := "text-slate-400"
+                    else None,
                     cls := "flex items-center justify-center",
                     "Select...",
                   ),

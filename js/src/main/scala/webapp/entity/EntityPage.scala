@@ -135,7 +135,7 @@ class EntityRow[T <: Entity[T]](
       td(
         cls := "py min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
-          cls := "h-full w-full flex flex-row items-center gap-2 justify-center md:px-4",
+          cls := "h-full w-full flex flex-row items-center justify-center md:px-4",
           form(
             idAttr := id,
             onSubmit.foreach(e => {
@@ -153,7 +153,7 @@ class EntityRow[T <: Entity[T]](
                     idAttr := "add-entity-button",
                     icons.Save(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Save"),
-                    cls := "h-7 tooltip tooltip-top entity-save",
+                    cls := "h-7 tooltip tooltip-top entity-save px-2",
                     data.tip := "Save",
                   ),
                   TableButton(
@@ -161,7 +161,7 @@ class EntityRow[T <: Entity[T]](
                     icons.Close(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Cancel"),
                     onClick.foreach(_ => cancelEdit()),
-                    cls := "h-7 tooltip tooltip-top entity-cancel",
+                    cls := "h-7 tooltip tooltip-top entity-cancel px-2",
                     data.tip := "Cancel",
                   ),
                 )
@@ -173,7 +173,7 @@ class EntityRow[T <: Entity[T]](
                   `type` := "submit",
                   idAttr := "add-entity-button",
                   icons.Add(cls := "w-4 h-4 md:hidden"),
-                  span(cls := "hidden md:block", "Add " + this.title.singular),
+                  span(cls := "hidden md:block whitespace-nowrap", "Add " + this.title.singular),
                   cls := "h-7 tooltip tooltip-top entity-add",
                   data.tip := "Add" + this.title.singular,
                 )

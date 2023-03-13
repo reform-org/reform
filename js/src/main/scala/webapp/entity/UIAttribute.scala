@@ -371,7 +371,7 @@ class UISelectAttribute[EntityType, AttributeType](
       isRequired,
       isRequired,
       formId := _formId,
-      cls := "!rounded-none",
+      cls := " rounded-md",
     )
   }
 }
@@ -455,7 +455,7 @@ class UIMultiSelectAttribute[EntityType](
         },
         isRequired,
         formId := _formId,
-        cls := "!rounded-none",
+        cls := " rounded-md",
       ),
     )
   }
@@ -523,6 +523,7 @@ class UICheckboxListAttribute[EntityType](
         isRequired,
         formId := _formId,
       ),
+      cls := " rounded-md",
     )
 
   }
