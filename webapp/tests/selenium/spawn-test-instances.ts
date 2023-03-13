@@ -8,40 +8,15 @@ const rl = readline.createInterface({
 });
 
 console.log(
-	"usage: npm run spawn-test-instances -- [--count count] [--url ...]",
+	"usage: npm run spawn-test-instances -- <count> <url>",
 );
-
-const m = process.version.match(/(\d+)\.(\d+)\.(\d+)/)!;
-const [major, minor, patch] = m.slice(1).map((_) => parseInt(_));
-
-if (!(major > 18 || (major == 18 && minor >= 11))) {
-	console.warn(`\x1b[41m\x1b[30m
-┌──────────────────────────────────────────────────────────────────┐
-│                                                                  │
-│    NodeJS is less than v18.11.0, this version is unsupported!    │
-│                                                                  │
-└──────────────────────────────────────────────────────────────────┘\x1b[0m`);
-}
-
-let {
-	values: { count, url },
-} = parseArgs({
-	options: {
-		count: {
-			type: "string",
-			default: "2",
-			short: "c",
-		},
-		url: {
-			type: "string",
-			default: "http://localhost:5173/",
-		},
-	},
-});
 
 if (process.env.SELENIUM_BROWSER === undefined) {
 	throw new Error("Please run `export SELENIUM_BROWSER=chrome` or so");
 }
+
+const count = process.argv[2]
+const url = process.argv[3]
 
 console.log(`Starting ${count} instances on ${url}`);
 
