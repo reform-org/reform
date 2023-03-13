@@ -196,7 +196,7 @@ abstract class Step(
         promise.failure(new Exception("The PDF could not be created because not all required fields are filled in!"))
 
       }
-    }): @nowarn
+    })
 
     promise.future
   }
@@ -250,7 +250,7 @@ abstract class Step(
       } else {
         promise.failure(new Exception("The PDF could not be created because not all required fields are filled in!"))
       }
-    }): @nowarn
+    })
 
     promise.future
   }
@@ -704,7 +704,7 @@ class ContractRequirementsMail(
                   .toastOnError()
               }
 
-            }): @nowarn
+            })
           }),
         ),
       ),
@@ -790,7 +790,7 @@ class CreateContract(
                   })
                   .toastOnError()
               }
-            }): @nowarn
+            })
           }),
         ),
         label(
@@ -879,7 +879,7 @@ class CreateLetter(
                   })
                   .toastOnError()
               }
-            }): @nowarn
+            })
           }),
         ),
         label(
