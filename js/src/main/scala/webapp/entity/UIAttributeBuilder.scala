@@ -7,6 +7,7 @@ import webapp.components.common.*
 import webapp.services.RoutingService
 import webapp.npm.JSUtils
 import webapp.services.Page
+import webapp.JSImplicits
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
@@ -21,7 +22,7 @@ case class UIAttributeBuilder[AttributeType](
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
     searchEnabled: Boolean = true,
     createPage: Option[Page] = None,
-)(using routing: RoutingService) {
+)(using jsImplicits: JSImplicits) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
 
@@ -69,159 +70,157 @@ case class UIAttributeBuilder[AttributeType](
 
 }
 
-object UIAttributeBuilder {
+implicit class BindToInt[AttributeType](using jsImplicits: JSImplicits)(self: UIAttributeBuilder[AttributeType])(
+    implicit ordering: Ordering[AttributeType],
+) {
+  def bindAsNumber[EntityType](
+      getter: EntityType => Attribute[AttributeType],
+      setter: (EntityType, Attribute[AttributeType]) => EntityType,
+  ): UIAttribute[EntityType, AttributeType] = UINumberAttribute(
+    getter = getter,
+    setter = setter,
+    readConverter = self.readConverter,
+    editConverter = self.editConverter,
+    writeConverter = self.writeConverter,
+    label = self.label,
+    isRequired = self.isRequired,
+    regex = self.regex,
+    min = self.min,
+    stepSize = self.stepSize,
+  )
+}
 
-  def string(using routing: RoutingService): UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
+implicit class BindToLong(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Long]) {
+  def bindAsDatePicker[EntityType](
+      getter: EntityType => Attribute[Long],
+      setter: (EntityType, Attribute[Long]) => EntityType,
+  ): UIAttribute[EntityType, Long] = UIDateAttribute(
+    getter = getter,
+    setter = setter,
+    readConverter = self.readConverter,
+    writeConverter = self.writeConverter,
+    label = self.label,
+    min = self.min,
+    isRequired = self.isRequired,
+  )
+}
 
-  def date(using routing: RoutingService): UIAttributeBuilder[Long] = UIAttributeBuilder(
+implicit class BindToBoolean(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Boolean]) {
+  def bindAsCheckbox[EntityType](
+      getter: EntityType => Attribute[Boolean],
+      setter: (EntityType, Attribute[Boolean]) => EntityType,
+  ): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
+    getter = getter,
+    setter = setter,
+    label = self.label,
+    isRequired = self.isRequired,
+  )
+}
+
+implicit class BindToSeqOfString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Seq[String]]) {
+
+  def bindAsMultiSelect[EntityType](
+      getter: EntityType => Attribute[Seq[String]],
+      setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, Seq[String]] =
+    UIMultiSelectAttribute(
+      getter,
+      setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else
+          _ => self.options,
+      optionsForFilter = self.options,
+      isRequired = self.isRequired,
+      searchEnabled = self.searchEnabled,
+      createPage = self.createPage,
+    )
+
+  def bindAsCheckboxList[EntityType](
+      getter: EntityType => Attribute[Seq[String]],
+      setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, Seq[String]] =
+    UICheckboxListAttribute(
+      getter,
+      setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else
+          _ => self.options,
+      optionsForFilter = self.options,
+      isRequired = self.isRequired,
+    )
+}
+
+implicit class BindToString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[String]) {
+
+  def bindAsSelect[EntityType](
+      getter: EntityType => Attribute[String],
+      setter: (EntityType, Attribute[String]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, String] =
+    UISelectAttribute(
+      getter,
+      setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else _ => self.options,
+      optionsForFilter = self.options,
+      isRequired = self.isRequired,
+      searchEnabled = self.searchEnabled,
+      createPage = self.createPage,
+    )
+
+}
+
+class BuildUIAttribute(using jsImplicits: JSImplicits) {
+
+  def string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
+
+  def date: UIAttributeBuilder[Long] = UIAttributeBuilder(
     JSUtils.toGermanDate,
     writeConverter = JSUtils.DateTimeFromISO,
   )
 
-  def int(using routing: RoutingService): UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
+  def int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
 
-  def email(using routing: RoutingService): UIAttributeBuilder[String] = string.withFieldType("email")
+  def email: UIAttributeBuilder[String] = string.withFieldType("email")
 
-  def float(using routing: RoutingService): UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
+  def float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
 
-  def boolean(using routing: RoutingService): UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
+  def boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
 
-  def money(using routing: RoutingService): UIAttributeBuilder[BigDecimal] =
+  def money: UIAttributeBuilder[BigDecimal] =
     UIAttributeBuilder[BigDecimal](JSUtils.toMoneyString(_), BigDecimal(_), editConverter = _.toString)
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
-  def select(options: Signal[Seq[SelectOption]])(using
-      routing: RoutingService,
-  ): UIAttributeBuilder[String] =
+  def select(options: Signal[Seq[SelectOption]]): UIAttributeBuilder[String] =
     string.copy(options = options)
 
   def multiSelect(
       options: Signal[Seq[SelectOption]],
-  )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
+  ): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
 
   def checkboxList(
       options: Signal[Seq[SelectOption]],
-  )(using routing: RoutingService): UIAttributeBuilder[Seq[String]] =
+  ): UIAttributeBuilder[Seq[String]] =
     UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
-
-  implicit class BindToInt[AttributeType](self: UIAttributeBuilder[AttributeType])(implicit
-      ordering: Ordering[AttributeType],
-  ) {
-    def bindAsNumber[EntityType](
-        getter: EntityType => Attribute[AttributeType],
-        setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    )(using routing: RoutingService): UIAttribute[EntityType, AttributeType] = UINumberAttribute(
-      getter = getter,
-      setter = setter,
-      readConverter = self.readConverter,
-      editConverter = self.editConverter,
-      writeConverter = self.writeConverter,
-      label = self.label,
-      isRequired = self.isRequired,
-      regex = self.regex,
-      min = self.min,
-      stepSize = self.stepSize,
-    )
-  }
-
-  implicit class BindToLong(self: UIAttributeBuilder[Long]) {
-    def bindAsDatePicker[EntityType](
-        getter: EntityType => Attribute[Long],
-        setter: (EntityType, Attribute[Long]) => EntityType,
-    )(using routing: RoutingService): UIAttribute[EntityType, Long] = UIDateAttribute(
-      getter = getter,
-      setter = setter,
-      readConverter = self.readConverter,
-      writeConverter = self.writeConverter,
-      label = self.label,
-      min = self.min,
-      isRequired = self.isRequired,
-    )
-  }
-
-  implicit class BindToBoolean(self: UIAttributeBuilder[Boolean]) {
-    def bindAsCheckbox[EntityType](
-        getter: EntityType => Attribute[Boolean],
-        setter: (EntityType, Attribute[Boolean]) => EntityType,
-    )(using routing: RoutingService): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
-      getter = getter,
-      setter = setter,
-      label = self.label,
-      isRequired = self.isRequired,
-    )
-  }
-
-  implicit class BindToSeqOfString(self: UIAttributeBuilder[Seq[String]]) {
-
-    def bindAsMultiSelect[EntityType](
-        getter: EntityType => Attribute[Seq[String]],
-        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
-        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
-    )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
-      UIMultiSelectAttribute(
-        getter,
-        setter,
-        readConverter = self.readConverter,
-        writeConverter = self.writeConverter,
-        label = self.label,
-        options =
-          if (filteredOptions.nonEmpty)
-            filteredOptions.get
-          else
-            _ => self.options,
-        optionsForFilter = self.options,
-        isRequired = self.isRequired,
-        searchEnabled = self.searchEnabled,
-        createPage = self.createPage,
-      )
-
-    def bindAsCheckboxList[EntityType](
-        getter: EntityType => Attribute[Seq[String]],
-        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
-        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
-    )(using routing: RoutingService): UIAttribute[EntityType, Seq[String]] =
-      UICheckboxListAttribute(
-        getter,
-        setter,
-        readConverter = self.readConverter,
-        writeConverter = self.writeConverter,
-        label = self.label,
-        options =
-          if (filteredOptions.nonEmpty)
-            filteredOptions.get
-          else
-            _ => self.options,
-        optionsForFilter = self.options,
-        isRequired = self.isRequired,
-      )
-  }
-
-  implicit class BindToString(self: UIAttributeBuilder[String]) {
-
-    def bindAsSelect[EntityType](
-        getter: EntityType => Attribute[String],
-        setter: (EntityType, Attribute[String]) => EntityType,
-        filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
-    )(using routing: RoutingService): UIAttribute[EntityType, String] =
-      UISelectAttribute(
-        getter,
-        setter,
-        readConverter = self.readConverter,
-        writeConverter = self.writeConverter,
-        label = self.label,
-        options =
-          if (filteredOptions.nonEmpty)
-            filteredOptions.get
-          else _ => self.options,
-        optionsForFilter = self.options,
-        isRequired = self.isRequired,
-        searchEnabled = self.searchEnabled,
-        createPage = self.createPage,
-      )
-
-  }
 }

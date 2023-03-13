@@ -8,8 +8,9 @@ import webapp.*
 import scala.annotation.nowarn
 import scala.concurrent.Future
 import webapp.given_ExecutionContext
+import webapp.JSImplicits
 
-def exportIndexedDBJson(using repositories: Repositories): String = {
+def exportIndexedDBJson(using jsImplicits: JSImplicits): String = {
 
   given repositoryCodec: JsonValueCodec[Repositories] =
     new JsonValueCodec {
@@ -29,15 +30,15 @@ def exportIndexedDBJson(using repositories: Repositories): String = {
 
       def nullValue: Repositories = ???
     }
-  writeToString(repositories)(using repositoryCodec)
+  writeToString(jsImplicits.repositories)(using repositoryCodec)
 }
 
 def importIndexedDBJson(
     json: String,
-)(using repositories: Repositories): Future[scala.collection.mutable.Iterable[Repository[?]]] = {
+)(using jsImplicits: JSImplicits): Future[scala.collection.mutable.Iterable[Repository[?]]] = {
   Future {
     var repositoryCodecs: mutable.Map[String, Repository[?]] = mutable.Map()
-    repositories.productIterator.foreach {
+    jsImplicits.repositories.productIterator.foreach {
       case repository: Repository[?] => {
         repositoryCodecs += (repository.name -> repository)
       }
@@ -60,7 +61,7 @@ def importIndexedDBJson(
               while ({
                 val key = in.readKeyAsString()
                 val repository = repositoryCodecs(key)
-                mb += (key -> repository.decodeRepository(in)): @nowarn
+                mb += (key -> repository.decodeRepository(in))
                 in.isNextToken(',')
               }) ()
               if (in.isCurrentToken('}')) mb.result()

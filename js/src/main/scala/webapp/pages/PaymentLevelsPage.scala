@@ -25,23 +25,28 @@ import webapp.npm.IIndexedDB
 import rescala.default.*
 import webapp.utils.Seqnal.*
 import webapp.npm.JSUtils.toMoneyString
+import webapp.services.MailService
+import webapp.JSImplicits
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class PaymentLevelsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
       Some("Paymentlevel Description..."),
-      repositories.paymentLevels,
-      repositories.paymentLevels.all,
-      Seq(title, pdfCheckboxName, currentValue),
+      jsImplicits.repositories.paymentLevels,
+      jsImplicits.repositories.paymentLevels.all,
+      Seq(
+        PaymentLevelAttributes().title,
+        PaymentLevelAttributes().pdfCheckboxName,
+        PaymentLevelAttributes().currentValue,
+      ),
       DefaultEntityRow(),
     ) {}
 
-object PaymentLevelsPage {
-  private def title(using routing: RoutingService) = UIAttributeBuilder.string
+class PaymentLevelAttributes(using jsImplicits: JSImplicits) {
+  def title = BuildUIAttribute().string
     .withLabel("Title")
     .require
     .bindAsText[PaymentLevel](
@@ -49,7 +54,7 @@ object PaymentLevelsPage {
       (p, a) => p.copy(title = a),
     )
 
-  private def pdfCheckboxName(using routing: RoutingService) = UIAttributeBuilder.string
+  def pdfCheckboxName = BuildUIAttribute().string
     .withLabel("PDF Checkbox Name")
     .require
     .bindAsText[PaymentLevel](
@@ -57,12 +62,12 @@ object PaymentLevelsPage {
       (p, a) => p.copy(pdfCheckboxName = a),
     )
 
-  private def currentValue(using repositories: Repositories) =
+  def currentValue =
     new UIReadOnlyAttribute[PaymentLevel, String](
       label = "Current Value",
       getter = (id, paymentLevel) =>
         Signal.dynamic {
-          val salaryChanges = repositories.salaryChanges.all.value
+          val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
           toMoneyString(
             salaryChanges
               .map(_.signal.value)

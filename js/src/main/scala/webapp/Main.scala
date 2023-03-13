@@ -34,27 +34,32 @@ import scala.annotation.nowarn
 
 object Main {
   def main(): Unit = {
-    given toaster: Toaster = Toaster()
-    given routing: RoutingService = RoutingService()
-    given indexedDb: IIndexedDB = IndexedDB()
-    given registry: Registry = Registry()
-    given webrtc: WebRTCService = WebRTCService()
-    given repositories: Repositories = Repositories()
-    given discovery: DiscoveryService = DiscoveryService()
+    lazy val jsImplicits: JSImplicits =
+      new JSImplicits() {
+        lazy val toaster: Toaster = Toaster()
+        lazy val mailing: MailService = MailService()
+        lazy val routing: RoutingService = RoutingService(using jsImplicits)
+        lazy val indexeddb: IIndexedDB = IndexedDB(using jsImplicits)
+        lazy val registry: Registry = Registry()
+        lazy val webrtc: WebRTCService = WebRTCService(using registry, toaster, discovery)
+        lazy val repositories: Repositories = Repositories()(using registry, indexeddb)
+        lazy val discovery: DiscoveryService = DiscoveryService(using toaster)
+      }
+    // we could assign the members later if this doesn't work?
 
     helpers.OutwatchTracing.error.unsafeForeach { throwable =>
-      toaster.make(
+      jsImplicits.toaster.make(
         s"Unknown internal exception: ${throwable.getMessage}",
         ToastMode.Infinit,
         ToastType.Error,
       )
-    }: @nowarn
+    }
 
-    indexedDb
+    jsImplicits.indexeddb
       .update[String]("test", _ => "test")
       .onComplete(value => {
         if (value.isFailure) {
-          toaster.make(
+          jsImplicits.toaster.make(
             "Application unusable because storage is not available. Your Browser does not support IndexedDB! Private tabs in Firefox don't work.",
             ToastMode.Persistent,
             ToastType.Error,
@@ -62,23 +67,20 @@ object Main {
         }
       })
 
-    if (discovery.tokenIsValid(discovery.token.now))
-      discovery
-        .connect()
-        .toastOnError()
-    Outwatch.renderInto[SyncIO]("#app", app()).unsafeRunSync()
+    if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.now))
+      jsImplicits.discovery
+        .connect(using jsImplicits)()
+        .toastOnError(using jsImplicits)()
+    Outwatch
+      .renderInto[SyncIO](
+        "#app",
+        body(
+          jsImplicits.routing.render,
+          jsImplicits.toaster.render,
+        ),
+      )
+      .unsafeRunSync()
   }
-
-  private def app(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ) = body(
-    routing.render,
-    toaster.render,
-  )
 }
 
 val _ = Main.main()

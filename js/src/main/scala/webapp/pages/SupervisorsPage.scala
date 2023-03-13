@@ -23,23 +23,25 @@ import webapp.services.Toaster
 import SupervisorsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class SupervisorsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Supervisor](
       Title("Supervisor"),
       None,
-      repositories.supervisors,
-      repositories.supervisors.all,
-      Seq(name, eMail),
+      jsImplicits.repositories.supervisors,
+      jsImplicits.repositories.supervisors.all,
+      Seq(SupervisorAttributes().name, SupervisorAttributes().eMail),
       DefaultEntityRow(),
     ) {}
 
-object SupervisorsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class SupervisorAttributes(using jsImplicits: JSImplicits) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Supervisor](
@@ -47,7 +49,7 @@ object SupervisorsPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
+  def eMail = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](

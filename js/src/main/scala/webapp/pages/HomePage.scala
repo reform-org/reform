@@ -42,36 +42,32 @@ import webapp.components.*
 import scala.util.Success
 import scala.util.Failure
 import webapp.npm.JSUtils.toHumanMonth
-import webapp.pages.ContractsPage.getSalaryChange
 import webapp.npm.JSUtils.toMilliseconds
-import webapp.pages.ContractsPage.getMoneyPerHour
 import webapp.npm.JSUtils.toMoneyString
 import webapp.entity.Contract
 import webapp.npm.JSUtils.toGermanDate
+import webapp.services.MailService
+import webapp.JSImplicits
 
-case class HomePage()(using indexeddb: IIndexedDB) extends Page {
+case class HomePage()(using
+    jsImplicits: JSImplicits,
+) extends Page {
 
-  def getContractsForInterval(month: Int, year: Int, pred: (String, Contract) => Boolean = (a, b) => true)(using
-      repositories: Repositories,
-  ) = {
+  def getContractsForInterval(month: Int, year: Int, pred: (String, Contract) => Boolean = (a, b) => true) = {
     Signal.dynamic {
-      repositories.contracts.existing.value
+      jsImplicits.repositories.contracts.existing.value
         .map(p => (p.id -> p.signal.value))
         .filter((id, p) => pred(id, p) && p.isInInterval(month, year))
     }
   }
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     val year =
-      routing.getQueryParameterAsString("year").map(p => if (p == "") new js.Date().getFullYear().toInt else p.toInt)
+      jsImplicits.routing
+        .getQueryParameterAsString("year")
+        .map(p => if (p == "") new js.Date().getFullYear().toInt else p.toInt)
     val month =
-      routing
+      jsImplicits.routing
         .getQueryParameterAsString("month")
         .map(p => if (p == "") new js.Date().getMonth().toInt else p.toInt)
 
@@ -86,7 +82,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             onClick.foreach(_ => {
               val m = month.now
               val y = year.now
-              routing.updateQueryParameters(
+              jsImplicits.routing.updateQueryParameters(
                 Map(
                   ("month" -> (if (m == 1) "12" else (m - 1).toString)),
                   ("year" -> (if (m == 1) (y - 1).toString else y.toString)),
@@ -101,7 +97,7 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
             onClick.foreach(_ => {
               val m = month.now
               val y = year.now
-              routing.updateQueryParameters(
+              jsImplicits.routing.updateQueryParameters(
                 Map(
                   ("month" -> (if (m == 12) "1" else (m + 1).toString)),
                   ("year" -> (if (m == 12) (y + 1).toString else y.toString)),
@@ -125,11 +121,13 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
         },
         "Total Expenses:",
         Signal.dynamic {
-          val sum = repositories.contracts.existing.value
+          val sum = jsImplicits.repositories.contracts.existing.value
             .map(p => (p.id -> p.signal.value))
             .filter((id, p) => !p.isDraft.get.getOrElse(true) && p.isInInterval(month.value, year.value))
             .map((id, contract) => {
-              val hourlyWage = getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value
+              val hourlyWage = ContractPageAttributes()
+                .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                .value
               val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
               hoursPerMonth * hourlyWage
             })
@@ -139,11 +137,13 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
         },
         "Total Expenses with drafts:",
         Signal.dynamic {
-          val sum = repositories.contracts.existing.value
+          val sum = jsImplicits.repositories.contracts.existing.value
             .map(p => (p.id -> p.signal.value))
             .filter((id, p) => p.isInInterval(month.value, year.value))
             .map((id, contract) => {
-              val hourlyWage = getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value
+              val hourlyWage = ContractPageAttributes()
+                .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                .value
               val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
               hoursPerMonth * hourlyWage
             })
@@ -152,13 +152,13 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
           toMoneyString(sum)
         },
         Signal.dynamic {
-          val projects = repositories.projects.existing.value.map(p => (p.id -> p.signal.value))
-          val hiwis = repositories.hiwis.all.value.map(p => (p.id -> p.signal.value))
-          val supervisors = repositories.supervisors.all.value.map(p => (p.id -> p.signal.value))
+          val projects = jsImplicits.repositories.projects.existing.value.map(p => (p.id -> p.signal.value))
+          val hiwis = jsImplicits.repositories.hiwis.all.value.map(p => (p.id -> p.signal.value))
+          val supervisors = jsImplicits.repositories.supervisors.all.value.map(p => (p.id -> p.signal.value))
 
           var contractsPerProject: Map[String, Seq[(String, Contract)]] = Map.empty
 
-          val contracts = repositories.contracts.existing.value
+          val contracts = jsImplicits.repositories.contracts.existing.value
             .map(p => (p.id -> p.signal.value))
             .filter((id, p) => p.isInInterval(month.value, year.value))
 
@@ -189,7 +189,9 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
                   tbody(
                     contractsPerProject(id).map((contractId, contract) => {
                       val moneyPerHour =
-                        getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                        ContractPageAttributes()
+                          .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                          .value
                       val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                       val moneyPerMonth = moneyPerHour * hoursPerMonth
                       val hiwi = hiwis.find((id, hiwi) => id == contract.contractAssociatedHiwi.get.getOrElse(""))
@@ -226,7 +228,9 @@ case class HomePage()(using indexeddb: IIndexedDB) extends Page {
                           contractsPerProject(id)
                             .map((id, contract) => {
                               val moneyPerHour =
-                                getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                                ContractPageAttributes()
+                                  .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                                  .value
                               val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                               moneyPerHour * hoursPerMonth
                             })

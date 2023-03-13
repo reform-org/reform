@@ -24,23 +24,32 @@ import webapp.npm.IIndexedDB
 
 import SalaryChangesPage.*
 import webapp.services.RoutingService
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class SalaryChangesPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
       Some("Salary Changes Description..."),
-      repositories.salaryChanges,
-      repositories.salaryChanges.all,
-      Seq(salaryChangeValue, salaryChangeLimit, salaryChangePaymentLevel, salaryChangeFromDate),
+      jsImplicits.repositories.salaryChanges,
+      jsImplicits.repositories.salaryChanges.all,
+      Seq(
+        SalaryChangeAttributes().salaryChangeValue,
+        SalaryChangeAttributes().salaryChangeLimit,
+        SalaryChangeAttributes().salaryChangePaymentLevel,
+        SalaryChangeAttributes().salaryChangeFromDate,
+      ),
       DefaultEntityRow(),
     ) {}
 
-object SalaryChangesPage {
-  private def salaryChangeValue(using routing: RoutingService) = UIAttributeBuilder.money
+class SalaryChangeAttributes(using
+    jsImplicits: JSImplicits,
+) {
+  def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
     .withMin("0")
     .require
@@ -49,7 +58,7 @@ object SalaryChangesPage {
       (s, a) => s.copy(value = a),
     )
 
-  private def salaryChangeLimit(using routing: RoutingService) = UIAttributeBuilder.money
+  def salaryChangeLimit = BuildUIAttribute().money
     .withLabel("Limit")
     .withMin("0")
     .require
@@ -58,15 +67,10 @@ object SalaryChangesPage {
       (s, a) => s.copy(limit = a),
     )
 
-  private def salaryChangePaymentLevel(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[SalaryChange, String] = {
-    UIAttributeBuilder
+  def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
+    BuildUIAttribute()
       .select(
-        repositories.paymentLevels.existing.map(list =>
+        jsImplicits.repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -79,7 +83,7 @@ object SalaryChangesPage {
       )
   }
 
-  private def salaryChangeFromDate(using RoutingService) = UIAttributeBuilder.date
+  def salaryChangeFromDate = BuildUIAttribute().date
     .withLabel("From")
     .require
     .bindAsDatePicker[SalaryChange](

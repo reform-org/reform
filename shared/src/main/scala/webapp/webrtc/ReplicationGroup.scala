@@ -176,13 +176,13 @@ class ReplicationGroup[A](name: String)(using
     }
 
     // if a remote joins register it to handle updates to it
-    registry.remoteJoined.foreach(registerRemote): @nowarn("msg=discarded expression")
+    registry.remoteJoined.foreach(registerRemote)
     // also register all existing remotes
     registry.remotes.foreach(registerRemote)
     // remove remotes that disconnect
     registry.remoteLeft.monitor { remoteRef =>
       observers(remoteRef).disconnect()
-    }: @nowarn("msg=discarded expression")
+    }
     ()
   }
 }

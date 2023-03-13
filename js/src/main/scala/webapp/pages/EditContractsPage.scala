@@ -46,27 +46,19 @@ import webapp.npm.JSUtils.toMoneyString
 import webapp.npm.JSUtils.stickyButton
 import org.scalajs.dom.KeyboardEvent
 import scala.math.BigDecimal.RoundingMode
-import webapp.pages.ProjectsPage.countContractHours
 import scala.concurrent.Promise
 import scala.concurrent.Future
+import webapp.services.MailService
+import webapp.JSImplicits
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     div(
-      repositories.contracts
+      jsImplicits.repositories.contracts
         .create(Contract.empty.default)
         .map(currentContract => {
           InnerEditContractsPage(Some(currentContract), "").render()
@@ -76,21 +68,12 @@ case class NewContractPage()(using
 }
 
 case class EditContractsPage(contractId: String)(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
-  private val existingValue = repositories.contracts.all.map(_.find(c => c.id == contractId))
+  private val existingValue = jsImplicits.repositories.contracts.all.map(_.find(c => c.id == contractId))
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     div(
       existingValue
         .map(currentContract => {
@@ -115,15 +98,12 @@ case class EditContractsPage(contractId: String)(using
 }
 
 case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contractId: String)(using
-    toaster: Toaster,
-    repositories: Repositories,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) {
   val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
   private def createOrUpdate(finalize: Boolean = false, stayOnPage: Boolean = false): Future[String] = {
-    indexeddb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
     existingValue match {
@@ -138,16 +118,16 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
             }
           })
           .map(value => {
-            toaster.make(
+            jsImplicits.toaster.make(
               "Contract saved!",
               ToastMode.Short,
               ToastType.Success,
             )
             if (!stayOnPage) {
               if (value.isDraft.get.getOrElse(true)) {
-                routing.to(ContractDraftsPage())
+                jsImplicits.routing.to(ContractDraftsPage())
               } else {
-                routing.to(ContractsPage())
+                jsImplicits.routing.to(ContractsPage())
               }
             }
 
@@ -155,7 +135,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
           })
       }
       case None => {
-        repositories.contracts
+        jsImplicits.repositories.contracts
           .create({
             if (finalize) {
               editingNow.copy(isDraft = editingNow.isDraft.set(false))
@@ -166,9 +146,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
           .map(entity => {
             editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
             if (entity.signal.now.isDraft.get.getOrElse(true)) {
-              routing.to(ContractDraftsPage())
+              jsImplicits.routing.to(ContractDraftsPage())
             } else {
-              routing.to(ContractsPage())
+              jsImplicits.routing.to(ContractsPage())
             }
 
             entity.id
@@ -178,7 +158,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
   }
 
   private def cancelEdit(): Unit = {
-    routing.to(ContractsPage())
+    jsImplicits.routing.to(ContractsPage())
   }
 
   private def editStep(number: String, title: String, props: VMod*): VNode = {
@@ -211,7 +191,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
-          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
           .toastOnError(ToastMode.Infinit)
       }),
     ),
@@ -249,7 +229,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate(false, true)
-          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
           .toastOnError(ToastMode.Infinit)
       }),
     ),
@@ -279,18 +259,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
     ),
   )
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     val ctrlSListener: js.Function1[KeyboardEvent, Unit] = (e: KeyboardEvent) => {
       if (e.keyCode == 83 && e.ctrlKey) {
         e.preventDefault()
         createOrUpdate(false, true)
-          .map(id => routing.to(EditContractsPage(id), false, Map.empty, true))
+          .map(id => jsImplicits.routing.to(EditContractsPage(id), false, Map.empty, true))
           .toastOnError(ToastMode.Infinit)
       }
     }
@@ -322,12 +296,12 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   div(
                     cls := "basis-1/2",
                     label(cls := "font-bold", "Hiwi:"),
-                    contractAssociatedHiwi.renderEdit("", editingValue),
+                    ContractPageAttributes().contractAssociatedHiwi.renderEdit("", editingValue),
                   ),
                   div(
                     cls := "basis-1/2",
                     label(cls := "font-bold", "Supervisor:"),
-                    contractAssociatedSupervisor.renderEdit("", editingValue),
+                    ContractPageAttributes().contractAssociatedSupervisor.renderEdit("", editingValue),
                   ),
                 ),
                 div(
@@ -335,7 +309,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   div(
                     cls := "basis-2/5",
                     label(cls := "font-bold", "Start date:"),
-                    contractStartDate.renderEdit("", editingValue),
+                    ContractPageAttributes().contractStartDate.renderEdit("", editingValue),
                     editingValue.map(p =>
                       p.get._2.map(v => {
                         if (
@@ -369,7 +343,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   div(
                     cls := "basis-2/5",
                     label(cls := "font-bold", "End date:"),
-                    contractEndDate.renderEdit("", editingValue),
+                    ContractPageAttributes().contractEndDate.renderEdit("", editingValue),
                     editingValue.map(p =>
                       p.get._2.map(v => {
                         if (
@@ -402,17 +376,26 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                           case Some(c) => {
                             val contract = c(1).value
                             val limit =
-                              getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
+                              ContractPageAttributes()
+                                .getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                                .value
                             val hourlyWage =
-                              getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
-                            val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
-                            span(
-                              toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                              ContractPageAttributes()
+                                .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                                .value
+                            if (hourlyWage != 0 && limit != 0) {
+                              val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
                               span(
-                                cls := "text-gray-500 text-sm",
-                                s" (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}",
-                              ),
-                            )
+                                toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
+                                span(
+                                  cls := "text-gray-500 text-sm",
+                                  s" (calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started) Minijob Limit: ${toMoneyString(limit)} Maximum hours below limit: ${maxHours}",
+                                ),
+                              )
+                            } else {
+                              span(
+                              )
+                            }
                           }
                         }
                       },
@@ -434,7 +417,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                               (contract.contractHoursPerMonth.get.getOrElse(0) * month),
                               span(
                                 cls := "text-gray-500 text-sm",
-                                s"(calculating with ${month} month)",
+                                s" (calculating with ${month} month)",
                               ),
                             )
                           }
@@ -445,37 +428,46 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   div(
                     cls := "basis-1/2",
                     label(cls := "font-bold", "Payment Level:"),
-                    contractAssociatedPaymentLevel.renderEdit("", editingValue),
+                    ContractPageAttributes().contractAssociatedPaymentLevel.renderEdit("", editingValue),
                     label(cls := "font-bold", "Hours per month:"),
-                    contractHoursPerMonth.renderEdit("", editingValue),
+                    ContractPageAttributes().contractHoursPerMonth.renderEdit("", editingValue),
                     Signal.dynamic {
                       editingValue.value.map((_, contractSignal) => {
                         val contract = contractSignal.value
                         val project = contract.contractAssociatedProject.get.flatMap(id =>
-                          repositories.projects.all.value
+                          jsImplicits.repositories.projects.all.value
                             .find(project => project.id == id),
                         )
                         val limit =
-                          getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
-                        val hourlyWage =
-                          getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).value
-                        val maxHoursForTax = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                          ContractPageAttributes()
+                            .getLimit(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                            .value
+                        val hourlyWage = ContractPageAttributes()
+                          .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                          .value
+                        var maxHoursForTax =
+                          if (hourlyWage != 0) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                          else { BigDecimal(0) }
                         val month = dateDiffMonth(
                           contract.contractStartDate.get.getOrElse(0L),
                           contract.contractEndDate.get.getOrElse(0L),
                         )
 
                         project.map(project => {
-                          val totalHoursWithoutThisContract = countContractHours(
-                            contract.contractAssociatedProject.get.getOrElse(""),
-                            project.signal.value,
-                            (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
-                          ).value +
-                            countContractHours(
+                          val totalHoursWithoutThisContract = ProjectAttributes()
+                            .countContractHours(
                               contract.contractAssociatedProject.get.getOrElse(""),
                               project.signal.value,
-                              (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
-                            ).value
+                              (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                            )
+                            .value +
+                            ProjectAttributes()
+                              .countContractHours(
+                                contract.contractAssociatedProject.get.getOrElse(""),
+                                project.signal.value,
+                                (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                              )
+                              .value
 
                           val maxHoursForProject =
                             (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month
@@ -498,7 +490,6 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                             case _ => p()
                           }
                         })
-
                       })
                     },
                   ),
@@ -515,7 +506,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 div(
                   cls := "basis-1/2",
                   label(cls := "font-bold", "Project:"),
-                  contractAssociatedProject.renderEdit("", editingValue),
+                  ContractPageAttributes().contractAssociatedProject.renderEdit("", editingValue),
                 ),
                 div(
                   cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
@@ -531,14 +522,17 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     Signal.dynamic {
                       editingValue.value.flatMap((_, value) =>
                         value.value.contractAssociatedProject.get.flatMap(id =>
-                          repositories.projects.all.value
+                          jsImplicits.repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              (countContractHours(
-                                id,
-                                project.signal.value,
-                                (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
-                              ).value).toString() + " h",
+                              (ProjectAttributes()
+                                .countContractHours(
+                                  id,
+                                  project.signal.value,
+                                  (id, contract) => !contract.isDraft.get.getOrElse(true) && id != contractId,
+                                )
+                                .value)
+                                .toString() + " h",
                             ),
                         ),
                       )
@@ -559,14 +553,17 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     Signal.dynamic {
                       editingValue.value.flatMap((_, value) =>
                         value.value.contractAssociatedProject.get.flatMap(id =>
-                          repositories.projects.all.value
+                          jsImplicits.repositories.projects.all.value
                             .find(project => project.id == id)
                             .map(project =>
-                              (countContractHours(
-                                id,
-                                project.signal.value,
-                                (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
-                              ).value).toString() + " h",
+                              (ProjectAttributes()
+                                .countContractHours(
+                                  id,
+                                  project.signal.value,
+                                  (id, contract) => contract.isDraft.get.getOrElse(true) && id != contractId,
+                                )
+                                .value)
+                                .toString() + " h",
                             ),
                         ),
                       )
@@ -585,7 +582,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   ),
                   div(
                     Signal.dynamic {
-                      editingValue.value.map((_, value) => s"${getTotalHours(contractId, value.value)} h")
+                      editingValue.value.map((_, value) =>
+                        s"${ContractPageAttributes().getTotalHours(contractId, value.value)} h",
+                      )
                     },
                   ),
                 ),
@@ -595,7 +594,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                   div(Signal.dynamic {
                     editingValue.value.flatMap((_, value) =>
                       value.value.contractAssociatedProject.get.flatMap(id =>
-                        repositories.projects.all.value
+                        jsImplicits.repositories.projects.all.value
                           .find(project => project.id == id)
                           .map(value => s"${value.signal.value.maxHours.get.getOrElse(0)} h"),
                       ),
@@ -613,7 +612,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                 // TODO active contract checking
                 p("Hiwi did not have an active contract ..."),
                 label(cls := "font-bold", "Contract type:"),
-                contractAssociatedType.renderEdit("", editingValue),
+                ContractPageAttributes().contractAssociatedType.renderEdit("", editingValue),
               ),
             ),
             // Contract Requirements
@@ -622,7 +621,33 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               "Contract requirements - reminder mail",
               div(
                 cls := "p-4",
-                "Send a reminder e-mail to Hiwi",
+                Button(
+                  ButtonStyle.Primary,
+                  "Send Reminder",
+                  onClick.foreach(_ => {
+                    editingValue.now.map((contract, _) => {
+                      val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
+                        p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
+                      )
+                      val hiwiOption =
+                        jsImplicits.repositories.hiwis.all.now.find(p =>
+                          p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
+                        )
+
+                      if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
+                        val hiwi = hiwiOption.get.signal.now
+                        val supervisor = supervisorOption.get.signal.now
+
+                        jsImplicits.mailing.sendMail(
+                          hiwi.eMail.get.getOrElse(""),
+                          supervisor.eMail.get.getOrElse(""),
+                          h1("A very cool mail ", hiwi.firstName.get.getOrElse(""), cls := "color:red"),
+                        )
+                      }
+
+                    })
+                  }),
+                ),
               ),
             ),
             // Check requirements
@@ -632,7 +657,7 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
               div(
                 cls := "p-4",
                 "Check all forms the hiwi has filled out and handed back.",
-                requiredDocuments.renderEdit("", editingValue),
+                ContractPageAttributes().requiredDocuments.renderEdit("", editingValue),
                 i(
                   "Documents written in italic have been checked in an older contract type and will be removed from this list once unchecked.",
                 ),
@@ -654,8 +679,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     editingValue.now.map((_, contractOption) => {
                       val contract = contractOption.now
                       val hiwiOption =
-                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
-                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        jsImplicits.repositories.hiwis.all.now
+                          .find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
                         .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
 
                       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty) {
@@ -701,18 +727,18 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         }.toFuture
                           .toastOnError()
                       } else {
-                        toaster.make(
+                        jsImplicits.toaster.make(
                           "The PDF could not be created because not all required fields are filled in!",
                           ToastMode.Long,
                           ToastType.Error,
                         )
                         document.getElementById("loadLetter").classList.remove("loading")
                       }
-                    }): @nowarn
+                    })
                   }),
                 ),
                 label(
-                  signed.renderEdit("", editingValue),
+                  ContractPageAttributes().signed.renderEdit("", editingValue),
                   " The contract has been signed",
                   cls := "mt-2 flex gap-2",
                 ),
@@ -734,11 +760,13 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                     editingValue.now.map((_, contractOption) => {
                       val contract = contractOption.now
                       val hiwiOption =
-                        repositories.hiwis.all.now.find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
-                      val paymentLevelOption = repositories.paymentLevels.all.now
+                        jsImplicits.repositories.hiwis.all.now
+                          .find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
                         .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
                       val projectOption =
-                        repositories.projects.all.now.find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
+                        jsImplicits.repositories.projects.all.now
+                          .find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
 
                       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
                         val hiwi = hiwiOption.get.signal.now
@@ -746,7 +774,9 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         val project = projectOption.get.signal.now
                         val moneyPerHour =
                           toMoneyString(
-                            getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L)).now,
+                            ContractPageAttributes()
+                              .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                              .now,
                           )
                         val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                         val totalHours = dateDiffMonth(
@@ -803,18 +833,18 @@ case class InnerEditContractsPage(existingValue: Option[Synced[Contract]], contr
                         }.toFuture
                           .toastOnError()
                       } else {
-                        toaster.make(
+                        jsImplicits.toaster.make(
                           "The PDF could not be created because not all required fields are filled in!",
                           ToastMode.Long,
                           ToastType.Error,
                         )
                         document.getElementById("loadLetter").classList.remove("loading")
                       }
-                    }): @nowarn
+                    })
                   }),
                 ),
                 label(
-                  submitted.renderEdit("", editingValue),
+                  ContractPageAttributes().submitted.renderEdit("", editingValue),
                   " The letter has been submitted",
                   cls := "mt-2 flex gap-2",
                 ),

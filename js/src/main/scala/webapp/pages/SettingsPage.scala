@@ -40,16 +40,14 @@ import rescala.default.*
 
 import scala.util.Success
 import scala.util.Failure
+import webapp.services.MailService
+import webapp.JSImplicits
 
-case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
+case class SettingsPage()(using
+    jsImplicits: JSImplicits,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     val deleteButtonActive = Var(false)
     val deleteDBModal = new Modal(
       "Do you really want to drop the Database?",
@@ -145,7 +143,7 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                 onClick.foreach(_ => {
                   val json = exportIndexedDBJson
                   downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
-                  toaster.make("Database exported", ToastMode.Short, ToastType.Success)
+                  jsImplicits.toaster.make("Database exported", ToastMode.Short, ToastType.Success)
                 }),
               ),
             ),
@@ -180,14 +178,14 @@ case class SettingsPage()(using indexeddb: IIndexedDB) extends Page {
                         .onComplete(value => {
                           if (value.isFailure) {
                             value.failed.get.printStackTrace()
-                            toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
+                            jsImplicits.toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
                           }
                           val json = value.getOrElse("")
-                          importIndexedDBJson(json)(using repositories).onComplete {
+                          importIndexedDBJson(json).onComplete {
                             case Success(value) =>
-                              toaster.make("Database imported", ToastMode.Long, ToastType.Success)
+                              jsImplicits.toaster.make("Database imported", ToastMode.Long, ToastType.Success)
                             case Failure(exception) =>
-                              toaster
+                              jsImplicits.toaster
                                 .make(
                                   "Failed to import database! " + exception.toString,
                                   ToastMode.Long,

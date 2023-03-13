@@ -8,6 +8,7 @@ import rescala.default
 import webapp.components.common.*
 import webapp.toQueryParameterName
 import webapp.services.RoutingService
+import webapp.JSImplicits
 
 trait UIFilter[EntityType] {
   def render: VNode
@@ -23,7 +24,7 @@ class UIFilterNothing[EntityType]() extends UIFilter[EntityType] {
 }
 
 class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])(using
-    routing: RoutingService,
+    jsImplicits: JSImplicits,
 ) extends UIFilter[EntityType] {
 
   private val name = toQueryParameterName(uiAttribute.label)
@@ -33,14 +34,14 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
       uiAttribute.label,
       Input(
         placeholder := "Filter here",
-        value <-- routing.getQueryParameterAsString(name),
-        onInput.value.foreach(v => routing.updateQueryParameters(Map(name -> v))),
+        value <-- jsImplicits.routing.getQueryParameterAsString(name),
+        onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name -> v))),
       ),
     )
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    routing
+    jsImplicits.routing
       .getQueryParameterAsString(name)
       .map(s =>
         e => uiAttribute.getter(e).get.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(s.toLowerCase)),
@@ -49,7 +50,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
 }
 
 class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[EntityType, AttributeType])(using
-    routing: RoutingService,
+    jsImplicits: JSImplicits,
 )(implicit
     ordering: Ordering[AttributeType],
 ) extends UIFilter[EntityType] {
@@ -62,23 +63,23 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
       Input(
         placeholder := "Minimum value",
         `type` := uiAttribute.fieldType,
-        value <-- routing.getQueryParameterAsString(name + ":min"),
-        onInput.value.foreach(v => routing.updateQueryParameters(Map(name + ":min" -> v))),
+        value <-- jsImplicits.routing.getQueryParameterAsString(name + ":min"),
+        onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":min" -> v))),
       ),
       Input(
         placeholder := "Maximum value",
         `type` := uiAttribute.fieldType,
-        value <-- routing.getQueryParameterAsString(name + ":max"),
-        onInput.value.foreach(v => routing.updateQueryParameters(Map(name + ":max" -> v))),
+        value <-- jsImplicits.routing.getQueryParameterAsString(name + ":max"),
+        onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":max" -> v))),
       ),
     )
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    routing
+    jsImplicits.routing
       .getQueryParameterAsString(name + ":min")
       .map(min =>
-        routing
+        jsImplicits.routing
           .getQueryParameterAsString(name + ":max")
           .map(max =>
             (e: EntityType) =>
@@ -113,7 +114,7 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
 }
 
 class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[EntityType, AttributeType])(using
-    routing: RoutingService,
+    jsImplicits: JSImplicits,
 ) extends UIFilter[EntityType] {
 
   private val name = toQueryParameterName(uiAttribute.label)
@@ -123,8 +124,8 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
       uiAttribute.label,
       MultiSelect(
         uiAttribute.optionsForFilter.map(option => option.map(selOpt => SelectOption(selOpt.id, selOpt.name))),
-        value => routing.updateQueryParameters(Map(name -> value)),
-        routing.getQueryParameterAsSeq(name),
+        value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+        jsImplicits.routing.getQueryParameterAsSeq(name),
         5,
         true,
         span("Nothing found..."),
@@ -135,7 +136,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    routing
+    jsImplicits.routing
       .getQueryParameterAsSeq(name)
       .map(s => e => s.isEmpty || uiAttribute.getter(e).get.exists(a => s.contains(a)))
   }
@@ -144,7 +145,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
 class UIMultiSelectFilter[EntityType](
     uiAttribute: UIMultiSelectAttribute[EntityType] | UICheckboxListAttribute[EntityType],
 )(using
-    routing: RoutingService,
+    jsImplicits: JSImplicits,
 ) extends UIFilter[EntityType] {
 
   private val name = toQueryParameterName(uiAttribute.label)
@@ -160,8 +161,8 @@ class UIMultiSelectFilter[EntityType](
             SelectOption("exact", Signal("Exact match")),
           ),
         ),
-        value => routing.updateQueryParameters(Map(name + ":mode" -> value)),
-        routing.getQueryParameterAsString(name + ":mode"),
+        value => jsImplicits.routing.updateQueryParameters(Map(name + ":mode" -> value)),
+        jsImplicits.routing.getQueryParameterAsString(name + ":mode"),
         false,
         span("Nothing found..."),
         false,
@@ -173,8 +174,8 @@ class UIMultiSelectFilter[EntityType](
           case x: UIMultiSelectAttribute[EntityType]  => x.optionsForFilter
           case x: UICheckboxListAttribute[EntityType] => x.optionsForFilter
         },
-        value => routing.updateQueryParameters(Map(name -> value)),
-        routing.getQueryParameterAsSeq(name),
+        value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+        jsImplicits.routing.getQueryParameterAsSeq(name),
         5,
         true,
         span("Nothing found..."),
@@ -185,10 +186,10 @@ class UIMultiSelectFilter[EntityType](
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    routing
+    jsImplicits.routing
       .getQueryParameterAsString(name + ":mode")
       .map(mode =>
-        routing
+        jsImplicits.routing
           .getQueryParameterAsSeq(name)
           .map(s =>
             (e: EntityType) =>
@@ -213,7 +214,7 @@ class UIMultiSelectFilter[EntityType](
 }
 
 class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean])(using
-    routing: RoutingService,
+    jsImplicits: JSImplicits,
 ) extends UIFilter[EntityType] {
 
   // has not been tested and is currently not usable over URL becuase we do not have any Boolean field sadly
@@ -226,8 +227,8 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
       uiAttribute.label,
       MultiSelect(
         Signal(Seq(SelectOption("true", Signal("Yes")), SelectOption("false", Signal("No")))),
-        value => routing.updateQueryParameters(Map(name -> value)),
-        routing.getQueryParameterAsSeq(name),
+        value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+        jsImplicits.routing.getQueryParameterAsSeq(name),
         5,
         true,
         span("Nothing found..."),
@@ -238,7 +239,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
   }
 
   val predicate: Signal[EntityType => Boolean] = {
-    routing
+    jsImplicits.routing
       .getQueryParameterAsSeq(name)
       .map(s => e => uiAttribute.getter(e).get.forall(v => s.isEmpty || s.map(p => p.toBoolean).contains(v)))
   }

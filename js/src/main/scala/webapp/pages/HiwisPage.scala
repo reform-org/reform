@@ -23,23 +23,25 @@ import webapp.components.common.*
 import HiwisPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class HiwisPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Hiwi](
       Title("Hiwi"),
       None,
-      repositories.hiwis,
-      repositories.hiwis.all,
-      Seq(firstName, lastName, eMail, birthdate),
+      jsImplicits.repositories.hiwis,
+      jsImplicits.repositories.hiwis.all,
+      Seq(HiwiAttributes().firstName, HiwiAttributes().lastName, HiwiAttributes().eMail, HiwiAttributes().birthdate),
       DefaultEntityRow(),
     ) {}
 
-object HiwisPage {
-  private def firstName(using routing: RoutingService) = UIAttributeBuilder.string
+class HiwiAttributes(using jsImplicits: JSImplicits) {
+  def firstName = BuildUIAttribute().string
     .withLabel("First Name")
     .require
     .bindAsText[Hiwi](
@@ -47,7 +49,7 @@ object HiwisPage {
       (h, a) => h.copy(firstName = a),
     )
 
-  private def lastName(using routing: RoutingService) = UIAttributeBuilder.string
+  def lastName = BuildUIAttribute().string
     .withLabel("Last Name")
     .require
     .bindAsText[Hiwi](
@@ -55,7 +57,7 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private def eMail(using routing: RoutingService) = UIAttributeBuilder.email
+  def eMail = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Hiwi](
@@ -63,7 +65,7 @@ object HiwisPage {
       (h, a) => h.copy(eMail = a),
     )
 
-  private def birthdate(using routing: RoutingService) = UIAttributeBuilder.date
+  def birthdate = BuildUIAttribute().date
     .withLabel("Birthdate")
     .require
     .bindAsDatePicker[Hiwi](

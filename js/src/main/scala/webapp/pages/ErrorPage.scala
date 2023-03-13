@@ -8,16 +8,13 @@ import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
+import webapp.JSImplicits
 
-case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
+case class ErrorPage()(using
+    jsImplicits: JSImplicits,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     navigationHeader(
       div(
         cls := "flex items-center justify-center h-full w-full flex-col gap-6",
@@ -28,9 +25,9 @@ case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
           onClick.foreach(e => {
             e.preventDefault()
             e.target.asInstanceOf[HTMLElement].blur()
-            routing.to(HomePage())
+            jsImplicits.routing.to(HomePage())
           }),
-          href := routing.linkPath(HomePage()),
+          href := jsImplicits.routing.linkPath(HomePage()),
         ),
       ),
     )

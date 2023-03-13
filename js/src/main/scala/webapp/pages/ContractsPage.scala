@@ -25,7 +25,6 @@ import kofre.base.Bottom
 import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
-import ContractsPage.*
 import webapp.utils.Seqnal.*
 import webapp.repo.Synced
 import outwatch.*
@@ -35,7 +34,11 @@ import webapp.utils.Futures.*
 import webapp.npm.JSUtils.toMoneyString
 import scala.scalajs.js
 import webapp.npm.JSUtils.dateDiffMonth
+import webapp.services.MailService
+import webapp.JSImplicits
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
     override val repository: Repository[T],
@@ -44,19 +47,16 @@ class DetailPageEntityRow[T <: Entity[T]](
 )(using
     bottom: Bottom[T],
     lattice: Lattice[T],
-    toaster: Toaster,
-    routing: RoutingService,
-    repositories: Repositories,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => routing.to(EditContractsPage(value.id))
+      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
       case New(value)                    =>
     }
   }
 
-  override protected def afterCreated(id: String): Unit = routing.to(EditContractsPage(id))
+  override protected def afterCreated(id: String): Unit = jsImplicits.routing.to(EditContractsPage(id))
 }
 
 class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
@@ -64,51 +64,42 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
       using
       bottom: Bottom[T],
       lattice: Lattice[T],
-      toaster: Toaster,
-      routing: RoutingService,
-      repositories: Repositories,
-      indexedb: IIndexedDB,
+      jsImplicits: JSImplicits,
   ): EntityRow[T] = DetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
-def onlyFinalizedContracts(using repositories: Repositories): Signal[Seq[Synced[Contract]]] = {
-  repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
+def onlyFinalizedContracts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = {
+  jsImplicits.repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
 }
 
 case class ContractsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Contract](
       Title("Contract"),
       None,
-      repositories.contracts,
+      jsImplicits.repositories.contracts,
       onlyFinalizedContracts,
       Seq(
-        contractAssociatedProject,
-        contractAssociatedHiwi,
-        contractAssociatedSupervisor,
-        contractStartDate,
-        contractEndDate,
-        contractHoursPerMonth,
-        moneyPerHour,
+        ContractPageAttributes().contractAssociatedProject,
+        ContractPageAttributes().contractAssociatedHiwi,
+        ContractPageAttributes().contractAssociatedSupervisor,
+        ContractPageAttributes().contractStartDate,
+        ContractPageAttributes().contractEndDate,
+        ContractPageAttributes().contractHoursPerMonth,
+        ContractPageAttributes().moneyPerHour,
       ),
       DetailPageEntityRowBuilder(),
       true,
     ) {}
 
-object ContractsPage {
+class ContractPageAttributes(using
+    jsImplicits: JSImplicits,
+) {
 
-  def contractAssociatedHiwi(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+  def contractAssociatedHiwi: UIAttribute[Contract, String] = {
+    BuildUIAttribute()
       .select(
-        repositories.hiwis.existing.map(list =>
+        jsImplicits.repositories.hiwis.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -121,15 +112,10 @@ object ContractsPage {
       )
   }
 
-  def contractAssociatedProject(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+  def contractAssociatedProject: UIAttribute[Contract, String] = {
+    BuildUIAttribute()
       .select(options =
-        repositories.projects.existing.map(
+        jsImplicits.repositories.projects.existing.map(
           _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -142,15 +128,10 @@ object ContractsPage {
       )
   }
 
-  def contractAssociatedSupervisor(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+  def contractAssociatedSupervisor: UIAttribute[Contract, String] = {
+    BuildUIAttribute()
       .select(
-        repositories.supervisors.existing.map(list =>
+        jsImplicits.repositories.supervisors.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -163,15 +144,10 @@ object ContractsPage {
       )
   }
 
-  def contractAssociatedType(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+  def contractAssociatedType: UIAttribute[Contract, String] = {
+    BuildUIAttribute()
       .select(
-        repositories.contractSchemas.existing.map(list =>
+        jsImplicits.repositories.contractSchemas.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -184,7 +160,7 @@ object ContractsPage {
       )
   }
 
-  def contractStartDate(using routing: RoutingService): UIAttribute[Contract, Long] = UIAttributeBuilder.date
+  def contractStartDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
     .withLabel("Start")
     .require
     .bindAsDatePicker[Contract](
@@ -192,7 +168,7 @@ object ContractsPage {
       (h, a) => h.copy(contractStartDate = a),
     )
 
-  def contractEndDate(using routing: RoutingService): UIAttribute[Contract, Long] = UIAttributeBuilder.date
+  def contractEndDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
     .withLabel("End")
     .require
     .bindAsDatePicker[Contract](
@@ -200,7 +176,7 @@ object ContractsPage {
       (h, a) => h.copy(contractEndDate = a),
     )
 
-  def contractHoursPerMonth(using routing: RoutingService): UIAttribute[Contract, Int] = UIAttributeBuilder.int
+  def contractHoursPerMonth: UIAttribute[Contract, Int] = BuildUIAttribute().int
     .withLabel("h/month")
     .withMin("0")
     .require
@@ -209,7 +185,7 @@ object ContractsPage {
       (h, a) => h.copy(contractHoursPerMonth = a),
     )
 
-  def contractDraft(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+  def contractDraft: UIAttribute[Contract, Boolean] = BuildUIAttribute().boolean
     .withLabel("Draft?")
     .require
     .bindAsCheckbox[Contract](
@@ -217,7 +193,7 @@ object ContractsPage {
       (h, a) => h.copy(isDraft = a),
     )
 
-  def signed(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+  def signed: UIAttribute[Contract, Boolean] = BuildUIAttribute().boolean
     .withLabel("Signed?")
     .require
     .bindAsCheckbox[Contract](
@@ -225,7 +201,7 @@ object ContractsPage {
       (h, a) => h.copy(isSigned = a),
     )
 
-  def submitted(using routing: RoutingService): UIAttribute[Contract, Boolean] = UIAttributeBuilder.boolean
+  def submitted: UIAttribute[Contract, Boolean] = BuildUIAttribute().boolean
     .withLabel("Submitted?")
     .require
     .bindAsCheckbox[Contract](
@@ -233,15 +209,10 @@ object ContractsPage {
       (h, a) => h.copy(isSubmitted = a),
     )
 
-  def contractAssociatedPaymentLevel(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[Contract, String] = {
-    UIAttributeBuilder
+  def contractAssociatedPaymentLevel: UIAttribute[Contract, String] = {
+    BuildUIAttribute()
       .select(
-        repositories.paymentLevels.existing.map(list =>
+        jsImplicits.repositories.paymentLevels.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -254,15 +225,10 @@ object ContractsPage {
       )
   }
 
-  def requiredDocuments(using
-      repositories: Repositories,
-      routing: RoutingService,
-      toaster: Toaster,
-      indexeddb: IIndexedDB,
-  ): UIAttribute[Contract, Seq[String]] = {
-    UIAttributeBuilder
+  def requiredDocuments: UIAttribute[Contract, Seq[String]] = {
+    BuildUIAttribute()
       .checkboxList(
-        repositories.requiredDocuments.existing.map(list =>
+        jsImplicits.repositories.requiredDocuments.existing.map(list =>
           list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
         ),
       )
@@ -275,11 +241,11 @@ object ContractsPage {
           Signal.dynamic {
             contract.contractType.get
               .flatMap(contractTypeId =>
-                repositories.contractSchemas.all.value
+                jsImplicits.repositories.contractSchemas.all.value
                   .find(contractType => contractType.id == contractTypeId)
                   .flatMap(value =>
                     value.signal.value.files.get.flatMap(requiredDocuments => {
-                      val documents = repositories.requiredDocuments.all.value
+                      val documents = jsImplicits.repositories.requiredDocuments.all.value
                       val checkedDocuments =
                         if (contract.requiredDocuments.get.nonEmpty) contract.requiredDocuments.get
                         else Some(Seq.empty)
@@ -318,11 +284,9 @@ object ContractsPage {
       )
   }
 
-  def getSalaryChange(id: String, contract: Contract, date: Long)(using
-      repositories: Repositories,
-  ): Signal[Option[SalaryChange]] =
+  def getSalaryChange(id: String, contract: Contract, date: Long): Signal[Option[SalaryChange]] =
     Signal.dynamic {
-      val salaryChanges = repositories.salaryChanges.all.value
+      val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
       salaryChanges
         .map(_.signal.value)
         .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
@@ -338,25 +302,21 @@ object ContractsPage {
     )
   }
 
-  def getMoneyPerHour(id: String, contract: Contract, date: Long)(using
-      repositories: Repositories,
-  ): Signal[BigDecimal] =
+  def getMoneyPerHour(id: String, contract: Contract, date: Long): Signal[BigDecimal] =
     Signal.dynamic {
       getSalaryChange(id, contract, date).value
         .flatMap(_.value.get)
         .getOrElse(BigDecimal(0))
     }
 
-  def getLimit(id: String, contract: Contract, date: Long)(using
-      repositories: Repositories,
-  ): Signal[BigDecimal] =
+  def getLimit(id: String, contract: Contract, date: Long): Signal[BigDecimal] =
     Signal.dynamic {
       getSalaryChange(id, contract, date).value
         .flatMap(_.limit.get)
         .getOrElse(BigDecimal(0))
     }
 
-  def moneyPerHour(using repositories: Repositories) =
+  def moneyPerHour =
     new UIReadOnlyAttribute[Contract, String](
       label = "€/h",
       getter = (id, contract) =>

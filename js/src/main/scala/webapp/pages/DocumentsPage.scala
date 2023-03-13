@@ -24,22 +24,25 @@ import DocumentsPage.*
 import webapp.entity.Document
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class DocumentsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Document](
       Title("Document"),
       Some("Document Description..."),
-      repositories.requiredDocuments,
-      repositories.requiredDocuments.all,
-      Seq(name),
+      jsImplicits.repositories.requiredDocuments,
+      jsImplicits.repositories.requiredDocuments.all,
+      Seq(DocumentAttributes().name),
       DefaultEntityRow(),
     ) {}
 
-object DocumentsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class DocumentAttributes(using jsImplicits: JSImplicits) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Document](

@@ -21,24 +21,26 @@ import webapp.entity.*
 import UsersPage.*
 import webapp.services.Toaster
 import webapp.services.RoutingService
+import webapp.services.MailService
 import webapp.npm.IIndexedDB
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
+
 case class UsersPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[User](
       Title("User"),
       None,
-      repositories.users,
-      repositories.users.all,
-      Seq(username, role, comment),
+      jsImplicits.repositories.users,
+      jsImplicits.repositories.users.all,
+      Seq(UserAttributes().username, UserAttributes().role, UserAttributes().comment),
       DefaultEntityRow(),
     ) {}
 
-object UsersPage {
-  private def username(using routing: RoutingService) = UIAttributeBuilder.string
+class UserAttributes(using jsImplicits: JSImplicits) {
+  def username = BuildUIAttribute().string
     .withLabel("Username")
     .require
     .bindAsText[User](
@@ -46,7 +48,7 @@ object UsersPage {
       (u, a) => u.copy(username = a),
     )
 
-  private def role(using routing: RoutingService) = UIAttributeBuilder.string
+  def role = BuildUIAttribute().string
     .withLabel("Role")
     .require
     .bindAsText[User](
@@ -54,7 +56,7 @@ object UsersPage {
       (u, a) => u.copy(role = a),
     )
 
-  private def comment(using routing: RoutingService) = UIAttributeBuilder.string
+  def comment = BuildUIAttribute().string
     .withLabel("Comment")
     .withDefaultValue("")
     .bindAsText[User](

@@ -60,7 +60,7 @@ case class PendingConnection(
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String): PendingConnection = {
     val p = Promise[ConnectionInformation]()
-    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
+    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
     PendingConnection(answer, p.future, answer.connection)
   }
   private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make: @nowarn
@@ -69,7 +69,7 @@ object PendingConnection {
   def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)
 }
 
-class WebRTCService(using registry: Registry, toaster: Toaster) {
+class WebRTCService(using registry: Registry, toaster: Toaster, discovery: DiscoveryService) {
 
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
@@ -108,7 +108,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
       })
   }
 
-  def closeConnectionById(id: String)(using discovery: DiscoveryService): Unit = {
+  def closeConnectionById(id: String): Unit = {
     connectionRefs.get(id) match {
       case None =>
       case Some(ref) => {
@@ -142,17 +142,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
 
     removeConnection.fire(remoteRef)
-  }): @nowarn("msg=discarded expression")
+  })
 
-  Try(
-    registry
-      .connect(
-        WS(
-          s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}${Globals.VITE_ALWAYS_ONLINE_PEER_PATH}",
-        ),
-      )
-      .toastOnError(ToastMode.Short, ToastType.Warning),
-  ).toastOnError(ToastMode.Short, ToastType.Warning)
-
-  registry.connect(BroadcastChannel("default")): @nowarn
+  registry.connect(BroadcastChannel("default"))
 }

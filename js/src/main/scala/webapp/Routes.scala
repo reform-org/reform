@@ -23,14 +23,14 @@ import webapp.services.Toaster
 import org.scalajs.dom.window
 import webapp.pages.DocumentsPage
 import webapp.services.RoutingService
+import webapp.services.MailService
 import webapp.npm.IIndexedDB
-
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 object Routes {
   def fromPath(using
-      repositories: Repositories,
-      toaster: Toaster,
-      routing: RoutingService,
-      indexedb: IIndexedDB,
+      jsImplicits: JSImplicits,
   ): Path => Page = {
     case Root                         => HomePage()
     case Root / "projects"            => ProjectsPage()

@@ -42,6 +42,7 @@ import scala.collection.mutable
 import webapp.npm.IIndexedDB
 import scala.annotation.nowarn
 import webapp.npm.JSUtils.downloadFile
+import webapp.services.MailService
 
 case class Title(singular: String) {
 
@@ -68,10 +69,7 @@ abstract class EntityRowBuilder[T <: Entity[T]] {
   )(using
       bottom: Bottom[T],
       lattice: Lattice[T],
-      toaster: Toaster,
-      routing: RoutingService,
-      repositories: Repositories,
-      indexedb: IIndexedDB,
+      jsImplicits: JSImplicits,
   ): EntityRow[T]
 }
 
@@ -80,10 +78,7 @@ class DefaultEntityRow[T <: Entity[T]] extends EntityRowBuilder[T] {
       using
       bottom: Bottom[T],
       lattice: Lattice[T],
-      toaster: Toaster,
-      routing: RoutingService,
-      repositories: Repositories,
-      indexedb: IIndexedDB,
+      jsImplicits: JSImplicits,
   ): EntityRow[T] = EntityRow[T](title, repository, value, uiAttributes)
 }
 
@@ -95,10 +90,7 @@ class EntityRow[T <: Entity[T]](
 )(using
     bottom: Bottom[T],
     lattice: Lattice[T],
-    toaster: Toaster,
-    routing: RoutingService,
-    repositories: Repositories,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) {
 
   def render: VMod =
@@ -124,7 +116,7 @@ class EntityRow[T <: Entity[T]](
       cls := "odd:bg-slate-50 odd:dark:bg-gray-600",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
-      routing
+      jsImplicits.routing
         .getQueryParameterAsSeq("columns")
         .map(columns =>
           uiAttributes
@@ -249,7 +241,7 @@ class EntityRow[T <: Entity[T]](
           cls := "odd:bg-slate-50 odd:dark:bg-gray-600",
           data.id := synced.id,
           key := synced.id,
-          routing
+          jsImplicits.routing
             .getQueryParameterAsSeq("columns")
             .map(columns =>
               uiAttributes
@@ -295,7 +287,7 @@ class EntityRow[T <: Entity[T]](
   }
 
   private def removeEntity(s: Synced[T]): Unit = {
-    indexedb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage
 
     s.update(e => e.get.withExists(false))
       .toastOnError(ToastMode.Infinit)
@@ -308,7 +300,7 @@ class EntityRow[T <: Entity[T]](
   protected def afterCreated(id: String): Unit = {}
 
   private def createOrUpdate(): Unit = {
-    indexedb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage
 
     val editingNow = editingValue.now.get._2.now
     existingValue match {
@@ -367,10 +359,7 @@ abstract class EntityPage[T <: Entity[T]](
 )(using
     bottom: Bottom[T],
     lattice: Lattice[T],
-    toaster: Toaster,
-    routing: RoutingService,
-    repositories: Repositories,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends Page {
 
   private val addEntityRow: EntityRow[T] =
@@ -395,13 +384,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val filter = Filter[T](uiAttributes)
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
+  def render: VNode = {
     val filterDropdownOpen = Var(false)
 
     createPopper(s"#filter-btn", s"#filter-dropdown", "bottom-start", false)
@@ -427,7 +410,7 @@ abstract class EntityPage[T <: Entity[T]](
                 idAttr := "filter-btn",
                 div(
                   cls := "ml-3 badge",
-                  routing.countQueryParameters(uiAttributes.map(attr => toQueryParameterName(attr.label))),
+                  jsImplicits.routing.countQueryParameters(uiAttributes.map(attr => toQueryParameterName(attr.label))),
                 ),
                 icons.Filter(cls := "ml-1 w-6 h-6"),
                 cls := "!mt-0",
@@ -444,8 +427,8 @@ abstract class EntityPage[T <: Entity[T]](
                   Signal(
                     uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
                   ),
-                  value => routing.updateQueryParameters(Map("columns" -> value)),
-                  routing.getQueryParameterAsSeq("columns"),
+                  value => jsImplicits.routing.updateQueryParameters(Map("columns" -> value)),
+                  jsImplicits.routing.getQueryParameterAsSeq("columns"),
                   4,
                   true,
                   span("Nothing found..."),
@@ -475,7 +458,7 @@ abstract class EntityPage[T <: Entity[T]](
               cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
               thead(
                 tr(
-                  routing
+                  jsImplicits.routing
                     .getQueryParameterAsSeq("columns")
                     .map(columns =>
                       uiAttributes
@@ -602,7 +585,7 @@ abstract class EntityPage[T <: Entity[T]](
               value.signal.map(value => {
                 var csvRow: Seq[String] = Seq()
                 var selectedHeaders: Seq[String] = Seq()
-                routing
+                jsImplicits.routing
                   .getQueryParameterAsSeq("columns")
                   .map(columns =>
                     row.uiAttributes
@@ -625,7 +608,7 @@ abstract class EntityPage[T <: Entity[T]](
                           case _ => {}
                         }
                       }),
-                  ): @nowarn
+                  )
 
                 if (csvHeader.isEmpty) csvHeader = selectedHeaders
                 if (csvRow.nonEmpty)
@@ -633,7 +616,7 @@ abstract class EntityPage[T <: Entity[T]](
               })
           }
         })
-      }): @nowarn
+      })
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")

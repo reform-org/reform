@@ -56,7 +56,7 @@ private class MultiSelect(
           selectAll.indeterminate = true
         }
       })
-    }): @nowarn
+    })
 
   }
 
@@ -71,7 +71,7 @@ private class MultiSelect(
       })
     })
 
-    value.observe(updateSelectAll): @nowarn
+    value.observe(updateSelectAll)
 
     div(
       onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),

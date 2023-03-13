@@ -28,30 +28,31 @@ import rescala.default.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import webapp.npm.JSUtils.dateDiffMonth
+import webapp.services.MailService
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class ProjectsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Project](
       Title("Project"),
       None,
-      repositories.projects,
-      repositories.projects.all,
+      jsImplicits.repositories.projects,
+      jsImplicits.repositories.projects.all,
       Seq[UIBasicAttribute[Project]](
-        ProjectsPage.name,
-        maxHours,
-        accountName,
-        contractCount,
-        plannedHours,
-        assignedHours,
+        ProjectAttributes().name,
+        ProjectAttributes().maxHours,
+        ProjectAttributes().accountName,
+        ProjectAttributes().contractCount,
+        ProjectAttributes().plannedHours,
+        ProjectAttributes().assignedHours,
       ),
       DefaultEntityRow(),
     ) {}
 
-object ProjectsPage {
-  private def name(using routing: RoutingService) = UIAttributeBuilder.string
+class ProjectAttributes(using jsImplicits: JSImplicits) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Project](
@@ -59,7 +60,7 @@ object ProjectsPage {
       (p, a) => p.copy(name = a),
     )
 
-  private def maxHours(using routing: RoutingService) = UIAttributeBuilder.int
+  def maxHours = BuildUIAttribute().int
     .withLabel("Max Hours")
     .withMin("0")
     .require
@@ -68,7 +69,7 @@ object ProjectsPage {
       (p, a) => p.copy(maxHours = a),
     )
 
-  private def accountName(using routing: RoutingService) = UIAttributeBuilder.string
+  def accountName = BuildUIAttribute().string
     .withLabel("Account")
     .withDefaultValue("")
     .bindAsText[Project](
@@ -76,11 +77,11 @@ object ProjectsPage {
       (p, a) => p.copy(accountName = a),
     )
 
-  private def contractCount(using repositories: Repositories) =
+  def contractCount =
     new UIReadOnlyAttribute[Project, String](
       label = "Contracts",
       getter = (id, project) =>
-        repositories.contracts.all
+        jsImplicits.repositories.contracts.all
           .map(_.map(_.signal))
           .flatten
           .map(contracts =>
@@ -91,7 +92,7 @@ object ProjectsPage {
         UIFormat(
           (id, project) => {
             Signal.dynamic {
-              val contracts = repositories.contracts.all.value.map(_.signal.value)
+              val contracts = jsImplicits.repositories.contracts.all.value.map(_.signal.value)
               contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
             }
           },
@@ -100,11 +101,13 @@ object ProjectsPage {
       ),
     )
 
-  def countContractHours(id: String, project: Project, pred: (contractId: String, contract: Contract) => Boolean)(using
-      repositories: Repositories,
+  def countContractHours(
+      id: String,
+      project: Project,
+      pred: (contractId: String, contract: Contract) => Boolean,
   ): Signal[Int] = {
     Signal.dynamic {
-      repositories.contracts.all.value
+      jsImplicits.repositories.contracts.all.value
         .filter(contract => contract.signal.value.contractAssociatedProject.get.contains(id))
         .filter(contract => pred(contract.id, contract.signal.value))
         .map(x => {
@@ -118,7 +121,7 @@ object ProjectsPage {
     }
   }
 
-  private def assignedHours(using repositories: Repositories) =
+  def assignedHours =
     new UIReadOnlyAttribute[Project, String](
       label = "assigned Hours",
       getter = (id, project) =>
@@ -132,7 +135,7 @@ object ProjectsPage {
       readConverter = identity,
     )
 
-  private def plannedHours(using repositories: Repositories) =
+  def plannedHours =
     new UIReadOnlyAttribute[Project, String](
       label = "planned Hours",
       getter = (id, project) =>
