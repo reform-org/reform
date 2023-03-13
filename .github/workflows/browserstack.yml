@@ -1,4 +1,4 @@
-name: Scala Selenium
+name: Browserstack
 
 on: workflow_dispatch
 
@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  browserstack:
     strategy:
       fail-fast: false
       matrix:
@@ -31,7 +31,7 @@ jobs:
           cache: "sbt"
       - uses: actions/setup-node@v3
         with:
-          node-version: 19
+          node-version: 16
           cache: "npm"
       - run: npm ci
       - name: Build ScalaJS

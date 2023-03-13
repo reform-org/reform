@@ -1,4 +1,4 @@
-name: Scala Build
+name: Scala JS Test
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  scala-js-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,10 +26,8 @@ jobs:
           cache: "sbt"
       - uses: actions/setup-node@v3
         with:
-          node-version: 19
+          node-version: 16
           cache: "npm"
       - run: npm ci
-      - name: Build ScalaJS
-        run: sbt fastLinkJS
-      - name: Build JavaScript
-        run: npm run build -- --mode lukasschreiber
+      - name: Test
+        run: sbt webappJS/test
