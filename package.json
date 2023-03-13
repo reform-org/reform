@@ -16,7 +16,7 @@
   "devDependencies": {
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "autoprefixer": "^10.4.13",
-    "jsdom": "^21.1.0",
+    "jsdom": "^21.1.1",
     "postcss": "^8.4.21",
     "rollup-plugin-visualizer": "^5.9.0",
     "rome": "^11.0.0",
