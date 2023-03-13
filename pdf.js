@@ -1,7 +1,7 @@
 import { PDFDocument } from "pdf-lib";
 
 // downloads a file through the clients computer
-const download = (name, byte) => {
+export const download = (name, byte) => {
 	var blob = new Blob([byte], { type: "application/pdf" });
 
 	const elem = document.createElement("a");
@@ -13,7 +13,7 @@ const download = (name, byte) => {
 	document.body.removeChild(elem);
 };
 
-export const fillPDF = async (uri, filename, fields) => {
+const fill = async (uri, fields) => {
 	const arrayBuffer = await fetch(uri).then((res) => res.arrayBuffer());
 	const pdf = await PDFDocument.load(arrayBuffer);
 	const form = pdf.getForm();
@@ -23,18 +23,26 @@ export const fillPDF = async (uri, filename, fields) => {
 			try {
 				form.getTextField(field.key).setText(field.value);
 				form.getTextField(field.key).setFontSize(9);
-			} catch (e) {}
+			} catch (e) { }
 		}
 
 		if (field.fieldType === "checkbox" && field.value === true) {
 			try {
 				form.getCheckBox(field.key).check();
-			} catch (e) {}
+			} catch (e) { }
 		}
 	}
 
-	const outputBuffer = await pdf.save();
+	return await pdf.save();
+}
+
+export const fillPDF = async (uri, fields) => {
+	return await fill(uri, fields);
+};
+
+export const fillAndDownloadPDF = async (uri, filename, fields) => {
+	const outputBuffer = await fill(uri, fields);
 	download(filename, outputBuffer);
 
-	return "Done Message";
+	return outputBuffer;
 };

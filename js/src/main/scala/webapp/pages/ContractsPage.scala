@@ -178,6 +178,30 @@ class ContractPageAttributes(using
       (h, a) => h.copy(contractEndDate = a),
     )
 
+  def contractSentDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
+    .withLabel("Contract Sent")
+    .require
+    .bindAsDatePicker[Contract](
+      _.contractSentDate,
+      (h, a) => h.copy(contractSentDate = a),
+    )
+
+  def letterSentDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
+    .withLabel("Letter Sent")
+    .require
+    .bindAsDatePicker[Contract](
+      _.letterSentDate,
+      (h, a) => h.copy(letterSentDate = a),
+    )
+
+  def reminderSentDate: UIAttribute[Contract, Long] = BuildUIAttribute().date
+    .withLabel("Reminder Sent")
+    .require
+    .bindAsDatePicker[Contract](
+      _.reminderSentDate,
+      (h, a) => h.copy(reminderSentDate = a),
+    )
+
   def contractHoursPerMonth: UIAttribute[Contract, Int] = BuildUIAttribute().int
     .withLabel("h/month")
     .withMin("0")
