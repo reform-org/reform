@@ -54,7 +54,7 @@ case class SettingsPage()(using
       div(
         cls := "flex flex-col gap-4",
         span(
-          cls := "text-red-600",
+          cls := "text-red-500 p-4 rounded-lg bg-red-200",
           "Proceeding will drop the database and all of it's contents on your machine, so the data will be ",
           b("unrecoverably lost"),
           "!!!",
@@ -71,16 +71,16 @@ case class SettingsPage()(using
             onClick.foreach(_ => deleteButtonActive.transform(!_)),
           ),
         ),
-        div(
-          cls := "text-blue-300 uppercase hover:text-blue-600 cursor-pointer",
-          "Export again",
-          onClick.foreach(_ => {
-            val json = exportIndexedDBJson
-            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
-          }),
-        ),
       ),
       Seq(
+        new ModalButton(
+          "Export Database",
+          ButtonStyle.LightDefault,
+          () => {
+            val json = exportIndexedDBJson
+            downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
+          },
+        ),
         new ModalButton(
           "Delete",
           ButtonStyle.Error,
@@ -91,7 +91,7 @@ case class SettingsPage()(using
             disabled <-- deleteButtonActive.map(!_),
           ),
         ),
-        new ModalButton("Cancel"),
+        new ModalButton("Cancel", ButtonStyle.LightDefault),
       ),
     )
 
@@ -103,72 +103,68 @@ case class SettingsPage()(using
         h1(cls := "text-3xl my-4 text-center", "Settings Page"),
         cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]", // "flex flex-col gap-2 max-w-sm",
         div(
-          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200",
-          div(
-            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:bg-gray-700 dark:text-gray-200",
-            p("Color scheme:"),
-          ),
-          div(
-            cls := "p-4 space-y-4 md:w-[400px]",
-            Select(
-              Signal(
-                Seq(
-                  SelectOption("dark", Signal("Dark mode")),
-                  SelectOption("light", Signal("Light mode")),
-                  SelectOption("default", Signal("Use browser preferences")),
-                ),
+          cls := "md:m-4 p-4",
+          h2(cls := "font-bold", "Color Scheme"),
+          Select(
+            Signal(
+              Seq(
+                SelectOption("dark", Signal("Dark mode")),
+                SelectOption("light", Signal("Light mode")),
+                SelectOption("default", Signal("Use browser preferences")),
               ),
-              (value) => {
-                window.localStorage.setItem("theme", value)
-                theme.set(value)
-              },
-              theme,
-              false,
             ),
+            (value) => {
+              window.localStorage.setItem("theme", value)
+              theme.set(value)
+            },
+            theme,
+            false,
+            cls := "max-w-[300px]",
           ),
         ),
         div(
-          cls := "border rounded-sm md:rounded-2xl md:m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200",
+          cls := "md:m-4 p-4",
+          h2(cls := "font-bold", "Manage Database"),
           div(
-            cls := "bg-purple-200 p-4 rounded-t-sm md:rounded-t-2xl dark:bg-gray-700 dark:text-gray-200",
-            p("Manage DB:"),
-          ),
-          div(
-            cls := "flex flex-col p-4 space-y-4",
+            cls := "flex flex-col gap-2",
             div(
-              cls := "flex flex-col md:flex-row justify-between",
+              cls := "flex flex-col gap-2",
               Button(
                 ButtonStyle.Primary,
-                "Export DB",
+                "Export Database",
                 onClick.foreach(_ => {
                   val json = exportIndexedDBJson
                   downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
                   jsImplicits.toaster.make("Database exported", ToastMode.Short, ToastType.Success)
                 }),
+                cls := "w-fit",
+              ),
+              div(
+                cls := "text-slate-400 text-xs italic",
+                "Exports the current database in a lossless JSON format. The current state of the database can be imported later.",
               ),
             ),
-            hr,
             div(
-              cls := "flex flex-col md:flex-row justify-between",
+              cls := "flex flex-col gap-2",
               div(
+                cls := "flex flex-col md:flex-row gap-2",
                 label(
-                  cls := "block",
+                  cls := "block h-[40px]",
                   span(cls := "sr-only", "Choose profile photo"),
                   input(
                     tpe := "file",
                     idAttr := "import-file",
                     cls := """block w-full text-sm text-slate-500
                             file:mr-4 file:py-2 file:px-4
-                            file:rounded-full file:border-0
+                            file:rounded-lg file:border-0
                             file:text-sm file:font-semibold
                             file:bg-purple-400 file:text-purple-800
-                            hover:file:bg-purple-400""",
+                            hover:file:bg-purple-400 h-full file:h-full""",
                   ),
                 ),
                 Button(
                   ButtonStyle.Primary,
-                  cls := "mt-4",
-                  "Import DB",
+                  "Import Database",
                   onClick.foreach(_ => {
                     val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
                     if (fileList.nonEmpty)
@@ -196,22 +192,30 @@ case class SettingsPage()(using
                   }),
                 ),
               ),
+              div(
+                cls := "text-slate-400 text-xs italic",
+                "Choose a JSON file that you have previously exported and it will be merged with the current db. If you want to go back to the old DB version you should version the database in the code (VITE_DATABASE_VERSION) and import it.",
+              ),
             ),
-            hr,
             div(
-              cls := "flex flex-col md:flex-row justify-between",
+              cls := "flex flex-col gap-2",
               Button(
                 ButtonStyle.Error,
-                "Delete DB",
+                "Delete Database",
                 onClick.foreach(_ => {
                   val json = exportIndexedDBJson
                   downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
                   deleteDBModal.open()
                 }),
+                cls := "w-fit",
+              ),
+              div(
+                cls := "text-slate-400 text-xs italic",
+                "Deletes the local database, so make sure you have exported the data. Once a peer connects you may see deleted data again because the peer still has it.",
               ),
             ),
-            deleteDBModal.render,
           ),
+          deleteDBModal.render,
         ),
       ),
     )
