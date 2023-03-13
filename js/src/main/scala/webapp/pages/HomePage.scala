@@ -90,7 +90,7 @@ case class HomePage()(using
               )
             }),
           ),
-          div(Signal { toHumanMonth(month.value) }, " ", year),
+          div(cls := "min-w-[120px]", Signal { toHumanMonth(month.value) }, " ", year),
           IconButton(
             ButtonStyle.LightDefault,
             icons.Next(cls := "w-6 h-6"),
