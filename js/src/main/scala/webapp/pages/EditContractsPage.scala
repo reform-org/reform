@@ -35,7 +35,7 @@ import scala.scalajs.js.Date
 import webapp.npm.IIndexedDB
 import webapp.components.icons
 import scala.scalajs.js
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.{console, document, window}
 import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
 import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
@@ -57,6 +57,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import scala.util.Failure
 import webapp.components.icons.Edit
+import org.scalajs.dom.BeforeUnloadEvent
 import webapp.npm.JSUtils.dateDiffDays
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
@@ -1424,8 +1425,25 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     }
   }
 
+  protected val unloadListener: js.Function1[BeforeUnloadEvent, String] = (e: BeforeUnloadEvent) => {
+    e.preventDefault()
+    e.returnValue = ""
+    ""
+  }
+
   def render: VNode = {
     navigationHeader(
+      Signal
+        .dynamic {
+          existingValue.flatMap(existingValue =>
+            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
+          ) == Some(false)
+        }
+        .map(edited => {
+          if (edited) window.addEventListener("beforeunload", unloadListener)
+          else window.removeEventListener("beforeunload", unloadListener)
+          ""
+        }),
       onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
       onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
       div(
