@@ -32,7 +32,6 @@ import webapp.{*, given}
 import webapp.components.{Modal, ModalButton}
 import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
-import webapp.utils.Seqnal.*
 import webapp.components.common.*
 import webapp.components.icons
 import webapp.given_ExecutionContext
@@ -369,15 +368,14 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
-  private val entityRows: Signal[Seq[EntityRow[T]]] =
-    all
-      .flatMap(
-        _.sortBySignal(_.signal.map(_.identifier.get)),
-      )
-      .mapInside(syncedEntity => {
+  private val entityRows: Signal[Seq[EntityRow[T]]] = Signal.dynamic {
+    all.value
+      .sortBy(_.signal.value.identifier.get)
+      .map(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
         entityRowConstructor.construct(title, repository, existing, uiAttributes)
       })
+  }
 
   private val filter = Filter[T](uiAttributes)
 
@@ -548,62 +546,57 @@ abstract class EntityPage[T <: Entity[T]](
       .size
   }
 
-  private def exportView(): Unit = {
+  private def exportView(): Unit = Signal.dynamic {
     var csvHeader: Seq[String] = Seq()
     var csvData: Seq[String] = Seq()
 
-    filter.predicate
-      .map(pred =>
-        entityRows.map(
-          _.filterSignal(_.value match {
-            case New(_)             => Signal(false)
-            case Existing(value, _) => value.signal.map(pred)
-          }),
-        ),
-      )
-      .flatten
-      .flatten
-      .map(data => {
-        data.foreach(row => {
-          row.value match {
-            case New(_) => {}
-            case Existing(value, _) =>
-              val id = value.id
-              value.signal.map(value => {
-                var csvRow: Seq[String] = Seq()
-                var selectedHeaders: Seq[String] = Seq()
-                jsImplicits.routing
-                  .getQueryParameterAsSeq("columns")
-                  .map(columns =>
-                    row.uiAttributes
-                      .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
-                      .foreach(attr => {
-                        selectedHeaders = selectedHeaders :+ attr.label
-                        attr match {
-                          case attr: UIReadOnlyAttribute[?, ?] => {
-                            if (value.exists) {
-                              val a = attr.getter(id, value)
-                              a.map(a => csvRow = csvRow :+ attr.readConverter(a))
-                            }
-                          }
-                          case attr: UIAttribute[?, ?] => {
-                            if (value.exists) {
-                              val a = attr.getter(value)
-                              csvRow = csvRow :+ a.getAll.map(x => attr.readConverter(x)).mkString(", ")
-                            }
-                          }
-                          case _ => {}
-                        }
-                      }),
-                  )
+    val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
+    val pred = filter.predicate.value
+    val rows = entityRows.value.filter(_.value match {
+      case New(_)             => false
+      case Existing(value, _) => pred(value.signal.value)
+    })
 
-                if (csvHeader.isEmpty) csvHeader = selectedHeaders
-                if (csvRow.nonEmpty)
-                  csvData = csvData :+ csvRow.map(escapeCSVString).mkString(",")
-              })
-          }
-        })
-      })
+    rows.foreach(row => {
+      row.value match {
+        case New(_) => {}
+        case Existing(v, _) =>
+          val id = v.id
+          val value = v.signal.value
+          var csvRow: Seq[String] = Seq()
+          var selectedHeaders: Seq[String] = Seq()
+          row.uiAttributes
+            .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
+            .foreach(attr => {
+              selectedHeaders = selectedHeaders :+ attr.label
+              attr match {
+                case attr: UIReadOnlyAttribute[?, ?] => {
+                  if (value.exists) {
+                    val a = attr.getter(id, value).value
+                    csvRow = csvRow :+ attr.readConverter(a)
+                  }
+                }
+                case attr: UISelectAttribute[?, ?] => {
+                  val a = attr.getter(value)
+                  csvRow = csvRow :+ a.getAll
+                    .map(x => attr.options(value).now.filter(p => p.id == x).map(v => v.name.value).mkString(", "))
+                    .mkString(", ")
+                }
+                case attr: UIAttribute[?, ?] => {
+                  if (value.exists) {
+                    val a = attr.getter(value)
+                    csvRow = csvRow :+ a.getAll.map(x => attr.readConverter(x)).mkString(", ")
+                  }
+                }
+                case _ => {}
+              }
+            })
+
+          if (csvHeader.isEmpty) csvHeader = selectedHeaders
+          if (csvRow.nonEmpty)
+            csvData = csvData :+ csvRow.map(escapeCSVString).mkString(",")
+      }
+    })
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")

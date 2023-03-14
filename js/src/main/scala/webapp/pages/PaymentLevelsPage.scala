@@ -23,7 +23,6 @@ import PaymentLevelsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import rescala.default.*
-import webapp.utils.Seqnal.*
 import webapp.npm.JSUtils.toMoneyString
 import webapp.services.MailService
 import webapp.JSImplicits
