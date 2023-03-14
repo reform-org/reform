@@ -121,7 +121,7 @@ class ContractDraftAttributes(using jsImplicits: JSImplicits) {
                 id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
               ).value == countForms(contract, _ => true).value
             },
-          "text-green-500 font-bold",
+          "bg-green-200 text-green-600 justify-center",
         ),
         UIFormat(
           (_, contract) =>
@@ -131,7 +131,7 @@ class ContractDraftAttributes(using jsImplicits: JSImplicits) {
                 id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
               ).value != countForms(contract, _ => true).value
             },
-          "text-red-500 font-bold",
+          "bg-red-200 text-red-600 justify-center",
         ),
       ),
     )
