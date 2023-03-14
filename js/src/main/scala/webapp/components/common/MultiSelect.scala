@@ -129,7 +129,7 @@ private class MultiSelect(
         div(
           cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
           if (styleValidity)
-            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600"
+            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600 rounded"
           else None,
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",
@@ -139,7 +139,7 @@ private class MultiSelect(
                 .slice(0, visibleItems.value)
                 .map(option => {
                   div(
-                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500 multiselect-item",
+                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500 dark:text-gray-200 multiselect-item",
                     option.name,
                     div(
                       icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
