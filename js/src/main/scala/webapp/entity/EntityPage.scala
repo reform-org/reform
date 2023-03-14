@@ -611,7 +611,6 @@ abstract class EntityPage[T <: Entity[T]](
 
   private def renderEntities = Signal.dynamic {
     val pred = filter.predicate.value
-    println("test")
     entityRows.value
       .filter(_.value match {
         case New(_)             => false
