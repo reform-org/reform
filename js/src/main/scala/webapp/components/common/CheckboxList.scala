@@ -13,7 +13,6 @@ import org.scalajs.dom.HTMLElement
 import scala.annotation.nowarn
 import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
-import webapp.utils.Seqnal.*
 
 class CheckboxList(
     options: Signal[Seq[SelectOption]],
