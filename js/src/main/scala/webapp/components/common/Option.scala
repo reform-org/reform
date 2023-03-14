@@ -4,6 +4,8 @@ import rescala.default.*
 import outwatch.*
 import outwatch.dsl.*
 import webapp.{*, given}
+import org.scalajs.dom.document
+import cats.effect.SyncIO
 
 class SelectOption(
     val id: String,
@@ -12,5 +14,20 @@ class SelectOption(
 ) {
   def render: VNode = {
     span(props, name)
+  }
+
+  def displayWidth(classes: String = ""): Double = {
+    val element = document.createElement("span")
+    Outwatch
+      .renderInto[SyncIO](
+        element,
+        span(props, name.now, cls := classes, styleAttr := "max-height: 0px !important; opacity: 0 !important"),
+      )
+      .unsafeRunSync()
+    document.body.appendChild(element)
+    val width = element.getBoundingClientRect().width
+    document.body.removeChild(element)
+
+    width
   }
 }
