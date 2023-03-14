@@ -60,11 +60,14 @@ private class MultiSelect(
   }
 
   def handleResize = Signal.dynamic {
+    println("here")
     val element = Option(document.querySelector(s"#$id"))
+    console.log(element)
     if (element.nonEmpty) {
       val maxWidth = element.get.getBoundingClientRect().width - remToPx(4.5)
       val items = options.value
         .filter(v => value.value.contains(v.id))
+        .sortBy(_.displayWidth("pl-2 pr-7"))
       val rect = element.get.querySelector(s".multiselect-value-wrapper").getBoundingClientRect()
       if (maxWidth > 0 && items.nonEmpty && rect.width > maxWidth) {
         val widths = items.map(v => v.displayWidth("pl-2 pr-7"))
@@ -73,8 +76,7 @@ private class MultiSelect(
 
         widths.foreach(w => {
           if (widthAcc + w <= maxWidth) {
-            console.log(w)
-            widthAcc += w
+            widthAcc = widthAcc + w
             visibleItemsCount += 1
           } else {
             visibleItems.set(visibleItemsCount)
@@ -132,6 +134,7 @@ private class MultiSelect(
             Signal.dynamic {
               options.value
                 .filter(v => value.value.contains(v.id))
+                .sortBy(_.displayWidth("pl-2 pr-7"))
                 .slice(0, visibleItems.value)
                 .map(option => {
                   div(
