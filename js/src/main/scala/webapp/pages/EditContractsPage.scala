@@ -877,14 +877,13 @@ class ContractRequirementsMail(
                       jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                     }
                     if (ans.get.accepted.length > 0) {
-                      Signal {
-                        editingValue.value
-                          .map((_, contract) => {
-                            contract
-                              .transform(contract => contract.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
-                            save()
-                          })
-                      }
+                      editingValue.now
+                        .map((_, contract) => {
+                          contract
+                            .set(contract.now.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
+                          save()
+                        })
+
                       jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                     }
                   })
@@ -993,16 +992,12 @@ class CreateContract(
                                 .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                             }
                             if (ans.get.accepted.length > 0) {
-                              Signal {
-                                editingValue.value
-                                  .map((_, contract) => {
-                                    contract
-                                      .transform(contract =>
-                                        contract.copy(contractSentDate = Attribute(js.Date.now.toLong)),
-                                      )
-                                  })
-                                save()
-                              }
+                              editingValue.now
+                                .map((_, contract) => {
+                                  contract
+                                    .set(contract.now.copy(contractSentDate = Attribute(js.Date.now.toLong)))
+                                })
+                              save()
                               jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                             }
                           })
@@ -1117,16 +1112,12 @@ class CreateLetter(
                                 .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                             }
                             if (ans.get.accepted.length > 0) {
-                              Signal {
-                                editingValue.value
-                                  .map((_, contract) => {
-                                    contract
-                                      .transform(contract =>
-                                        contract.copy(letterSentDate = Attribute(js.Date.now.toLong)),
-                                      )
-                                  })
-                                save()
-                              }
+                              editingValue.now
+                                .map((_, contract) => {
+                                  contract
+                                    .set(contract.now.copy(letterSentDate = Attribute(js.Date.now.toLong)))
+                                })
+                              save()
                               jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                             }
                           })
