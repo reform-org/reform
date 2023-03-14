@@ -16,14 +16,10 @@ class SelectOption(
     span(props, name, cls := "overflow-hidden max-w-full text-ellipsis inline-block")
   }
 
-  def displayWidth(classes: String = ""): Double = {
+  def displayWidth(classes: String = "") = Signal {
     val element = document.createElement("span")
-    Outwatch
-      .renderInto[SyncIO](
-        element,
-        span(props, name.now, cls := classes, styleAttr := "max-height: 0px !important; opacity: 0 !important"),
-      )
-      .unsafeRunSync()
+    element.innerHTML =
+      s"<span class='$classes' style='max-height: 0px !important; opacity: 0 !important'>${name.value}</span>"
     document.body.appendChild(element)
     val width = element.getBoundingClientRect().width
     document.body.removeChild(element)
