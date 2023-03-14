@@ -93,11 +93,9 @@ class EntityRow[T <: Entity[T]](
     jsImplicits: JSImplicits,
 ) {
 
-  def render: VMod =
-    editingValue.map(
-      _.map(_ => renderEdit)
-        .getOrElse(renderExistingValue),
-    )
+  def render: VMod = Signal {
+    editingValue.value.map(_ => renderEdit).getOrElse(renderExistingValue)
+  }
 
   def editingValue: Var[Option[(T, Var[T])]] = value match {
     case Existing(_, editingValue) => editingValue
@@ -109,6 +107,8 @@ class EntityRow[T <: Entity[T]](
     case New(_)             => None
   }
 
+  protected val editLabel = "Edit"
+
   private def renderEdit: VMod = {
     val deleteModal = Var[Option[Modal]](None)
     val id = s"form-${existingValue.map(_.id).getOrElse("new")}"
@@ -116,26 +116,25 @@ class EntityRow[T <: Entity[T]](
       cls := "odd:bg-slate-50 odd:dark:bg-gray-600",
       data.id := existingValue.map(v => v.id),
       key := existingValue.map(v => v.id).getOrElse("new"),
-      jsImplicits.routing
-        .getQueryParameterAsSeq("columns")
-        .map(columns =>
-          uiAttributes
-            .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
-            .map(ui => {
-              td(
-                cls := "p-0 border-none",
-                styleAttr := (ui.width match {
-                  case None    => "min-width: 200px"
-                  case Some(v) => s"max-width: $v; min-width: $v; width: $v"
-                }),
-                ui.renderEdit(id, editingValue),
-              )
-            }),
-        ),
+      Signal {
+        val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
+        uiAttributes
+          .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
+          .map(ui => {
+            td(
+              cls := "p-0 border-none",
+              styleAttr := (ui.width match {
+                case None    => "min-width: 200px"
+                case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+              }),
+              ui.renderEdit(id, editingValue),
+            )
+          })
+      },
       td(
         cls := "py min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
-          cls := "h-full w-full flex flex-row items-center gap-2 justify-center md:px-4",
+          cls := "h-full w-full flex flex-row items-center justify-center md:px-4",
           form(
             idAttr := id,
             onSubmit.foreach(e => {
@@ -153,7 +152,7 @@ class EntityRow[T <: Entity[T]](
                     idAttr := "add-entity-button",
                     icons.Save(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Save"),
-                    cls := "h-7 tooltip tooltip-top entity-save",
+                    cls := "h-7 tooltip tooltip-top entity-save px-2",
                     data.tip := "Save",
                   ),
                   TableButton(
@@ -161,7 +160,7 @@ class EntityRow[T <: Entity[T]](
                     icons.Close(cls := "w-4 h-4 md:hidden"),
                     span(cls := "hidden md:block", "Cancel"),
                     onClick.foreach(_ => cancelEdit()),
-                    cls := "h-7 tooltip tooltip-top entity-cancel",
+                    cls := "h-7 tooltip tooltip-top entity-cancel px-2",
                     data.tip := "Cancel",
                   ),
                 )
@@ -173,7 +172,7 @@ class EntityRow[T <: Entity[T]](
                   `type` := "submit",
                   idAttr := "add-entity-button",
                   icons.Add(cls := "w-4 h-4 md:hidden"),
-                  span(cls := "hidden md:block", "Add " + this.title.singular),
+                  span(cls := "hidden md:block whitespace-nowrap", "Add " + this.title.singular),
                   cls := "h-7 tooltip tooltip-top entity-add",
                   data.tip := "Add" + this.title.singular,
                 )
@@ -209,8 +208,9 @@ class EntityRow[T <: Entity[T]](
             res
           }),
         ),
-      ), {
-        deleteModal.map(_.map(_.render))
+      ),
+      Signal {
+        deleteModal.value.map(_.render)
       },
     )
   }
@@ -222,7 +222,7 @@ class EntityRow[T <: Entity[T]](
       "Delete",
       span(
         s"Do you really want to delete the ${title.singular} \"",
-        synced.signal.map(value => value.identifier.get.getOrElse("")),
+        Signal { synced.signal.value.identifier.get.getOrElse("") },
         "\"?",
       ),
       Seq(
@@ -241,22 +241,21 @@ class EntityRow[T <: Entity[T]](
           cls := "odd:bg-slate-50 odd:dark:bg-gray-600",
           data.id := synced.id,
           key := synced.id,
-          jsImplicits.routing
-            .getQueryParameterAsSeq("columns")
-            .map(columns =>
-              uiAttributes
-                .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
-                .map(ui => {
-                  td(
-                    cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
-                    styleAttr := (ui.width match {
-                      case None    => "min-width: 200px"
-                      case Some(v) => s"max-width: $v; min-width: $v; width: $v"
-                    }),
-                    ui.render(synced.id, p),
-                  )
-                }),
-            ),
+          Signal {
+            val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
+            uiAttributes
+              .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
+              .map(ui => {
+                td(
+                  cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
+                  styleAttr := (ui.width match {
+                    case None    => "min-width: 200px"
+                    case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                  }),
+                  ui.render(synced.id, p),
+                )
+              })
+          },
           td(
             cls := "min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
@@ -264,9 +263,9 @@ class EntityRow[T <: Entity[T]](
               TableButton(
                 ButtonStyle.LightPrimary,
                 icons.Edit(cls := "w-4 h-4 md:hidden"),
-                span(cls := "hidden md:block", "Edit"),
+                span(cls := "hidden md:block", editLabel),
                 cls := "h-7 tooltip tooltip-top entity-edit",
-                data.tip := "Edit",
+                data.tip := editLabel,
                 onClick.foreach(_ => startEditing()),
               ),
               TableButton(
@@ -338,9 +337,9 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
   def render: VMod = filters.map(_.render)
 
-  val predicate: Signal[EntityType => Boolean] = {
-    val preds = filters.map(_.predicate).seqToSignal
-    preds.map(preds => (e: EntityType) => preds.forall(_(e)))
+  val predicate: Signal[EntityType => Boolean] = Signal.dynamic {
+    val preds = filters.map(_.predicate.value)
+    (e: EntityType) => preds.forall(_(e))
   }
 
 }
@@ -405,7 +404,9 @@ abstract class EntityPage[T <: Entity[T]](
                 idAttr := "filter-btn",
                 div(
                   cls := "ml-3 badge",
-                  jsImplicits.routing.countQueryParameters(uiAttributes.map(attr => toQueryParameterName(attr.label))),
+                  jsImplicits.routing.countQueryParameters(
+                    uiAttributes.map(attr => toQueryParameterName(attr.label)) :+ "columns",
+                  ),
                 ),
                 icons.Filter(cls := "ml-1 w-6 h-6"),
                 cls := "!mt-0",
@@ -430,7 +431,7 @@ abstract class EntityPage[T <: Entity[T]](
             } else None,
           ),
           div(
-            cls <-- filterDropdownClosed.map(if (_) Some("hidden") else None),
+            cls <-- Signal { if (filterDropdownClosed.value) Some("hidden") else None },
             idAttr := "filter-dropdown",
             cls := "menu p-2 mb-4 bg-base-100 dark:bg-gray-700 transition-none flex flex-row gap-2",
             filter.render,
@@ -457,22 +458,21 @@ abstract class EntityPage[T <: Entity[T]](
               cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
               thead(
                 tr(
-                  jsImplicits.routing
-                    .getQueryParameterAsSeq("columns")
-                    .map(columns =>
-                      uiAttributes
-                        .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
-                        .map(a =>
-                          th(
-                            cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
-                            styleAttr := (a.width match {
-                              case None    => "min-width: 200px"
-                              case Some(v) => s"max-width: $v; min-width: $v; width: $v"
-                            }),
-                            a.label,
-                          ),
+                  Signal {
+                    val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
+                    uiAttributes
+                      .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
+                      .map(a =>
+                        th(
+                          cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
+                          styleAttr := (a.width match {
+                            case None    => "min-width: 200px"
+                            case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                          }),
+                          a.label,
                         ),
-                    ),
+                      )
+                  },
                   th(
                     cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] !z-[1]",
                   ),
@@ -480,39 +480,35 @@ abstract class EntityPage[T <: Entity[T]](
               ),
               tbody(
                 cls := "dark:bg-gray-600",
-                countFilteredEntities
-                  .map(countFilteredEntities => {
-                    countEntities
-                      .map(countEntities => {
-                        if (countEntities == 0)
-                          List(
-                            tr(
-                              cls := "h-4",
-                            ),
-                            tr(
-                              td(
-                                colSpan := 100,
-                                cls := "text-slate-500",
-                                "No entries.",
-                              ),
-                            ),
-                          )
-                        else if (countFilteredEntities == 0 && countEntities > 0)
-                          List(
-                            tr(
-                              cls := "h-4",
-                            ),
-                            tr(
-                              td(
-                                colSpan := 100,
-                                cls := "text-slate-500",
-                                "No results for your filter.",
-                              ),
-                            ),
-                          )
-                        else List()
-                      })
-                  }),
+                Signal {
+                  if (countEntities.value == 0)
+                    List(
+                      tr(
+                        cls := "h-4",
+                      ),
+                      tr(
+                        td(
+                          colSpan := 100,
+                          cls := "text-slate-500",
+                          "No entries.",
+                        ),
+                      ),
+                    )
+                  else if (countFilteredEntities.value == 0 && countEntities.value > 0)
+                    List(
+                      tr(
+                        cls := "h-4",
+                      ),
+                      tr(
+                        td(
+                          colSpan := 100,
+                          cls := "text-slate-500",
+                          "No results for your filter.",
+                        ),
+                      ),
+                    )
+                  else List()
+                },
                 renderEntities,
               ),
               if (!addInPlace) {
@@ -533,31 +529,23 @@ abstract class EntityPage[T <: Entity[T]](
     )
   }
 
-  private def countEntities: Signal[Int] = {
-    entityRows
-      .map(
-        _.filterSignal(_.value match {
-          case New(_)             => Signal(false)
-          case Existing(value, _) => value.signal.map(a => a.exists)
-        }),
-      )
-      .flatten
-      .map(a => a.size)
+  private def countEntities: Signal[Int] = Signal.dynamic {
+    entityRows.value
+      .filter(_.value match {
+        case New(_)             => false
+        case Existing(value, _) => value.signal.value.exists
+      })
+      .size
   }
 
-  private def countFilteredEntities: Signal[Int] = {
-    filter.predicate
-      .map(pred =>
-        entityRows.map(
-          _.filterSignal(_.value match {
-            case New(_)             => Signal(false)
-            case Existing(value, _) => value.signal.map(a => pred(a) && a.exists)
-          }),
-        ),
-      )
-      .flatten
-      .flatten
-      .map(a => a.size)
+  private def countFilteredEntities: Signal[Int] = Signal.dynamic {
+    val predicate = filter.predicate.value
+    entityRows.value
+      .filter(_.value match {
+        case New(_)             => false
+        case Existing(value, _) => value.signal.value.exists && predicate(value.signal.value)
+      })
+      .size
   }
 
   private def exportView(): Unit = {
@@ -621,17 +609,13 @@ abstract class EntityPage[T <: Entity[T]](
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")
   }
 
-  private def renderEntities = {
-    filter.predicate
-      .map(pred =>
-        entityRows.map(
-          _.filterSignal(_.value match {
-            case New(_)             => Signal(false)
-            case Existing(value, _) => value.signal.map(pred)
-          })
-            .mapInside(_.render),
-        ),
-      )
-      .flatten
+  private def renderEntities = Signal.dynamic {
+    val pred = filter.predicate.value
+    entityRows.value
+      .filter(_.value match {
+        case New(_)             => false
+        case Existing(value, _) => pred(value.signal.value)
+      })
+      .map(_.render)
   }
 }

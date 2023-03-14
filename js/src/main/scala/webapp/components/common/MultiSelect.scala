@@ -42,22 +42,21 @@ private class MultiSelect(
         .asInstanceOf[HTMLInputElement],
     )
 
-    options.map(options => {
+    Signal {
       selectAll.map(selectAll => {
-        val uncheckedOptions = options.size - value.size
+        val uncheckedOptions = options.value.size - value.size
 
         if (uncheckedOptions == 0) {
           selectAll.checked = true
           selectAll.indeterminate = false
-        } else if (uncheckedOptions == options.size) {
+        } else if (uncheckedOptions == options.value.size) {
           selectAll.checked = false
           selectAll.indeterminate = false
         } else {
           selectAll.indeterminate = true
         }
       })
-    })
-
+    }
   }
 
   def render: VMod = {
@@ -76,8 +75,8 @@ private class MultiSelect(
     div(
       onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
       onDomUnmount.foreach(element => resizeObserver.disconnect()),
-      cls := "rounded multiselect-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
-      cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
+      cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none",
+      cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
       props,
       idAttr := id,
       div(
@@ -102,9 +101,9 @@ private class MultiSelect(
           )
         },
         div(
-          cls := "flex flex-row w-full h-full items-center pl-2 text-slate-400 ",
+          cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
           if (styleValidity)
-            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600 peer-valid/multiselect:bg-green-100"
+            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600"
           else None,
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",
@@ -141,6 +140,9 @@ private class MultiSelect(
               } else if (value.value.isEmpty) {
                 Some(
                   div(
+                    if (!styleValidity)
+                      cls := "text-slate-400"
+                    else None,
                     cls := "flex items-center justify-center",
                     "Select...",
                   ),
@@ -229,7 +231,7 @@ private class MultiSelect(
     Checkbox(
       CheckboxStyle.Default,
       cls := "mr-2",
-      checked <-- value.map(i => i.contains(uiOption.id)),
+      checked <-- Signal { value.value.contains(uiOption.id) },
       idAttr := s"$id-${uiOption.id}",
       VMod.attr("data-id") := uiOption.id,
       onClick.foreach(_ => {

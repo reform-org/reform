@@ -128,10 +128,12 @@ const resizeObservers = [];
 export const stickyButton = async (trigger, element, toggleClass) => {
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	const observer = new IntersectionObserver(entries => {
-		if (entries.every(entry => entry.isIntersecting)) {
-			document.querySelector(element).classList.add(toggleClass)
-		} else {
-			document.querySelector(element).classList.remove(toggleClass)
+		if (document.querySelector(element)) {
+			if (entries.every(entry => entry.isIntersecting)) {
+				document.querySelector(element).classList.add(toggleClass)
+			} else {
+				document.querySelector(element).classList.remove(toggleClass)
+			}
 		}
 	})
 

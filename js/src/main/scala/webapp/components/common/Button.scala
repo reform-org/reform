@@ -10,7 +10,7 @@ enum ButtonStyle(val props: VMod) {
       )
   case Default
       extends ButtonStyle(
-        cls := "bg-slate-400 disabled:bg-slate-200 disabled:text-slate-800 hover:bg-slate-400 text-slate-800",
+        cls := "bg-slate-400 disabled:bg-slate-400 disabled:text-slate-800 hover:bg-slate-400 text-slate-800",
       )
   case Success
       extends ButtonStyle(
@@ -28,7 +28,7 @@ enum ButtonStyle(val props: VMod) {
       )
   case LightDefault
       extends ButtonStyle(
-        cls := "bg-slate-200 disabled:bg-slate-200 disabled:text-slate-300 hover:bg-slate-300 text-slate-600 dark:bg-gray-700 dark:text-gray-200",
+        cls := "bg-slate-200 disabled:bg-slate-200 disabled:text-slate-600 hover:bg-slate-300 text-slate-600 dark:bg-gray-700 dark:text-gray-200",
       )
   case LightSuccess
       extends ButtonStyle(
@@ -44,7 +44,7 @@ enum ButtonStyle(val props: VMod) {
 
 def Button(style: ButtonStyle, props: VMod*): VNode = {
   button(
-    cls := "btn btn-active p-2 h-fit min-h-10 border-0 disabled:saturate-[.9] disabled:brightness-150",
+    cls := "btn btn-active p-2 h-fit min-h-10 border-0 disabled:line-through disabled:opacity-[.5]",
     props,
     style.props,
   )

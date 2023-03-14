@@ -1,0 +1,15 @@
+name: Selenium Firefox
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  merge_group:
+
+jobs:
+  selenium-firefox:
+    uses: ./.github/workflows/selenium.yml
+    with:
+      os: ubuntu-latest
+      browser: firefox

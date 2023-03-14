@@ -35,8 +35,35 @@ import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
-def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = {
-  jsImplicits.repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
+def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = Signal.dynamic {
+  jsImplicits.repositories.contracts.all.value.filter(_.signal.value.isDraft.get.getOrElse(true))
+}
+
+class DraftDetailPageEntityRow[T <: Entity[T]](
+    override val title: Title,
+    override val repository: Repository[T],
+    override val value: EntityValue[T],
+    override val uiAttributes: Seq[UIBasicAttribute[T]],
+)(using
+    bottom: Bottom[T],
+    lattice: Lattice[T],
+    jsImplicits: JSImplicits,
+) extends EntityRow[T](title, repository, value, uiAttributes) {
+  override protected def startEditing(): Unit = {
+    value match {
+      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
+      case New(value)                    =>
+    }
+  }
+}
+
+class DraftDetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
+  def construct(title: Title, repository: Repository[T], value: EntityValue[T], uiAttributes: Seq[UIBasicAttribute[T]])(
+      using
+      bottom: Bottom[T],
+      lattice: Lattice[T],
+      jsImplicits: JSImplicits,
+  ): EntityRow[T] = DraftDetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
 case class ContractDraftsPage()(using
@@ -58,7 +85,7 @@ case class ContractDraftsPage()(using
         ContractPageAttributes().contractHoursPerMonth,
         ContractDraftAttributes().forms,
       ),
-      DetailPageEntityRowBuilder(),
+      DraftDetailPageEntityRowBuilder(),
       true,
       Button(
         ButtonStyle.LightPrimary,

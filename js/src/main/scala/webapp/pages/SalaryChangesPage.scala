@@ -52,6 +52,7 @@ class SalaryChangeAttributes(using
   def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
     .withMin("0")
+    .withRegex("[0-9]+([\\.,][0-9]+)?")
     .require
     .bindAsNumber[SalaryChange](
       _.value,
@@ -61,6 +62,7 @@ class SalaryChangeAttributes(using
   def salaryChangeLimit = BuildUIAttribute().money
     .withLabel("Limit")
     .withMin("0")
+    .withRegex("[0-9]+([\\.,][0-9]+)?")
     .require
     .bindAsNumber[SalaryChange](
       _.limit,
@@ -70,9 +72,11 @@ class SalaryChangeAttributes(using
   def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
     BuildUIAttribute()
       .select(
-        jsImplicits.repositories.paymentLevels.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.paymentLevels.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
       .withCreatePage(PaymentLevelsPage())
       .withLabel("Payment Level")

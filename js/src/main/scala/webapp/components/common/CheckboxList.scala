@@ -68,7 +68,7 @@ class CheckboxList(
     Checkbox(
       CheckboxStyle.Default,
       cls := "mr-2",
-      checked <-- value.map(i => i.contains(uiOption.id)),
+      checked <-- Signal { value.value.contains(uiOption.id) },
       idAttr := s"$id-${uiOption.id}",
       VMod.attr("data-id") := uiOption.id,
       onClick.foreach(_ => {

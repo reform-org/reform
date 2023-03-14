@@ -71,5 +71,10 @@ out/
 
 # PDFs in assets
 public/*.pdf
-screenshot.png
+screenshots
 *.db
+
+.env.*
+.env
+!.env.lukasschreiber
+!.env.podman
