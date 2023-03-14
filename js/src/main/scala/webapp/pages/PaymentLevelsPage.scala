@@ -33,7 +33,7 @@ case class PaymentLevelsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
-      Some("Paymentlevel Description..."),
+      Some("Create different payment levels here.The PDF checkbox in the contract is set."),
       jsImplicits.repositories.paymentLevels,
       jsImplicits.repositories.paymentLevels.all,
       Seq(

@@ -7,7 +7,7 @@ import webapp.{*, given}
 
 def NumberCard(title: String, number: VMod, description: VMod, props: VMod*): VNode = {
   div(
-    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 w-fit min-h-36 min-w-36 justify-evenly",
+    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 w-fit min-h-36 min-w-36 justify-evenly dark:bg-gray-700",
     div(
       title,
     ),
@@ -25,7 +25,7 @@ def NumberCard(title: String, number: VMod, description: VMod, props: VMod*): VN
 
 def MoneyCard(title: String, number: VMod, description: VMod, props: VMod*): VNode = {
   div(
-    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 w-fit min-h-36 min-w-36 justify-evenly",
+    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 w-fit min-h-36 min-w-36 justify-evenly dark:bg-gray-700",
     div(
       title,
     ),
@@ -51,7 +51,7 @@ def TableCard(
     props: VMod*,
 ): VNode = {
   div(
-    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 min-w-fit overflow-x-auto custom-scrollbar max-w-[900px]",
+    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 min-w-fit overflow-x-auto custom-scrollbar max-w-[900px]  dark:bg-gray-700",
     div(
       cls := "",
       span(cls := "font-bold text-2xl", title),

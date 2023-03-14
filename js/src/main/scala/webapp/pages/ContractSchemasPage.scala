@@ -32,7 +32,7 @@ case class ContractSchemasPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[ContractSchema](
       Title("Contract Schema"),
-      Some("Contractschemas Description..."),
+      Some("New contract schemas can be created here. They need a name and their required documents."),
       jsImplicits.repositories.contractSchemas,
       jsImplicits.repositories.contractSchemas.all,
       Seq(ContractSchemaAttributes().name, ContractSchemaAttributes().files),
