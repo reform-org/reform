@@ -33,7 +33,7 @@ def Select(
 
   div(
     cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
-    cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
+    cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
     props,
     idAttr := id,
     div(
@@ -114,7 +114,7 @@ def Select(
                     input(
                       tpe := "radio",
                       cls := "hidden peer",
-                      checked <-- value.map(i => i.contains(uiOption.id)),
+                      checked <-- Signal { value.value.contains(uiOption.id) },
                       idAttr := s"$id-${uiOption.id}",
                       VMod.attr("data-id") := uiOption.id,
                       VMod.attr("name") := id,
@@ -142,7 +142,7 @@ def Select(
             },
           )
         },
-        Signal {
+        Signal.dynamic {
           if (
             Signal(
               options.value

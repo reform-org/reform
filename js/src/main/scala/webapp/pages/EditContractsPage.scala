@@ -78,7 +78,7 @@ case class ExtendContractPage(contractId: String)(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  private val existingValue = jsImplicits.repositories.contracts.all.map(_.find(c => c.id == contractId))
+  private val existingValue = Signal { jsImplicits.repositories.contracts.all.value.find(c => c.id == contractId) }
   def render: VNode = {
     div(
       existingValue
@@ -107,7 +107,7 @@ case class EditContractsPage(contractId: String)(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  private val existingValue = jsImplicits.repositories.contracts.all.map(_.find(c => c.id == contractId))
+  private val existingValue = Signal { jsImplicits.repositories.contracts.all.value.find(c => c.id == contractId) }
 
   def render: VNode = {
     div(
@@ -380,14 +380,20 @@ class BasicInformation(
             cls := "basis-1/5",
             label(cls := "font-bold", "Duration: "),
             br,
-            editingValue.map(p =>
-              p.get._2.map(v => {
-                dateDiffHumanReadable(
-                  v.contractStartDate.get.getOrElse(0L),
-                  v.contractEndDate.get.getOrElse(0L),
-                )
-              }),
-            ),
+            Signal.dynamic {
+              editingValue.value.map((_, contractSignal) => {
+                val contract = contractSignal.value
+
+                if (contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty) {
+                  Some(
+                    dateDiffHumanReadable(
+                      contract.contractStartDate.get.getOrElse(0L),
+                      contract.contractEndDate.get.getOrElse(0L),
+                    ),
+                  )
+                } else None
+              })
+            },
           ),
           div(
             cls := "basis-2/5",

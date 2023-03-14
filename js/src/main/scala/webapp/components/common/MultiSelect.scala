@@ -42,22 +42,21 @@ private class MultiSelect(
         .asInstanceOf[HTMLInputElement],
     )
 
-    options.map(options => {
+    Signal {
       selectAll.map(selectAll => {
-        val uncheckedOptions = options.size - value.size
+        val uncheckedOptions = options.value.size - value.size
 
         if (uncheckedOptions == 0) {
           selectAll.checked = true
           selectAll.indeterminate = false
-        } else if (uncheckedOptions == options.size) {
+        } else if (uncheckedOptions == options.value.size) {
           selectAll.checked = false
           selectAll.indeterminate = false
         } else {
           selectAll.indeterminate = true
         }
       })
-    })
-
+    }
   }
 
   def render: VMod = {
@@ -77,7 +76,7 @@ private class MultiSelect(
       onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
       onDomUnmount.foreach(element => resizeObserver.disconnect()),
       cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none",
-      cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
+      cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
       props,
       idAttr := id,
       div(
@@ -232,7 +231,7 @@ private class MultiSelect(
     Checkbox(
       CheckboxStyle.Default,
       cls := "mr-2",
-      checked <-- value.map(i => i.contains(uiOption.id)),
+      checked <-- Signal { value.value.contains(uiOption.id) },
       idAttr := s"$id-${uiOption.id}",
       VMod.attr("data-id") := uiOption.id,
       onClick.foreach(_ => {

@@ -41,12 +41,9 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    jsImplicits.routing
-      .getQueryParameterAsString(name)
-      .map(s =>
-        e => uiAttribute.getter(e).get.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(s.toLowerCase)),
-      )
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsString(name).value
+    e => uiAttribute.getter(e).get.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(n.toLowerCase))
   }
 }
 
@@ -81,23 +78,17 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    jsImplicits.routing
-      .getQueryParameterAsString(name + ":min")
-      .map(min =>
-        jsImplicits.routing
-          .getQueryParameterAsString(name + ":max")
-          .map(max =>
-            (e: EntityType) =>
-              uiAttribute
-                .getter(e)
-                .get
-                .forall(
-                  isBetween(min, _, max),
-                ),
-          ),
-      )
-      .flatten
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val min = jsImplicits.routing.getQueryParameterAsString(name + ":min").value
+    val max = jsImplicits.routing.getQueryParameterAsString(name + ":max").value
+
+    (e: EntityType) =>
+      uiAttribute
+        .getter(e)
+        .get
+        .forall(
+          isBetween(min, _, max),
+        )
   }
 
   private def isBetween(min: String, value: AttributeType, max: String): Boolean = {
@@ -142,10 +133,9 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    jsImplicits.routing
-      .getQueryParameterAsSeq(name)
-      .map(s => e => s.isEmpty || uiAttribute.getter(e).get.exists(a => s.contains(a)))
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
+    e => n.isEmpty || uiAttribute.getter(e).get.exists(a => n.contains(a))
   }
 }
 
@@ -196,31 +186,25 @@ class UIMultiSelectFilter[EntityType](
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    jsImplicits.routing
-      .getQueryParameterAsString(name + ":mode")
-      .map(mode =>
-        jsImplicits.routing
-          .getQueryParameterAsSeq(name)
-          .map(s =>
-            (e: EntityType) =>
-              s.isEmpty || uiAttribute
-                .getter(e)
-                .get
-                .exists(a => {
-                  var res = false
-                  if (mode == "or") {
-                    res = s.toSet.intersect(a.toSet).nonEmpty
-                  } else if (mode == "and") {
-                    res = s.toSet.intersect(a.toSet).size >= s.toSet.size
-                  } else if (mode == "exact") {
-                    res = s.toSet.intersect(a.toSet).size == s.toSet.size && a.toSet.size == s.toSet.size
-                  }
-                  res
-                }),
-          ),
-      )
-      .flatten
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
+    val mode = jsImplicits.routing.getQueryParameterAsString(name + ":mode").value
+
+    (e: EntityType) =>
+      n.isEmpty || uiAttribute
+        .getter(e)
+        .get
+        .exists(a => {
+          var res = false
+          if (mode == "or") {
+            res = n.toSet.intersect(a.toSet).nonEmpty
+          } else if (mode == "and") {
+            res = n.toSet.intersect(a.toSet).size >= n.toSet.size
+          } else if (mode == "exact") {
+            res = n.toSet.intersect(a.toSet).size == n.toSet.size && a.toSet.size == n.toSet.size
+          }
+          res
+        })
   }
 }
 
@@ -228,7 +212,6 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
     jsImplicits: JSImplicits,
 ) extends UIFilter[EntityType] {
 
-  // has not been tested and is currently not usable over URL becuase we do not have any Boolean field sadly
   private val name = toQueryParameterName(uiAttribute.label)
 
   private val selected = Var("")
@@ -250,9 +233,8 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    jsImplicits.routing
-      .getQueryParameterAsSeq(name)
-      .map(s => e => uiAttribute.getter(e).get.forall(v => s.isEmpty || s.map(p => p.toBoolean).contains(v)))
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
+    (e: EntityType) => uiAttribute.getter(e).get.forall(v => n.isEmpty || n.map(p => p.toBoolean).contains(v))
   }
 }

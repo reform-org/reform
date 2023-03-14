@@ -99,7 +99,7 @@ def navigationHeader(
           cls := "flex-none",
           div(
             cls := "dropdown",
-            cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
+            cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
             label(
               tabIndex := 0,
               idAttr := "dropdown-button",

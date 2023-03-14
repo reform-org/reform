@@ -35,8 +35,8 @@ import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
-def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = {
-  jsImplicits.repositories.contracts.all.map(_.filterSignal(_.signal.map(_.isDraft.get.getOrElse(true)))).flatten
+def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = Signal.dynamic {
+  jsImplicits.repositories.contracts.all.value.filter(_.signal.value.isDraft.get.getOrElse(true))
 }
 
 class DraftDetailPageEntityRow[T <: Entity[T]](

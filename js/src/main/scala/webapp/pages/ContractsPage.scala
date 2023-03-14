@@ -70,8 +70,8 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
   ): EntityRow[T] = DetailPageEntityRow(title, repository, value, uiAttributes)
 }
 
-def onlyFinalizedContracts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = {
-  jsImplicits.repositories.contracts.all.map(_.filterSignal(_.signal.map(!_.isDraft.get.getOrElse(true)))).flatten
+def onlyFinalizedContracts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = Signal.dynamic {
+  jsImplicits.repositories.contracts.all.value.filter(!_.signal.value.isDraft.get.getOrElse(true))
 }
 
 case class ContractsPage()(using
@@ -101,9 +101,11 @@ class ContractPageAttributes(using
   def contractAssociatedHiwi: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        jsImplicits.repositories.hiwis.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.hiwis.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
       .withCreatePage(HiwisPage())
       .withLabel("Hiwi")
@@ -116,11 +118,11 @@ class ContractPageAttributes(using
 
   def contractAssociatedProject: UIAttribute[Contract, String] = {
     BuildUIAttribute()
-      .select(options =
-        jsImplicits.repositories.projects.existing.map(
-          _.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
-      )
+      .select(options = Signal {
+        jsImplicits.repositories.projects.existing.value.map(value =>
+          SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+        )
+      })
       .withCreatePage(ProjectsPage())
       .withLabel("Project")
       .require
@@ -133,9 +135,11 @@ class ContractPageAttributes(using
   def contractAssociatedSupervisor: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        jsImplicits.repositories.supervisors.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.supervisors.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
       .withCreatePage(SupervisorsPage())
       .withLabel("Supervisor")
@@ -149,9 +153,11 @@ class ContractPageAttributes(using
   def contractAssociatedType: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        jsImplicits.repositories.contractSchemas.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.contractSchemas.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
       .withCreatePage(ContractSchemasPage())
       .withLabel("Type")
@@ -239,9 +245,11 @@ class ContractPageAttributes(using
   def contractAssociatedPaymentLevel: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
-        jsImplicits.repositories.paymentLevels.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.paymentLevels.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
       .withCreatePage(PaymentLevelsPage())
       .withLabel("Payment Level")
@@ -255,9 +263,11 @@ class ContractPageAttributes(using
   def requiredDocuments: UIAttribute[Contract, Seq[String]] = {
     BuildUIAttribute()
       .checkboxList(
-        jsImplicits.repositories.requiredDocuments.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(v => v.identifier.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.requiredDocuments.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
       .withLabel("Required Documents")
       .require
@@ -287,7 +297,7 @@ class ContractPageAttributes(using
                                 .map(file => {
                                   SelectOption(
                                     fileId,
-                                    file.signal.map(s => s.name.get.getOrElse("")),
+                                    Signal { file.signal.value.name.get.getOrElse("") },
                                     if (!requiredDocuments.contains(fileId)) Seq(cls := "italic", checked := true)
                                     else None,
                                   )
