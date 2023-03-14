@@ -70,7 +70,7 @@ class ReplicationGroup[A](name: String)(using
           .getOrDefault(id, initialValue)
           .map(value => {
             var synced = Synced(storage, id, Var(value))
-            distributeDeltaRDT(id, synced)
+            // distributeDeltaRDT(id, synced)
             synced
           })
         cache = cache + (id -> synced)
@@ -88,7 +88,7 @@ class ReplicationGroup[A](name: String)(using
           .getOrDefault(id, bottom.empty)
           .map(value => {
             var synced = Synced(storage, id, Var(value))
-            distributeDeltaRDT(id, synced)
+            // distributeDeltaRDT(id, synced)
             synced
           })
         cache = cache + (id -> synced)

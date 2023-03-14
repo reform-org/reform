@@ -87,6 +87,7 @@ const sameWidth = {
 };
 
 export const createPopper = async (trigger, element, placement, sameWidthAsRef) => {
+	return;
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	let ref = document.querySelector(trigger);
 	let popper = document.querySelector(element);
@@ -113,19 +114,16 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 
 	let popperInstance = createPopperImpl(ref, popper, {
 		placement,
-		strategy: 'fixed',
 		modifiers
 	});
 
 	popperInstances.push(popperInstance);
-	popperIntervals.push(setInterval(function () {
-		popperInstance.forceUpdate();
-	}, 100));
 };
 
 const resizeObservers = [];
 
 export const stickyButton = async (trigger, element, toggleClass) => {
+	return;
 	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	const observer = new IntersectionObserver(entries => {
 		if (document.querySelector(element)) {
