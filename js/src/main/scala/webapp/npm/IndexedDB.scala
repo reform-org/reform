@@ -187,7 +187,7 @@ class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
     mod
       .openDB(
         "reform",
-        3,
+        4,
         OpenDBCallbacks()
           .setUpgrade((db, _, _, _, _) => {
             val _ = db.createObjectStore(s"reform_${Globals.VITE_DATABASE_VERSION}")
