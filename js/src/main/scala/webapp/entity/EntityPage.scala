@@ -338,8 +338,8 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
   def render: VMod = filters.map(_.render)
 
   val predicate: Signal[EntityType => Boolean] = Signal.dynamic {
-    val preds = filters.map(_.predicate).seqToSignal
-    (e: EntityType) => preds.value.forall(_(e))
+    val preds = filters.map(_.predicate.value)
+    (e: EntityType) => preds.forall(_(e))
   }
 
 }
@@ -611,7 +611,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private def renderEntities = Signal.dynamic {
     val pred = filter.predicate.value
-
+    println("test")
     entityRows.value
       .filter(_.value match {
         case New(_)             => false
