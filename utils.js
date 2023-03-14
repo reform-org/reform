@@ -174,11 +174,11 @@ export const toYYYYMMDD = (input) => {
 };
 
 export const dateDiffDays = (a, b) => {
-	return Math.ceil(Math.abs(DateTime.fromMillis(Number(a)).diff(DateTime.fromMillis(Number(b)), "days").toObject().days)) || 0;
+	return Math.ceil(DateTime.fromMillis(Number(b)).diff(DateTime.fromMillis(Number(a)), "days").toObject().days) || 0;
 };
 
 export const dateDiffMonth = (a, b) => {
-	return Math.ceil(Math.abs(DateTime.fromMillis(Number(a)).diff(DateTime.fromMillis(Number(b)), "month").toObject().months)) || 0;
+	return Math.ceil(DateTime.fromMillis(Number(b)).diff(DateTime.fromMillis(Number(a)), "month").toObject().months) || 0;
 };
 
 export const dateDiffHumanReadable = (a, b) => {

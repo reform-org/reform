@@ -59,18 +59,44 @@ private class MultiSelect(
     }
   }
 
-  def render: VMod = {
+  def handleResize = Signal.dynamic {
+    console.log("fire")
+    val element = Option(document.querySelector(s"#$id"))
+    if (element.nonEmpty) {
+      val maxWidth = element.get.getBoundingClientRect().width - remToPx(2.25)
+      val items = options.value
+        .filter(v => value.value.contains(v.id))
+      val rect = element.get.querySelector(s".multiselect-value-wrapper").getBoundingClientRect()
+      if (maxWidth > 0 && items.nonEmpty && rect.width > maxWidth) {
+        val widths = items.map(v => v.displayWidth("pl-2 pr-7"))
+        var widthAcc = 0.0
+        var visibleItemsCount = 0
 
+        println(s"should be $maxWidth")
+        widths.foreach(w => {
+          if (widthAcc + w <= maxWidth) {
+            console.log(w)
+            widthAcc += w
+            visibleItemsCount += 1
+          } else {
+            visibleItems.set(visibleItemsCount)
+          }
+        })
+
+        println(s"width is $widthAcc, $visibleItemsCount")
+      }
+    }
+  }
+
+  def render: VMod = {
     val resizeObserver = ResizeObserver((entries, _) => {
-      val maxWidth = document.querySelector(s"#$id").getBoundingClientRect().width - remToPx(2.25)
       entries.foreach(entry => {
-        if (entry.contentRect.width > maxWidth) {
-          visibleItems.transform(_ - 1)
-        }
+        handleResize
       })
     })
 
     value.observe(updateSelectAll)
+    value.observe(_ => handleResize)
 
     div(
       onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
@@ -107,13 +133,13 @@ private class MultiSelect(
           else None,
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",
-            Signal {
+            Signal.dynamic {
               options.value
                 .filter(v => value.value.contains(v.id))
                 .slice(0, visibleItems.value)
                 .map(option => {
                   div(
-                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
+                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500 multiselect-item",
                     option.name,
                     div(
                       icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
@@ -134,6 +160,7 @@ private class MultiSelect(
                 Some(
                   div(
                     cls := "flex items-center justify-center text-slate-400 dark:text-gray-200",
+                    if (visibleItems.value == 0) "Open to see more... " else "",
                     s"+${value.value.size - visibleItems.value}",
                   ),
                 )
