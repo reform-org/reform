@@ -538,8 +538,15 @@ class BasicInformation(
                       div(
                         cls := "flex flex-col gap-1 dark:text-gray-200",
                         span(
-                          span(cls := "text-sm text-slate-600", "Maxmimum Hours below Limit: "),
+                          span(cls := "text-sm text-slate-600", "Maximum Hours below Limit: "),
                           span(cls := "font-bold", maxHours.toInt),
+                          span(
+                            "use",
+                            cls := "underline py-1 px-2 bg-purple-200 text-purple-600 text-xs rounded-md ml-2 cursor-pointer",
+                            onClick.foreach(_ => {
+                              this.updateHoursPerMonth(maxHours.toInt)
+                            }),
+                          ),
                         ),
                       ),
                       div(
@@ -925,7 +932,7 @@ class ContractRequirementsMail(
           cls := "text-xs text-slate-400 dark:text-gray-400 italic",
           "Last sent: ",
           span(
-            cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+            cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
             Signal.dynamic {
               val date = editingValue.value
                 .flatMap((_, contract) => contract.value.reminderSentDate.get)
@@ -1044,7 +1051,7 @@ class CreateContract(
               cls := "text-xs text-slate-400 dark:text-gray-400 italic",
               "Last sent: ",
               span(
-                cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+                cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
                   val date = editingValue.value
                     .flatMap((_, contract) => contract.value.contractSentDate.get)
@@ -1168,7 +1175,7 @@ class CreateLetter(
               cls := "text-xs text-slate-400 dark:text-gray-400 italic",
               "Last sent: ",
               span(
-                cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+                cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
                   val date = editingValue.value
                     .flatMap((_, contract) => contract.value.letterSentDate.get)
