@@ -53,9 +53,11 @@ class ContractSchemaAttributes(using
   def files: UIAttribute[ContractSchema, Seq[String]] =
     BuildUIAttribute()
       .multiSelect(
-        jsImplicits.repositories.requiredDocuments.existing.map(list =>
-          list.map(value => SelectOption(value.id, value.signal.map(_.name.get.getOrElse("")))),
-        ),
+        Signal {
+          jsImplicits.repositories.requiredDocuments.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.name.get.getOrElse(""))),
+          )
+        },
       )
       .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")

@@ -221,7 +221,7 @@ class Toaster() {
   def render: VNode = {
     div(
       cls := "toast toast-end items-end !p-0 bottom-4 right-4",
-      toasts.map(_.map(toast => { toast.render })),
+      Signal { toasts.value.map(toast => { toast.render }) },
     )
   }
 }

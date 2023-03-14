@@ -122,22 +122,24 @@ class RoutingService(using
   }
 
   def countQueryParameters(validParams: Seq[String] = Seq.empty): Signal[Int] = Signal {
-    queryParameters.value.count((p, _) => validParams.isEmpty || validParams.contains(p))
+    queryParameters.value.count((p, _) =>
+      validParams.isEmpty || validParams.find(q => q == "(?=:).*".r.replaceAllIn(p, "")).nonEmpty,
+    )
   }
 
-  def getQueryParameterAsString(key: String): Signal[String] = query.map(query =>
-    query.get(key).getOrElse("") match {
+  def getQueryParameterAsString(key: String): Signal[String] = Signal {
+    query.value.get(key).getOrElse("") match {
       case v: String      => v
       case v: Seq[String] => v.mkString
-    },
-  )
+    }
+  }
 
-  def getQueryParameterAsSeq(key: String): Signal[Seq[String]] = query.map(query =>
-    query.get(key).getOrElse(Seq()) match {
+  def getQueryParameterAsSeq(key: String): Signal[Seq[String]] = Signal {
+    query.value.get(key).getOrElse(Seq()) match {
       case v: String      => Seq(v)
       case v: Seq[String] => v
-    },
-  )
+    }
+  }
 
   def cleanQueryParameters(newParams: Map[String, String | Seq[String]]) = {
     newParams.filter((key, value) =>
@@ -166,9 +168,9 @@ class RoutingService(using
   def back() =
     window.history.back()
 
-  query.map(query => {
-    window.history.replaceState(null.asInstanceOf[js.Any], "", linkPath(page.now, query))
-  })
+  Signal {
+    window.history.replaceState(null.asInstanceOf[js.Any], "", linkPath(page.now, query.value))
+  }
 
   window.onpopstate = _ => {
     page.set(Routes.fromPath(Path(window.location.pathname)))
