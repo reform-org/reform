@@ -25,7 +25,6 @@ import kofre.base.Bottom
 import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
-import webapp.utils.Seqnal.*
 import webapp.repo.Synced
 import outwatch.*
 import outwatch.dsl.*
