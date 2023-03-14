@@ -355,7 +355,6 @@ class BasicInformation(
                     js.Date.now().toLong,
                     contract.contractStartDate.get.getOrElse(0L),
                   ) < 0
-
                 ) {
                   Some(
                     p(
