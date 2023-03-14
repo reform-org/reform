@@ -151,7 +151,7 @@ abstract class Step(
           Some(
             div(
               icons.Info(cls := "w-6 h-6 shrink-0	"),
-              cls := "max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm dark:text-gray-200 dark:bg-gray-700",
+              cls := "w-full md:max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm dark:text-gray-200 dark:bg-gray-700",
               div(
                 if (reasons.length >= 2)
                   s"To $disabledDescription you need ${reasons.take(reasons.length - 1).mkString(", ")} and you need ${reasons(reasons.length - 1)}."
@@ -528,7 +528,7 @@ class BasicInformation(
                       div(
                         cls := "flex flex-col gap-1 dark:text-gray-200",
                         span(
-                          span(cls := "text-sm text-slate-600 ", "Minijob Limit: "),
+                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Minijob Limit: "),
                           span(cls := "font-bold", toMoneyString(limit)),
                         ),
                         span(
@@ -539,7 +539,7 @@ class BasicInformation(
                       div(
                         cls := "flex flex-col gap-1 dark:text-gray-200",
                         span(
-                          span(cls := "text-sm text-slate-600", "Maximum Hours below Limit: "),
+                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Maximum Hours below Limit: "),
                           span(cls := "font-bold", maxHours.toInt),
                           span(
                             "use",
@@ -1245,7 +1245,7 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
           ),
         ),
         div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
+          cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
           form(
             BasicInformation(contractId, existingValue, editingValue, Signal(Seq.empty), "", true).render,
             div(
@@ -1433,7 +1433,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     Button(
       ButtonStyle.LightPrimary,
       cls := "min-h-8",
-      icons.Save(cls := "w-4 h-4"),
+      icons.Return(cls := "w-4 h-4"),
       onClick.foreach(e => {
         e.preventDefault()
         createOrUpdate().toastOnError(ToastMode.Infinit)
@@ -1447,6 +1447,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
         e.preventDefault()
         createOrUpdate(true).toastOnError(ToastMode.Infinit)
       }),
+      disabled <-- isCompleted,
     ),
     Button(
       ButtonStyle.LightDefault,
@@ -1500,7 +1501,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
           ),
         ),
         div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
+          cls := "relative md:shadow-md rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
           form(
             BasicInformation(contractId, existingValue, editingValue).render,
             SelectProject(contractId, existingValue, editingValue).render,
