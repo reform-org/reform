@@ -393,22 +393,24 @@ class BasicInformation(
             cls := "basis-2/5",
             label(cls := "font-bold", "End date:"),
             ContractPageAttributes().contractEndDate.renderEdit("", editingValue),
-            editingValue.map(p =>
-              p.get._2.map(v => {
+            Signal.dynamic {
+              editingValue.value.map((_, contractSignal) => {
+                val contract = contractSignal.value
                 if (
-                  v.contractEndDate.get.getOrElse(0L) - v.contractStartDate.get
-                    .getOrElse(0L) < 0 && v.contractEndDate.get.getOrElse(0L) != 0
+                  contract.contractEndDate.get.nonEmpty && (contract.contractEndDate.get
+                    .getOrElse(0L) < contract.contractStartDate.get.getOrElse(0L) || contract.contractEndDate.get
+                    .getOrElse(0L) < js.Date.now().toLong)
                 ) {
                   Some(
-                    dsl.p(
+                    p(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
                       icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
                       "End date is in the past or before start date",
                     ),
                   )
                 } else None
-              }),
-            ),
+              })
+            },
           ),
         ),
         Signal.dynamic {
