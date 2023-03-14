@@ -150,7 +150,7 @@ abstract class Step(
           Some(
             div(
               icons.Info(cls := "w-6 h-6 shrink-0	"),
-              cls := "max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm",
+              cls := "max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm dark:text-gray-600 dark:bg-gray-300",
               div(
                 if (reasons.length >= 2)
                   s"To $disabledDescription you need ${reasons.take(reasons.length - 1).mkString(", ")} and you need ${reasons(reasons.length - 1)}."
@@ -493,7 +493,7 @@ class BasicInformation(
                       div(
                         cls := "flex flex-col gap-1",
                         span(
-                          span(cls := "text-sm text-slate-600", "Base Salary: "),
+                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Base Salary: "),
                           span(
                             cls := "font-bold",
                             toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
@@ -505,9 +505,9 @@ class BasicInformation(
                         ),
                       ),
                       div(
-                        cls := "flex flex-col gap-1",
+                        cls := "flex flex-col gap-1 dark:text-gray-200",
                         span(
-                          span(cls := "text-sm text-slate-600", "Minijob Limit: "),
+                          span(cls := "text-sm text-slate-600 ", "Minijob Limit: "),
                           span(cls := "font-bold", toMoneyString(limit)),
                         ),
                         span(
@@ -516,7 +516,7 @@ class BasicInformation(
                         ),
                       ),
                       div(
-                        cls := "flex flex-col gap-1",
+                        cls := "flex flex-col gap-1 dark:text-gray-200",
                         span(
                           span(cls := "text-sm text-slate-600", "Maxmimum Hours below Limit: "),
                           span(cls := "font-bold", maxHours.toInt),
@@ -525,11 +525,11 @@ class BasicInformation(
                       div(
                         cls := "flex flex-col gap-1",
                         span(
-                          span(cls := "text-sm text-slate-600", "Total hours: "),
+                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
                           span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
                         ),
                         span(
-                          cls := "text-slate-400 text-xs",
+                          cls := "text-slate-400 text-xs italic",
                           s"calculating with ${month} month",
                         ),
                       ),

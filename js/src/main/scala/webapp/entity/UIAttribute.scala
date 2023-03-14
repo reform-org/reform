@@ -425,7 +425,7 @@ class UIMultiSelectAttribute[EntityType](
                   Signal {
                     options(entity).value
                       .filter(p => p.id.equals(id))
-                      .map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name))
+                      .map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md dark:bg-gray-500", v.name))
                   },
                 ),
               ),
