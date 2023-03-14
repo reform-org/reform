@@ -253,7 +253,7 @@ case class HomePage()(using
                   )
                 })
             } else {
-              div(cls := "text-slate-400", "No projects this month...")
+              div(cls := "text-slate-400 dark:text-gray-400", "No projects this month...")
             },
           )
         },

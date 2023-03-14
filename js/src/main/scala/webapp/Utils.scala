@@ -12,7 +12,7 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
     cls := s"flex w-full flex-row justify-between items-center min-h-9 px-4 ${if (values.size > 1) "bg-yellow-100 py-0 text-yellow-600"
       else "py-1"}", {
-      Some(span(values.headOption.getOrElse("not set")))
+      Some(span(cls := "max-w-full overflow-hidden text-ellipsis", values.headOption.getOrElse("not set")))
     }, {
       val res = if (values.size > 1) {
         import outwatch.dsl.svg.*

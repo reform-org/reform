@@ -122,19 +122,19 @@ class EntityRow[T <: Entity[T]](
           .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
           .map(ui => {
             td(
-              cls := "p-0 border-none",
+              cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
               styleAttr := (ui.width match {
                 case None    => "min-width: 200px"
                 case Some(v) => s"max-width: $v; min-width: $v; width: $v"
               }),
-              ui.renderEdit(id, editingValue),
+              ui.renderEdit(id, editingValue, cls := "border-none"),
             )
           })
       },
       td(
-        cls := "py min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
+        cls := "py min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-x border-b border-gray-300 dark:border-gray-600 !z-[1]",
         div(
-          cls := "h-full w-full flex flex-row items-center justify-center md:px-4",
+          cls := "h-full w-full flex flex-row items-center justify-center md:px-4 gap-2 md:justify-end",
           form(
             idAttr := id,
             onSubmit.foreach(e => {
@@ -192,7 +192,7 @@ class EntityRow[T <: Entity[T]](
                     cancelEdit()
                   },
                 ),
-                new ModalButton("Cancel"),
+                new ModalButton("Cancel", ButtonStyle.LightDefault),
               ),
             )
             deleteModal.set(Some(modal))
@@ -231,7 +231,7 @@ class EntityRow[T <: Entity[T]](
           ButtonStyle.Error,
           () => removeEntity(synced),
         ),
-        new ModalButton("Cancel"),
+        new ModalButton("Cancel", ButtonStyle.LightDefault),
       ),
     )
     synced.signal.map[VMod](p => {
@@ -257,9 +257,9 @@ class EntityRow[T <: Entity[T]](
               })
           },
           td(
-            cls := "min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
+            cls := "min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
-              cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4",
+              cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4 md:justify-end",
               TableButton(
                 ButtonStyle.LightPrimary,
                 icons.Edit(cls := "w-4 h-4 md:hidden"),
@@ -403,7 +403,7 @@ abstract class EntityPage[T <: Entity[T]](
                 "Filter",
                 idAttr := "filter-btn",
                 div(
-                  cls := "ml-3 badge",
+                  cls := "ml-3 badge dark:bg-gray-200 dark:text-gray-800",
                   jsImplicits.routing.countQueryParameters(
                     uiAttributes.map(attr => toQueryParameterName(attr.label)) :+ "columns",
                   ),
@@ -423,7 +423,7 @@ abstract class EntityPage[T <: Entity[T]](
             Button(
               ButtonStyle.LightDefault,
               "Export to Spreadsheet Editor",
-              cls := "!m-0",
+              cls := "md:ml-auto",
               onClick.foreach(_ => exportView()),
             ),
             if (addInPlace) {
@@ -433,7 +433,7 @@ abstract class EntityPage[T <: Entity[T]](
           div(
             cls <-- Signal { if (filterDropdownClosed.value) Some("hidden") else None },
             idAttr := "filter-dropdown",
-            cls := "menu p-2 mb-4 bg-base-100 dark:bg-gray-700 transition-none flex flex-row gap-2",
+            cls := "menu p-2 mb-4 transition-none flex flex-row gap-2",
             filter.render,
             div(
               cls := "max-w-[300px] min-w-[300px] min-w-[300px]",
@@ -466,7 +466,7 @@ abstract class EntityPage[T <: Entity[T]](
                         th(
                           cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
                           styleAttr := (a.width match {
-                            case None    => "min-width: 200px"
+                            case None    => "min-width: 200px;"
                             case Some(v) => s"max-width: $v; min-width: $v; width: $v"
                           }),
                           a.label,
@@ -474,7 +474,7 @@ abstract class EntityPage[T <: Entity[T]](
                       )
                   },
                   th(
-                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[185px] md:max-w-[185px] !z-[1]",
+                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] !z-[1]",
                   ),
                 ),
               ),
@@ -548,15 +548,15 @@ abstract class EntityPage[T <: Entity[T]](
       .size
   }
 
-  private def exportView(): Unit = Signal.dynamic {
+  private def exportView(): Unit = {
     var csvHeader: Seq[String] = Seq()
     var csvData: Seq[String] = Seq()
 
-    val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
-    val pred = filter.predicate.value
-    val rows = entityRows.value.filter(_.value match {
+    val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").now
+    val pred = filter.predicate.now
+    val rows = entityRows.now.filter(_.value match {
       case New(_)             => false
-      case Existing(value, _) => pred(value.signal.value)
+      case Existing(value, _) => pred(value.signal.now)
     })
 
     rows.foreach(row => {
@@ -564,7 +564,7 @@ abstract class EntityPage[T <: Entity[T]](
         case New(_) => {}
         case Existing(v, _) =>
           val id = v.id
-          val value = v.signal.value
+          val value = v.signal.now
           var csvRow: Seq[String] = Seq()
           var selectedHeaders: Seq[String] = Seq()
           row.uiAttributes
@@ -574,14 +574,14 @@ abstract class EntityPage[T <: Entity[T]](
               attr match {
                 case attr: UIReadOnlyAttribute[?, ?] => {
                   if (value.exists) {
-                    val a = attr.getter(id, value).value
+                    val a = attr.getter(id, value).now
                     csvRow = csvRow :+ attr.readConverter(a)
                   }
                 }
                 case attr: UISelectAttribute[?, ?] => {
                   val a = attr.getter(value)
                   csvRow = csvRow :+ a.getAll
-                    .map(x => attr.options(value).now.filter(p => p.id == x).map(v => v.name.value).mkString(", "))
+                    .map(x => attr.options(value).now.filter(p => p.id == x).map(v => v.name.now).mkString(", "))
                     .mkString(", ")
                 }
                 case attr: UIAttribute[?, ?] => {

@@ -118,7 +118,7 @@ def navigationHeader(
           cls := "flex-1",
           a(
             icons.Reform(),
-            cls := "btn btn-ghost normal-case text-xl",
+            cls := "btn btn-ghost normal-case text-xl hover:bg-slate-100 dark:hover:bg-gray-800/50",
             href := "/",
             onClick.foreach(e => {
               e.preventDefault()
@@ -140,7 +140,7 @@ def navigationHeader(
               cls := "indicator",
               icons.Connections(cls := "h-6 w-6"),
               span(
-                cls := "badge badge-sm indicator-item",
+                cls := "badge badge-sm indicator-item dark:bg-gray-200 dark:text-gray-800",
                 jsImplicits.webrtc.connections.map(_.size),
               ),
             ),

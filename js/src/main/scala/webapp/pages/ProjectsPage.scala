@@ -96,7 +96,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
               contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
             }
           },
-          "text-slate-400 italic",
+          "text-slate-400 dark:text-gray-400 italic",
         ),
       ),
     )

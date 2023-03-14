@@ -13,7 +13,7 @@ class SelectOption(
     val props: VMod*,
 ) {
   def render: VNode = {
-    span(props, name)
+    span(props, name, cls := "overflow-hidden max-w-full text-ellipsis inline-block")
   }
 
   def displayWidth(classes: String = ""): Double = {

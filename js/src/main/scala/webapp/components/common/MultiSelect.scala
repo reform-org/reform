@@ -60,10 +60,9 @@ private class MultiSelect(
   }
 
   def handleResize = Signal.dynamic {
-    console.log("fire")
     val element = Option(document.querySelector(s"#$id"))
     if (element.nonEmpty) {
-      val maxWidth = element.get.getBoundingClientRect().width - remToPx(2.25)
+      val maxWidth = element.get.getBoundingClientRect().width - remToPx(4.5)
       val items = options.value
         .filter(v => value.value.contains(v.id))
       val rect = element.get.querySelector(s".multiselect-value-wrapper").getBoundingClientRect()
@@ -72,7 +71,6 @@ private class MultiSelect(
         var widthAcc = 0.0
         var visibleItemsCount = 0
 
-        println(s"should be $maxWidth")
         widths.foreach(w => {
           if (widthAcc + w <= maxWidth) {
             console.log(w)
@@ -82,8 +80,6 @@ private class MultiSelect(
             visibleItems.set(visibleItemsCount)
           }
         })
-
-        println(s"width is $widthAcc, $visibleItemsCount")
       }
     }
   }
@@ -168,7 +164,7 @@ private class MultiSelect(
                 Some(
                   div(
                     if (!styleValidity)
-                      cls := "text-slate-400"
+                      cls := "text-slate-400 dark:text-gray-400"
                     else None,
                     cls := "flex items-center justify-center",
                     "Select...",
