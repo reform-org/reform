@@ -35,7 +35,7 @@ import scala.scalajs.js.Date
 import webapp.npm.IIndexedDB
 import webapp.components.icons
 import scala.scalajs.js
-import org.scalajs.dom.{console, document}
+import org.scalajs.dom.{console, document, window}
 import webapp.npm.{PDF, PDFCheckboxField, PDFTextField}
 import webapp.npm.JSUtils.toGermanDate
 import scala.annotation.nowarn
@@ -1433,18 +1433,27 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     }
   }
 
-  protected val unloadListener: js.Function1[BeforeUnloadEvent, Unit] = (e: BeforeUnloadEvent) => {}
+  protected val unloadListener: js.Function1[BeforeUnloadEvent, String] = (e: BeforeUnloadEvent) => {
+    e.preventDefault()
+    e.returnValue = ""
+    ""
+  }
 
   def render: VNode = {
+    Signal
+      .dynamic {
+        existingValue.flatMap(existingValue =>
+          editingValue.value.map((_, a) => a.value == existingValue.signal.value),
+        ) == Some(false)
+      }
+      .observe(edited => {
+        println(edited)
+        if (edited) window.addEventListener("beforeunload", unloadListener)
+        else window.removeEventListener("beforeunload", unloadListener)
+      })
     navigationHeader(
-      onDomMount.foreach(_ => {
-        document.addEventListener("keydown", ctrlSListener)
-        document.addEventListener("beforeunload", unloadListener)
-      }),
-      onDomUnmount.foreach(_ => {
-        document.removeEventListener("keydown", ctrlSListener)
-        document.removeEventListener("beforeunload", unloadListener)
-      }),
+      onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
+      onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
       div(
         cls := "flex flex-col items-center",
         div(
