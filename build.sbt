@@ -36,7 +36,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     libraryDependencies ++= Seq(
-      "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
+      "com.github.outwatch.outwatch" %%% "outwatch" % "ddd7ff8ded329bd6150174d9554e0594ebde2f85",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",

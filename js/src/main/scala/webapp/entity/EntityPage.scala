@@ -379,6 +379,18 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val filter = Filter[T](uiAttributes)
 
+  private val renderEntities = Signal.dynamic {
+    val pred = filter.predicate.value
+    entityRows.value
+      .filter(_.value match {
+        case New(_)             => false
+        case Existing(value, _) => pred(value.signal.value)
+      })
+      .map(_.render)
+  }
+
+  { renderEntities.map(v => { println(s"works $v"); v }) }
+
   def render: VNode = {
     val filterDropdownClosed = Var(true)
 
@@ -507,7 +519,7 @@ abstract class EntityPage[T <: Entity[T]](
                     )
                   else List()
                 },
-                renderEntities,
+                { renderEntities.map(v => { println(s"doesnt work $v"); v }) },
               ),
               if (!addInPlace) {
                 Some(
@@ -600,15 +612,5 @@ abstract class EntityPage[T <: Entity[T]](
 
     val csvString = csvHeader.map(escapeCSVString).mkString(",") + "\n" + csvData.mkString("\n")
     downloadFile(title.plural + ".csv", csvString, "data:text/csv")
-  }
-
-  private def renderEntities = Signal.dynamic {
-    val pred = filter.predicate.value
-    entityRows.value
-      .filter(_.value match {
-        case New(_)             => false
-        case Existing(value, _) => pred(value.signal.value)
-      })
-      .map(_.render)
   }
 }

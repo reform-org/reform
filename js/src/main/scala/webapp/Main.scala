@@ -31,6 +31,7 @@ import webapp.given_ExecutionContext
 
 import scala.scalajs.js
 import scala.annotation.nowarn
+import org.scalajs.dom.console
 
 object Main {
   def main(): Unit = {
@@ -48,6 +49,7 @@ object Main {
     // we could assign the members later if this doesn't work?
 
     helpers.OutwatchTracing.error.unsafeForeach { throwable =>
+      console.error(throwable)
       jsImplicits.toaster.make(
         s"Unknown internal exception: ${throwable.getMessage}",
         ToastMode.Infinit,
