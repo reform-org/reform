@@ -63,6 +63,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
   def maxHours = BuildUIAttribute().int
     .withLabel("Max Hours")
     .withMin("0")
+    .withRegex("\\d*")
     .require
     .bindAsNumber[Project](
       _.maxHours,
@@ -81,12 +82,11 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
     new UIReadOnlyAttribute[Project, String](
       label = "Contracts",
       getter = (id, project) =>
-        jsImplicits.repositories.contracts.all
-          .map(_.map(_.signal))
-          .flatten
-          .map(contracts =>
-            contracts.count(contract => contract.contractAssociatedProject.get.contains(id)).toString + " Contract(s)",
-          ),
+        Signal.dynamic {
+          jsImplicits.repositories.contracts.all.value
+            .count(contract => contract.signal.value.contractAssociatedProject.get.contains(id))
+            .toString + " Contract(s)"
+        },
       readConverter = identity,
       formats = Seq(
         UIFormat(

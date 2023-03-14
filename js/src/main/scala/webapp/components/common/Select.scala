@@ -33,7 +33,7 @@ def Select(
 
   div(
     cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
-    cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
+    cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
     props,
     idAttr := id,
     div(
@@ -60,14 +60,17 @@ def Select(
         )
       },
       div(
-        cls := "flex flex-row w-full h-full items-center pl-2 text-slate-400",
+        cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
         if (styleValidity)
-          cls := "peer-invalid/select:bg-yellow-100 peer-valid/select:text-green-600 peer-invalid/select:text-yellow-600 peer-valid/select:bg-green-100"
+          cls := "peer-invalid/select:bg-yellow-100 peer-invalid/select:text-yellow-600 peer-invalid/select:border-yellow-600"
         else None,
         Signal {
           if (value.value.isEmpty) {
             Some(
               div(
+                if (!styleValidity)
+                  cls := "text-slate-400"
+                else None,
                 cls := "flex items-center justify-center",
                 "Select...",
               ),
@@ -111,7 +114,7 @@ def Select(
                     input(
                       tpe := "radio",
                       cls := "hidden peer",
-                      checked <-- value.map(i => i.contains(uiOption.id)),
+                      checked <-- Signal { value.value.contains(uiOption.id) },
                       idAttr := s"$id-${uiOption.id}",
                       VMod.attr("data-id") := uiOption.id,
                       VMod.attr("name") := id,
@@ -139,7 +142,7 @@ def Select(
             },
           )
         },
-        Signal {
+        Signal.dynamic {
           if (
             Signal(
               options.value

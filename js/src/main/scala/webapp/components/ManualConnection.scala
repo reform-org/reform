@@ -89,7 +89,7 @@ private case class Init()(using jsImplicits: JSImplicits) extends State {
         ButtonStyle.Primary,
         cls := "w-full mt-2",
         "Create Invitation",
-        disabled <-- alias.map(_.isBlank()),
+        disabled <-- Signal { alias.value.isBlank() },
         onClick.foreach(_ => initializeHostSession),
       ),
     )
@@ -113,7 +113,7 @@ private case class ClientAskingForHostSessionToken()(using jsImplicits: JSImplic
       ButtonStyle.Primary,
       "Connect",
       cls := "w-full mt-2",
-      disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
+      disabled <-- Signal { alias.value.isBlank() || sessionToken.value.isBlank() },
       onClick.foreach(_ => connectToHost),
     ),
   )
@@ -183,7 +183,7 @@ private case class HostPending(connection: PendingConnection)(using
       ButtonStyle.Primary,
       "Finish Connection",
       cls := "w-full mt-2",
-      disabled <-- sessionTokenFromClient.map(_.isBlank),
+      disabled <-- Signal { sessionTokenFromClient.value.isBlank() },
       onClick.foreach(_ => confirmConnectionToClient()),
     ),
   )
@@ -244,7 +244,7 @@ class ManualConnectionDialog(using
           "Client",
         ),
       ),
-      state.map(_.render(using state)),
+      Signal { state.value.render(using state) },
     )
   }
 }

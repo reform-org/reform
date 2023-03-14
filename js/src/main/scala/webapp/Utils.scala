@@ -85,22 +85,18 @@ val browserThemeDark = {
   browserThemeDark
 }
 
-val autoupdateTheme = {
-  theme.map(theme => {
-    browserThemeDark.map(browserThemeDark => {
-      if (theme == "dark") {
-        document.documentElement.classList.add("dark")
-      } else if (theme == "light") {
-        document.documentElement.classList.remove("dark")
-      } else {
-        if (browserThemeDark) {
-          document.documentElement.classList.add("dark")
-        } else {
-          document.documentElement.classList.remove("dark")
-        }
-      }
-    })
-  })
+val autoupdateTheme = Signal {
+  if (theme.value == "dark") {
+    document.documentElement.classList.add("dark")
+  } else if (theme.value == "light") {
+    document.documentElement.classList.remove("dark")
+  } else {
+    if (browserThemeDark.value) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }
 }
 
 def toQueryParameterName(in: String) = {
