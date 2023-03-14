@@ -57,6 +57,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import scala.util.Failure
 import webapp.components.icons.Edit
+import webapp.npm.JSUtils.dateDiffDays
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -88,13 +89,7 @@ case class ExtendContractPage(contractId: String)(using
               InnerExtendContractsPage(Some(currentContract), contractId).render()
             case None =>
               navigationHeader(
-                div(
-                  div(
-                    cls := "p-1",
-                    h1(cls := "text-4xl text-center", "Contract"),
-                  ),
-                  h2("Contract not found"),
-                ),
+                ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage()),
               )
           }
           result
@@ -118,13 +113,7 @@ case class EditContractsPage(contractId: String)(using
               InnerEditContractsPage(Some(currentContract), contractId).render()
             case None =>
               navigationHeader(
-                div(
-                  div(
-                    cls := "p-1",
-                    h1(cls := "text-4xl text-center", "Contract"),
-                  ),
-                  h2("Contract not found"),
-                ),
+                ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage()),
               )
           }
           result
@@ -362,8 +351,11 @@ class BasicInformation(
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
                 if (
-                  contract.contractStartDate.get.nonEmpty && contract.contractStartDate.get
-                    .getOrElse(0L) <= js.Date.now().toLong
+                  contract.contractStartDate.get.nonEmpty && dateDiffDays(
+                    js.Date.now().toLong,
+                    contract.contractStartDate.get.getOrElse(0L),
+                  ) < 0
+
                 ) {
                   Some(
                     p(
@@ -384,7 +376,13 @@ class BasicInformation(
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
 
-                if (contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty) {
+                if (
+                  contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty && !(dateDiffDays(
+                    contract.contractStartDate.get.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
+                  ) < 0 ||
+                    dateDiffDays(js.Date.now().toLong, contract.contractEndDate.get.getOrElse(0L)) < 0)
+                ) {
                   Some(
                     dateDiffHumanReadable(
                       contract.contractStartDate.get.getOrElse(0L),
@@ -403,9 +401,13 @@ class BasicInformation(
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
                 if (
-                  contract.contractEndDate.get.nonEmpty && (contract.contractEndDate.get
-                    .getOrElse(0L) < contract.contractStartDate.get.getOrElse(0L) || contract.contractEndDate.get
-                    .getOrElse(0L) < js.Date.now().toLong)
+                  contract.contractEndDate.get.nonEmpty && (dateDiffDays(
+                    contract.contractStartDate.get.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
+                  ) < 0 || dateDiffDays(
+                    js.Date.now().toLong,
+                    contract.contractEndDate.get.getOrElse(0L),
+                  ) < 0)
                 ) {
                   Some(
                     p(
@@ -1063,10 +1065,10 @@ class CreateLetter(
               document.getElementById("loadLetter").classList.add("loading")
               this.letterPDF
                 .andThen(v => {
-                  document.getElementById("loadPDF").classList.remove("loading")
+                  document.getElementById("loadLetter").classList.remove("loading")
                   if (v.isSuccess) {
                     val buffer = v.get.get
-                    PDF.download("contract.pdf", buffer)
+                    PDF.download("letter.pdf", buffer)
                   }
                 })
                 .toastOnError()
@@ -1256,8 +1258,8 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
           !contract.contractHoursPerMonth.get.nonEmpty ||
           contract.contractHoursPerMonth.get.getOrElse(0) < 0 ||
           !contract.contractAssociatedPaymentLevel.get.nonEmpty ||
-          contract.contractStartDate.get.getOrElse(0L) > contract.contractEndDate.get.getOrElse(0L) ||
-          contract.contractEndDate.get.getOrElse(0L) < js.Date.now().toLong ||
+          dateDiffDays(contract.contractStartDate.get.getOrElse(0L), contract.contractEndDate.get.getOrElse(0L)) < 0 ||
+          dateDiffDays(js.Date.now().toLong, contract.contractEndDate.get.getOrElse(0L)) < 0 ||
           !contract.requiredDocuments.get.nonEmpty ||
           !contract.isSigned.get.getOrElse(false) ||
           !requiredDocuments
