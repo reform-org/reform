@@ -31,7 +31,6 @@ import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 import scala.collection.mutable
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import webapp.webrtc.ReplicationGroup
-import webapp.utils.Seqnal.*
 import webapp.entity.Entity
 
 type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
@@ -109,9 +108,6 @@ object Repository {
 
   implicit class EntityRepositoryOps[A <: Entity[A]](self: Repository[A]) {
 
-    val existing: Signal[Seq[Synced[A]]] = self.all
-      .flatMap(
-        _.filterSignal(_.signal.map(_.exists)),
-      )
+    val existing: Signal[Seq[Synced[A]]] = Signal.dynamic { self.all.value.filter(_.signal.map(_.exists).value) }
   }
 }

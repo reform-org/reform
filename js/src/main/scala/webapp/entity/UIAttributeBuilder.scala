@@ -1,6 +1,5 @@
 package webapp.entity
 
-import webapp.utils.Seqnal.*
 import rescala.default.*
 
 import webapp.components.common.*

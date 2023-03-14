@@ -19,7 +19,6 @@ import webapp.Repositories
 import webapp.entity.*
 import webapp.services.Toaster
 import ProjectsPage.*
-import webapp.utils.Seqnal.*
 import webapp.entity.UIBasicAttribute
 import outwatch.*
 import outwatch.dsl.*

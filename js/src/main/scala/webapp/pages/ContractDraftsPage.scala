@@ -26,7 +26,6 @@ import kofre.base.Lattice
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import ContractsPage.*
-import webapp.utils.Seqnal.*
 import webapp.repo.Synced
 import outwatch.dsl.*
 import webapp.npm.JSUtils.toMoneyString
