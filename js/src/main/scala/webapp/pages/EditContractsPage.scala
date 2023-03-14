@@ -57,6 +57,7 @@ import scala.collection.mutable.ArrayBuffer
 import scala.util.Try
 import scala.util.Failure
 import webapp.components.icons.Edit
+import org.scalajs.dom.BeforeUnloadEvent
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -1432,10 +1433,18 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     }
   }
 
+  protected val unloadListener: js.Function1[BeforeUnloadEvent, Unit] = (e: BeforeUnloadEvent) => {}
+
   def render: VNode = {
     navigationHeader(
-      onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
-      onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
+      onDomMount.foreach(_ => {
+        document.addEventListener("keydown", ctrlSListener)
+        document.addEventListener("beforeunload", unloadListener)
+      }),
+      onDomUnmount.foreach(_ => {
+        document.removeEventListener("keydown", ctrlSListener)
+        document.removeEventListener("beforeunload", unloadListener)
+      }),
       div(
         cls := "flex flex-col items-center",
         div(
