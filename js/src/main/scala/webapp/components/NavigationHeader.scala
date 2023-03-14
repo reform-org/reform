@@ -56,7 +56,7 @@ def navigationMenu(using
     ),
     li(
       a(
-        cls := "btn btn-ghost active:!text-sm active:!text-gray-800 dark:active:!text-gray-200 normal-case	font-normal rounded-md",
+        cls := "btn btn-ghost active:!text-sm active:!text-gray-800 dark:active:!text-gray-200 normal-case	font-normal rounded-md hover:bg-slate-100 dark:hover:bg-gray-800/50",
         "Setup",
         icons.Expand(cls := "w-4 h-4"),
       ),
