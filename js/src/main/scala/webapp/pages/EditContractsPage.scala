@@ -358,22 +358,23 @@ class BasicInformation(
             cls := "basis-2/5",
             label(cls := "font-bold", "Start date:"),
             ContractPageAttributes().contractStartDate.renderEdit("", editingValue),
-            editingValue.map(p =>
-              p.get._2.map(v => {
+            Signal.dynamic {
+              editingValue.value.map((_, contractSignal) => {
+                val contract = contractSignal.value
                 if (
-                  v.contractStartDate.get.getOrElse(0L) - (Date
-                    .now() / (1000 * 3600 * 24)).toLong < 0 && v.contractStartDate.get.getOrElse(0L) != 0
+                  contract.contractStartDate.get.nonEmpty && contract.contractStartDate.get
+                    .getOrElse(0L) < js.Date.now().toLong
                 ) {
                   Some(
-                    dsl.p(
+                    p(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
                       icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
                       "Start date is in the past",
                     ),
                   )
                 } else None
-              }),
-            ),
+              })
+            },
           ),
           div(
             cls := "basis-1/5",
@@ -476,7 +477,7 @@ class BasicInformation(
                     contract.contractEndDate.get.getOrElse(0L),
                   )
 
-                  if (hourlyWage != 0 && limit != 0) {
+                  if (hourlyWage > BigDecimal(0) && limit > BigDecimal(0)) {
                     val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
                     div(
                       cls := "flex flex-col gap-2",
@@ -552,7 +553,7 @@ class BasicInformation(
                   .getMoneyPerHour(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
                   .value
                 var maxHoursForTax =
-                  if (hourlyWage != 0) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                  if (hourlyWage > BigDecimal(0)) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
                   else { BigDecimal(0) }
                 val month = dateDiffMonth(
                   contract.contractStartDate.get.getOrElse(0L),
@@ -576,7 +577,8 @@ class BasicInformation(
                       .value
 
                   val maxHoursForProject =
-                    (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month
+                    if (month == 0) None
+                    else Some((project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month)
 
                   contract.contractHoursPerMonth.get.getOrElse(0) match {
                     case x if x > maxHoursForTax =>
@@ -597,7 +599,7 @@ class BasicInformation(
                       )
                     case x
                         if x * month + totalHoursWithoutThisContract > project.signal.value.maxHours.get
-                          .getOrElse(0) && !extend =>
+                          .getOrElse(0) && !extend && maxHoursForProject.nonEmpty =>
                       p(
                         cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
                         icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
@@ -607,12 +609,12 @@ class BasicInformation(
                             cls := "underline cursor-pointer",
                             onClick.foreach(_ => {
                               this.updateHoursPerMonth(
-                                if (maxHoursForProject < 0) 0
-                                else maxHoursForProject,
+                                if (maxHoursForProject.get < 0) 0
+                                else maxHoursForProject.get,
                               )
                             }),
-                            s"You might want to reduce the monthly hours to ${if (maxHoursForProject < 0) 0
-                              else maxHoursForProject}.",
+                            s"You might want to reduce the monthly hours to ${if (maxHoursForProject.get < 0) 0
+                              else maxHoursForProject.get}.",
                           ),
                         ),
                       )
@@ -1193,6 +1195,7 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
   override def render: VNode = {
     navigationHeader(
       div(
+        cls := "flex flex-col items-center",
         div(
           cls := "p-1",
           h1(
@@ -1201,7 +1204,7 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
           ),
         ),
         div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          cls := "relative shadow-md rounded-lg p-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
           form(
             BasicInformation(contractId, existingValue, editingValue, Signal(Seq.empty), "", true).render,
             div(
@@ -1426,6 +1429,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
       onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
       div(
+        cls := "flex flex-col items-center",
         div(
           cls := "p-1",
           h1(
@@ -1438,7 +1442,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
           ),
         ),
         div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%]",
+          cls := "relative shadow-md rounded-lg p-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
           form(
             BasicInformation(contractId, existingValue, editingValue).render,
             SelectProject(contractId, existingValue, editingValue).render,
