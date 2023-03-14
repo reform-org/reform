@@ -147,38 +147,34 @@ class UITextAttribute[EntityType, AttributeType](
       formId: String,
       editing: Var[Option[(EntityType, Var[EntityType])]],
       props: VMod*,
-  ): VMod = {
-    editing.map(
-      _.map(editing => {
-        val (editStart, entityVar) = editing
-        val editStartAttr = getter(editStart)
-        div(
-          cls := "relative min-w-[1rem]",
-          Signal {
-            renderEditInput(
-              formId,
-              entityVar.map(getter(_)),
-              x => set(entityVar, x),
-              Some(s"$formId-conflicting-values"),
-              entityVar.value,
-              props,
-            )
-          },
-          if (editStartAttr.getAll.size > 1) {
-            Some(
-              Seq(
-                dataList(
-                  idAttr := s"$formId-conflicting-values",
-                  renderConflicts(editStartAttr),
-                ),
+  ): VMod = Signal.dynamic {
+    editing.value.map(editing => {
+      val (editStart, entityVar) = editing
+      val editStartAttr = getter(editStart)
+      div(
+        cls := "relative min-w-[1rem]",
+        renderEditInput(
+          formId,
+          entityVar.map(getter(_)),
+          x => set(entityVar, x),
+          Some(s"$formId-conflicting-values"),
+          entityVar.value,
+          props,
+        ),
+        if (editStartAttr.getAll.size > 1) {
+          Some(
+            Seq(
+              dataList(
+                idAttr := s"$formId-conflicting-values",
+                renderConflicts(editStartAttr),
               ),
-            )
-          } else {
-            None
-          },
-        )
-      }),
-    )
+            ),
+          )
+        } else {
+          None
+        },
+      )
+    })
   }
 
   protected def getEditString(attr: Attribute[AttributeType]): String =
@@ -345,9 +341,11 @@ class UISelectAttribute[EntityType, AttributeType](
   override def render(id: String, entity: EntityType): VMod = {
     val attr = getter(entity)
     div(
-      // cls := "!rounded-none",
+      cls := "!rounded-none",
       formats.map(f => cls <-- f.apply(id, entity)),
-      duplicateValuesHandler(attr.getAll.map(x => options(entity).map(o => o.filter(p => p.id == x).map(v => v.name)))),
+      duplicateValuesHandler(
+        attr.getAll.map(x => Signal { options(entity).value.filter(p => p.id == x).map(v => v.name) }),
+      ),
     )
   }
 
@@ -424,9 +422,11 @@ class UIMultiSelectAttribute[EntityType](
             attr.getAll
               .map(x =>
                 x.map(id =>
-                  options(entity).map(o =>
-                    o.filter(p => p.id.equals(id)).map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name)),
-                  ),
+                  Signal {
+                    options(entity).value
+                      .filter(p => p.id.equals(id))
+                      .map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name))
+                  },
                 ),
               ),
           ),
@@ -506,7 +506,9 @@ class UICheckboxListAttribute[EntityType](
             cls := "flex flex-row gap-2 flex-wrap",
             attr.getAll
               .map(x =>
-                x.map(id => options(entity).map(o => o.filter(p => p.id.equals(id)).map(v => v.name).mkString(", "))),
+                x.map(id =>
+                  Signal { options(entity).value.filter(p => p.id.equals(id)).map(v => v.name).mkString(", ") },
+                ),
               ),
           ),
         ),

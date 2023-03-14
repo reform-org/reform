@@ -72,13 +72,15 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
         "Connections",
         cls := "font-bold text-lg p-2",
       ),
-      jsImplicits.webrtc.connections.map(_.map(ref => {
-        val info = jsImplicits.webrtc.getInformation(ref)
-        connectionRow(info.alias, info.source, info.uuid, info.displayId, ref)
-      })),
-      jsImplicits.webrtc.connections.map(connections => {
+      Signal {
+        jsImplicits.webrtc.connections.value.map(ref => {
+          val info = jsImplicits.webrtc.getInformation(ref)
+          connectionRow(info.alias, info.source, info.uuid, info.displayId, ref)
+        })
+      },
+      Signal {
         var emptyState: VNode = div()
-        if (connections.size == 0) {
+        if (jsImplicits.webrtc.connections.value.size == 0) {
           emptyState = div(
             cls := "flex flex-col items-center mt-4 mb-4",
             icons.Ghost(cls := "w-14 h-14 mb-2"),
@@ -86,13 +88,13 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
           )
         }
         emptyState
-      }),
+      },
       div(
         cls := "divider uppercase text-slate-300 font-bold text-xs mb-2 after:dark:bg-gray-300 before:dark:bg-gray-300",
         "Auto",
       ), {
-        jsImplicits.discovery.online.map(online => {
-          if (online) {
+        Signal {
+          if (jsImplicits.discovery.online.value) {
             li(
               onlineBanner,
             )
@@ -101,7 +103,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
               offlineBanner,
             )
           }
-        })
+        }
       },
       Login().render,
       Signal {
@@ -138,66 +140,65 @@ class Login(using jsImplicits: JSImplicits) {
 
   def render: VNode = {
     div(
-      jsImplicits.discovery.token
-        .map(token =>
-          if (jsImplicits.discovery.tokenIsValid(token))
+      Signal {
+        if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.value))
+          Button(
+            ButtonStyle.Primary,
+            "Logout",
+            onClick.foreach(_ => {
+              jsImplicits.discovery.logout()
+            }),
+            cls := "w-full mt-2",
+          )
+        else
+          div(
+            cls := "form-control w-full text-sm",
+            label(cls := "label", span(cls := "label-text text-slate-500 dark:text-gray-300", "Username")),
+            input(
+              tpe := "text",
+              placeholder := "Username",
+              cls := "input input-bordered w-full text-sm p-2 h-fit dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white",
+              idAttr := "login-username",
+              onInput.value --> username,
+              value := "",
+            ),
+            label(cls := "label", span(cls := "label-text text-slate-500 dark:text-gray-300", "Password")),
+            input(
+              tpe := "password",
+              placeholder := "Password",
+              idAttr := "login-password",
+              cls := "input input-bordered w-full text-sm p-2 h-fit dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white",
+              onInput.value --> password,
+              value := "",
+            ),
             Button(
               ButtonStyle.Primary,
-              "Logout",
-              onClick.foreach(_ => {
-                jsImplicits.discovery.logout()
-              }),
+              "Login",
               cls := "w-full mt-2",
-            )
-          else
-            div(
-              cls := "form-control w-full text-sm",
-              label(cls := "label", span(cls := "label-text text-slate-500 dark:text-gray-300", "Username")),
-              input(
-                tpe := "text",
-                placeholder := "Username",
-                cls := "input input-bordered w-full text-sm p-2 h-fit dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white",
-                idAttr := "login-username",
-                onInput.value --> username,
-                value := "",
-              ),
-              label(cls := "label", span(cls := "label-text text-slate-500 dark:text-gray-300", "Password")),
-              input(
-                tpe := "password",
-                placeholder := "Password",
-                idAttr := "login-password",
-                cls := "input input-bordered w-full text-sm p-2 h-fit dark:bg-gray-700 dark:placeholder-gray-400 dark:text-white",
-                onInput.value --> password,
-                value := "",
-              ),
-              Button(
-                ButtonStyle.Primary,
-                "Login",
-                cls := "w-full mt-2",
-                disabled <-- username.map(s => s.isBlank()), // || password.map(s => s.isBlank())}
-                onClick
-                  .foreach(_ =>
-                    jsImplicits.discovery
-                      .login(new LoginInfo(username.now, password.now))
-                      .onComplete(result => {
-                        result match {
-                          case Failure(exception: LoginException) => {
-                            exception.fields.foreach(field => {
-                              val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
-                              input.setCustomValidity(exception.message)
-                              input.reportValidity()
-                            })
-                          }
-                          case Failure(_) => console.log("some login error has happened")
-                          case Success(value) => {
-                            jsImplicits.discovery.setAutoconnect(true)
-                          }
+              disabled <-- Signal { username.value.isBlank() || password.value.isBlank() },
+              onClick
+                .foreach(_ =>
+                  jsImplicits.discovery
+                    .login(new LoginInfo(username.now, password.now))
+                    .onComplete(result => {
+                      result match {
+                        case Failure(exception: LoginException) => {
+                          exception.fields.foreach(field => {
+                            val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
+                            input.setCustomValidity(exception.message)
+                            input.reportValidity()
+                          })
                         }
-                      }),
-                  ),
-              ),
+                        case Failure(_) => console.log("some login error has happened")
+                        case Success(value) => {
+                          jsImplicits.discovery.setAutoconnect(true)
+                        }
+                      }
+                    }),
+                ),
             ),
-        ),
+          )
+      },
     )
   }
 }
