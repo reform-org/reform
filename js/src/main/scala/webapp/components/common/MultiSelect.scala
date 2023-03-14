@@ -113,7 +113,7 @@ private class MultiSelect(
                 .slice(0, visibleItems.value)
                 .map(option => {
                   div(
-                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500",
+                    cls := "bg-slate-300 text-slate-600 px-2 py-0.5 rounded-md flex flex-row gap-1 items-center whitespace-nowrap dark:bg-gray-500 dark:text-gray-200",
                     option.name,
                     div(
                       icons.Close(cls := "w-4 h-4 text-slate-600 dark:text-slate-200"),
