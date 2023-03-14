@@ -89,13 +89,7 @@ case class ExtendContractPage(contractId: String)(using
               InnerExtendContractsPage(Some(currentContract), contractId).render()
             case None =>
               navigationHeader(
-                div(
-                  div(
-                    cls := "p-1",
-                    h1(cls := "text-4xl text-center", "Contract"),
-                  ),
-                  h2("Contract not found"),
-                ),
+                ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage()),
               )
           }
           result
@@ -119,13 +113,7 @@ case class EditContractsPage(contractId: String)(using
               InnerEditContractsPage(Some(currentContract), contractId).render()
             case None =>
               navigationHeader(
-                div(
-                  div(
-                    cls := "p-1",
-                    h1(cls := "text-4xl text-center", "Contract"),
-                  ),
-                  h2("Contract not found"),
-                ),
+                ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage()),
               )
           }
           result
