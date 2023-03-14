@@ -49,7 +49,7 @@ VITE_SELENIUM=true npm run dev
 
 To start the always-on server
 ```bash
-sbt webappJVM/run
+export $(cat .env.lukasschreiber | xargs) && sbt webappJVM/run
 ```
 
 Then open linked instances in your browser:
