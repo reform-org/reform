@@ -47,13 +47,7 @@ def LabeledCheckbox(labelProps: VMod*)(style: CheckboxStyle, props: VMod*): VNod
   div(
     cls := "form-control",
     label(
-      input(
-        props,
-        style.props,
-        tpe := "checkbox",
-        cls := "checkbox checkbox-xs rounded",
-        idAttr := s"all-checkbox-$id",
-      ),
+      Checkbox(style, props, idAttr := s"all-checkbox-$id"),
       forId := s"all-checkbox-$id",
       cls := "label cursor-pointer !justify-start gap-2",
       span(cls := "label-text", labelProps),

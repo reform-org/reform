@@ -121,17 +121,21 @@ class Toast(using toaster: Toaster)(
   }
 
   def render: VNode = {
+    val killTimer =
+      if (toastMode.closeable) Some(window.setTimeout(() => { this.onclose(this) }, toastMode.duration)) else None
+
     div(
       cls := s"${toastType.primaryBgClass} ${toastType.textClass} toast-elem shadow-md alert relative overflow-hidden w-fit",
-      onMouseEnter.foreach(_ =>
+      onMouseEnter.foreach(_ => {
+        killTimer.map(window.clearTimeout(_))
         animationRef match {
           case Some(ref) => {
             pausedAtTimeStamp = previousTimeStamp
             window.cancelAnimationFrame(ref)
           }
           case None => {}
-        },
-      ),
+        }
+      }),
       onMouseLeave.foreach(_ =>
         animationRef match {
           case Some(ref) => {

@@ -71,7 +71,7 @@ def Select(
                 if (!styleValidity)
                   cls := "text-slate-400 dark:text-gray-200"
                 else None,
-                cls := "flex items-center justify-center",
+                cls := "flex items-center justify-center select-none",
                 "Select...",
               ),
             )

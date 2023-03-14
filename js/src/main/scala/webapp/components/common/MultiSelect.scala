@@ -59,19 +59,17 @@ private class MultiSelect(
   }
 
   def handleResize = Signal.dynamic {
-    console.log("fire")
     val element = Option(document.querySelector(s"#$id"))
     if (element.nonEmpty) {
-      val maxWidth = element.get.getBoundingClientRect().width - remToPx(2.25)
+      val maxWidth = element.get.getBoundingClientRect().width - remToPx(4.5)
       val items = options.value
         .filter(v => value.value.contains(v.id))
       val rect = element.get.querySelector(s".multiselect-value-wrapper").getBoundingClientRect()
       if (maxWidth > 0 && items.nonEmpty && rect.width > maxWidth) {
-        val widths = items.map(v => v.displayWidth("pl-2 pr-7"))
+        val widths = items.map(v => v.displayWidth("pl-2 pr-7").value)
         var widthAcc = 0.0
         var visibleItemsCount = 0
 
-        println(s"should be $maxWidth")
         widths.foreach(w => {
           if (widthAcc + w <= maxWidth) {
             console.log(w)
@@ -81,8 +79,6 @@ private class MultiSelect(
             visibleItems.set(visibleItemsCount)
           }
         })
-
-        println(s"width is $widthAcc, $visibleItemsCount")
       }
     }
   }
@@ -135,6 +131,7 @@ private class MultiSelect(
             Signal.dynamic {
               options.value
                 .filter(v => value.value.contains(v.id))
+                .sortBy(_.displayWidth().value)
                 .slice(0, visibleItems.value)
                 .map(option => {
                   div(
@@ -167,7 +164,7 @@ private class MultiSelect(
                 Some(
                   div(
                     if (!styleValidity)
-                      cls := "text-slate-400"
+                      cls := "text-slate-400 dark:text-gray-400"
                     else None,
                     cls := "flex items-center justify-center",
                     "Select...",

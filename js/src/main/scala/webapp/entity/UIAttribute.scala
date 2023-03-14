@@ -72,7 +72,7 @@ class UIReadOnlyAttribute[EntityType, T](
 )(using renderMagic: Render[T])
     extends UIBasicAttribute[EntityType](label, width, formats) {
   override def render(id: String, entity: EntityType): VMod = {
-    div(cls := "px-4", getter(id, entity), formats.map(f => cls <-- f.apply(id, entity)))
+    div(cls := "px-4 min-h-9 flex items-center", div(getter(id, entity)), formats.map(f => cls <-- f.apply(id, entity)))
   }
 
   override def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]], props: VMod*): VMod = {

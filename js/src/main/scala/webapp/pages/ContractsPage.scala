@@ -383,7 +383,7 @@ class ContractPageAttributes(using
                 js.Date.now().toLong,
               ).value
             },
-          "text-red-500 font-bold",
+          "bg-red-200 text-red-600",
         ),
       ),
     )

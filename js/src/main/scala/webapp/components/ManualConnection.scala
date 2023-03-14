@@ -42,9 +42,9 @@ private def showConnectionToken(connection: PendingConnection)(using jsImplicits
       cls := "flex gap-1 mt-2",
       button(
         data.token := PendingConnection.sessionAsToken(session),
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group tooltip tooltip-top",
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-200 p-2 min-h-10 border-0 hover:bg-purple-300 shadow-md group tooltip tooltip-top",
         data.tip := "Copy",
-        icons.Clipboard(cls := "w-6 h-6 text-white group-hover:text-purple-600"),
+        icons.Clipboard(cls := "w-6 h-6 text-purple-600"),
         onClick.foreach(_ =>
           window.navigator.clipboard
             .writeText(PendingConnection.sessionAsToken(session))
@@ -53,8 +53,8 @@ private def showConnectionToken(connection: PendingConnection)(using jsImplicits
         ),
       ),
       a(
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        icons.Mail(cls := "w-6 h-6 text-white group-hover:text-purple-600"),
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-200 p-2 min-h-10 border-0 hover:bg-purple-300 shadow-md group",
+        icons.Mail(cls := "w-6 h-6 text-purple-600"),
         href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
@@ -235,12 +235,12 @@ class ManualConnectionDialog(using
         ),
         label(
           forId := "hostMode",
-          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-l-xl cursor-pointer uppercase font-bold text-xs text-purple-300 peer-checked/host:text-purple-600 peer-checked/host:bg-purple-200 shadow",
+          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-l-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/host:text-purple-600 peer-checked/host:bg-purple-200 shadow",
           "Host",
         ),
         label(
           forId := "clientMode",
-          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-r-xl cursor-pointer uppercase font-bold text-xs text-purple-300 peer-checked/client:text-purple-600 peer-checked/client:bg-purple-200 shadow",
+          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-r-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/client:text-purple-600 peer-checked/client:bg-purple-200 shadow",
           "Client",
         ),
       ),

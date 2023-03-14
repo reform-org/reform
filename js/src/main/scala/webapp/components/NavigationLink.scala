@@ -25,7 +25,7 @@ import webapp.services.RoutingService
 
 def navigationLink(using jsImplicits: JSImplicits)(page: Page, label: String): VNode = {
   a(
-    cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+    cls := "btn btn-ghost normal-case	font-normal rounded-md	hover:bg-slate-100 dark:hover:bg-gray-800/50",
     label,
     onClick.foreach(e => {
       e.preventDefault()
@@ -42,7 +42,7 @@ def navigationLink(using jsImplicits: JSImplicits)(page: Page, label: String): V
 
 def navigationIconLink(using jsImplicits: JSImplicits)(page: Page, icon: VNode): VNode = {
   a(
-    cls := "btn btn-ghost normal-case	font-normal rounded-md	",
+    cls := "btn btn-ghost normal-case	font-normal rounded-md	hover:bg-slate-100 dark:hover:bg-gray-800/50",
     icon,
     onClick.foreach(e => {
       e.preventDefault()

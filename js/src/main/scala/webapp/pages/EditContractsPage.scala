@@ -151,7 +151,7 @@ abstract class Step(
           Some(
             div(
               icons.Info(cls := "w-6 h-6 shrink-0	"),
-              cls := "max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm dark:text-gray-600 dark:bg-gray-300",
+              cls := "max-w-[400px] absolute top-1/2 -translate-y-1/2 left-1/2 -translate-x-1/2 max-x-[80%] rounded-lg bg-white p-2 z-[100] text-sm flex items-center flex-row gap-2 shadow-sm dark:text-gray-200 dark:bg-gray-700",
               div(
                 if (reasons.length >= 2)
                   s"To $disabledDescription you need ${reasons.take(reasons.length - 1).mkString(", ")} and you need ${reasons(reasons.length - 1)}."
@@ -334,12 +334,32 @@ class BasicInformation(
           div(
             cls := "basis-1/2",
             label(cls := "font-bold", "Hiwi:"),
-            ContractPageAttributes().contractAssociatedHiwi.renderEdit("", editingValue),
+            ContractPageAttributes().contractAssociatedHiwi.renderEdit("", editingValue, cls := "rounded-md"),
+            span(
+              cls := "text-slate-400 dark:text-gray-400 italic text-xs",
+              Signal.dynamic {
+                editingValue.value.map((_, c) => {
+                  jsImplicits.repositories.hiwis.all.value
+                    .find(hiwi => hiwi.id == c.value.contractAssociatedHiwi.get.getOrElse(""))
+                    .map(hiwi => hiwi.signal.value.eMail.get.getOrElse(""))
+                })
+              },
+            ),
           ),
           div(
             cls := "basis-1/2",
             label(cls := "font-bold", "Supervisor:"),
-            ContractPageAttributes().contractAssociatedSupervisor.renderEdit("", editingValue),
+            ContractPageAttributes().contractAssociatedSupervisor.renderEdit("", editingValue, cls := "rounded-md"),
+            span(
+              cls := "text-slate-400 dark:text-gray-400 dark:text-gray-400 italic text-xs",
+              Signal.dynamic {
+                editingValue.value.map((_, c) => {
+                  jsImplicits.repositories.supervisors.all.value
+                    .find(supervisor => supervisor.id == c.value.contractAssociatedSupervisor.get.getOrElse(""))
+                    .map(supervisor => supervisor.signal.value.eMail.get.getOrElse(""))
+                })
+              },
+            ),
           ),
         ),
         div(
@@ -347,7 +367,7 @@ class BasicInformation(
           div(
             cls := "basis-2/5",
             label(cls := "font-bold", "Start date:"),
-            ContractPageAttributes().contractStartDate.renderEdit("", editingValue),
+            ContractPageAttributes().contractStartDate.renderEdit("", editingValue, cls := "!rounded-md"),
             Signal.dynamic {
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
@@ -396,7 +416,7 @@ class BasicInformation(
           div(
             cls := "basis-2/5",
             label(cls := "font-bold", "End date:"),
-            ContractPageAttributes().contractEndDate.renderEdit("", editingValue),
+            ContractPageAttributes().contractEndDate.renderEdit("", editingValue, cls := "!rounded-md"),
             Signal.dynamic {
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
@@ -501,7 +521,7 @@ class BasicInformation(
                           ),
                         ),
                         span(
-                          cls := "text-slate-400 text-xs italic",
+                          cls := "text-slate-400 dark:text-gray-400 text-xs italic",
                           s"calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started",
                         ),
                       ),
@@ -512,28 +532,41 @@ class BasicInformation(
                           span(cls := "font-bold", toMoneyString(limit)),
                         ),
                         span(
-                          cls := "text-slate-400 text-xs italic",
+                          cls := "text-slate-400 dark:text-gray-400 text-xs italic",
                           s"the limit when the contract has started",
                         ),
                       ),
                       div(
                         cls := "flex flex-col gap-1 dark:text-gray-200",
                         span(
-                          span(cls := "text-sm text-slate-600", "Maxmimum Hours below Limit: "),
+                          span(cls := "text-sm text-slate-600", "Maximum Hours below Limit: "),
                           span(cls := "font-bold", maxHours.toInt),
+                          span(
+                            "use",
+                            cls := "underline py-1 px-2 bg-purple-200 text-purple-600 text-xs rounded-md ml-2 cursor-pointer",
+                            onClick.foreach(_ => {
+                              this.updateHoursPerMonth(maxHours.toInt)
+                            }),
+                          ),
                         ),
                       ),
-                      div(
-                        cls := "flex flex-col gap-1",
-                        span(
-                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
-                          span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
-                        ),
-                        span(
-                          cls := "text-slate-400 text-xs italic",
-                          s"calculating with ${month} month",
-                        ),
-                      ),
+                      if (
+                        contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty && month >= 0
+                      ) {
+                        Some(
+                          div(
+                            cls := "flex flex-col gap-1",
+                            span(
+                              span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
+                              span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
+                            ),
+                            span(
+                              cls := "text-slate-400 dark:text-gray-400 text-xs italic",
+                              s"calculating with ${month} month",
+                            ),
+                          ),
+                        )
+                      } else None,
                     )
                   } else {
                     span()
@@ -545,9 +578,9 @@ class BasicInformation(
           div(
             cls := "basis-1/2",
             label(cls := "font-bold", "Payment Level:"),
-            ContractPageAttributes().contractAssociatedPaymentLevel.renderEdit("", editingValue),
+            ContractPageAttributes().contractAssociatedPaymentLevel.renderEdit("", editingValue, cls := "rounded-md"),
             label(cls := "font-bold", "Hours per month:"),
-            ContractPageAttributes().contractHoursPerMonth.renderEdit("", editingValue),
+            ContractPageAttributes().contractHoursPerMonth.renderEdit("", editingValue, cls := "!rounded-md"),
             Signal.dynamic {
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
@@ -570,8 +603,8 @@ class BasicInformation(
                   contract.contractEndDate.get.getOrElse(0L),
                 )
 
-                project.map(project => {
-                  val totalHoursWithoutThisContract = ProjectAttributes()
+                val totalHoursWithoutThisContract = project.map(project =>
+                  ProjectAttributes()
                     .countContractHours(
                       contract.contractAssociatedProject.get.getOrElse(""),
                       project.signal.value,
@@ -584,53 +617,60 @@ class BasicInformation(
                         project.signal.value,
                         (id, contract) => contract.isDraft.get.getOrElse(true) && id != existingId,
                       )
-                      .value
+                      .value,
+                )
 
-                  val maxHoursForProject =
-                    if (month == 0) None
-                    else Some((project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract) / month)
-
-                  contract.contractHoursPerMonth.get.getOrElse(0) match {
-                    case x if x > maxHoursForTax =>
-                      p(
-                        cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
-                        icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                        span(
-                          s"The monthly wage is above the minijob limit which is ${toMoneyString(limit)}. You might want to ",
-                          span(
-                            cls := "underline cursor-pointer",
-                            onClick.foreach(_ => {
-                              this.updateHoursPerMonth(maxHoursForTax.toInt)
-
-                            }),
-                            s"reduce the hours to ${maxHoursForTax} hours.",
-                          ),
-                        ),
-                      )
-                    case x
-                        if x * month + totalHoursWithoutThisContract > project.signal.value.maxHours.get
-                          .getOrElse(0) && !extend && maxHoursForProject.nonEmpty =>
-                      p(
-                        cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
-                        icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                        span(
-                          s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
-                          span(
-                            cls := "underline cursor-pointer",
-                            onClick.foreach(_ => {
-                              this.updateHoursPerMonth(
-                                if (maxHoursForProject.get < 0) 0
-                                else maxHoursForProject.get,
-                              )
-                            }),
-                            s"You might want to reduce the monthly hours to ${if (maxHoursForProject.get < 0) 0
-                              else maxHoursForProject.get}.",
-                          ),
-                        ),
-                      )
-                    case _ => p()
-                  }
+                val maxHoursForProject = project.flatMap(project => {
+                  if (month == 0) None
+                  else
+                    Some(
+                      (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract.getOrElse(
+                        0,
+                      )) / month,
+                    )
                 })
+
+                contract.contractHoursPerMonth.get.getOrElse(0) match {
+                  case x if x > maxHoursForTax =>
+                    p(
+                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                      span(
+                        s"The monthly wage is above the minijob limit which is ${toMoneyString(limit)}. You might want to ",
+                        span(
+                          cls := "underline cursor-pointer",
+                          onClick.foreach(_ => {
+                            this.updateHoursPerMonth(maxHoursForTax.toInt)
+
+                          }),
+                          s"reduce the hours to ${maxHoursForTax} hours.",
+                        ),
+                      ),
+                    )
+                  case x
+                      if project.nonEmpty && x * month + totalHoursWithoutThisContract
+                        .getOrElse(0) > project.get.signal.value.maxHours.get
+                        .getOrElse(0) && !extend && maxHoursForProject.nonEmpty =>
+                    p(
+                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
+                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                      span(
+                        s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
+                        span(
+                          cls := "underline cursor-pointer",
+                          onClick.foreach(_ => {
+                            this.updateHoursPerMonth(
+                              if (maxHoursForProject.get < 0) 0
+                              else maxHoursForProject.get,
+                            )
+                          }),
+                          s"You might want to reduce the monthly hours to ${if (maxHoursForProject.get < 0) 0
+                            else maxHoursForProject.get}.",
+                        ),
+                      ),
+                    )
+                  case _ => p()
+                }
               })
             },
           ),
@@ -656,7 +696,7 @@ class SelectProject(
         div(
           cls := "basis-1/2",
           label(cls := "font-bold", "Project:"),
-          ContractPageAttributes().contractAssociatedProject.renderEdit("", editingValue),
+          ContractPageAttributes().contractAssociatedProject.renderEdit("", editingValue, cls := "rounded-md"),
         ),
         div(
           cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
@@ -770,7 +810,7 @@ class ContractType(
       div(
         cls := "p-4",
         label(cls := "font-bold", "Contract type:"),
-        ContractPageAttributes().contractAssociatedType.renderEdit("", editingValue),
+        ContractPageAttributes().contractAssociatedType.renderEdit("", editingValue, cls := "rounded-md"),
       ),
     )
   }
@@ -790,9 +830,9 @@ class ContractRequirements(
       div(
         cls := "p-4",
         "Check all forms the hiwi has filled out and handed back.",
-        ContractPageAttributes().requiredDocuments.renderEdit("", editingValue),
+        ContractPageAttributes().requiredDocuments.renderEdit("", editingValue, cls := "rounded-md"),
         i(
-          cls := "text-slate-400 text-xs",
+          cls := "text-slate-400 dark:text-gray-400 text-xs",
           "Documents written in italic have been checked in an older contract type and will be removed from this list once unchecked.",
         ),
       ),
@@ -895,10 +935,10 @@ class ContractRequirementsMail(
           }),
         ),
         div(
-          cls := "text-xs text-slate-400 italic",
+          cls := "text-xs text-slate-400 dark:text-gray-400 italic",
           "Last sent: ",
           span(
-            cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+            cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
             Signal.dynamic {
               val date = editingValue.value
                 .flatMap((_, contract) => contract.value.reminderSentDate.get)
@@ -1010,10 +1050,10 @@ class CreateContract(
               }),
             ),
             div(
-              cls := "text-xs text-slate-400 italic",
+              cls := "text-xs text-slate-400 dark:text-gray-400 italic",
               "Last sent: ",
               span(
-                cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+                cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
                   val date = editingValue.value
                     .flatMap((_, contract) => contract.value.contractSentDate.get)
@@ -1026,7 +1066,7 @@ class CreateContract(
           ),
         ),
         label(
-          ContractPageAttributes().signed.renderEdit("", editingValue),
+          ContractPageAttributes().signed.renderEdit("", editingValue, cls := "rounded-md"),
           " The contract has been signed",
           cls := "mt-2 flex gap-2",
         ),
@@ -1130,10 +1170,10 @@ class CreateLetter(
               }),
             ),
             div(
-              cls := "text-xs text-slate-400 italic",
+              cls := "text-xs text-slate-400 dark:text-gray-400 italic",
               "Last sent: ",
               span(
-                cls := "bg-purple-200 p-1 rounded-md text-purple-600",
+                cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
                   val date = editingValue.value
                     .flatMap((_, contract) => contract.value.letterSentDate.get)
@@ -1146,7 +1186,7 @@ class CreateLetter(
           ),
         ),
         label(
-          ContractPageAttributes().submitted.renderEdit("", editingValue),
+          ContractPageAttributes().submitted.renderEdit("", editingValue, cls := "rounded-md"),
           " The letter has been submitted",
           cls := "mt-2 flex gap-2",
         ),
@@ -1475,11 +1515,22 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
                 editingValue.value
                   .map((_, contractSignal) => {
                     val contract = contractSignal.value
+                    val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
+                      .find(s => s.id == contract.contractType.get.getOrElse(""))
+                      .flatMap(t => t.signal.value.files.get)
                     Seq(
                       (!contract.contractAssociatedHiwi.get.nonEmpty -> "a hiwi"),
                       (!contract.contractAssociatedSupervisor.get.nonEmpty -> "a supervisor"),
                       (!contract.contractType.get.nonEmpty -> "a contract type"),
                       (!jsImplicits.discovery.online.value -> "to be connected to the discovery server"),
+                      ((contract.contractType.get.nonEmpty && requiredDocuments
+                        .getOrElse(Seq.empty)
+                        .size == 0) -> "at least one requirement that can be checked"),
+                      ((contract.contractType.get.nonEmpty && requiredDocuments
+                        .getOrElse(Seq.empty)
+                        .forall(id =>
+                          contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+                        )) -> "at least one requirement that has not been checked"),
                     )
                   })
                   .getOrElse(Seq.empty)

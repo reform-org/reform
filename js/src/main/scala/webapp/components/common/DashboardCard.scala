@@ -16,7 +16,7 @@ def NumberCard(title: String, number: VMod, description: VMod, props: VMod*): VN
       number,
     ),
     div(
-      cls := "self-center text-xs italic text-slate-400",
+      cls := "self-center text-xs italic text-slate-400 dark:text-gray-400",
       description,
     ),
     props,
@@ -35,7 +35,7 @@ def MoneyCard(title: String, number: VMod, description: VMod, props: VMod*): VNo
       div(cls := "text-xl", "€"),
     ),
     div(
-      cls := "self-center text-xs italic text-slate-400",
+      cls := "self-center text-xs italic text-slate-400 dark:text-gray-400",
       description,
     ),
     props,
@@ -51,12 +51,12 @@ def TableCard(
     props: VMod*,
 ): VNode = {
   div(
-    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 min-w-fit overflow-x-auto custom-scrollbar max-w-[900px]  dark:bg-gray-700",
+    cls := "bg-white shadow-lg rounded-lg p-4 flex flex-col gap-4 min-w-fit overflow-x-auto custom-scrollbar max-w-[900px] w-full dark:bg-gray-700",
     div(
       cls := "",
       span(cls := "font-bold text-2xl", title),
       " ",
-      span(cls := "italic text-slate-400", subtitle),
+      span(cls := "italic text-slate-400 dark:text-gray-400", subtitle),
     ),
     table(
       thead(

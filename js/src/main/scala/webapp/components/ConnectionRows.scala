@@ -19,7 +19,7 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
   if (source == "discovery") {
     val own = jsImplicits.discovery.decodeToken(jsImplicits.discovery.token.now.get)
     div(
-      cls := "flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-gray-600 rounded-md",
+      cls := "flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-gray-700/50 rounded-md",
       div(
         cls := "flex flex-col text-sm",
         div(
@@ -29,26 +29,26 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
         i(
           span(
             "ID: ",
-            cls := "text-slate-400",
+            cls := "text-slate-400 dark:text-gray-400",
           ),
           displayId,
-          cls := "text-slate-500 text-xs",
+          cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
         i(
           span(
             "Source: ",
-            cls := "text-slate-400",
+            cls := "text-slate-400 dark:text-gray-400",
           ),
           source,
-          cls := "text-slate-500 text-xs",
+          cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
         i(
           span(
             "Connection: ",
-            cls := "text-slate-400",
+            cls := "text-slate-400 dark:text-gray-400",
           ),
           Signal.fromFuture(jsImplicits.webrtc.getConnectionMode(ref)),
-          cls := "text-slate-500 text-xs",
+          cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
       ),
       div(
@@ -77,7 +77,7 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
     )
   } else
     div(
-      cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
+      cls := "flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-gray-700/50 rounded-md",
       div(
         cls := "flex flex-col text-sm",
         div(
@@ -87,18 +87,18 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
         i(
           span(
             "Source: ",
-            cls := "text-slate-400",
+            cls := "text-slate-400 dark:text-gray-400",
           ),
           source,
-          cls := "text-slate-500 text-xs",
+          cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
         i(
           span(
             "Connection: ",
-            cls := "text-slate-400",
+            cls := "text-slate-400 dark:text-gray-400",
           ),
           Signal.fromFuture(jsImplicits.webrtc.getConnectionMode(ref)),
-          cls := "text-slate-500 text-xs",
+          cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
       ),
       div(
@@ -114,7 +114,7 @@ def availableConnectionRow(
     connection: AvailableConnection,
 )(using jsImplicits: JSImplicits) = {
   div(
-    cls := "flex items-center justify-between p-2 hover:bg-slate-100 rounded-md",
+    cls := "flex items-center justify-between p-2 hover:bg-slate-100 dark:hover:bg-gray-700/50 rounded-md mt-2",
     div(
       cls := "flex flex-col text-sm",
       div(
@@ -124,20 +124,20 @@ def availableConnectionRow(
       i(
         span(
           "ID: ",
-          cls := "text-slate-400",
+          cls := "text-slate-400 dark:text-gray-400",
         ),
         connection.displayId,
-        cls := "text-slate-500 text-xs",
+        cls := "text-slate-500 text-xs dark:text-gray-200",
       ),
       i(
         span(
           "Trust: ",
-          cls := "text-slate-400",
+          cls := "text-slate-400 dark:text-gray-400",
         ),
         if (connection.trusted && !connection.mutualTrust) s"wait for ${connection.name} to trust you"
         else if (!connection.trusted) s"you do not trust ${connection.name} "
         else "you trust each other",
-        cls := "text-slate-500 text-xs",
+        cls := "text-slate-500 text-xs dark:text-gray-200",
       ),
     ),
     if (!connection.trusted) {

@@ -50,7 +50,7 @@ object Reform extends Icon {
       cls := s"font-roboto-slab",
       props,
       span(
-        cls := "text-purple-600 font-extrabold",
+        cls := "text-purple-600 font-extrabold dark:text-gray-200",
         "RE",
       ),
       span(
