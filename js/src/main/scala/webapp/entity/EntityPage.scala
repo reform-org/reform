@@ -32,7 +32,6 @@ import webapp.{*, given}
 import webapp.components.{Modal, ModalButton}
 import webapp.services.{ToastMode, Toaster}
 import webapp.utils.Futures.*
-import webapp.utils.Seqnal.*
 import webapp.components.common.*
 import webapp.components.icons
 import webapp.given_ExecutionContext
@@ -369,15 +368,14 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val cachedExisting: mutable.Map[String, Existing[T]] = mutable.Map.empty
 
-  private val entityRows: Signal[Seq[EntityRow[T]]] =
-    all
-      .flatMap(
-        _.sortBySignal(_.signal.map(_.identifier.get)),
-      )
-      .mapInside(syncedEntity => {
+  private val entityRows: Signal[Seq[EntityRow[T]]] = Signal.dynamic {
+    all.value
+      .sortBy(_.signal.value.identifier.get)
+      .map(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
         entityRowConstructor.construct(title, repository, existing, uiAttributes)
       })
+  }
 
   private val filter = Filter[T](uiAttributes)
 

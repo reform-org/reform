@@ -23,7 +23,6 @@ import PaymentLevelsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
 import rescala.default.*
-import webapp.utils.Seqnal.*
 import webapp.npm.JSUtils.toMoneyString
 import webapp.services.MailService
 import webapp.JSImplicits
@@ -34,7 +33,7 @@ case class PaymentLevelsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
-      Some("Paymentlevel Description..."),
+      Some("Create different payment levels here.The PDF checkbox in the contract is set."),
       jsImplicits.repositories.paymentLevels,
       jsImplicits.repositories.paymentLevels.all,
       Seq(

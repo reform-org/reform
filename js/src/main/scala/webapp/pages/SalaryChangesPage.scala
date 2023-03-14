@@ -34,7 +34,9 @@ case class SalaryChangesPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
-      Some("Salary Changes Description..."),
+      Some(
+        "Salary Changes can be made here. Hourly pay, pay limit and start date for a specific payment level are set.",
+      ),
       jsImplicits.repositories.salaryChanges,
       jsImplicits.repositories.salaryChanges.all,
       Seq(

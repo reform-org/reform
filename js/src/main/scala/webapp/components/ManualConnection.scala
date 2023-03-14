@@ -42,7 +42,8 @@ private def showConnectionToken(connection: PendingConnection)(using jsImplicits
       cls := "flex gap-1 mt-2",
       button(
         data.token := PendingConnection.sessionAsToken(session),
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group tooltip tooltip-top",
+        data.tip := "Copy",
         icons.Clipboard(cls := "w-6 h-6 text-white group-hover:text-purple-600"),
         onClick.foreach(_ =>
           window.navigator.clipboard
@@ -111,7 +112,7 @@ private case class ClientAskingForHostSessionToken()(using jsImplicits: JSImplic
     Button(
       ButtonStyle.Primary,
       "Connect",
-      cls := "w-full",
+      cls := "w-full mt-2",
       disabled <-- Signal { alias.value.isBlank() || sessionToken.value.isBlank() },
       onClick.foreach(_ => connectToHost),
     ),
@@ -181,7 +182,7 @@ private case class HostPending(connection: PendingConnection)(using
     Button(
       ButtonStyle.Primary,
       "Finish Connection",
-      cls := "w-full",
+      cls := "w-full mt-2",
       disabled <-- Signal { sessionTokenFromClient.value.isBlank() },
       onClick.foreach(_ => confirmConnectionToClient()),
     ),
@@ -234,12 +235,12 @@ class ManualConnectionDialog(using
         ),
         label(
           forId := "hostMode",
-          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-l-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/host:text-white peer-checked/host:bg-purple-600 shadow",
+          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-l-xl cursor-pointer uppercase font-bold text-xs text-purple-300 peer-checked/host:text-purple-600 peer-checked/host:bg-purple-200 shadow",
           "Host",
         ),
         label(
           forId := "clientMode",
-          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-r-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/client:text-white peer-checked/client:bg-purple-600 shadow",
+          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-r-xl cursor-pointer uppercase font-bold text-xs text-purple-300 peer-checked/client:text-purple-600 peer-checked/client:bg-purple-200 shadow",
           "Client",
         ),
       ),

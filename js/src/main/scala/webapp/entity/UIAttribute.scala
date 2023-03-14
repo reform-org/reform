@@ -117,7 +117,7 @@ class UITextAttribute[EntityType, AttributeType](
       attr: Signal[Attribute[AttributeType]],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-      entity: EntityType,
+      entity: Var[EntityType],
       props: VMod*,
   ): VMod =
     TableInput(
@@ -158,7 +158,7 @@ class UITextAttribute[EntityType, AttributeType](
           entityVar.map(getter(_)),
           x => set(entityVar, x),
           Some(s"$formId-conflicting-values"),
-          entityVar.value,
+          entityVar,
           props,
         ),
         if (editStartAttr.getAll.size > 1) {
@@ -244,7 +244,7 @@ class UIDateAttribute[EntityType](
       attr: Signal[Attribute[Long]],
       set: Long => Unit,
       datalist: Option[String] = None,
-      entity: EntityType,
+      entity: Var[EntityType],
       props: VMod*,
   ): VMod = TableInput(
     cls := "input",
@@ -298,7 +298,7 @@ class UICheckboxAttribute[EntityType](
       attr: Signal[Attribute[Boolean]],
       set: Boolean => Unit,
       datalist: Option[String] = None,
-      entity: EntityType,
+      entity: Var[EntityType],
       props: VMod*,
   ): VMod = Checkbox(
     CheckboxStyle.Default,
@@ -356,11 +356,11 @@ class UISelectAttribute[EntityType, AttributeType](
       attr: Signal[Attribute[AttributeType]],
       set: AttributeType => Unit,
       datalist: Option[String] = None,
-      entity: EntityType,
+      entity: Var[EntityType],
       props: VMod*,
   ): VMod = {
     Select(
-      options(entity),
+      Signal.dynamic { options(entity.value).value },
       v => {
         set(writeConverter(v))
       },
@@ -425,7 +425,7 @@ class UIMultiSelectAttribute[EntityType](
                   Signal {
                     options(entity).value
                       .filter(p => p.id.equals(id))
-                      .map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md", v.name))
+                      .map(v => div(cls := "bg-slate-300 px-2 py-0.5 rounded-md dark:bg-gray-500", v.name))
                   },
                 ),
               ),
@@ -442,12 +442,12 @@ class UIMultiSelectAttribute[EntityType](
       attr: Signal[Attribute[Seq[String]]],
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
-      entity: EntityType,
+      entity: Var[EntityType],
       props: VMod*,
   ): VMod = {
     Seq(
       MultiSelect(
-        options(entity),
+        Signal.dynamic { options(entity.value).value },
         v => {
           set(v)
         },
@@ -523,12 +523,12 @@ class UICheckboxListAttribute[EntityType](
       attr: Signal[Attribute[Seq[String]]],
       set: Seq[String] => Unit,
       datalist: Option[String] = None,
-      entity: EntityType,
+      entity: Var[EntityType],
       props: VMod*,
   ): VMod = {
     Seq(
       CheckboxList(
-        options(entity),
+        Signal.dynamic { options(entity.value).value },
         v => {
           set(v)
         },

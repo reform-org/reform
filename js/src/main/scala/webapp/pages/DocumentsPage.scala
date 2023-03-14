@@ -34,7 +34,7 @@ case class DocumentsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[Document](
       Title("Document"),
-      Some("Document Description..."),
+      Some("R>equired documents for the different contract schemas are created here."),
       jsImplicits.repositories.requiredDocuments,
       jsImplicits.repositories.requiredDocuments.all,
       Seq(DocumentAttributes().name),
