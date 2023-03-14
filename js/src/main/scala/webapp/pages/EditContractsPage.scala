@@ -549,17 +549,23 @@ class BasicInformation(
                           ),
                         ),
                       ),
-                      div(
-                        cls := "flex flex-col gap-1",
-                        span(
-                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
-                          span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
-                        ),
-                        span(
-                          cls := "text-slate-400 dark:text-gray-400 text-xs italic",
-                          s"calculating with ${month} month",
-                        ),
-                      ),
+                      if (
+                        contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty && month >= 0
+                      ) {
+                        Some(
+                          div(
+                            cls := "flex flex-col gap-1",
+                            span(
+                              span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
+                              span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
+                            ),
+                            span(
+                              cls := "text-slate-400 dark:text-gray-400 text-xs italic",
+                              s"calculating with ${month} month",
+                            ),
+                          ),
+                        )
+                      } else None,
                     )
                   } else {
                     span()
