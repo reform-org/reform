@@ -106,7 +106,6 @@ private class MultiSelect(
       idAttr := id,
       div(
         cls := "multiselect-select flex flex-row w-full h-full items-center",
-        onDomMount.foreach(_ => createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")),
         onClick.foreach(_ => {
           dropdownOpen.transform(!_)
           cleanPopper(s"#$id .multiselect-select")
