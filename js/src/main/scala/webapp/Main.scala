@@ -74,7 +74,7 @@ object Main {
     Outwatch
       .renderInto[SyncIO](
         "#app",
-        body(
+        div(
           jsImplicits.routing.render,
           jsImplicits.toaster.render,
         ),
