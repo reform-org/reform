@@ -111,6 +111,7 @@ private class MultiSelect(
             if (wasOpen) {
               cleanPopper(s"#$id .multiselect-select")
             } else {
+              cleanPopper(s"#$id .multiselect-select")
               createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
             }
             !wasOpen
