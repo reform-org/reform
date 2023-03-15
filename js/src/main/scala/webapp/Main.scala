@@ -72,15 +72,17 @@ object Main {
         .connect(using jsImplicits)()
         .toastOnError(using jsImplicits)()
     Outwatch
-      .renderInto[SyncIO](
+      .renderReplace[SyncIO](
         "#app",
-        div(
-          jsImplicits.routing.render,
-          jsImplicits.toaster.render,
-        ),
+        render(jsImplicits),
       )
       .unsafeRunSync()
   }
+
+  def render(jsImplicits: JSImplicits): VNode = div(
+    jsImplicits.routing.render,
+    jsImplicits.toaster.render,
+  )
 }
 
 val _ = Main.main()
