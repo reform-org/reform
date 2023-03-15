@@ -67,7 +67,6 @@ class HiwiAttributes(using jsImplicits: JSImplicits) {
 
   def birthdate = BuildUIAttribute().date
     .withLabel("Birthdate")
-    .require
     .bindAsDatePicker[Hiwi](
       _.birthdate,
       (h, a) => h.copy(birthdate = a),

@@ -1551,12 +1551,16 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
                 editingValue.value
                   .map((_, contractSignal) => {
                     val contract = contractSignal.value
+                    val hiwi = jsImplicits.repositories.hiwis.all.value.find(hiwi =>
+                      hiwi.id == contract.contractAssociatedHiwi.get.getOrElse(""),
+                    )
                     Seq(
-                      (!contract.contractAssociatedHiwi.get.nonEmpty -> "a hiwi"),
+                      (!hiwi.nonEmpty -> "a hiwi"),
                       (!contract.contractEndDate.get.nonEmpty -> "an end date"),
                       (!contract.contractStartDate.get.nonEmpty -> "a start date"),
                       (!contract.contractAssociatedPaymentLevel.get.nonEmpty -> "a payment level"),
                       (!contract.contractHoursPerMonth.get.nonEmpty -> "to set hours per month"),
+                      ((hiwi.nonEmpty && !hiwi.get.signal.value.birthdate.get.nonEmpty) -> "a hiwi with a birthdate"),
                     )
                   })
                   .getOrElse(Seq.empty)
