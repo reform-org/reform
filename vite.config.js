@@ -18,6 +18,8 @@ export default {
 					/^\/api/,
 					/.*\.js\.map/,
 				],
+				clientsClaim: true,
+				skipWaiting: true,
 			},
 			includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'favicon-32x32.png', 'favicon-16x16.png'],
 			manifest: {
