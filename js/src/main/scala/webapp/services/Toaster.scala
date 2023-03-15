@@ -120,7 +120,7 @@ class Toast(using toaster: Toaster)(
     animationRef = Some(window.requestAnimationFrame(t => animate(t)))
   }
 
-  def render: VNode = {
+  def render: VMod = {
     val killTimer =
       if (toastMode.closeable) Some(window.setTimeout(() => { this.onclose(this) }, toastMode.duration)) else None
 
@@ -222,7 +222,7 @@ class Toaster() {
     this.addToast.fire(toast);
   }
 
-  def render: VNode = {
+  def render: VMod = {
     div(
       cls := "toast toast-end items-end !p-0 bottom-4 right-4",
       Signal { toasts.value.map(toast => { toast.render }) },

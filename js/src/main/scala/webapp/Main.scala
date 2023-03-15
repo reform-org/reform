@@ -31,6 +31,7 @@ import webapp.given_ExecutionContext
 
 import scala.scalajs.js
 import scala.annotation.nowarn
+import webapp.components.navigationHeader
 
 object Main {
   def main(): Unit = {
@@ -72,15 +73,17 @@ object Main {
         .connect(using jsImplicits)()
         .toastOnError(using jsImplicits)()
     Outwatch
-      .renderInto[SyncIO](
+      .renderReplace[SyncIO](
         "#app",
-        body(
-          jsImplicits.routing.render,
-          jsImplicits.toaster.render,
-        ),
+        render(using jsImplicits),
       )
       .unsafeRunSync()
   }
+
+  def render(using jsImplicits: JSImplicits): VNode = div(
+    navigationHeader(jsImplicits.routing.render),
+    jsImplicits.toaster.render,
+  )
 }
 
 val _ = Main.main()

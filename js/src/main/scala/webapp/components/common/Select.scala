@@ -10,7 +10,6 @@ import webapp.components.icons
 import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 import webapp.npm.JSUtils.cleanPopper
-import webapp.npm.JSUtils.updatePopper
 
 def Select(
     options: Signal[Seq[SelectOption]],
@@ -32,24 +31,30 @@ def Select(
   }
 
   div(
-    onDomMount.foreach(_ => createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")),
     onDomUnmount.foreach(_ => cleanPopper(s"#$id .select-select")),
-    cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
+    cls := "select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none overflow-hidden",
     cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
     props,
     idAttr := id,
     div(
       cls := "select-select flex flex-row w-full h-full items-center",
       onClick.foreach(e => {
-        dropdownOpen.transform(!_)
-        updatePopper(s"#$id .select-select")
+        dropdownOpen.transform(wasOpen => {
+          if (wasOpen) {
+            cleanPopper(s"#$id .select-select")
+          } else {
+            cleanPopper(s"#$id .select-select")
+            createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
+          }
+          !wasOpen
+        })
       }),
       Signal {
         input(
           outwatch.dsl.value := value.value,
           tpe := "text",
           outwatch.dsl.required := required,
-          cls := "peer/select w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
+          cls := "peer/select w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none",
           tabIndex := -1,
           formId := props
             .collectFirst(p => {
@@ -64,9 +69,11 @@ def Select(
       },
       div(
         cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600 dark:text-gray-200",
-        if (styleValidity)
-          cls := "peer-invalid/select:bg-yellow-100 peer-invalid/select:text-yellow-600 peer-invalid/select:border-yellow-600 rounded"
-        else None,
+        cls <-- Signal {
+          if (styleValidity && dropdownOpen.value)
+            "peer-invalid/select:bg-red-100 peer-invalid/select:text-red-600 peer-invalid/select:border-red-600"
+          else ""
+        },
         Signal {
           if (value.value.isEmpty) {
             Some(
@@ -94,7 +101,7 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper dark:bg-gray-800 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+      cls := "!fixed select-dropdown-list-wrapper dark:bg-gray-800 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(

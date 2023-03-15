@@ -14,7 +14,6 @@ import scala.annotation.nowarn
 import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
 import webapp.npm.JSUtils.cleanPopper
-import webapp.npm.JSUtils.updatePopper
 
 private class MultiSelect(
     options: Signal[Seq[SelectOption]],
@@ -96,28 +95,34 @@ private class MultiSelect(
     div(
       onDomMount.foreach(element => {
         resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))
-        createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
       }),
       onDomUnmount.foreach(element => {
         resizeObserver.disconnect()
         cleanPopper(s"#$id .multiselect-select")
       }),
-      cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none",
+      cls := "multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none overflow-hidden",
       cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
       props,
       idAttr := id,
       div(
         cls := "multiselect-select flex flex-row w-full h-full items-center",
         onClick.foreach(_ => {
-          dropdownOpen.transform(!_)
-          updatePopper(s"#$id .multiselect-select")
+          dropdownOpen.transform(wasOpen => {
+            if (wasOpen) {
+              cleanPopper(s"#$id .multiselect-select")
+            } else {
+              cleanPopper(s"#$id .multiselect-select")
+              createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+            }
+            !wasOpen
+          })
         }),
         Signal {
           input(
             outwatch.dsl.value := value.value.mkString(", "),
             tpe := "text",
             outwatch.dsl.required := required,
-            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
+            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none",
             tabIndex := -1,
             formId := props
               .collectFirst {
@@ -130,9 +135,11 @@ private class MultiSelect(
         },
         div(
           cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
-          if (styleValidity)
-            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600 rounded"
-          else None,
+          cls <-- Signal {
+            if (styleValidity && dropdownOpen.value)
+              "peer-invalid/multiselect:bg-red-100 peer-invalid/multiselect:text-red-600 peer-invalid/multiselect:border-red-600"
+            else ""
+          },
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",
             Signal.dynamic {
@@ -188,7 +195,7 @@ private class MultiSelect(
         ),
       ),
       div(
-        cls := "multiselect-dropdown-list-wrapper dark:bg-gray-700 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+        cls := "!fixed multiselect-dropdown-list-wrapper dark:bg-gray-700 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
         if (searchEnabled) {
           Some(renderSearch)
         } else None,

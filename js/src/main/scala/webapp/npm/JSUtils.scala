@@ -28,10 +28,6 @@ object JSUtils {
     NativeImpl.cleanPopper(trigger)
   }
 
-  def updatePopper(trigger: String): Unit = {
-    NativeImpl.updatePopper(trigger)
-  }
-
   def stickyButton(trigger: String, element: String, toggleClass: String): Unit =
     NativeImpl.stickyButton(trigger, element, toggleClass)
 
@@ -70,8 +66,6 @@ object JSUtils {
       js.native
 
     def cleanPopper(trigger: String): Unit = js.native
-
-    def updatePopper(trigger: String): Unit = js.native
 
     def stickyButton(trigger: String, element: String, toggleClass: String): Unit = js.native
 
