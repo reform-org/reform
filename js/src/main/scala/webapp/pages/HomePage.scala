@@ -61,7 +61,7 @@ case class HomePage()(using
     }
   }
 
-  def render: VNode = {
+  def render: VMod = {
     val year =
       jsImplicits.routing
         .getQueryParameterAsString("year")

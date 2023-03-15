@@ -378,7 +378,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val filter = Filter[T](uiAttributes)
 
-  def render: VNode = {
+  def render: VMod = {
     val filterDropdownClosed = Var(true)
 
     navigationHeader(

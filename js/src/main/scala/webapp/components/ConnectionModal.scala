@@ -64,7 +64,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
     )
   }
 
-  def render: VNode = {
+  def render: VMod = {
     ul(
       tabIndex := 0,
       cls := "p-2 shadow-xl menu menu-compact bg-base-100 w-52 dark:bg-gray-600 dark:text-gray-200",
@@ -128,7 +128,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
         cls := "divider uppercase text-slate-300 font-bold text-xs mb-0  after:dark:bg-gray-300 before:dark:bg-gray-300",
         "Manual",
       ),
-      ManualConnectionDialog().render(),
+      ManualConnectionDialog().render,
     )
 
   }
@@ -138,7 +138,7 @@ class Login(using jsImplicits: JSImplicits) {
   private val username = Var("")
   private val password = Var("")
 
-  def render: VNode = {
+  def render: VMod = {
     div(
       Signal {
         if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.value))

@@ -66,14 +66,12 @@ case class NewContractPage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  def render: VNode = {
-    div(
-      jsImplicits.repositories.contracts
-        .create(Contract.empty.default)
-        .map(currentContract => {
-          InnerEditContractsPage(Some(currentContract), "").render()
-        }),
-    )
+  def render: VMod = {
+    jsImplicits.repositories.contracts
+      .create(Contract.empty.default)
+      .map(currentContract => {
+        InnerEditContractsPage(Some(currentContract), "").render
+      })
   }
 }
 
@@ -82,21 +80,19 @@ case class ExtendContractPage(contractId: String)(using
 ) extends Page {
 
   private val existingValue = Signal { jsImplicits.repositories.contracts.all.value.find(c => c.id == contractId) }
-  def render: VNode = {
-    div(
-      existingValue
-        .map(currentContract => {
-          val result: VMod = currentContract match {
-            case Some(currentContract) =>
-              InnerExtendContractsPage(Some(currentContract), contractId).render()
-            case None =>
-              navigationHeader(
-                ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage()),
-              )
-          }
-          result
-        }),
-    )
+  def render: VMod = {
+    existingValue
+      .map(currentContract => {
+        val result: VMod = currentContract match {
+          case Some(currentContract) =>
+            InnerExtendContractsPage(Some(currentContract), contractId).render
+          case None =>
+            navigationHeader(
+              ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage()),
+            )
+        }
+        result
+      })
   }
 }
 
@@ -106,21 +102,19 @@ case class EditContractsPage(contractId: String)(using
 
   private val existingValue = Signal { jsImplicits.repositories.contracts.all.value.find(c => c.id == contractId) }
 
-  def render: VNode = {
-    div(
-      existingValue
-        .map(currentContract => {
-          val result: VMod = currentContract match {
-            case Some(currentContract) =>
-              InnerEditContractsPage(Some(currentContract), contractId).render()
-            case None =>
-              navigationHeader(
-                ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage()),
-              )
-          }
-          result
-        }),
-    )
+  def render: VMod = {
+    existingValue
+      .map(currentContract => {
+        val result: VMod = currentContract match {
+          case Some(currentContract) =>
+            InnerEditContractsPage(Some(currentContract), contractId).render
+          case None =>
+            navigationHeader(
+              ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage()),
+            )
+        }
+        result
+      })
   }
 }
 
@@ -313,7 +307,7 @@ abstract class Step(
     promise.future
   }
 
-  def render: VNode
+  def render: VMod
 }
 
 class BasicInformation(
@@ -326,7 +320,7 @@ class BasicInformation(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("1", "Basic Information", existingId, existingValue, editingValue, disabled, disabledDescription) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "p-4 space-y-4",
@@ -690,7 +684,7 @@ class SelectProject(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("1b", "Select Project", existingId, existingValue, editingValue, disabled, disabledDescription) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "flex flex-col md:flex-row p-4 md:space-x-4",
@@ -806,7 +800,7 @@ class ContractType(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("2", "Contract Schema", existingId, existingValue, editingValue, disabled, disabledDescription) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "p-4",
@@ -826,7 +820,7 @@ class ContractRequirements(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("3", "Contract requirements", existingId, existingValue, editingValue, disabled, disabledDescription) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "p-4",
@@ -859,7 +853,7 @@ class ContractRequirementsMail(
       disabled,
       disabledDescription,
     ) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "p-4 flex flex-col gap-2",
@@ -964,7 +958,7 @@ class CreateContract(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("4", "Create Documents", existingId, existingValue, editingValue, disabled, disabledDescription) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "p-4 flex flex-col",
@@ -1086,7 +1080,7 @@ class CreateLetter(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("5", "Letter to Dekanat", existingId, existingValue, editingValue, disabled, disabledDescription) {
-  def render: VNode = {
+  def render: VMod = {
     this.editStep(
       div(
         cls := "p-4 flex flex-col",
@@ -1234,7 +1228,7 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
       })
   }
 
-  override def render: VNode = {
+  override def render: VMod = {
     navigationHeader(
       div(
         cls := "flex flex-col items-center",
@@ -1473,7 +1467,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     ""
   }
 
-  def render: VNode = {
+  def render: VMod = {
     navigationHeader(
       Signal
         .dynamic {

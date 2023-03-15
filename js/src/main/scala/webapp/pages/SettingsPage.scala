@@ -47,7 +47,7 @@ case class SettingsPage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  def render: VNode = {
+  def render: VMod = {
     val deleteButtonActive = Var(false)
     val deleteDBModal = new Modal(
       "Do you really want to drop the Database?",

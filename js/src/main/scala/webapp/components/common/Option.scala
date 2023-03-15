@@ -12,7 +12,7 @@ class SelectOption(
     val name: Signal[String],
     val props: VMod*,
 ) {
-  def render: VNode = {
+  def render: VMod = {
     span(props, name, cls := "overflow-hidden max-w-full text-ellipsis inline-block")
   }
 
