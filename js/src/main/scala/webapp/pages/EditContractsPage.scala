@@ -19,7 +19,6 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import rescala.default.*
-import webapp.components.navigationHeader
 import webapp.services.Page
 import webapp.entity.*
 import webapp.{*, given}
@@ -87,9 +86,7 @@ case class ExtendContractPage(contractId: String)(using
           case Some(currentContract) =>
             InnerExtendContractsPage(Some(currentContract), contractId).render
           case None =>
-            navigationHeader(
-              ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage()),
-            )
+            ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage())
         }
         result
       })
@@ -109,9 +106,7 @@ case class EditContractsPage(contractId: String)(using
           case Some(currentContract) =>
             InnerEditContractsPage(Some(currentContract), contractId).render
           case None =>
-            navigationHeader(
-              ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage()),
-            )
+            ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage())
         }
         result
       })
@@ -1229,31 +1224,29 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
   }
 
   override def render: VMod = {
-    navigationHeader(
+    div(
+      cls := "flex flex-col items-center",
       div(
-        cls := "flex flex-col items-center",
-        div(
-          cls := "p-1",
-          h1(
-            cls := "text-3xl mt-4 text-center",
-            "Extend Contract",
-          ),
+        cls := "p-1",
+        h1(
+          cls := "text-3xl mt-4 text-center",
+          "Extend Contract",
         ),
-        div(
-          cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
-          form(
-            BasicInformation(contractId, existingValue, editingValue, Signal(Seq.empty), "", true).render,
-            div(
-              idAttr := "static_buttons",
-              cls := "pl-4 flex flex-col md:flex-row gap-2",
-              Button(
-                ButtonStyle.LightPrimary,
-                "Create Draft",
-                onClick.foreach(e => {
-                  e.preventDefault()
-                  createDraft()
-                }),
-              ),
+      ),
+      div(
+        cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
+        form(
+          BasicInformation(contractId, existingValue, editingValue, Signal(Seq.empty), "", true).render,
+          div(
+            idAttr := "static_buttons",
+            cls := "pl-4 flex flex-col md:flex-row gap-2",
+            Button(
+              ButtonStyle.LightPrimary,
+              "Create Draft",
+              onClick.foreach(e => {
+                e.preventDefault()
+                createDraft()
+              }),
             ),
           ),
         ),
@@ -1468,7 +1461,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
   }
 
   def render: VMod = {
-    navigationHeader(
+    div(
       Signal
         .dynamic {
           existingValue.flatMap(existingValue =>

@@ -31,6 +31,7 @@ import webapp.given_ExecutionContext
 
 import scala.scalajs.js
 import scala.annotation.nowarn
+import webapp.components.navigationHeader
 
 object Main {
   def main(): Unit = {
@@ -74,13 +75,13 @@ object Main {
     Outwatch
       .renderReplace[SyncIO](
         "#app",
-        render(jsImplicits),
+        render(using jsImplicits),
       )
       .unsafeRunSync()
   }
 
-  def render(jsImplicits: JSImplicits): VNode = div(
-    jsImplicits.routing.render,
+  def render(using jsImplicits: JSImplicits): VNode = div(
+    navigationHeader(jsImplicits.routing.render),
     jsImplicits.toaster.render,
   )
 }

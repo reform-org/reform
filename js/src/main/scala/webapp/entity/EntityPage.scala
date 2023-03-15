@@ -21,7 +21,6 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import rescala.default.*
-import webapp.components.navigationHeader
 import webapp.repo.Repository
 import webapp.repo.Synced
 import webapp.services.DiscoveryService
@@ -381,145 +380,143 @@ abstract class EntityPage[T <: Entity[T]](
   def render: VMod = {
     val filterDropdownClosed = Var(true)
 
-    navigationHeader(
+    div(
+      h1(cls := "text-3xl mt-4 text-center", title.plural),
       div(
-        h1(cls := "text-3xl mt-4 text-center", title.plural),
+        cls := "w-[95%] mx-[2.5%] text-slate-400 dark:text-gray-200 mt-4",
+        description,
+      ),
+      div(
+        cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
         div(
-          cls := "w-[95%] mx-[2.5%] text-slate-400 dark:text-gray-200 mt-4",
-          description,
-        ),
-        div(
-          cls := "relative shadow-md rounded-lg p-4 my-4 mx-[2.5%] inline-block overflow-y-visible w-[95%] dark:bg-gray-600",
+          cls := "flex flex-col sm:flex-row gap-2 items-left md:items-center mb-4",
           div(
-            cls := "flex flex-col sm:flex-row gap-2 items-left md:items-center mb-4",
-            div(
-              cls := "",
-              Button(
-                ButtonStyle.LightDefault,
-                tabIndex := 0,
-                "Filter",
-                idAttr := "filter-btn",
-                div(
-                  cls := "ml-3 badge dark:bg-gray-200 dark:text-gray-800",
-                  jsImplicits.routing.countQueryParameters(
-                    uiAttributes.map(attr => toQueryParameterName(attr.label)) :+ "columns",
-                  ),
-                ),
-                icons.Filter(cls := "ml-1 w-6 h-6"),
-                cls := "!mt-0",
-                onClick.foreach(e => {
-                  filterDropdownClosed.transform(!_)
-                }),
-              ),
-            ),
-            div(
-              Signal.dynamic {
-                s"${countFilteredEntities.value} / ${countEntities.value} ${title.plural}"
-              },
-            ),
+            cls := "",
             Button(
               ButtonStyle.LightDefault,
-              "Export to Spreadsheet Editor",
-              cls := "md:ml-auto",
-              onClick.foreach(_ => exportView()),
-            ),
-            if (addInPlace) {
-              Some(addButton)
-            } else None,
-          ),
-          div(
-            cls <-- Signal { if (filterDropdownClosed.value) Some("hidden") else None },
-            idAttr := "filter-dropdown",
-            cls := "menu p-2 mb-4 transition-none flex flex-row gap-2",
-            filter.render,
-            div(
-              cls := "max-w-[300px] min-w-[300px] min-w-[300px]",
-              "Columns",
-              MultiSelect(
-                Signal(
-                  uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
+              tabIndex := 0,
+              "Filter",
+              idAttr := "filter-btn",
+              div(
+                cls := "ml-3 badge dark:bg-gray-200 dark:text-gray-800",
+                jsImplicits.routing.countQueryParameters(
+                  uiAttributes.map(attr => toQueryParameterName(attr.label)) :+ "columns",
                 ),
-                value => jsImplicits.routing.updateQueryParameters(Map("columns" -> value)),
-                jsImplicits.routing.getQueryParameterAsSeq("columns"),
-                4,
-                true,
-                span("Nothing found..."),
-                false,
-                cls := "rounded-md min-w-full",
               ),
+              icons.Filter(cls := "ml-1 w-6 h-6"),
+              cls := "!mt-0",
+              onClick.foreach(e => {
+                filterDropdownClosed.transform(!_)
+              }),
             ),
           ),
           div(
-            cls := "overflow-x-auto custom-scrollbar",
-            table(
-              cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
-              thead(
-                tr(
-                  Signal {
-                    val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
-                    uiAttributes
-                      .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
-                      .map(a =>
-                        th(
-                          cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
-                          styleAttr := (a.width match {
-                            case None    => "min-width: 200px;"
-                            case Some(v) => s"max-width: $v; min-width: $v; width: $v"
-                          }),
-                          a.label,
-                        ),
-                      )
-                  },
-                  th(
-                    cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] !z-[1]",
-                  ),
-                ),
+            Signal.dynamic {
+              s"${countFilteredEntities.value} / ${countEntities.value} ${title.plural}"
+            },
+          ),
+          Button(
+            ButtonStyle.LightDefault,
+            "Export to Spreadsheet Editor",
+            cls := "md:ml-auto",
+            onClick.foreach(_ => exportView()),
+          ),
+          if (addInPlace) {
+            Some(addButton)
+          } else None,
+        ),
+        div(
+          cls <-- Signal { if (filterDropdownClosed.value) Some("hidden") else None },
+          idAttr := "filter-dropdown",
+          cls := "menu p-2 mb-4 transition-none flex flex-row gap-2",
+          filter.render,
+          div(
+            cls := "max-w-[300px] min-w-[300px] min-w-[300px]",
+            "Columns",
+            MultiSelect(
+              Signal(
+                uiAttributes.map(attr => SelectOption(toQueryParameterName(attr.label), Signal(attr.label))),
               ),
-              tbody(
-                cls := "dark:bg-gray-600",
+              value => jsImplicits.routing.updateQueryParameters(Map("columns" -> value)),
+              jsImplicits.routing.getQueryParameterAsSeq("columns"),
+              4,
+              true,
+              span("Nothing found..."),
+              false,
+              cls := "rounded-md min-w-full",
+            ),
+          ),
+        ),
+        div(
+          cls := "overflow-x-auto custom-scrollbar",
+          table(
+            cls := "w-full text-left table-auto border-separate border-spacing-0 table-fixed-height mb-2",
+            thead(
+              tr(
                 Signal {
-                  if (countEntities.value == 0)
-                    List(
-                      tr(
-                        cls := "h-4",
-                      ),
-                      tr(
-                        td(
-                          colSpan := 100,
-                          cls := "text-slate-500",
-                          "No entries.",
-                        ),
-                      ),
-                    )
-                  else if (countFilteredEntities.value == 0 && countEntities.value > 0)
-                    List(
-                      tr(
-                        cls := "h-4",
-                      ),
-                      tr(
-                        td(
-                          colSpan := 100,
-                          cls := "text-slate-500",
-                          "No results for your filter.",
-                        ),
+                  val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").value
+                  uiAttributes
+                    .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
+                    .map(a =>
+                      th(
+                        cls := "border-gray-300 dark:border-gray-700 border-b-2 border-t border-l dark:border-gray-700 px-4 py-2 uppercase dark:bg-gray-600",
+                        styleAttr := (a.width match {
+                          case None    => "min-width: 200px;"
+                          case Some(v) => s"max-width: $v; min-width: $v; width: $v"
+                        }),
+                        a.label,
                       ),
                     )
-                  else List()
                 },
-                renderEntities,
+                th(
+                  cls := "border-gray-300 dark:border-gray-700 border border-b-2 dark:border-gray-500 dark:bg-gray-600 px-4 py-2 uppercase text-center sticky right-0 bg-white min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] !z-[1]",
+                ),
               ),
-              if (!addInPlace) {
-                Some(
-                  tfoot(
+            ),
+            tbody(
+              cls := "dark:bg-gray-600",
+              Signal {
+                if (countEntities.value == 0)
+                  List(
                     tr(
                       cls := "h-4",
                     ),
-                    cls := "",
-                    addEntityRow.render,
-                  ),
-                )
-              } else None,
+                    tr(
+                      td(
+                        colSpan := 100,
+                        cls := "text-slate-500",
+                        "No entries.",
+                      ),
+                    ),
+                  )
+                else if (countFilteredEntities.value == 0 && countEntities.value > 0)
+                  List(
+                    tr(
+                      cls := "h-4",
+                    ),
+                    tr(
+                      td(
+                        colSpan := 100,
+                        cls := "text-slate-500",
+                        "No results for your filter.",
+                      ),
+                    ),
+                  )
+                else List()
+              },
+              renderEntities,
             ),
+            if (!addInPlace) {
+              Some(
+                tfoot(
+                  tr(
+                    cls := "h-4",
+                  ),
+                  cls := "",
+                  addEntityRow.render,
+                ),
+              )
+            } else None,
           ),
         ),
       ),
