@@ -6,7 +6,7 @@
   "scripts": {
     "sbt:dev": "sbt ~fastLinkJS",
     "dev": "vite --mode lukasschreiber",
-    "build": "NODE_OPTIONS=--max-old-space-size=4096 vite build",
+    "build": "vite build",
     "preview": "vite preview",
     "test": "vitest",
     "spawn-test-instances": "node --loader ts-node/esm webapp/tests/selenium/spawn-test-instances.ts",
@@ -23,7 +23,7 @@
     "tailwindcss": "^3.2.7",
     "ts-node": "^10.9.1",
     "vite-plugin-pwa": "^0.14.4",
-    "vitest": "^0.28.4",
+    "vitest": "^0.29.2",
     "vite": "^4.1.4"
   },
   "dependencies": {
@@ -34,7 +34,7 @@
     "@types/selenium-webdriver": "^4.1.13",
     "browserstack-local": "^1.5.1",
     "chance": "^1.1.11",
-    "daisyui": "^2.51.3",
+    "daisyui": "^2.51.4",
     "luxon": "^3.3.0",
     "pdf-lib": "^1.17.1",
     "selenium-webdriver": "^4.8.1",
