@@ -8,6 +8,7 @@ export default {
 	plugins: [
 		VitePWA({
 			registerType: 'autoUpdate',
+			injectRegister: 'inline',
 			workbox: {
 				maximumFileSizeToCacheInBytes: 10 * 1000 * 1000,
 				navigateFallbackDenylist: [
