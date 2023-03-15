@@ -100,7 +100,7 @@ private class MultiSelect(
         resizeObserver.disconnect()
         cleanPopper(s"#$id .multiselect-select")
       }),
-      cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none overflow-hidden",
+      cls := "multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none overflow-hidden",
       cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
       props,
       idAttr := id,
