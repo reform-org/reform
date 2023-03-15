@@ -107,9 +107,14 @@ private class MultiSelect(
       div(
         cls := "multiselect-select flex flex-row w-full h-full items-center",
         onClick.foreach(_ => {
-          dropdownOpen.transform(!_)
-          cleanPopper(s"#$id .multiselect-select")
-          createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+          dropdownOpen.transform(wasOpen => {
+            if (wasOpen) {
+              cleanPopper(s"#$id .multiselect-select")
+            } else {
+              createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+            }
+            !wasOpen
+          })
         }),
         Signal {
           input(
@@ -187,7 +192,7 @@ private class MultiSelect(
         ),
       ),
       div(
-        cls := "multiselect-dropdown-list-wrapper dark:bg-gray-700 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+        cls := "!fixed multiselect-dropdown-list-wrapper dark:bg-gray-700 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-lg w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
         if (searchEnabled) {
           Some(renderSearch)
         } else None,

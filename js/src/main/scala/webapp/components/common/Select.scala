@@ -39,9 +39,15 @@ def Select(
     div(
       cls := "select-select flex flex-row w-full h-full items-center",
       onClick.foreach(e => {
-        dropdownOpen.transform(!_)
-        cleanPopper(s"#$id .select-select")
-        createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
+        dropdownOpen.transform(wasOpen => {
+          if (wasOpen) {
+            cleanPopper(s"#$id .multiselect-select")
+          } else {
+            cleanPopper(s"#$id .multiselect-select")
+            createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+          }
+          !wasOpen
+        })
       }),
       Signal {
         input(
@@ -93,7 +99,7 @@ def Select(
       ),
     ),
     div(
-      cls := "select-dropdown-list-wrapper dark:bg-gray-800 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
+      cls := "!fixed select-dropdown-list-wrapper dark:bg-gray-800 dark:border-gray-700 bg-white dropdown-content !transition-none shadow-xl w-full rounded top-0 left-0 border border-gray-300 !z-[100]",
       if (searchEnabled) {
         Some(
           input(
