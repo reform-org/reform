@@ -6,83 +6,89 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import webapp.components.common.*
+import webapp.toQueryParameterName
+import webapp.services.RoutingService
+import webapp.JSImplicits
 
 trait UIFilter[EntityType] {
-  def render: VNode
+  def render: VMod
 
   val predicate: Signal[EntityType => Boolean]
 }
 
 class UIFilterNothing[EntityType]() extends UIFilter[EntityType] {
 
-  def render: VNode = td()
+  def render: VMod = None
 
-  val predicate: default.Signal[EntityType => Boolean] = Signal(_ => true)
+  val predicate: Signal[EntityType => Boolean] = Signal(_ => true)
 }
 
-class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])
-    extends UIFilter[EntityType] {
+class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[EntityType, AttributeType])(using
+    jsImplicits: JSImplicits,
+) extends UIFilter[EntityType] {
 
-  private val search = Var("")
+  private val name = toQueryParameterName(uiAttribute.label)
 
-  def render: VNode = {
+  def render: VMod = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
       Input(
         placeholder := "Filter here",
-        value <-- search,
-        onInput.value --> search,
+        value <-- jsImplicits.routing.getQueryParameterAsString(name),
+        onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name -> v))),
       ),
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    search.map(s =>
-      e => uiAttribute.getter(e).get.exists(v => uiAttribute.readConverter(v).toLowerCase.contains(s.toLowerCase)),
-    )
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsString(name).value
+    e => uiAttribute.getter(e).get.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(n.toLowerCase))
   }
 }
 
-class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[EntityType, AttributeType])(implicit
+class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[EntityType, AttributeType])(using
+    jsImplicits: JSImplicits,
+)(implicit
     ordering: Ordering[AttributeType],
 ) extends UIFilter[EntityType] {
 
-  private val min = Var("")
+  private val name = toQueryParameterName(uiAttribute.label)
 
-  private val max = Var("")
-
-  def render: VNode = {
+  def render: VMod = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
-      Input(
-        placeholder := "Minimum value",
-        `type` := uiAttribute.fieldType,
-        value <-- min,
-        onInput.value --> min,
-      ),
-      Input(
-        placeholder := "Maximum value",
-        `type` := uiAttribute.fieldType,
-        value <-- max,
-        onInput.value --> max,
+      div(
+        cls := "flex flex-row gap-2 items-center",
+        Input(
+          placeholder := "Minimum value",
+          `type` := uiAttribute.fieldType,
+          value <-- jsImplicits.routing.getQueryParameterAsString(name + ":min"),
+          onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":min" -> v))),
+        ),
+        "-",
+        Input(
+          placeholder := "Maximum value",
+          `type` := uiAttribute.fieldType,
+          value <-- jsImplicits.routing.getQueryParameterAsString(name + ":max"),
+          onInput.value.foreach(v => jsImplicits.routing.updateQueryParameters(Map(name + ":max" -> v))),
+        ),
       ),
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    min
-      .map(min =>
-        max.map(max =>
-          (e: EntityType) =>
-            uiAttribute
-              .getter(e)
-              .get
-              .exists(
-                isBetween(min, _, max),
-              ),
-        ),
-      )
-      .flatten
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val min = jsImplicits.routing.getQueryParameterAsString(name + ":min").value
+    val max = jsImplicits.routing.getQueryParameterAsString(name + ":max").value
+
+    (e: EntityType) =>
+      uiAttribute
+        .getter(e)
+        .get
+        .forall(
+          isBetween(min, _, max),
+        )
   }
 
   private def isBetween(min: String, value: AttributeType, max: String): Boolean = {
@@ -104,106 +110,131 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
   }
 }
 
-class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[EntityType, AttributeType])
-    extends UIFilter[EntityType] {
+class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[EntityType, AttributeType])(using
+    jsImplicits: JSImplicits,
+) extends UIFilter[EntityType] {
 
-  private val selectValue: Var[Seq[String]] = Var(Seq())
+  private val name = toQueryParameterName(uiAttribute.label)
 
   def render: VNode = {
     div(
+      cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
       MultiSelect(
-        uiAttribute.options.map(option => option.map(selOpt => MultiSelectOption(selOpt.id, selOpt.name))),
-        (value) => selectValue.set(value),
-        selectValue,
+        uiAttribute.optionsForFilter.map(option => option.map(selOpt => SelectOption(selOpt.id, selOpt.name))),
+        value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+        jsImplicits.routing.getQueryParameterAsSeq(name),
         5,
         true,
         span("Nothing found..."),
-        cls := "rounded-md",
-      ),
-    )
-  }
-
-  val predicate: Signal[EntityType => Boolean] = {
-    selectValue.map(s => e => s.size == 0 || uiAttribute.getter(e).get.exists(a => s.contains(a)))
-  }
-}
-
-class UIMultiSelectFilter[EntityType](uiAttribute: UIMultiSelectAttribute[EntityType]) extends UIFilter[EntityType] {
-
-  private val selectValue: Var[Seq[String]] = Var(Seq())
-  private val mode: Var[String] = Var("")
-
-  def render: VNode = {
-    div(
-      uiAttribute.label,
-      Select(
-        Signal(
-          Seq(
-            SelectOption("or", Signal("Contains at least one")),
-            SelectOption("and", Signal("Contains all")),
-            SelectOption("exact", Signal("Exact match")),
-          ),
-        ),
-        (value) => mode.set(value),
-        mode,
         false,
-        span("Nothing found..."),
-        cls := "rounded-md",
-      ),
-      MultiSelect(
-        uiAttribute.options,
-        (value) => selectValue.set(value),
-        selectValue,
-        5,
-        true,
-        span("Nothing found..."),
         cls := "rounded-md",
       ),
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    mode
-      .map(mode =>
-        selectValue
-          .map(s =>
-            (e: EntityType) =>
-              s.size == 0 || uiAttribute
-                .getter(e)
-                .get
-                .exists(a => {
-                  var res = false;
-                  if (mode == "or") {
-                    res = s.toSet.intersect(a.toSet).size > 0
-                  } else if (mode == "and") {
-                    res = s.toSet.intersect(a.toSet).size >= s.toSet.size
-                  } else if (mode == "exact") {
-                    res = s.toSet.intersect(a.toSet).size == s.toSet.size && a.toSet.size == s.toSet.size
-                  }
-                  res
-                }),
-          ),
-      )
-      .flatten
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
+    e => n.isEmpty || uiAttribute.getter(e).get.exists(a => n.contains(a))
   }
 }
 
-class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean]) extends UIFilter[EntityType] {
+class UIMultiSelectFilter[EntityType](
+    uiAttribute: UIMultiSelectAttribute[EntityType] | UICheckboxListAttribute[EntityType],
+)(using
+    jsImplicits: JSImplicits,
+) extends UIFilter[EntityType] {
+
+  private val name = toQueryParameterName(uiAttribute.label)
+
+  def render: VMod = {
+    div(
+      cls := "max-w-[300px] min-w-[300px]",
+      uiAttribute.label,
+      div(
+        cls := "flex flex-col gap-2",
+        Select(
+          Signal(
+            Seq(
+              SelectOption("or", Signal("Contains at least one")),
+              SelectOption("and", Signal("Contains all")),
+              SelectOption("exact", Signal("Exact match")),
+            ),
+          ),
+          value => jsImplicits.routing.updateQueryParameters(Map(name + ":mode" -> value)),
+          jsImplicits.routing.getQueryParameterAsString(name + ":mode"),
+          false,
+          span("Nothing found..."),
+          false,
+          false,
+          cls := "rounded-md",
+        ),
+        MultiSelect(
+          uiAttribute match {
+            case x: UIMultiSelectAttribute[EntityType]  => x.optionsForFilter
+            case x: UICheckboxListAttribute[EntityType] => x.optionsForFilter
+          },
+          value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+          jsImplicits.routing.getQueryParameterAsSeq(name),
+          5,
+          true,
+          span("Nothing found..."),
+          false,
+          cls := "rounded-md",
+        ),
+      ),
+    )
+  }
+
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
+    val mode = jsImplicits.routing.getQueryParameterAsString(name + ":mode").value
+
+    (e: EntityType) =>
+      n.isEmpty || uiAttribute
+        .getter(e)
+        .get
+        .exists(a => {
+          var res = false
+          if (mode == "or") {
+            res = n.toSet.intersect(a.toSet).nonEmpty
+          } else if (mode == "and") {
+            res = n.toSet.intersect(a.toSet).size >= n.toSet.size
+          } else if (mode == "exact") {
+            res = n.toSet.intersect(a.toSet).size == n.toSet.size && a.toSet.size == n.toSet.size
+          }
+          res
+        })
+  }
+}
+
+class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boolean])(using
+    jsImplicits: JSImplicits,
+) extends UIFilter[EntityType] {
+
+  private val name = toQueryParameterName(uiAttribute.label)
 
   private val selected = Var("")
 
   def render: VNode = {
-    select(
-      cls := "input valid:input-success",
-      onInput.value --> selected,
-      option(value := "both", "Both"),
-      option(value := "true", "Yes"),
-      option(value := "false", "No"),
+    div(
+      cls := "max-w-[300px] min-w-[300px]",
+      uiAttribute.label,
+      MultiSelect(
+        Signal(Seq(SelectOption("true", Signal("Yes")), SelectOption("false", Signal("No")))),
+        value => jsImplicits.routing.updateQueryParameters(Map(name -> value)),
+        jsImplicits.routing.getQueryParameterAsSeq(name),
+        5,
+        true,
+        span("Nothing found..."),
+        false,
+        cls := "rounded-md min-w-full",
+      ),
     )
   }
 
-  val predicate: Signal[EntityType => Boolean] = {
-    selected.map(s => e => uiAttribute.getter(e).get.exists(v => s.isBlank || s == "both" || s.toBoolean == v))
+  val predicate: Signal[EntityType => Boolean] = Signal {
+    val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
+    (e: EntityType) => uiAttribute.getter(e).get.forall(v => n.isEmpty || n.map(p => p.toBoolean).contains(v))
   }
 }

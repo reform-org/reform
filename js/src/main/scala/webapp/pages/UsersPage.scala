@@ -21,17 +21,26 @@ import webapp.entity.*
 import UsersPage.*
 import webapp.services.Toaster
 import webapp.services.RoutingService
+import webapp.services.MailService
 import webapp.npm.IIndexedDB
 
-case class UsersPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
-) extends EntityPage[User]("Users", repositories.users, Seq(username, role, comment), DefaultEntityRow()) {}
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
-object UsersPage {
-  private val username = UIAttributeBuilder.string
+case class UsersPage()(using
+    jsImplicits: JSImplicits,
+) extends EntityPage[User](
+      Title("User"),
+      None,
+      jsImplicits.repositories.users,
+      jsImplicits.repositories.users.all,
+      Seq(UserAttributes().username, UserAttributes().role, UserAttributes().comment),
+      DefaultEntityRow(),
+    ) {}
+
+class UserAttributes(using jsImplicits: JSImplicits) {
+  def username = BuildUIAttribute().string
     .withLabel("Username")
     .require
     .bindAsText[User](
@@ -39,7 +48,7 @@ object UsersPage {
       (u, a) => u.copy(username = a),
     )
 
-  private val role = UIAttributeBuilder.string
+  def role = BuildUIAttribute().string
     .withLabel("Role")
     .require
     .bindAsText[User](
@@ -47,7 +56,7 @@ object UsersPage {
       (u, a) => u.copy(role = a),
     )
 
-  private val comment = UIAttributeBuilder.string
+  def comment = BuildUIAttribute().string
     .withLabel("Comment")
     .withDefaultValue("")
     .bindAsText[User](

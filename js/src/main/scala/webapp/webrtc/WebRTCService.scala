@@ -37,13 +37,18 @@ import scala.concurrent.Promise
 import scala.annotation.nowarn
 import webapp.services.{ToastMode, ToastType, Toaster}
 import loci.communicator.ws.webnative.WS
+import loci.communicator.broadcastchannel.BroadcastChannel
 import org.scalajs.dom.RTCPeerConnection
+import webapp.utils.Futures.*
+import scala.util.Try
+import webapp.services.DiscoveryService
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(
     var alias: String,
     val source: String = "manual",
     val uuid: String = "",
+    val displayId: String = "",
     val connectionId: String = "",
 ) {} // different object for discovery and manual
 
@@ -55,16 +60,16 @@ case class PendingConnection(
 object PendingConnection {
   def webrtcIntermediate(cf: ConnectorFactory, alias: String): PendingConnection = {
     val p = Promise[ConnectionInformation]()
-    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)): @nowarn("msg=discarded expression"))
+    val answer = cf.complete(s => p.success(new ConnectionInformation(s, alias)))
     PendingConnection(answer, p.future, answer.connection)
   }
-  private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make
+  private val codec: JsonValueCodec[ConnectionInformation] = JsonCodecMaker.make: @nowarn
   def sessionAsToken(s: ConnectionInformation): String = Base64.encode(writeToString(s)(codec))
 
   def tokenAsSession(s: String): ConnectionInformation = readFromString(Base64.decode(s))(codec)
 }
 
-class WebRTCService(using registry: Registry, toaster: Toaster) {
+class WebRTCService(using registry: Registry, toaster: Toaster, discovery: DiscoveryService) {
 
   private var connectionInfo = Map[RemoteRef, StoredConnectionInformation]()
   private var webRTCConnections = Map[RemoteRef, RTCPeerConnection]() // could merge this map with the one above
@@ -77,21 +82,20 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   val connections: Signal[Seq[RemoteRef]] = Fold(Seq.empty: Seq[RemoteRef])(addConnectionB, removeConnectionB)
 
-  registry.connect(WS("ws://localhost:1334/registry/")): @nowarn
-
   def registerConnection(
       connector: Connector[Connections.Protocol],
       alias: String,
       source: String,
       connection: RTCPeerConnection,
       uuid: String = "",
+      displayId: String = "",
       connectionId: String = "",
       onConnected: (ref: RemoteRef) => Unit = (_) => {},
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
-        val storedConnection = StoredConnectionInformation(alias, source, uuid, connectionId)
+        val storedConnection = StoredConnectionInformation(alias, source, uuid, displayId, connectionId)
         connectionInfo += (r.get -> storedConnection)
         connectionRefs += (connectionId -> r.get)
         webRTCConnections += (r.get -> connection)
@@ -106,8 +110,11 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
 
   def closeConnectionById(id: String): Unit = {
     connectionRefs.get(id) match {
-      case None      =>
-      case Some(ref) => ref.disconnect()
+      case None =>
+      case Some(ref) => {
+        ref.disconnect()
+        discovery.reportClosedConnection(id)
+      }
     }
   }
 
@@ -135,6 +142,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster) {
     toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
 
     removeConnection.fire(remoteRef)
-  }): @nowarn("msg=discarded expression")
+  })
 
+  registry.connect(BroadcastChannel("default"))
 }

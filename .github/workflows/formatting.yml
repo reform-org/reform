@@ -1,4 +1,4 @@
-name: Scala JS Test
+name: Formatting
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  formatting:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,11 +23,5 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-          cache: "sbt"
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 16
-          cache: "npm"
-      - run: npm ci
-      - name: Test
-        run: sbt webappJS/test
+      - name: Check formatting
+        run: sbt scalafmtCheckAll

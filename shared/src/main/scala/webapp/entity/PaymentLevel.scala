@@ -7,13 +7,14 @@ import webapp.BasicCodecs.*
 
 case class PaymentLevel(
     title: Attribute[String] = Attribute.empty,
+    pdfCheckboxName: Attribute[String] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[PaymentLevel]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: PaymentLevel = PaymentLevel(Attribute.empty, Attribute(true))
+  def default: PaymentLevel = PaymentLevel(Attribute.empty, Attribute.empty, Attribute(true))
 
   def identifier: Attribute[String] = title
 

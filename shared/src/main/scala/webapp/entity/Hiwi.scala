@@ -8,12 +8,11 @@ import webapp.BasicCodecs.*
 case class Hiwi(
     firstName: Attribute[String] = Attribute.empty,
     lastName: Attribute[String] = Attribute.empty,
-    gender: Attribute[String] = Attribute.empty,
     eMail: Attribute[String] = Attribute.empty,
     birthdate: Attribute[Long] = Attribute.empty,
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Hiwi]
-    derives DecomposeLattice,
+    derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields
@@ -23,11 +22,10 @@ case class Hiwi(
       Attribute.empty,
       Attribute.empty,
       Attribute.empty,
-      Attribute.empty,
       Attribute(true),
     )
 
-  def identifier: Attribute[String] = eMail
+  def identifier: Attribute[String] = Attribute(s"${firstName.get.getOrElse("")} ${lastName.get.getOrElse("")}")
 
   def withExists(exists: Boolean): Hiwi = {
     this.copy(_exists = _exists.set(exists))

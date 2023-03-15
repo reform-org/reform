@@ -1,4 +1,4 @@
-name: Scala JVM Test
+name: Build
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  test:
+  build:
     runs-on: ubuntu-latest
 
     steps:
@@ -24,5 +24,12 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           cache: "sbt"
-      - name: Test
-        run: sbt webappJVM/test
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 16
+          cache: "npm"
+      - run: npm ci
+      - name: Build ScalaJS
+        run: sbt fastLinkJS
+      - name: Build JavaScript
+        run: npm run build -- --mode lukasschreiber

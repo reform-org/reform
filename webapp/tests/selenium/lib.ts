@@ -4,6 +4,7 @@ import firefox from "selenium-webdriver/firefox.js";
 import safari from "selenium-webdriver/safari.js";
 import { Chance } from "chance";
 import { strict as assert } from "node:assert";
+import { writeFile, mkdir } from "fs/promises";
 
 export let seed = new Chance().integer();
 //export let seed = 769272762597376;
@@ -225,7 +226,7 @@ export class Peer {
 		);
 
 		let editProjectButton = await row.findElement(
-			By.xpath(`.//button[text()="Edit"]`),
+			By.css(".entity-edit"),
 		);
 		await editProjectButton.click();
 
@@ -253,7 +254,7 @@ export class Peer {
 		await accountInput.sendKeys(account);
 
 		await (
-			await row.findElement(By.xpath('//button[text()="Save"]'))
+			await row.findElement(By.css(".entity-save"))
 		).click();
 
 		let oldProject = this.projects.value.get(projectId)!;
@@ -294,7 +295,7 @@ export class Peer {
 			By.css("input[placeholder='Account']"),
 		);
 		let addProjectButton = await this.driver.findElement(
-			By.xpath(`.//button[text()="Add Entity"]`),
+			By.css(`button#add-entity-button`),
 		);
 
 		let projectName = chance.animal();
@@ -405,6 +406,9 @@ export class Peer {
 					);
 					await name.sendKeys(personNames[0]);
 
+					const screenshot = await driver.takeScreenshot();
+					await mkdir("screenshots", { recursive: true });
+					await writeFile(`screenshots/invitation-${(await driver.getSession()).getId()}.png`, screenshot, "base64");
 					let hostButton = await driver.wait(
 						until.elementLocated(By.xpath(`.//button[text()="Create Invitation"]`)),
 						3000
@@ -444,6 +448,9 @@ export class Peer {
 
 		await Promise.all(
 			[this, other].map(async (peer, index) => {
+				const screenshot = await peer.driver.takeScreenshot();
+				await mkdir("screenshots", { recursive: true });
+				await writeFile(`screenshots/connect-to-${(await peer.driver.getSession()).getId()}-${index}.png`, screenshot, "base64");
 				await peer.driver.wait(
 					until.elementLocated(By.xpath(`.//*[text()="${personNames[index]}"]`)),
 					10000,

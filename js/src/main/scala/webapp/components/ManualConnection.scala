@@ -19,19 +19,32 @@ import webapp.components.common.Input
 import webapp.components.common.LabeledInput
 import webapp.components.common.Button
 import webapp.components.common.ButtonStyle
+import webapp.components.icons
+import org.scalajs.dom.RTCConfiguration
+import scala.scalajs.js
+import org.scalajs.dom.RTCIceServer
 
-private sealed trait State {
-  def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode
+private val webrtcConfig = new RTCConfiguration {
+  iceServers = js.Array(
+    new RTCIceServer {
+      urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
+    },
+  );
 }
 
-private def showConnectionToken(connection: PendingConnection)(using toaster: Toaster) = {
+private sealed trait State {
+  def render(using state: Var[State]): VNode
+}
+
+private def showConnectionToken(connection: PendingConnection)(using jsImplicits: JSImplicits) = {
   connection.session.map(session => {
     div(
       cls := "flex gap-1 mt-2",
       button(
         data.token := PendingConnection.sessionAsToken(session),
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.clipboard("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-200 p-2 min-h-10 border-0 hover:bg-purple-300 shadow-md group tooltip tooltip-top",
+        data.tip := "Copy",
+        icons.Clipboard(cls := "w-6 h-6 text-purple-600"),
         onClick.foreach(_ =>
           window.navigator.clipboard
             .writeText(PendingConnection.sessionAsToken(session))
@@ -40,14 +53,14 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
         ),
       ),
       a(
-        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.mail("w-6 h-6", "white", "group-hover:stroke-purple-600"),
+        cls := "w-fit h-fit btn btn-square rounded-xl bg-purple-200 p-2 min-h-10 border-0 hover:bg-purple-300 shadow-md group",
+        icons.Mail(cls := "w-6 h-6 text-purple-600"),
         href := s"mailto:?subject=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
       a(
         cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
-        Icons.whatsapp("w-6 h-6 group-hover:fill-green-600", "white"),
+        icons.Whatsapp(cls := "w-6 h-6 group-hover:text-green-600 text-white"),
         href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
@@ -55,15 +68,15 @@ private def showConnectionToken(connection: PendingConnection)(using toaster: To
   })
 }
 
-private case object Init extends State {
-  private def initializeHostSession(using state: Var[State], webrtc: WebRTCService): Unit = {
+private case class Init()(using jsImplicits: JSImplicits) extends State {
+  private def initializeHostSession(using state: Var[State]): Unit = {
     val pendingConnection =
-      PendingConnection.webrtcIntermediate(WebRTC.offer(), alias.now)
+      PendingConnection.webrtcIntermediate(WebRTC.offer(webrtcConfig), alias.now)
     state.set(HostPending(pendingConnection))
   }
 
   private val alias = Var("")
-  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = {
+  override def render(using state: Var[State]): VNode = {
     div(
       cls := "form-control w-full text-sm",
       LabeledInput("What is your name?")(
@@ -74,19 +87,19 @@ private case object Init extends State {
       ),
       Button(
         ButtonStyle.Primary,
-        cls := "w-full",
+        cls := "w-full mt-2",
         "Create Invitation",
-        disabled <-- alias.map(_.isBlank()),
+        disabled <-- Signal { alias.value.isBlank() },
         onClick.foreach(_ => initializeHostSession),
       ),
     )
   }
 }
 
-private case class ClientAskingForHostSessionToken() extends State {
+private case class ClientAskingForHostSessionToken()(using jsImplicits: JSImplicits) extends State {
   private val sessionToken = Var("")
   private val alias = Var("")
-  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
+  override def render(using state: Var[State]): VNode = div(
     cls := "p1",
     LabeledInput("What is your name?")(tpe := "text", placeholder := "Your name", onInput.value --> alias, value := ""),
     LabeledInput("Please enter the code your peer has provided:")(
@@ -99,14 +112,14 @@ private case class ClientAskingForHostSessionToken() extends State {
     Button(
       ButtonStyle.Primary,
       "Connect",
-      cls := "w-full",
-      disabled <-- alias.map(a => sessionToken.map(_.isBlank || a.isBlank)).flatten,
+      cls := "w-full mt-2",
+      disabled <-- Signal { alias.value.isBlank() || sessionToken.value.isBlank() },
       onClick.foreach(_ => connectToHost),
     ),
   )
 
-  private def connectToHost(using state: Var[State])(using webrtc: WebRTCService): Unit = {
-    val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(), alias.now)
+  private def connectToHost(using state: Var[State]): Unit = {
+    val connection = PendingConnection.webrtcIntermediate(WebRTC.answer(webrtcConfig), alias.now)
     connection.connector.set(PendingConnection.tokenAsSession(sessionToken.now).session)
     state.set(ClientWaitingForHostConfirmation(connection, PendingConnection.tokenAsSession(sessionToken.now).alias))
   }
@@ -114,16 +127,16 @@ private case class ClientAskingForHostSessionToken() extends State {
 
 private case class ClientWaitingForHostConfirmation(connection: PendingConnection, alias: String)(using
     state: Var[State],
-    webrtc: WebRTCService,
+    jsImplicits: JSImplicits,
 ) extends State {
-  webrtc
+  jsImplicits.webrtc
     .registerConnection(connection.connector, alias, "manual", connection.connection)
     .foreach(_ => onConnected())
 
-  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
+  override def render(using state: Var[State]): VNode = div(
     cls := "p-1",
     span(
-      cls := "label label-text text-slate-500",
+      cls := "label label-text text-slate-500 dark:text-gray-300",
       "Please share the code with the peer that invited you to finish the connection.",
     ),
     showConnectionToken(connection),
@@ -134,11 +147,13 @@ private case class ClientWaitingForHostConfirmation(connection: PendingConnectio
   }
 }
 
-private case class HostPending(connection: PendingConnection)(using state: Var[State], webrtc: WebRTCService)
-    extends State {
+private case class HostPending(connection: PendingConnection)(using
+    state: Var[State],
+    jsImplicits: JSImplicits,
+) extends State {
   private val sessionTokenFromClient = Var("")
 
-  webrtc
+  jsImplicits.webrtc
     .registerConnection(
       connection.connector,
       "Anonymous",
@@ -146,14 +161,15 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
       connection.connection,
       "",
       "",
+      "",
       onConnected,
     )
     .foreach(ref => onConnected(ref))
 
-  override def render(using state: Var[State], webrtc: WebRTCService, toaster: Toaster): VNode = div(
+  override def render(using state: Var[State]): VNode = div(
     cls := "p-1",
     span(
-      cls := "label label-text text-slate-500",
+      cls := "label label-text text-slate-500 dark:text-gray-300",
       "Please share the Invitation with one peer. The peer will respond with an code which finishes the connection.",
     ),
     showConnectionToken(connection),
@@ -166,8 +182,8 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
     Button(
       ButtonStyle.Primary,
       "Finish Connection",
-      cls := "w-full",
-      disabled <-- sessionTokenFromClient.map(_.isBlank),
+      cls := "w-full mt-2",
+      disabled <-- Signal { sessionTokenFromClient.value.isBlank() },
       onClick.foreach(_ => confirmConnectionToClient()),
     ),
   )
@@ -178,23 +194,25 @@ private case class HostPending(connection: PendingConnection)(using state: Var[S
 
   private def onConnected(ref: RemoteRef)(using state: Var[State]): Unit = {
     println(PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
-    webrtc.setAlias(ref, PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
-    state.set(Init)
+    jsImplicits.webrtc.setAlias(ref, PendingConnection.tokenAsSession(sessionTokenFromClient.now).alias)
+    state.set(Init())
   }
 }
 
-class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
+class ManualConnectionDialog(using
+    jsImplicits: JSImplicits,
+)(private val state: Var[State] = Var(Init())) {
 
   private val mode = Var("host")
   ignoreDisconnectable(mode.observe(v => {
     if (v == "host") {
-      state.set(Init)
+      state.set(Init())
     } else {
       state.set(ClientAskingForHostSessionToken())
     }
   }))
 
-  def render(using webrtc: WebRTCService, toaster: Toaster): VNode = {
+  def render: VNode = {
     div(
       div(
         cls := "flex rounded-xl mt-2 gap-1 text-center",
@@ -217,16 +235,16 @@ class ManualConnectionDialog(private val state: Var[State] = Var(Init)) {
         ),
         label(
           forId := "hostMode",
-          cls := "grow bg-white p-2 w-fill rounded-l-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/host:text-white peer-checked/host:bg-purple-600 shadow",
+          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-l-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/host:text-purple-600 peer-checked/host:bg-purple-200 shadow",
           "Host",
         ),
         label(
           forId := "clientMode",
-          cls := "grow bg-white p-2 w-fill rounded-r-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/client:text-white peer-checked/client:bg-purple-600 shadow",
+          cls := "dark:bg-gray-700 dark:text-gray-300 grow bg-white p-2 w-fill rounded-r-xl cursor-pointer uppercase font-bold text-xs text-purple-600 peer-checked/client:text-purple-600 peer-checked/client:bg-purple-200 shadow",
           "Client",
         ),
       ),
-      state.map(_.render(using state, webrtc, toaster)),
+      Signal { state.value.render(using state) },
     )
   }
 }

@@ -1,5 +1,8 @@
 import { createPopper as createPopperImpl } from '@popperjs/core';
 import { flip, preventOverflow } from '@popperjs/core/lib';
+import { DateTime, Duration, Settings, Info } from 'luxon';
+
+Settings.defaultLocale = "en"
 
 export const usesTurn = async (connection) => {
 	try {
@@ -26,9 +29,9 @@ export const usesTurn = async (connection) => {
 	}
 };
 
-export const downloadJson = (name, text) => {
+export const downloadFile = (name, text, type) => {
 	const elem = document.createElement("a");
-	elem.setAttribute("href", `data:text/json;charset=utf-8,${encodeURIComponent(text)}`);
+	elem.setAttribute("href", `${type};charset=utf-8,${encodeURIComponent(text)}`);
 	elem.setAttribute("download", name);
 	elem.style.display = "none";
 	document.body.appendChild(elem);
@@ -120,4 +123,80 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 	}, 100));
 };
 
-export const isSelenium = import.meta.env.VITE_SELENIUM == "true";
+const resizeObservers = [];
+
+export const stickyButton = async (trigger, element, toggleClass) => {
+	await Promise.all([waitForElement(trigger), waitForElement(element)]);
+	const observer = new IntersectionObserver(entries => {
+		if (document.querySelector(element)) {
+			if (entries.every(entry => entry.isIntersecting)) {
+				document.querySelector(element).classList.add(toggleClass)
+			} else {
+				document.querySelector(element).classList.remove(toggleClass)
+			}
+		}
+	})
+
+	resizeObservers.push(observer)
+	observer.observe(document.querySelector(trigger))
+}
+
+export const cleanStickyButtons = () => {
+	resizeObservers.forEach(o => o.disconnect())
+}
+
+export const toGermanDate = (/** @type {number} */ input) => {
+	return DateTime.fromMillis(Number(input)).setLocale("de").toFormat("dd.LL.yyyy");
+};
+
+export const DateTimeFromISO = (/** @type {string} */ input) => {
+	return DateTime.fromISO(input).toMillis().toString();
+};
+
+export const toHumanMonth = (index) => {
+	return Info.months()[index - 1]
+}
+
+export const getMonth = (input) => {
+	return DateTime.fromMillis(Number(input)).month
+}
+
+export const toMilliseconds = (month, year) => {
+	return DateTime.fromObject({ month, year }).toMillis
+}
+
+export const getYear = (input) => {
+	return DateTime.fromMillis(Number(input)).year
+}
+
+export const toYYYYMMDD = (input) => {
+	return DateTime.fromMillis(Number(input)).toISODate();
+};
+
+export const dateDiffDays = (a, b) => {
+	return Math.ceil(DateTime.fromMillis(Number(b)).diff(DateTime.fromMillis(Number(a)), "days").toObject().days) || 0;
+};
+
+export const dateDiffMonth = (a, b) => {
+	return Math.ceil(DateTime.fromMillis(Number(b)).diff(DateTime.fromMillis(Number(a)), "month").toObject().months) || 0;
+};
+
+export const dateDiffHumanReadable = (a, b) => {
+	let rawObject = DateTime.fromMillis(Number(a)).diff(DateTime.fromMillis(Number(b)), ["years", "month", "days"]).toObject();
+	let cleanedObject = {}
+
+	for (let key in rawObject) {
+		if (rawObject[key] !== 0) cleanedObject[key] = Math.abs(rawObject[key])
+	}
+
+	return Duration.fromObject(cleanedObject).toHuman()
+};
+
+const formatter = new Intl.NumberFormat('de-DE', {
+	style: 'currency',
+	currency: 'EUR'
+});
+
+export const toMoneyString = (input) => {
+	return formatter.format(input);
+};

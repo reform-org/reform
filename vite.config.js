@@ -1,6 +1,7 @@
 import { VitePWA } from 'vite-plugin-pwa'
 
 import basicSsl from '@vitejs/plugin-basic-ssl'
+import { visualizer } from "rollup-plugin-visualizer";
 
 /** @type {import('vitest/config').UserConfig} */
 export default {
@@ -37,6 +38,7 @@ export default {
 			}
 		}),
 		//basicSsl()
+		visualizer()
 	],
 	build: {
 		sourcemap: true,
@@ -48,6 +50,9 @@ export default {
 	},
 	preview: {
 		port: 5173,
+	},
+	build: {
+		sourcemap: true
 	},
 	clearScreen: false,
 };

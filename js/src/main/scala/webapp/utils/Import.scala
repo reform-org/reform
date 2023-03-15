@@ -8,22 +8,21 @@ import webapp.*
 import scala.annotation.nowarn
 import scala.concurrent.Future
 import webapp.given_ExecutionContext
+import webapp.JSImplicits
 
-def exportIndexedDBJson(using repositories: Repositories): String = {
+def exportIndexedDBJson(using jsImplicits: JSImplicits): String = {
 
   given repositoryCodec: JsonValueCodec[Repositories] =
     new JsonValueCodec {
       def encodeValue(x: Repositories, out: JsonWriter): Unit = {
         out.writeObjectStart()
-        x.productIterator.foreach(f => {
-          f match {
-            case repository: Repository[?] => {
-              out.writeKey(repository.name)
-              repository.encodeRepository(out)
-            }
-            case _ => {}
+        x.productIterator.foreach {
+          case repository: Repository[?] => {
+            out.writeKey(repository.name)
+            repository.encodeRepository(out)
           }
-        })
+          case _ => {}
+        }
         out.writeObjectEnd()
       }
 
@@ -31,22 +30,20 @@ def exportIndexedDBJson(using repositories: Repositories): String = {
 
       def nullValue: Repositories = ???
     }
-  return writeToString(repositories)(using repositoryCodec)
+  writeToString(jsImplicits.repositories)(using repositoryCodec)
 }
 
 def importIndexedDBJson(
     json: String,
-)(using repositories: Repositories): Future[scala.collection.mutable.Iterable[Repository[?]]] = {
+)(using jsImplicits: JSImplicits): Future[scala.collection.mutable.Iterable[Repository[?]]] = {
   Future {
     var repositoryCodecs: mutable.Map[String, Repository[?]] = mutable.Map()
-    repositories.productIterator.foreach(value => {
-      value match {
-        case repository: Repository[?] => {
-          repositoryCodecs += (repository.name -> repository)
-        }
-        case _ => {}
+    jsImplicits.repositories.productIterator.foreach {
+      case repository: Repository[?] => {
+        repositoryCodecs += (repository.name -> repository)
       }
-    })
+      case _ => {}
+    }
 
     given repositoryMapCodec: JsonValueCodec[mutable.Map[String, (Repository[?], mutable.Map[String, ?])]] =
       new JsonValueCodec {
@@ -63,8 +60,8 @@ def importIndexedDBJson(
               val mb = mutable.Map.newBuilder[String, (Repository[?], mutable.Map[String, ?])]
               while ({
                 val key = in.readKeyAsString()
-                val repository = repositoryCodecs.get(key).get
-                mb += (key -> repository.decodeRepository(in)): @nowarn
+                val repository = repositoryCodecs(key)
+                mb += (key -> repository.decodeRepository(in))
                 in.isNextToken(',')
               }) ()
               if (in.isCurrentToken('}')) mb.result()

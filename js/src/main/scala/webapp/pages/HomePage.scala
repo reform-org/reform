@@ -34,221 +34,229 @@ import webapp.given_ExecutionContext
 import webapp.components.{Modal, ModalButton}
 import webapp.utils.Futures.*
 import webapp.utils.{exportIndexedDBJson, importIndexedDBJson}
-import webapp.npm.JSUtils.downloadJson
+import webapp.npm.JSUtils.downloadFile
 import org.scalajs.dom.HTMLInputElement
 import rescala.default.*
+import webapp.components.*
 
 import scala.util.Success
 import scala.util.Failure
+import webapp.npm.JSUtils.toHumanMonth
+import webapp.npm.JSUtils.toMilliseconds
+import webapp.npm.JSUtils.toMoneyString
+import webapp.entity.Contract
+import webapp.npm.JSUtils.toGermanDate
+import webapp.services.MailService
+import webapp.JSImplicits
 
-case class HomePage()(using indexeddb: IIndexedDB) extends Page {
+case class HomePage()(using
+    jsImplicits: JSImplicits,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
-    val modal = new Modal(
-      "Title",
-      "Creative Text",
-      Seq(
-        new ModalButton(
-          "Yay!",
-          ButtonStyle.Primary,
-          () => {
-            document.getElementById("loadPDF").classList.add("loading")
-            PDF
-              .fill(
-                "contract_unlocked.pdf",
-                "arbeitsvertrag2.pdf",
-                Seq(
-                  PDFTextField("Vorname Nachname (Studentische Hilfskraft)", "Lukas Schreiber"),
-                  PDFTextField("Geburtsdatum (Studentische Hilfskraft)", "25.01.1999"),
-                  PDFTextField("Vertragsbeginn", "25.01.2023"),
-                  PDFTextField("Vertragsende", "25.01.2024"),
-                  PDFTextField("Arbeitszeit Kästchen 1", "20 h"),
-                  PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-                  PDFCheckboxField("Vergütung Kontrollkästchen 1", false),
-                  PDFCheckboxField("Vergütung Kontrollkästchen 2", true),
-                ),
-              )
-              .andThen(s => {
-                console.log(s)
-                document.getElementById("loadPDF").classList.remove("loading")
-              })
-              .toastOnError()
-          },
-        ),
-        new ModalButton("Nay!"),
-      ),
-    )
+  def getContractsForInterval(month: Int, year: Int, pred: (String, Contract) => Boolean = (a, b) => true) = {
+    Signal.dynamic {
+      jsImplicits.repositories.contracts.existing.value
+        .map(p => (p.id -> p.signal.value))
+        .filter((id, p) => pred(id, p) && ContractPageAttributes().isInInterval(p, month, year))
+    }
+  }
 
-    val deleteButtonActive = Var(false)
-    val deleteDBModal = new Modal(
-      "Do you really want to drop the Database?",
-      div(
-        cls := "flex flex-col gap-4",
-        span(
-          cls := "text-red-600",
-          "Proceeding will drop the database and all of it's contents on your machine, so the data will be ",
-          b("unrecoverably lost"),
-          "!!!",
-        ),
-        div(
-          LabeledCheckbox(
-            forId := "export-success",
-            cls := "text-slate-600",
-            "I have verified that the export has downloaded correctly ",
-          )(
-            CheckboxStyle.Default,
-            idAttr := "export-success",
-            cls := "mr-2",
-            onClick.foreach(_ => deleteButtonActive.transform(!_)),
-          ),
-        ),
-        div(
-          cls := "text-blue-300 uppercase hover:text-blue-600 cursor-pointer",
-          "Export again",
-          onClick.foreach(_ => {
-            val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
-          }),
-        ),
-      ),
-      Seq(
-        new ModalButton(
-          "Delete",
-          ButtonStyle.Error,
-          () => {
-            val _ = window.indexedDB.asInstanceOf[IDBFactory].deleteDatabase("reform")
-          },
-          Seq(
-            disabled <-- deleteButtonActive.map(!_),
-          ),
-        ),
-        new ModalButton("Cancel"),
-      ),
-    )
-
-    val multiSelectValue: Var[Seq[String]] = Var(Seq())
-    val selectValue: Var[String] = Var("")
+  def render: VNode = {
+    val year =
+      jsImplicits.routing
+        .getQueryParameterAsString("year")
+        .map(p => if (p == "") new js.Date().getFullYear().toInt else p.toInt)
+    val month =
+      jsImplicits.routing
+        .getQueryParameterAsString("month")
+        .map(p => if (p == "") new js.Date().getMonth().toInt else p.toInt)
 
     navigationHeader(
       div(
-        cls := "flex flex-col gap-2 max-w-sm",
-        p("Homepage"),
-        LabeledCheckbox("Testbox1")(CheckboxStyle.Primary),
-        Checkbox(CheckboxStyle.Default),
-        Checkbox(CheckboxStyle.Success),
-        Checkbox(CheckboxStyle.Warning),
-        Checkbox(CheckboxStyle.Error),
-        Button(
-          ButtonStyle.Primary,
-          idAttr := "loadPDF",
-          "Fill PDF",
-          onClick.foreach(_ => {
-            modal.open()
-          }),
+        cls := "flex flex-col gap-4 w-full",
+        div(
+          cls := "flex flex-row gap-4 items-center self-center",
+          IconButton(
+            ButtonStyle.LightDefault,
+            icons.Previous(cls := "w-6 h-6"),
+            onClick.foreach(_ => {
+              val m = month.now
+              val y = year.now
+              jsImplicits.routing.updateQueryParameters(
+                Map(
+                  ("month" -> (if (m == 1) "12" else (m - 1).toString)),
+                  ("year" -> (if (m == 1) (y - 1).toString else y.toString)),
+                ),
+              )
+            }),
+          ),
+          div(cls := "min-w-[120px] text-center", Signal { toHumanMonth(month.value) }, " ", year),
+          IconButton(
+            ButtonStyle.LightDefault,
+            icons.Next(cls := "w-6 h-6"),
+            onClick.foreach(_ => {
+              val m = month.now
+              val y = year.now
+              jsImplicits.routing.updateQueryParameters(
+                Map(
+                  ("month" -> (if (m == 12) "1" else (m + 1).toString)),
+                  ("year" -> (if (m == 12) (y + 1).toString else y.toString)),
+                ),
+              )
+            }),
+          ),
         ),
-        TableButton(
-          ButtonStyle.LightDefault,
-          // cls := "btn btn-active p-2 h-fit min-h-10 border-0",
-          "Make me a boring normal toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Default)
-          }),
-        ),
-        Button(
-          ButtonStyle.Success,
-          "Make me a successful toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Success)
-          }),
-        ),
-        Button(
-          ButtonStyle.Warning,
-          "Make me a warning toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Short, ToastType.Warning)
-          }),
-        ),
-        Button(
-          ButtonStyle.Error,
-          "Make me an error toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make(
-              "Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod tempor invidunt ut labore et dolore magna aliquyam 🍞",
-              ToastMode.Short,
-              ToastType.Error,
-            )
-          }),
-        ),
-        Button(
-          ButtonStyle.Error,
-          "Make me a persistent error toast 🍞",
-          onClick.foreach(_ => {
-            toaster.make("Here is your toast 🍞", ToastMode.Infinit, ToastType.Error)
-          }),
-        ),
-        Button(
-          ButtonStyle.Primary,
-          "Export DB",
-          onClick.foreach(_ => {
-            val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
-            toaster.make("Database exported", ToastMode.Short, ToastType.Success)
-          }),
-        ),
-        FileInput(tpe := "file", idAttr := "import-file"),
-        Button(
-          ButtonStyle.Primary,
-          "Import DB",
-          onClick.foreach(_ => {
-            val fileList = document.querySelector("#import-file").asInstanceOf[HTMLInputElement].files
-            if (fileList.nonEmpty)
-              fileList(0)
-                .text()
-                .toFuture
-                .onComplete(value => {
-                  if (value.isFailure) {
-                    value.failed.get.printStackTrace()
-                    toaster.make(value.failed.get.getMessage.nn, ToastMode.Short, ToastType.Error)
-                  }
-                  val json = value.getOrElse("")
-                  importIndexedDBJson(json)(using repositories).onComplete {
-                    case Success(value) => toaster.make("Database imported", ToastMode.Long, ToastType.Success)
-                    case Failure(exception) =>
-                      toaster
-                        .make("Failed to import database! " + exception.toString, ToastMode.Long, ToastType.Error)
-                  }
-                })
-          }),
-        ),
-        Button(
-          ButtonStyle.Error,
-          "Delete DB",
-          onClick.foreach(_ => {
-            val json = exportIndexedDBJson
-            downloadJson(s"reform-export-${new js.Date().toISOString()}.json", json)
-            deleteDBModal.open()
+        div(
+          cls := "flex flex-wrap gap-4 items-stretch justify-center",
+          NumberCard(
+            "Total Contracts",
+            Signal.dynamic {
+              getContractsForInterval(month.value, year.value).map(a => a.size)
+            },
+            "all contracts",
+          ),
+          NumberCard(
+            "Draft Contracts:",
+            Signal.dynamic {
+              getContractsForInterval(month.value, year.value, (_, p) => p.isDraft.get.getOrElse(true)).map(a => a.size)
+            },
+            "only draft contracts",
+          ),
+          NumberCard(
+            "Contracts:",
+            Signal.dynamic {
+              getContractsForInterval(month.value, year.value, (_, p) => !p.isDraft.get.getOrElse(true)).map(a =>
+                a.size,
+              )
 
-          }),
+            },
+            "only finalized contracts",
+          ),
         ),
-        modal.render,
-        deleteDBModal.render,
-        LabeledInput("Test")(placeholder := "test"),
-        MultiSelect(
-          Signal(List(MultiSelectOption("test", Signal("test")), MultiSelectOption("test2", Signal("test2")))),
-          (value) => multiSelectValue.set(value),
-          multiSelectValue,
+        div(
+          cls := "flex flex-wrap gap-4 items-stretch justify-center",
+          MoneyCard(
+            "Expenses:",
+            Signal.dynamic {
+              val sum = jsImplicits.repositories.contracts.existing.value
+                .map(p => (p.id -> p.signal.value))
+                .filter((id, p) =>
+                  !p.isDraft.get.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
+                )
+                .map((id, contract) => {
+                  val hourlyWage = ContractPageAttributes()
+                    .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                    .value
+                  val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                  hoursPerMonth * hourlyWage
+                })
+                .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
+
+              toMoneyString(sum).substring(0, toMoneyString(sum).length() - 2).nn
+            },
+            "only finalized contracts",
+          ),
+          MoneyCard(
+            "Planned Expenses:",
+            Signal.dynamic {
+              val sum = jsImplicits.repositories.contracts.existing.value
+                .map(p => (p.id -> p.signal.value))
+                .filter((id, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
+                .map((id, contract) => {
+                  val hourlyWage = ContractPageAttributes()
+                    .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                    .value
+                  val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                  hoursPerMonth * hourlyWage
+                })
+                .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
+
+              toMoneyString(sum).substring(0, toMoneyString(sum).length() - 2).nn
+            },
+            "all contracts",
+          ),
         ),
-        Select(
-          Signal(List(SelectOption("test3", Signal("test")), SelectOption("test4", Signal("test2")))),
-          (value) => selectValue.set(value),
-          selectValue,
-        ),
+        Signal.dynamic {
+          val projects = jsImplicits.repositories.projects.existing.value.map(p => (p.id -> p.signal.value))
+          val hiwis = jsImplicits.repositories.hiwis.all.value.map(p => (p.id -> p.signal.value))
+          val supervisors = jsImplicits.repositories.supervisors.all.value.map(p => (p.id -> p.signal.value))
+
+          var contractsPerProject: Map[String, Seq[(String, Contract)]] = Map.empty
+
+          val contracts = jsImplicits.repositories.contracts.existing.value
+            .map(p => (p.id -> p.signal.value))
+            .filter((id, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
+
+          projects.foreach((id, project) => {
+            contractsPerProject += (id -> contracts
+              .filter((_, contract) => contract.contractAssociatedProject.get.getOrElse("") == id))
+          })
+
+          val projectsThisMonth = projects
+            .filter((id, _) => contractsPerProject.get(id).map(c => c.size > 0).getOrElse(false))
+
+          div(
+            cls := "flex flex-col gap-4 md:items-center",
+            if (projectsThisMonth.size > 0) {
+              projectsThisMonth
+                .map((id, project) => {
+                  TableCard(
+                    project.name.get,
+                    project.accountName.get,
+                    Seq("", "Hiwi", "Supervisor", "From", "To", "€/h", "h/mon", "€/mon"),
+                    contractsPerProject(id).map((contractId, contract) => {
+                      val moneyPerHour =
+                        ContractPageAttributes()
+                          .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                          .value
+                      val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                      val moneyPerMonth = moneyPerHour * hoursPerMonth
+                      val hiwi = hiwis.find((id, hiwi) => id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                      val supervisor = supervisors
+                        .find((id, supervisor) => id == contract.contractAssociatedSupervisor.get.getOrElse(""))
+
+                      Seq(
+                        "",
+                        hiwi.map((_, hiwi) =>
+                          s"${hiwi.firstName.get.getOrElse("")} ${hiwi.firstName.get.getOrElse("")}",
+                        ),
+                        supervisor.map((_, supervisor) => supervisor.name.get.getOrElse("")),
+                        toGermanDate(contract.contractStartDate.get.getOrElse(0L)),
+                        toGermanDate(contract.contractEndDate.get.getOrElse(0L)),
+                        toMoneyString(moneyPerHour),
+                        span(hoursPerMonth, " h"),
+                        toMoneyString(moneyPerMonth),
+                      )
+                    }),
+                    Seq(
+                      "Σ",
+                      colSpan := 5,
+                      span(
+                        contractsPerProject(id)
+                          .map((_, contract) => contract.contractHoursPerMonth.get.getOrElse(0))
+                          .fold[Int](0)((a, b) => a + b),
+                        " h",
+                      ),
+                      toMoneyString(
+                        contractsPerProject(id)
+                          .map((id, contract) => {
+                            val moneyPerHour =
+                              ContractPageAttributes()
+                                .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                                .value
+                            val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                            moneyPerHour * hoursPerMonth
+                          })
+                          .fold[BigDecimal](0)((a, b) => a + b),
+                      ),
+                    ),
+                  )
+                })
+            } else {
+              div(cls := "text-slate-400 dark:text-gray-400", "No projects this month...")
+            },
+          )
+        },
       ),
     )
   }

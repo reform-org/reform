@@ -28,8 +28,12 @@ import webapp.services.Toaster
 import webapp.pages.DocumentsPage
 import webapp.npm.IIndexedDB
 import rescala.default.*
+import webapp.services.MailService
+import webapp.JSImplicits
 
-def navigationMenu(using routing: RoutingService, repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB)(
+def navigationMenu(using
+    jsImplicits: JSImplicits,
+)(
     classes: String,
 ) = {
   ul(
@@ -39,89 +43,87 @@ def navigationMenu(using routing: RoutingService, repositories: Repositories, to
       navigationLink(ProjectsPage(), "Projects"),
     ),
     li(
-      a(
-        cls := "btn btn-ghost normal-case	font-normal rounded-md	",
-        "Settings",
-        Icons.expand("w-4 h-4"),
-      ),
-      ul(
-        cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10]",
-        li(
-          navigationLink(PaymentLevelsPage(), "Payment levels"),
-        ),
-        li(
-          navigationLink(SalaryChangesPage(), "Salary changes"),
-        ),
-      ),
+      navigationLink(SupervisorsPage(), "Supervisors"),
     ),
     li(
       navigationLink(HiwisPage(), "Hiwis"),
     ),
     li(
-      navigationLink(SupervisorsPage(), "Supervisors"),
-    ),
-    li(
-      navigationLink(ContractSchemasPage(), "Contract schemas"),
-    ),
-    li(
       navigationLink(ContractsPage(), "Contracts"),
     ),
-    /*
     li(
-      navigationLink(EditContractsPage(null), "Edit Contracs"),
+      navigationLink(ContractDraftsPage(), "Contract Drafts"),
     ),
-     */
     li(
-      navigationLink(DocumentsPage(), "Documents"),
+      a(
+        cls := "btn btn-ghost active:!text-sm active:!text-gray-800 dark:active:!text-gray-200 normal-case	font-normal rounded-md hover:bg-slate-100 dark:hover:bg-gray-800/50",
+        "Setup",
+        icons.Expand(cls := "w-4 h-4"),
+      ),
+      ul(
+        cls := "p-2 bg-base-100 focus:bg-slate-200 shadow-lg rounded-md !z-[10] dark:bg-gray-700",
+        li(
+          navigationLink(PaymentLevelsPage(), "Payment Levels"),
+        ),
+        li(
+          navigationLink(SalaryChangesPage(), "Salary Changes"),
+        ),
+        li(
+          navigationLink(ContractSchemasPage(), "Contract Schemas"),
+        ),
+        li(
+          navigationLink(DocumentsPage(), "Documents"),
+        ),
+      ),
+    ),
+    li(
+      navigationIconLink(SettingsPage(), icons.Settings(cls := "h-5 w-5")),
     ),
   )
 }
 
 def navigationHeader(
-    content: VNode,
+    content: VMod*,
 )(using
-    routing: RoutingService,
-    repositories: Repositories,
-    webrtc: WebRTCService,
-    discovery: DiscoveryService,
-    toaster: Toaster,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) = {
   val dropdownOpen = Var(false)
   div(
     cls := "drawer drawer-end",
     input(idAttr := "connection-drawer", tpe := "checkbox", cls := "drawer-toggle"),
     div(
-      cls := "drawer-content flex flex-col page-scroll-container overflow-x-hidden",
+      cls := "drawer-content h-full flex flex-col dark:bg-gray-600 dark:text-gray-200",
       div(
-        cls := "navbar bg-base-100 shadow",
+        cls := "navbar bg-base-100 shadow dark:bg-gray-700 fixed z-[10000]",
         div(
           cls := "flex-none",
           div(
             cls := "dropdown",
-            cls <-- dropdownOpen.map(if (_) Some("dropdown-open") else None),
+            cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
             label(
               tabIndex := 0,
               idAttr := "dropdown-button",
               cls := "btn btn-ghost lg:hidden",
-              Icons.hamburger("h-5 w-5"),
+              icons.Hamburger(cls := "h-5 w-5"),
               onClick.foreach(e => {
                 dropdownOpen.transform(!_)
               }),
             ),
-            navigationMenu("menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52"),
+            navigationMenu(
+              "menu menu-compact dropdown-content mt-3 p-2 shadow bg-base-100 rounded-box w-52 dark:bg-gray-700",
+            ),
           ),
         ),
         div(
           cls := "flex-1",
           a(
-            Icons.reform(),
-            cls := "btn btn-ghost normal-case text-xl",
+            icons.Reform(),
+            cls := "btn btn-ghost normal-case text-xl hover:bg-slate-100 dark:hover:bg-gray-800/50",
             href := "/",
             onClick.foreach(e => {
               e.preventDefault()
               e.target.asInstanceOf[HTMLElement].blur()
-              routing.to(HomePage(), true)
+              jsImplicits.routing.to(HomePage())
             }),
           ),
         ),
@@ -136,16 +138,16 @@ def navigationHeader(
             cls := "btn btn-ghost",
             div(
               cls := "indicator",
-              Icons.connections("h-6 w-6", "#000"),
+              icons.Connections(cls := "h-6 w-6"),
               span(
-                cls := "badge badge-sm indicator-item",
-                webrtc.connections.map(_.size),
+                cls := "badge badge-sm indicator-item dark:bg-gray-200 dark:text-gray-800",
+                jsImplicits.webrtc.connections.map(_.size),
               ),
             ),
           ),
         ),
       ),
-      content,
+      div(cls := "p-4 mt-16 page-scroll-container overflow-x-hidden", content),
     ),
     div(
       cls := "drawer-side",

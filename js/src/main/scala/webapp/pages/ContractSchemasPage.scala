@@ -21,24 +21,28 @@ import webapp.services.Toaster
 import rescala.default.*
 import webapp.components.common.*
 
-import ContractSchemasPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
+import webapp.JSImplicits
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class ContractSchemasPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[ContractSchema](
-      "Contract schemas",
-      repositories.contractSchemas,
-      Seq(name, files),
+      Title("Contract Schema"),
+      Some("New contract schemas can be created here. They need a name and their required documents."),
+      jsImplicits.repositories.contractSchemas,
+      jsImplicits.repositories.contractSchemas.all,
+      Seq(ContractSchemaAttributes().name, ContractSchemaAttributes().files),
       DefaultEntityRow(),
     ) {}
 
-object ContractSchemasPage {
-  private val name = UIAttributeBuilder.string
+class ContractSchemaAttributes(using
+    jsImplicits: JSImplicits,
+) {
+  def name = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[ContractSchema](
@@ -46,13 +50,16 @@ object ContractSchemasPage {
       (s, a) => s.copy(name = a),
     )
 
-  private def files(using repositories: Repositories): UIAttribute[ContractSchema, Seq[String]] =
-    UIAttributeBuilder
+  def files: UIAttribute[ContractSchema, Seq[String]] =
+    BuildUIAttribute()
       .multiSelect(
-        repositories.requiredDocuments.all.map(list =>
-          list.map(value => value.id -> value.signal.map(_.name.get.getOrElse(""))),
-        ),
+        Signal {
+          jsImplicits.repositories.requiredDocuments.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.name.get.getOrElse(""))),
+          )
+        },
       )
+      .withCreatePage(DocumentsPage())
       .withLabel("Required Documents")
       .require
       .bindAsMultiSelect[ContractSchema](

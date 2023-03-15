@@ -1,4 +1,4 @@
-name: Scala Selenium
+name: Browserstack
 
 on: workflow_dispatch
 
@@ -6,7 +6,7 @@ permissions:
   contents: read
 
 jobs:
-  build:
+  browserstack:
     strategy:
       fail-fast: false
       matrix:
@@ -37,7 +37,7 @@ jobs:
       - name: Build ScalaJS
         run: sbt fastLinkJS
       - name: Build JavaScript
-        run: npm run build
+        run: npm run build -- --mode lukasschreiber
       - name: Preview
         run: npm run preview &
       - name: Workflow tests

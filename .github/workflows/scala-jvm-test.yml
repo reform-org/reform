@@ -1,4 +1,4 @@
-name: Scala Formatting
+name: Scala JVM Test
 
 on:
   push:
@@ -11,7 +11,7 @@ permissions:
   contents: read
 
 jobs:
-  check-formatting:
+  scala-jvm-test:
     runs-on: ubuntu-latest
 
     steps:
@@ -23,5 +23,6 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
-      - name: Check formatting
-        run: sbt scalafmtCheckAll
+          cache: "sbt"
+      - name: Test
+        run: export $(cat .env.lukasschreiber | xargs) && sbt webappJVM/test

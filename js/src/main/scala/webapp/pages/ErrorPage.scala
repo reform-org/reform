@@ -8,30 +8,30 @@ import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
+import webapp.JSImplicits
+import webapp.components.common.*
 
-case class ErrorPage()(using indexeddb: IIndexedDB) extends Page {
+case class ErrorPage()(using
+    jsImplicits: JSImplicits,
+) extends Page {
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode = {
-    navigationHeader(
-      div(
-        cls := "flex items-center justify-center h-full w-full flex-col gap-6",
-        h1("404 | Page not found", cls := "text-6xl text-slate-200"),
-        a(
-          "Take me Home",
-          cls := "text-blue-600 text-lg",
-          onClick.foreach(e => {
-            e.preventDefault()
-            e.target.asInstanceOf[HTMLElement].blur()
-            routing.to(HomePage(), true)
-          }),
-          href := routing.linkPath(HomePage()),
-        ),
+  def render = {
+    navigationHeader(error("404 | Page not found", "Take me Home", HomePage()))
+  }
+
+  def error(text: String, label: String, page: Page) = {
+    div(
+      cls := "flex items-center justify-center h-[80vh] w-screen flex-col gap-6",
+      h1(text, cls := "text-6xl text-gray-200"),
+      Button(
+        ButtonStyle.Primary,
+        label,
+        onClick.foreach(e => {
+          e.preventDefault()
+          e.target.asInstanceOf[HTMLElement].blur()
+          jsImplicits.routing.to(page)
+        }),
+        href := jsImplicits.routing.linkPath(page),
       ),
     )
   }

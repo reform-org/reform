@@ -24,35 +24,63 @@ import webapp.npm.IIndexedDB
 
 import SalaryChangesPage.*
 import webapp.services.RoutingService
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class SalaryChangesPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexeddb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[SalaryChange](
-      "Salary Changes",
-      repositories.salaryChanges,
-      Seq(salaryChangeValue, salaryChangePaymentLevel, salaryChangeFromDate),
+      Title("Salary Change"),
+      Some(
+        "Salary Changes can be made here. Hourly pay, pay limit and start date for a specific payment level are set.",
+      ),
+      jsImplicits.repositories.salaryChanges,
+      jsImplicits.repositories.salaryChanges.all,
+      Seq(
+        SalaryChangeAttributes().salaryChangeValue,
+        SalaryChangeAttributes().salaryChangeLimit,
+        SalaryChangeAttributes().salaryChangePaymentLevel,
+        SalaryChangeAttributes().salaryChangeFromDate,
+      ),
       DefaultEntityRow(),
     ) {}
 
-object SalaryChangesPage {
-  private val salaryChangeValue = UIAttributeBuilder.money
+class SalaryChangeAttributes(using
+    jsImplicits: JSImplicits,
+) {
+  def salaryChangeValue = BuildUIAttribute().money
     .withLabel("Value")
+    .withMin("0")
+    .withRegex("[0-9]+([\\.,][0-9]+)?")
     .require
     .bindAsNumber[SalaryChange](
       _.value,
       (s, a) => s.copy(value = a),
     )
 
-  private def salaryChangePaymentLevel(using repositories: Repositories): UIAttribute[SalaryChange, String] = {
-    UIAttributeBuilder
+  def salaryChangeLimit = BuildUIAttribute().money
+    .withLabel("Limit")
+    .withMin("0")
+    .withRegex("[0-9]+([\\.,][0-9]+)?")
+    .require
+    .bindAsNumber[SalaryChange](
+      _.limit,
+      (s, a) => s.copy(limit = a),
+    )
+
+  def salaryChangePaymentLevel: UIAttribute[SalaryChange, String] = {
+    BuildUIAttribute()
       .select(
-        repositories.paymentLevels.all.map(list =>
-          list.map(value => value.id -> value.signal.map(v => v.title.get.getOrElse(""))),
-        ),
+        Signal {
+          jsImplicits.repositories.paymentLevels.existing.value.map(value =>
+            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          )
+        },
       )
+      .withCreatePage(PaymentLevelsPage())
       .withLabel("Payment Level")
       .require
       .bindAsSelect(
@@ -61,7 +89,7 @@ object SalaryChangesPage {
       )
   }
 
-  private val salaryChangeFromDate = UIAttributeBuilder.date
+  def salaryChangeFromDate = BuildUIAttribute().date
     .withLabel("From")
     .require
     .bindAsDatePicker[SalaryChange](

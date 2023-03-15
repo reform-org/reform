@@ -6,15 +6,22 @@ import webapp.npm.*
 import webapp.given_ExecutionContext
 import scala.concurrent.Future
 
-case class Storage[T](private val name: String, private val defaultValue: T)(using
+case class Storage[T](private val name: String)(using
     codec: JsonValueCodec[T],
     indexedDb: IIndexedDB,
 ) {
 
-  def getOrDefault(id: String): Future[T] =
-    indexedDb
-      .get[T](getKey(id))
-      .map(option => option.getOrElse(defaultValue))
+  def getOrDefault(id: String, default: T): Future[T] = {
+    indexedDb.update[T](
+      getKey(id),
+      currentValue => {
+        currentValue match {
+          case Some(v) => v
+          case None    => default
+        }
+      },
+    )
+  }
 
   private def getKey(id: String): String = s"$name-$id"
 

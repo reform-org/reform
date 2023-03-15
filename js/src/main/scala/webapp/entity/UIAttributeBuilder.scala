@@ -1,29 +1,33 @@
 package webapp.entity
 
-import webapp.utils.Date
-
-import webapp.utils.Money.*
-import webapp.utils.Seqnal.*
 import rescala.default.*
 
 import webapp.components.common.*
+import webapp.services.RoutingService
+import webapp.npm.JSUtils
+import webapp.services.Page
+import webapp.JSImplicits
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,
     writeConverter: String => AttributeType,
     label: String = "",
     isRequired: Boolean = false,
+    options: Signal[Seq[SelectOption]] = Signal(Seq.empty),
     min: String = "",
     stepSize: String = "1",
     regex: String = ".*",
+    fieldType: String = "text",
     editConverter: AttributeType => String = (a: AttributeType) => a.toString,
-    options: Signal[Seq[(String, Signal[String])]] = Signal(Seq.empty),
     searchEnabled: Boolean = true,
-) {
+    createPage: Option[Page] = None,
+)(using jsImplicits: JSImplicits) {
 
   def withLabel(label: String): UIAttributeBuilder[AttributeType] = copy(label = label)
 
   def withMin(min: String): UIAttributeBuilder[AttributeType] = copy(min = min)
+
+  def withFieldType(fieldType: String): UIAttributeBuilder[AttributeType] = copy(fieldType = fieldType)
 
   def require: UIAttributeBuilder[AttributeType] = copy(isRequired = true)
 
@@ -32,6 +36,8 @@ case class UIAttributeBuilder[AttributeType](
   def withRegex(regex: String): UIAttributeBuilder[AttributeType] = copy(regex = regex)
 
   def disableSearch: UIAttributeBuilder[AttributeType] = copy(searchEnabled = false)
+
+  def withCreatePage(page: Page): UIAttributeBuilder[AttributeType] = copy(createPage = Some(page))
 
   def withDefaultValue(default: AttributeType): UIAttributeBuilder[Option[AttributeType]] =
     map(_.getOrElse(default), Some(_))
@@ -58,126 +64,162 @@ case class UIAttributeBuilder[AttributeType](
     isRequired = isRequired,
     regex = regex,
     stepSize = stepSize,
-    fieldType = "text",
-  )
-
-  def bindReadOnly[EntityType](
-      getter: EntityType => Attribute[AttributeType],
-  ): UIAttribute[EntityType, AttributeType] = UIReadOnlyAttribute(
-    getter = getter,
-    readConverter = readConverter,
-    label = label,
+    fieldType = fieldType,
   )
 
 }
 
-object UIAttributeBuilder {
+implicit class BindToInt[AttributeType](using jsImplicits: JSImplicits)(self: UIAttributeBuilder[AttributeType])(
+    implicit ordering: Ordering[AttributeType],
+) {
+  def bindAsNumber[EntityType](
+      getter: EntityType => Attribute[AttributeType],
+      setter: (EntityType, Attribute[AttributeType]) => EntityType,
+  ): UIAttribute[EntityType, AttributeType] = UINumberAttribute(
+    getter = getter,
+    setter = setter,
+    readConverter = self.readConverter,
+    editConverter = self.editConverter,
+    writeConverter = self.writeConverter,
+    label = self.label,
+    isRequired = self.isRequired,
+    regex = self.regex,
+    min = self.min,
+    stepSize = self.stepSize,
+  )
+}
 
-  val string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
+implicit class BindToLong(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Long]) {
+  def bindAsDatePicker[EntityType](
+      getter: EntityType => Attribute[Long],
+      setter: (EntityType, Attribute[Long]) => EntityType,
+  ): UIAttribute[EntityType, Long] = UIDateAttribute(
+    getter = getter,
+    setter = setter,
+    readConverter = self.readConverter,
+    writeConverter = self.writeConverter,
+    label = self.label,
+    min = self.min,
+    isRequired = self.isRequired,
+  )
+}
 
-  val date: UIAttributeBuilder[Long] = UIAttributeBuilder(
-    Date.epochDayToDate(_, "dd.MM.yyyy"),
-    writeConverter = Date.dateToEpochDay(_, "yyyy-MM-dd"),
+implicit class BindToBoolean(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Boolean]) {
+  def bindAsCheckbox[EntityType](
+      getter: EntityType => Attribute[Boolean],
+      setter: (EntityType, Attribute[Boolean]) => EntityType,
+  ): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
+    getter = getter,
+    setter = setter,
+    label = self.label,
+    isRequired = self.isRequired,
+  )
+}
+
+implicit class BindToSeqOfString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[Seq[String]]) {
+
+  def bindAsMultiSelect[EntityType](
+      getter: EntityType => Attribute[Seq[String]],
+      setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, Seq[String]] =
+    UIMultiSelectAttribute(
+      getter,
+      setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else
+          _ => self.options,
+      optionsForFilter = self.options,
+      isRequired = self.isRequired,
+      searchEnabled = self.searchEnabled,
+      createPage = self.createPage,
+    )
+
+  def bindAsCheckboxList[EntityType](
+      getter: EntityType => Attribute[Seq[String]],
+      setter: (EntityType, Attribute[Seq[String]]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, Seq[String]] =
+    UICheckboxListAttribute(
+      getter,
+      setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else
+          _ => self.options,
+      optionsForFilter = self.options,
+      isRequired = self.isRequired,
+    )
+}
+
+implicit class BindToString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[String]) {
+
+  def bindAsSelect[EntityType](
+      getter: EntityType => Attribute[String],
+      setter: (EntityType, Attribute[String]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, String] =
+    UISelectAttribute(
+      getter,
+      setter,
+      readConverter = self.readConverter,
+      writeConverter = self.writeConverter,
+      label = self.label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else _ => self.options,
+      optionsForFilter = self.options,
+      isRequired = self.isRequired,
+      searchEnabled = self.searchEnabled,
+      createPage = self.createPage,
+    )
+
+}
+
+class BuildUIAttribute(using jsImplicits: JSImplicits) {
+
+  def string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
+
+  def date: UIAttributeBuilder[Long] = UIAttributeBuilder(
+    JSUtils.toGermanDate,
+    writeConverter = JSUtils.DateTimeFromISO,
   )
 
-  val int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
+  def int: UIAttributeBuilder[Int] = UIAttributeBuilder[Int](_.toString, _.toInt)
 
-  val float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
+  def email: UIAttributeBuilder[String] = string.withFieldType("email")
 
-  val boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
+  def float: UIAttributeBuilder[Float] = UIAttributeBuilder[Float](_.toString, _.toFloat)
 
-  val money: UIAttributeBuilder[BigDecimal] =
-    UIAttributeBuilder[BigDecimal](_.toMoneyString, BigDecimal(_), editConverter = _.toString)
+  def boolean: UIAttributeBuilder[Boolean] = UIAttributeBuilder(_.toString, _.toBoolean)
+
+  def money: UIAttributeBuilder[BigDecimal] =
+    UIAttributeBuilder[BigDecimal](JSUtils.toMoneyString(_), BigDecimal(_), editConverter = _.toString)
       .withStep("0.01")
       .withRegex("\\d*(\\.\\d\\d?)?")
 
-  def select(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[String] =
+  def select(options: Signal[Seq[SelectOption]]): UIAttributeBuilder[String] =
     string.copy(options = options)
 
-  def multiSelect(options: Signal[Seq[(String, Signal[String])]]): UIAttributeBuilder[Seq[String]] =
-    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").toSeq)
+  def multiSelect(
+      options: Signal[Seq[SelectOption]],
+  ): UIAttributeBuilder[Seq[String]] =
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
       .copy(options = options)
 
-  implicit class BindToInt[AttributeType](self: UIAttributeBuilder[AttributeType])(implicit
-      ordering: Ordering[AttributeType],
-  ) {
-    def bindAsNumber[EntityType](
-        getter: EntityType => Attribute[AttributeType],
-        setter: (EntityType, Attribute[AttributeType]) => EntityType,
-    ): UIAttribute[EntityType, AttributeType] = UINumberAttribute(
-      getter = getter,
-      setter = setter,
-      readConverter = self.readConverter,
-      editConverter = self.editConverter,
-      writeConverter = self.writeConverter,
-      label = self.label,
-      isRequired = self.isRequired,
-      regex = self.regex,
-      stepSize = self.stepSize,
-    )
-  }
-
-  implicit class BindToLong(self: UIAttributeBuilder[Long]) {
-    def bindAsDatePicker[EntityType](
-        getter: EntityType => Attribute[Long],
-        setter: (EntityType, Attribute[Long]) => EntityType,
-    ): UIAttribute[EntityType, Long] = UIDateAttribute(
-      getter = getter,
-      setter = setter,
-      readConverter = self.readConverter,
-      writeConverter = self.writeConverter,
-      label = self.label,
-      min = self.min,
-      isRequired = self.isRequired,
-    )
-  }
-
-  implicit class BindToBoolean(self: UIAttributeBuilder[Boolean]) {
-    def bindAsCheckbox[EntityType](
-        getter: EntityType => Attribute[Boolean],
-        setter: (EntityType, Attribute[Boolean]) => EntityType,
-    ): UIAttribute[EntityType, Boolean] = UICheckboxAttribute(
-      getter = getter,
-      setter = setter,
-      label = self.label,
-      isRequired = self.isRequired,
-    )
-  }
-
-  implicit class BindToSeqOfString(self: UIAttributeBuilder[Seq[String]]) {
-
-    def bindAsMultiSelect[EntityType](
-        getter: EntityType => Attribute[Seq[String]],
-        setter: (EntityType, Attribute[Seq[String]]) => EntityType,
-    ): UIAttribute[EntityType, Seq[String]] =
-      UIMultiSelectAttribute(
-        getter,
-        setter,
-        readConverter = self.readConverter,
-        writeConverter = self.writeConverter,
-        label = self.label,
-        options = self.options.mapInside { case (k, v) => MultiSelectOption(k, v) },
-        isRequired = self.isRequired,
-        searchEnabled = self.searchEnabled,
-      )
-  }
-
-  implicit class BindToString(self: UIAttributeBuilder[String]) {
-
-    def bindAsSelect[EntityType](
-        getter: EntityType => Attribute[String],
-        setter: (EntityType, Attribute[String]) => EntityType,
-    ): UIAttribute[EntityType, String] =
-      UISelectAttribute(
-        getter,
-        setter,
-        readConverter = self.readConverter,
-        writeConverter = self.writeConverter,
-        label = self.label,
-        options = self.options.mapInside { case (k, v) => SelectOption(k, v) },
-        isRequired = self.isRequired,
-        searchEnabled = self.searchEnabled,
-      )
-
-  }
+  def checkboxList(
+      options: Signal[Seq[SelectOption]],
+  ): UIAttributeBuilder[Seq[String]] =
+    UIAttributeBuilder[Seq[String]](r => r.mkString(", "), w => w.split(", ").nn.map(_.nn).toSeq)
+      .copy(options = options)
 }

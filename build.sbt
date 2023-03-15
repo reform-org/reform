@@ -30,14 +30,17 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
     /*Test / scalaJSModuleInitializers := Seq(
       {ModuleInitializer.mainMethod("webapp.MainJSTest", "main").withModuleID("main")}
     ),*/
-    scalaJSLinkerConfig ~= { _.withModuleKind(ModuleKind.ESModule) },
-    scalaJSLinkerConfig ~= (_.withModuleSplitStyle(ModuleSplitStyle.SmallModulesFor(List("webapp")))),
-    scalaJSLinkerConfig ~= { _.withOptimizer(false) },
+    scalaJSLinkerConfig ~= {
+      _.withModuleKind(ModuleKind.ESModule)
+    },
+    Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
+    Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
     libraryDependencies ++= Seq(
       "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "69ab30877539712051f508bdf680134e90032e0b",
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "69ab30877539712051f508bdf680134e90032e0b",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-webnative" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-webrtc" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-broadcastchannel" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
     ),
     /*
     externalNpm := baseDirectory.value.getParentFile(),
@@ -58,27 +61,28 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   .jvmSettings(
     fork := true,
     libraryDependencies ++= Seq(
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "69ab30877539712051f508bdf680134e90032e0b",
-      "org.xerial" % "sqlite-jdbc" % "3.39.2.1",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
+      "org.eclipse.jetty" % "jetty-slf4j-impl" % "11.0.14",
+      "org.xerial" % "sqlite-jdbc" % "3.41.0.0",
+      "com.auth0" % "java-jwt" % "4.3.0",
     ),
   )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
     libraryDependencies ++= Seq(
       "com.lihaoyi" %%% "utest" % "0.8.1" % Test,
-      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "69ab30877539712051f508bdf680134e90032e0b",
-      "com.github.rescala-lang.REScala" %%% "rescala" % "e797c43178820482223e92264089108814c15fab",
-      "com.github.rescala-lang.REScala" %%% "kofre" % "e797c43178820482223e92264089108814c15fab",
-      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.20.7",
-      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.20.7",
+      "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
+      "com.github.rescala-lang.REScala" %%% "rescala" % "7de346f7abbe81eb0cacd0ee7f49420a8ff527f7",
+      "com.github.rescala-lang.REScala" %%% "kofre" % "7de346f7abbe81eb0cacd0ee7f49420a8ff527f7",
+      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
+      "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.21.2",
     ),
-    libraryDependencies += compilerPlugin("com.github.ghik" % "zerowaste" % "0.2.4" cross CrossVersion.full),
     testFrameworks += new TestFramework("utest.runner.Framework"),
     scalacOptions ++= Seq(
       "-no-indent",
       // "-W",
       // "-Y",
-      // "-Yexplicit-nulls", // breaks json macro, probably also coverage
+      "-Yexplicit-nulls",
       "-Ysafe-init",
       "-Wunused:all",
       "-deprecation",

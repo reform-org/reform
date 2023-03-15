@@ -23,21 +23,25 @@ import webapp.components.common.*
 import HiwisPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class HiwisPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Hiwi](
-      "Hiwis",
-      repositories.hiwis,
-      Seq(firstName, lastName, gender, eMail, birthdate),
+      Title("Hiwi"),
+      None,
+      jsImplicits.repositories.hiwis,
+      jsImplicits.repositories.hiwis.all,
+      Seq(HiwiAttributes().firstName, HiwiAttributes().lastName, HiwiAttributes().eMail, HiwiAttributes().birthdate),
       DefaultEntityRow(),
     ) {}
 
-object HiwisPage {
-  private val firstName = UIAttributeBuilder.string
+class HiwiAttributes(using jsImplicits: JSImplicits) {
+  def firstName = BuildUIAttribute().string
     .withLabel("First Name")
     .require
     .bindAsText[Hiwi](
@@ -45,7 +49,7 @@ object HiwisPage {
       (h, a) => h.copy(firstName = a),
     )
 
-  private val lastName = UIAttributeBuilder.string
+  def lastName = BuildUIAttribute().string
     .withLabel("Last Name")
     .require
     .bindAsText[Hiwi](
@@ -53,23 +57,7 @@ object HiwisPage {
       (h, a) => h.copy(lastName = a),
     )
 
-  private def gender: UIAttribute[Hiwi, String] = {
-    UIAttributeBuilder
-      .select(
-        Signal(
-          List("not specified", "male", "female").map(gender => gender -> Signal(gender)),
-        ),
-      )
-      .withLabel("Gender")
-      .require
-      .disableSearch
-      .bindAsSelect(
-        _.gender,
-        (p, a) => p.copy(gender = a),
-      )
-  }
-
-  private val eMail = UIAttributeBuilder.string
+  def eMail = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Hiwi](
@@ -77,7 +65,7 @@ object HiwisPage {
       (h, a) => h.copy(eMail = a),
     )
 
-  private val birthdate = UIAttributeBuilder.date
+  def birthdate = BuildUIAttribute().date
     .withLabel("Birthdate")
     .require
     .bindAsDatePicker[Hiwi](

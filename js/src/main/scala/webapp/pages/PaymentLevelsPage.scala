@@ -22,20 +22,63 @@ import webapp.services.Toaster
 import PaymentLevelsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import rescala.default.*
+import webapp.npm.JSUtils.toMoneyString
+import webapp.services.MailService
+import webapp.JSImplicits
 
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
 case class PaymentLevelsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
-) extends EntityPage[PaymentLevel]("Payment Levels", repositories.paymentLevels, Seq(title), DefaultEntityRow()) {}
+    jsImplicits: JSImplicits,
+) extends EntityPage[PaymentLevel](
+      Title("Payment Level"),
+      Some(
+        "Create different payment levels here. The PDF checkbox name is the name of the checkbox for that payment level in the contract pdf.",
+      ),
+      jsImplicits.repositories.paymentLevels,
+      jsImplicits.repositories.paymentLevels.all,
+      Seq(
+        PaymentLevelAttributes().title,
+        PaymentLevelAttributes().pdfCheckboxName,
+        PaymentLevelAttributes().currentValue,
+      ),
+      DefaultEntityRow(),
+    ) {}
 
-object PaymentLevelsPage {
-  private val title = UIAttributeBuilder.string
+class PaymentLevelAttributes(using jsImplicits: JSImplicits) {
+  def title = BuildUIAttribute().string
     .withLabel("Title")
     .require
     .bindAsText[PaymentLevel](
       _.title,
       (p, a) => p.copy(title = a),
+    )
+
+  def pdfCheckboxName = BuildUIAttribute().string
+    .withLabel("PDF Checkbox Name")
+    .require
+    .bindAsText[PaymentLevel](
+      _.pdfCheckboxName,
+      (p, a) => p.copy(pdfCheckboxName = a),
+    )
+
+  def currentValue =
+    new UIReadOnlyAttribute[PaymentLevel, String](
+      label = "Current Value",
+      getter = (id, paymentLevel) =>
+        Signal.dynamic {
+          val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
+          toMoneyString(
+            salaryChanges
+              .map(_.signal.value)
+              .filter(_.paymentLevel.get.getOrElse("") == id)
+              .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+              .headOption
+              .flatMap(_.value.get)
+              .getOrElse(0),
+          )
+        },
+      readConverter = identity,
     )
 }

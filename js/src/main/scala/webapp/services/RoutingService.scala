@@ -29,53 +29,154 @@ import webapp.npm.JSUtils.cleanPopper
 
 import scala.scalajs.js
 import webapp.npm.IIndexedDB
+import scala.annotation.nowarn
+import scalajs.js.JSConverters.JSRichOption
 
 trait Page {
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): VNode
+  def render: VNode
 }
 
-class RoutingService(using repositories: Repositories, toaster: Toaster, indexedb: IIndexedDB) {
+class RoutingService(using
+    jsImplicits: JSImplicits,
+) {
   given RoutingService = this;
 
   private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
+  private lazy val query =
+    Var[Map[String, String | Seq[String]]](decodeQueryParameters(window.location.search))
 
-  def render(using
-      routing: RoutingService,
-      repositories: Repositories,
-      webrtc: WebRTCService,
-      discovery: DiscoveryService,
-      toaster: Toaster,
-  ): Signal[VNode] =
+  val queryParameters: Signal[Map[String, String | Seq[String]]] = query.map(identity)
+
+  def render: Signal[VNode] =
     page.map(_.render)
 
-  def to(newPage: Page, preventReturn: Boolean = false, newTab: Boolean = false) = {
+  def to(
+      newPage: Page,
+      newTab: Boolean = false,
+      queryParams: Map[String, String | Seq[String]] = Map(),
+      keepFocus: Boolean = false,
+  ) = {
     if (newTab) {
-      window.open(linkPath(newPage), "_blank").focus();
+      window.open(linkPath(newPage, queryParams), "_blank").focus();
     } else {
-      window.history.pushState(null, "", linkPath(newPage))
+      window.history.pushState(null.asInstanceOf[js.Any], "", linkPath(newPage, queryParams))
       cleanPopper()
       page.set(newPage)
+      query.set(queryParams)
     }
 
-    document.activeElement.asInstanceOf[HTMLElement].blur()
+    if (!keepFocus) {
+      document.activeElement.asInstanceOf[HTMLElement].blur()
+    }
+  }
+
+  def decodeQueryParameters(query: String): Map[String, String | Seq[String]] = {
+    var res: Map[String, String | Seq[String]] = Map()
+    val decodedQuery = js.URIUtils.decodeURI(query)
+    if (decodedQuery.isBlank() || !decodedQuery.startsWith("?")) return res
+    decodedQuery
+      .substring(1)
+      .nn
+      .split("&")
+      .nn
+      .map(_.nn)
+      .foreach(param => {
+        if (param.contains("=")) {
+          val kv = param.split("=").nn
+          val value = if (kv.length >= 2) kv(1).nn else "".nn
+          if (kv(0).nn.matches(".*\\[\\]$")) {
+            val key = kv(0).nn.replace("[]", "").nn
+            if (!res.contains(key)) res += (key -> Seq(value))
+            else {
+              val oldVal = res.get(key).getOrElse(Seq())
+              oldVal match {
+                case oldVal: Seq[String] => res += (key -> (oldVal :+ value))
+                case _                   => {}
+              }
+
+            }
+          } else {
+            res += (kv(0).nn -> (value))
+          }
+        }
+      })
+
+    res
+  }
+
+  def encodeQueryParameters(map: Map[String, String | Seq[String]]) = {
+    var res = ""
+    if (map.size != 0) {
+      var entries: Seq[String] = Seq()
+      map.foreach((k, v) => {
+        v match {
+          case v: String      => entries = entries :+ s"$k=$v"
+          case v: Seq[String] => entries = entries :+ v.map(s => s"$k[]=$s").mkString("&")
+        }
+      })
+
+      res = "?" + entries.mkString("&")
+    }
+
+    "[\\?,&][^\\?,&]*=$|[\\?,&]$|[\\?,&][^\\?,&]*=(?=[\\?,&])".r.replaceAllIn(res, "")
+  }
+
+  def countQueryParameters(validParams: Seq[String] = Seq.empty): Signal[Int] = Signal {
+    queryParameters.value.count((p, _) =>
+      validParams.isEmpty || validParams.find(q => q == "(?=:).*".r.replaceAllIn(p, "")).nonEmpty,
+    )
+  }
+
+  def getQueryParameterAsString(key: String): Signal[String] = Signal {
+    query.value.get(key).getOrElse("") match {
+      case v: String      => v
+      case v: Seq[String] => v.mkString
+    }
+  }
+
+  def getQueryParameterAsSeq(key: String): Signal[Seq[String]] = Signal {
+    query.value.get(key).getOrElse(Seq()) match {
+      case v: String      => Seq(v)
+      case v: Seq[String] => v
+    }
+  }
+
+  def cleanQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    newParams.filter((key, value) =>
+      value match {
+        case x: String      => !x.isBlank
+        case x: Seq[String] => x.size > 0 && x.filter(p => !p.isBlank).size > 0
+      },
+    )
+  }
+
+  def setQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    query.set(cleanQueryParameters(newParams))
+  }
+
+  def updateQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+    query.transform(a => cleanQueryParameters(a ++ newParams))
   }
 
   def link(newPage: Page) =
     URL(linkPath(newPage), window.location.href).toString
 
-  def linkPath(newPage: Page) =
-    Routes.toPath(newPage).pathString
+  def linkPath(newPage: Page, newQuery: Map[String, String | Seq[String]] = Map()) = {
+    Routes.toPath(newPage).pathString + encodeQueryParameters(newQuery)
+  }
 
   def back() =
     window.history.back()
 
-  window.history.replaceState(null, "", linkPath(page.now))
+  Signal {
+    window.history.replaceState(null.asInstanceOf[js.Any], "", linkPath(page.now, query.value))
+  }
 
-  window.onpopstate = _ => page.set(Routes.fromPath(Path(window.location.pathname)))
+  window.onpopstate = _ => {
+    page.set(Routes.fromPath(Path(window.location.pathname)))
+    query.set(decodeQueryParameters(window.location.search))
+  }
+
+  query.observe(t => page.map(page => linkPath(page, t)))
+
 }

@@ -23,37 +23,33 @@ import webapp.services.Toaster
 import SupervisorsPage.*
 import webapp.services.RoutingService
 import webapp.npm.IIndexedDB
+import webapp.services.MailService
+
+import webapp.webrtc.WebRTCService
+import webapp.services.DiscoveryService
+import webapp.JSImplicits
 
 case class SupervisorsPage()(using
-    repositories: Repositories,
-    toaster: Toaster,
-    routing: RoutingService,
-    indexedb: IIndexedDB,
+    jsImplicits: JSImplicits,
 ) extends EntityPage[Supervisor](
-      "Supervisors",
-      repositories.supervisors,
-      Seq(firstName, lastName, eMail),
+      Title("Supervisor"),
+      None,
+      jsImplicits.repositories.supervisors,
+      jsImplicits.repositories.supervisors.all,
+      Seq(SupervisorAttributes().name, SupervisorAttributes().eMail),
       DefaultEntityRow(),
     ) {}
 
-object SupervisorsPage {
-  private val firstName = UIAttributeBuilder.string
-    .withLabel("First Name")
+class SupervisorAttributes(using jsImplicits: JSImplicits) {
+  def name = BuildUIAttribute().string
+    .withLabel("Name")
     .require
     .bindAsText[Supervisor](
-      _.firstName,
-      (s, a) => s.copy(firstName = a),
+      _.name,
+      (s, a) => s.copy(name = a),
     )
 
-  private val lastName = UIAttributeBuilder.string
-    .withLabel("Last Name")
-    .require
-    .bindAsText[Supervisor](
-      _.lastName,
-      (s, a) => s.copy(lastName = a),
-    )
-
-  private val eMail = UIAttributeBuilder.string
+  def eMail = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](

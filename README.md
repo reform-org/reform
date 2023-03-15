@@ -49,13 +49,13 @@ VITE_SELENIUM=true npm run dev
 
 To start the always-on server
 ```bash
-sbt webappJVM/run
+export $(cat .env.lukasschreiber | xargs) && sbt webappJVM/run
 ```
 
 Then open linked instances in your browser:
 
 ```
-npm run spawn-test-instances -- --count 2 --url http://localhost:5173/
+npm run spawn-test-instances -- 2 http://localhost:5173/
 ```
 
 Or connect them manually, but use a temp dir:
@@ -86,16 +86,16 @@ sbt webappJS/test
 
 ## Deployment
 
-```bash
-# netlify
-#curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt fastLinkJS && npm ci && npm run build
-
-#curl -fLo coursier https://github.com/coursier/launchers/raw/master/coursier && chmod +x coursier && ./coursier setup --yes && ~/.local/share/coursier/bin/sbt coverage webappJVM/test webappJVM/coverageReport
-
-# TODO maybe this works with netlify and can install other java version?
-curl -s "https://get.sdkman.io" | bash && source ~/.sdkman/bin/sdkman-init.sh && sdk install java && sdk install sbt && sbt fastLinkJS && npm ci && npm run build
-
-
-curl -s "https://get.sdkman.io" | bash && source ~/.sdkman/bin/sdkman-init.sh && sdk install java && sdk install sbt && sbt coverage webappJVM/test webappJVM/coverageReport
-
+Using podman-compose-git
 ```
+export DOCKER_HOST="unix://$XDG_RUNTIME_DIR/podman/podman.sock"
+
+podman-compose --env-file .env.podman --project-name traefik --file docker-compose-local-traefik.yml down
+podman-compose --env-file .env.podman --project-name traefik --file docker-compose-local-traefik.yml up --pull --build --remove-orphans
+
+podman-compose --env-file .env.podman --project-name reform --file docker-compose.yml down
+podman-compose --env-file .env.podman --project-name reform --file docker-compose.yml up --pull --build --remove-orphans
+podman-compose --env-file .env.podman --project-name reform --file docker-compose.yml exec reform-discovery npm run user:add
+```
+
+The application is available on http://reform.localhost:8888/ by default

@@ -2,12 +2,17 @@ package webapp
 
 import outwatch.*
 import outwatch.dsl.*
+import org.scalajs.dom.{document, window}
+import org.scalajs.dom.MediaQueryList
+import rescala.default.*
+import scala.annotation.nowarn
+import org.scalajs.dom.StorageEvent
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(
-    cls := s"flex w-full flex-row justify-between items-center min-h-9 px-4 ${if (values.size > 1) "bg-yellow-200 py-0"
+    cls := s"flex w-full flex-row justify-between items-center min-h-9 px-4 ${if (values.size > 1) "bg-yellow-100 py-0 text-yellow-600"
       else "py-1"}", {
-      Some(span(values.headOption.getOrElse("not initialized")))
+      Some(span(cls := "max-w-full overflow-hidden text-ellipsis", values.headOption.getOrElse("not set")))
     }, {
       val res = if (values.size > 1) {
         import outwatch.dsl.svg.*
@@ -38,4 +43,71 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
       res
     },
   )
+}
+
+val theme = {
+  val theme = Var(Option(window.localStorage.getItem("theme")).getOrElse("default"))
+  window.addEventListener(
+    "storage",
+    (event: StorageEvent) => {
+      if (event.key == "theme") {
+        theme.set(event.newValue)
+      }
+    },
+  )
+  theme
+}
+
+val autoconnect = {
+  val autoconnect = Var(Option(window.localStorage.getItem("autoconnect")).getOrElse("true").toBoolean)
+  window.addEventListener(
+    "storage",
+    (event: StorageEvent) => {
+      if (event.key == "autoconnect") {
+        autoconnect.set(event.newValue.toBoolean)
+      }
+    },
+  )
+  autoconnect
+}
+
+val browserThemeDark = {
+  val matchPrefersDark = window.matchMedia("(prefers-color-scheme: dark)")
+  val browserThemeDark = Var(matchPrefersDark.matches)
+  matchPrefersDark
+    .asInstanceOf[scalajs.js.Dynamic]
+    .addEventListener(
+      "change",
+      (event: MediaQueryList) => {
+        browserThemeDark.set(event.matches)
+      },
+    )
+  browserThemeDark
+}
+
+val autoupdateTheme = Signal {
+  if (theme.value == "dark") {
+    document.documentElement.classList.add("dark")
+  } else if (theme.value == "light") {
+    document.documentElement.classList.remove("dark")
+  } else {
+    if (browserThemeDark.value) {
+      document.documentElement.classList.add("dark")
+    } else {
+      document.documentElement.classList.remove("dark")
+    }
+  }
+}
+
+def toQueryParameterName(in: String) = {
+  "[_]$".nn.r.replaceAllIn("[\\W]".nn.r.replaceAllIn(in.toLowerCase().nn, "_"), "")
+}
+
+def remToPx(rem: Float): Float = {
+  rem * "^\\d*".r.findFirstIn(window.getComputedStyle(document.documentElement).fontSize).getOrElse("16").toFloat
+}
+
+def escapeCSVString(in: String): String = {
+  if (!"""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isEmpty) s"\"${in.replaceAll("\"", "\"\"")}\""
+  else in
 }
