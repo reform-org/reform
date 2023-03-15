@@ -129,7 +129,7 @@ class EntityRow[T <: Entity[T]](
           })
       },
       td(
-        cls := "min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
+        cls := "py min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
         div(
           cls := "h-full w-full flex flex-row items-center justify-center md:px-4 gap-2 md:justify-end",
           form(
@@ -254,7 +254,7 @@ class EntityRow[T <: Entity[T]](
               })
           },
           td(
-            cls := "py min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
+            cls := "min-w-[130px] max-w-[130px] md:min-w-[195px] md:max-w-[195px] mx-auto sticky right-0 bg-white dark:bg-gray-600 border-l border-r border-b border-gray-300 dark:border-gray-700 odd:dark:bg-gray-600 !z-[1]",
             div(
               cls := "h-full w-full flex flex-row items-center gap-2 justify-center px-4 md:justify-end",
               TableButton(
