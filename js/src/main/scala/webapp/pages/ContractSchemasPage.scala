@@ -39,7 +39,7 @@ case class ContractSchemasPage()(using
       Title("Contract Schema"),
       Some(
         span(
-          "Each contract schema has a number of",
+          "Each contract schema has a number of ",
           a(
             cls := "underline cursor-pointer",
             onClick.foreach(e => {
