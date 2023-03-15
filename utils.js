@@ -42,12 +42,8 @@ export const downloadFile = (name, text, type) => {
 const popperInstances = new Map();
 
 export const cleanPopper = async (trigger) => {
-	popperInstances.get(trigger).destroy()
+	popperInstances.get(trigger)?.destroy()
 };
-
-export const updatePopper = async (trigger) => {
-	popperInstances.get(trigger).forceUpdate()
-}
 
 const sameWidth = {
 	name: "sameWidth",

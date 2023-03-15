@@ -10,7 +10,6 @@ import webapp.components.icons
 import org.scalajs.dom.{console, document}
 import org.scalajs.dom.HTMLElement
 import webapp.npm.JSUtils.cleanPopper
-import webapp.npm.JSUtils.updatePopper
 
 def Select(
     options: Signal[Seq[SelectOption]],
@@ -32,7 +31,6 @@ def Select(
   }
 
   div(
-    onDomMount.foreach(_ => createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")),
     onDomUnmount.foreach(_ => cleanPopper(s"#$id .select-select")),
     cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none",
     cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
@@ -42,7 +40,8 @@ def Select(
       cls := "select-select flex flex-row w-full h-full items-center",
       onClick.foreach(e => {
         dropdownOpen.transform(!_)
-        updatePopper(s"#$id .select-select")
+        cleanPopper(s"#$id .select-select")
+        createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
       }),
       Signal {
         input(

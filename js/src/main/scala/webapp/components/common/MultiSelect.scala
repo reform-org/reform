@@ -14,7 +14,6 @@ import scala.annotation.nowarn
 import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
 import webapp.npm.JSUtils.cleanPopper
-import webapp.npm.JSUtils.updatePopper
 
 private class MultiSelect(
     options: Signal[Seq[SelectOption]],
@@ -96,7 +95,6 @@ private class MultiSelect(
     div(
       onDomMount.foreach(element => {
         resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))
-        createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
       }),
       onDomUnmount.foreach(element => {
         resizeObserver.disconnect()
@@ -108,9 +106,11 @@ private class MultiSelect(
       idAttr := id,
       div(
         cls := "multiselect-select flex flex-row w-full h-full items-center",
+        onDomMount.foreach(_ => createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")),
         onClick.foreach(_ => {
           dropdownOpen.transform(!_)
-          updatePopper(s"#$id .multiselect-select")
+          cleanPopper(s"#$id .multiselect-select")
+          createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
         }),
         Signal {
           input(
