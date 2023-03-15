@@ -122,7 +122,7 @@ private class MultiSelect(
             outwatch.dsl.value := value.value.mkString(", "),
             tpe := "text",
             outwatch.dsl.required := required,
-            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none",
+            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none absolute",
             tabIndex := -1,
             formId := props
               .collectFirst {

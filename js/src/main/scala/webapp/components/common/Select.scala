@@ -54,7 +54,7 @@ def Select(
           outwatch.dsl.value := value.value,
           tpe := "text",
           outwatch.dsl.required := required,
-          cls := "peer/select w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none",
+          cls := "peer/select w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none absolute",
           tabIndex := -1,
           formId := props
             .collectFirst(p => {
