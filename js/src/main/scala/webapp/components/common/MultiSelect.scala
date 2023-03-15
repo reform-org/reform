@@ -100,7 +100,7 @@ private class MultiSelect(
         resizeObserver.disconnect()
         cleanPopper(s"#$id .multiselect-select")
       }),
-      cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none",
+      cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none overflow-hidden",
       cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
       props,
       idAttr := id,
@@ -122,7 +122,7 @@ private class MultiSelect(
             outwatch.dsl.value := value.value.mkString(", "),
             tpe := "text",
             outwatch.dsl.required := required,
-            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none	",
+            cls := "peer/multiselect w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none",
             tabIndex := -1,
             formId := props
               .collectFirst {
@@ -135,9 +135,11 @@ private class MultiSelect(
         },
         div(
           cls := "flex flex-row w-full h-full items-center pl-2 text-slate-600",
-          if (styleValidity)
-            cls := "peer-invalid/multiselect:bg-yellow-100 peer-invalid/multiselect:text-yellow-600 rounded"
-          else None,
+          cls <-- Signal {
+            if (styleValidity && dropdownOpen.value)
+              "peer-invalid/multiselect:bg-red-100 peer-invalid/multiselect:text-red-600 peer-invalid/multiselect:border-red-600"
+            else ""
+          },
           div(
             cls := "flex flex-row gap-2 multiselect-value-wrapper",
             Signal.dynamic {
