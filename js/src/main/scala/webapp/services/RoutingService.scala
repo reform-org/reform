@@ -22,7 +22,7 @@ import org.scalajs.dom.*
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import webapp.*
+import webapp.{*, given}
 
 import webapp.webrtc.WebRTCService
 import webapp.npm.JSUtils.cleanPopper
@@ -33,7 +33,7 @@ import scala.annotation.nowarn
 import scalajs.js.JSConverters.JSRichOption
 
 trait Page {
-  def render: VNode
+  def render: VMod
 }
 
 class RoutingService(using
@@ -47,7 +47,7 @@ class RoutingService(using
 
   val queryParameters: Signal[Map[String, String | Seq[String]]] = query.map(identity)
 
-  def render: Signal[VNode] =
+  def render: VMod =
     page.map(_.render)
 
   def to(

@@ -116,7 +116,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
 
   private val name = toQueryParameterName(uiAttribute.label)
 
-  def render: VNode = {
+  def render: VMod = {
     div(
       cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,
@@ -216,7 +216,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 
   private val selected = Var("")
 
-  def render: VNode = {
+  def render: VMod = {
     div(
       cls := "max-w-[300px] min-w-[300px]",
       uiAttribute.label,

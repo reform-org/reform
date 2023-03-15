@@ -32,7 +32,7 @@ def Select(
 
   div(
     onDomUnmount.foreach(_ => cleanPopper(s"#$id .select-select")),
-    cls := "rounded select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none overflow-hidden",
+    cls := "select-dropdown dropdown bg-slate-50 border border-gray-300 relative w-full h-9 dark:bg-gray-700 dark:border-none overflow-hidden",
     cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
     props,
     idAttr := id,

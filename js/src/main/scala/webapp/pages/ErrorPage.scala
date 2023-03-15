@@ -4,7 +4,6 @@ import webapp.services.*
 import webapp.webrtc.WebRTCService
 import outwatch.*
 import outwatch.dsl.*
-import webapp.components.navigationHeader
 import webapp.*
 import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
@@ -16,7 +15,7 @@ case class ErrorPage()(using
 ) extends Page {
 
   def render = {
-    navigationHeader(error("404 | Page not found", "Take me Home", HomePage()))
+    error("404 | Page not found", "Take me Home", HomePage())
   }
 
   def error(text: String, label: String, page: Page) = {

@@ -212,7 +212,7 @@ class ManualConnectionDialog(using
     }
   }))
 
-  def render: VNode = {
+  def render: VMod = {
     div(
       div(
         cls := "flex rounded-xl mt-2 gap-1 text-center",
