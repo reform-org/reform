@@ -1559,8 +1559,8 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
                       (!contract.contractEndDate.get.nonEmpty -> "an end date"),
                       (!contract.contractStartDate.get.nonEmpty -> "a start date"),
                       (!contract.contractAssociatedPaymentLevel.get.nonEmpty -> "a payment level"),
-                      (!contract.contractHoursPerMonth.get.nonEmpty -> "to set hours per month"),
                       ((hiwi.nonEmpty && !hiwi.get.signal.value.birthdate.get.nonEmpty) -> "a hiwi with a birthdate"),
+                      (!contract.contractHoursPerMonth.get.nonEmpty -> "to set hours per month"),
                     )
                   })
                   .getOrElse(Seq.empty)
