@@ -59,6 +59,7 @@ import scala.util.Failure
 import webapp.components.icons.Edit
 import org.scalajs.dom.BeforeUnloadEvent
 import webapp.npm.JSUtils.dateDiffDays
+import webapp.npm.JSUtils.cleanStickyButtons
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -1595,6 +1596,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
         div(
           idAttr := "sticky_buttons",
           onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
+          onDomUnmount.foreach(_ => cleanStickyButtons()),
           cls := "left-4 md:space-x-4 fixed bottom-4 p-3 bg-slate-50/75 dark:bg-gray-500/75 dark:border-gray-500 shadow-lg rounded-xl border border-slate-200 hidden z-[200]",
           div(cls := "flex-row gap-2 hidden md:flex", actions),
           div(cls := "flex flex-row gap-2 md:hidden", mobileActions),

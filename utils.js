@@ -39,26 +39,6 @@ export const downloadFile = (name, text, type) => {
 	document.body.removeChild(elem);
 };
 
-const waitForElement = (selector) => {
-	return new Promise(resolve => {
-		if (document.querySelector(selector)) {
-			return resolve(document.querySelector(selector));
-		}
-
-		const observer = new MutationObserver(mutations => {
-			if (document.querySelector(selector)) {
-				resolve(document.querySelector(selector));
-				observer.disconnect();
-			}
-		});
-
-		observer.observe(document.body, {
-			childList: true,
-			subtree: true
-		});
-	});
-};
-
 const popperInstances = new Map();
 
 export const cleanPopper = async (trigger) => {
@@ -84,7 +64,6 @@ const sameWidth = {
 };
 
 export const createPopper = async (trigger, element, placement, sameWidthAsRef) => {
-	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	let ref = document.querySelector(trigger);
 	let popper = document.querySelector(element);
 
@@ -117,10 +96,9 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 	popperInstances.set(trigger, popperInstance);
 };
 
-const resizeObservers = [];
+const intersectionObservers = [];
 
 export const stickyButton = async (trigger, element, toggleClass) => {
-	await Promise.all([waitForElement(trigger), waitForElement(element)]);
 	const observer = new IntersectionObserver(entries => {
 		if (document.querySelector(element)) {
 			if (entries.every(entry => entry.isIntersecting)) {
@@ -131,12 +109,12 @@ export const stickyButton = async (trigger, element, toggleClass) => {
 		}
 	})
 
-	resizeObservers.push(observer)
+	intersectionObservers.push(observer)
 	observer.observe(document.querySelector(trigger))
 }
 
 export const cleanStickyButtons = () => {
-	resizeObservers.forEach(o => o.disconnect())
+	intersectionObservers.forEach(o => o.disconnect())
 }
 
 export const toGermanDate = (/** @type {number} */ input) => {
