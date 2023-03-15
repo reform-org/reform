@@ -30,12 +30,30 @@ import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
 import webapp.JSImplicits
 
+import outwatch.*
+import outwatch.dsl.*
+import org.scalajs.dom.HTMLElement
+
 case class SalaryChangesPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[SalaryChange](
       Title("Salary Change"),
       Some(
-        "Salary Changes can be made here. Hourly pay, pay limit and start date for a specific payment level are set.",
+        span(
+          "A salary change defines the amount of money a hiwi is getting point from one date until the next salary change is taking effect. The limit is the Minijob limit for this pay at the specified time. If there is no salary change for a payment level the payment level value defaults to ",
+          i("0.00 €"),
+          ". Payment levels can be created ",
+          a(
+            cls := "underline cursor-pointer",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              jsImplicits.routing.to(PaymentLevelsPage(), true)
+            }),
+            "here",
+          ),
+          ".",
+        ),
       ),
       jsImplicits.repositories.salaryChanges,
       jsImplicits.repositories.salaryChanges.all,

@@ -59,18 +59,15 @@ const waitForElement = (selector) => {
 	});
 };
 
-const popperInstances = [];
-const popperIntervals = [];
+const popperInstances = new Map();
 
-export const cleanPopper = async () => {
-	for (let popperInstance of popperInstances) {
-		popperInstance.destroy();
-	}
-
-	for (let i of popperIntervals) {
-		clearInterval(i);
-	}
+export const cleanPopper = async (trigger) => {
+	popperInstances.get(trigger).destroy()
 };
+
+export const updatePopper = async (trigger) => {
+	popperInstances.get(trigger).forceUpdate()
+}
 
 const sameWidth = {
 	name: "sameWidth",
@@ -117,10 +114,7 @@ export const createPopper = async (trigger, element, placement, sameWidthAsRef) 
 		modifiers
 	});
 
-	popperInstances.push(popperInstance);
-	popperIntervals.push(setInterval(function () {
-		popperInstance.forceUpdate();
-	}, 100));
+	popperInstances.set(trigger, popperInstance);
 };
 
 const resizeObservers = [];

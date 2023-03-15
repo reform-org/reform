@@ -7,6 +7,9 @@ export default {
 		//basicSsl(),
 		visualizer()
 	],
+	define: {
+		APP_VERSION: JSON.stringify(process.env.npm_package_version),
+	},
 	test: {
 		environment: "jsdom",
 		testTimeout: 300000,

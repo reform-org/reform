@@ -27,14 +27,30 @@ import webapp.npm.JSUtils.toMoneyString
 import webapp.services.MailService
 import webapp.JSImplicits
 
+import outwatch.*
+import outwatch.dsl.*
+
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+import org.scalajs.dom.HTMLElement
 case class PaymentLevelsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[PaymentLevel](
       Title("Payment Level"),
       Some(
-        "Create different payment levels here. The PDF checkbox name is the name of the checkbox for that payment level in the contract pdf.",
+        span(
+          "To check the correct checkbox in the PDF Contract you need to provide a payment level per contract which corresponds with the name of the checkbox in the PDF form. Each paymentlevel has a value that is used for cost calculations, those can be set on the ",
+          a(
+            cls := "underline cursor-pointer",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              jsImplicits.routing.to(SalaryChangesPage(), true)
+            }),
+            "salarychanges page",
+          ),
+          ".",
+        ),
       ),
       jsImplicits.repositories.paymentLevels,
       jsImplicits.repositories.paymentLevels.all,

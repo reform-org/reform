@@ -24,8 +24,12 @@ object JSUtils {
     NativeImpl.createPopper(trigger, element, placement, sameWidth)
   }
 
-  def cleanPopper(): Unit = {
-    NativeImpl.cleanPopper()
+  def cleanPopper(trigger: String): Unit = {
+    NativeImpl.cleanPopper(trigger)
+  }
+
+  def updatePopper(trigger: String): Unit = {
+    NativeImpl.updatePopper(trigger)
   }
 
   def stickyButton(trigger: String, element: String, toggleClass: String): Unit =
@@ -65,7 +69,9 @@ object JSUtils {
     def createPopper(trigger: String, element: String, placement: String, sameWidth: Boolean): Unit =
       js.native
 
-    def cleanPopper(): Unit = js.native
+    def cleanPopper(trigger: String): Unit = js.native
+
+    def updatePopper(trigger: String): Unit = js.native
 
     def stickyButton(trigger: String, element: String, toggleClass: String): Unit = js.native
 

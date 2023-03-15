@@ -97,4 +97,6 @@ object Globals {
 
   lazy val VITE_DEKANAT_MAIL: String =
     js.`import`.meta.env.VITE_DEKANAT_MAIL.asInstanceOf[String]
+
+  lazy val APP_VERSION: String = js.Dynamic.global.APP_VERSION.asInstanceOf[String]
 }

@@ -60,7 +60,6 @@ class RoutingService(using
       window.open(linkPath(newPage, queryParams), "_blank").focus();
     } else {
       window.history.pushState(null.asInstanceOf[js.Any], "", linkPath(newPage, queryParams))
-      cleanPopper()
       page.set(newPage)
       query.set(queryParams)
     }

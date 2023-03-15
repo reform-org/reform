@@ -30,11 +30,29 @@ import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
 import webapp.JSImplicits
 
+import outwatch.*
+import outwatch.dsl.*
+import org.scalajs.dom.HTMLElement
+
 case class DocumentsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[Document](
       Title("Document"),
-      Some("Required documents for the different contract schemas are created here."),
+      Some(
+        span(
+          "Each ",
+          a(
+            cls := "underline cursor-pointer",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              jsImplicits.routing.to(SalaryChangesPage(), true)
+            }),
+            "contract schema",
+          ),
+          " has a number of documents that need to be checked before the contract can be finalized.",
+        ),
+      ),
       jsImplicits.repositories.requiredDocuments,
       jsImplicits.repositories.requiredDocuments.all,
       Seq(DocumentAttributes().name),

@@ -4,7 +4,6 @@ import outwatch.*
 import outwatch.dsl.*
 import scala.scalajs.js
 import rescala.default.*
-import webapp.npm.JSUtils.createPopper
 import webapp.given
 import org.scalajs.dom.HTMLInputElement
 import webapp.components.icons
