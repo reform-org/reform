@@ -1486,7 +1486,10 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
           ""
         }),
       onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
-      onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
+      onDomUnmount.foreach(_ => {
+        document.removeEventListener("keydown", ctrlSListener)
+        window.removeEventListener("beforeunload", unloadListener)
+      }),
       div(
         cls := "flex flex-col items-center",
         div(
