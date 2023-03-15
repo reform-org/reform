@@ -223,6 +223,8 @@ case class SettingsPage()(using
                   "Deletes the local database, so make sure you have exported the data. Once a peer connects you may see deleted data again because the peer still has it.",
                 ),
               ),
+              hr,
+              span(s"Version: ${Globals.APP_VERSION}", cls := "text-slate-400 dark:text-gray-400 text-sm italic"),
             ),
             deleteDBModal.render,
           ),

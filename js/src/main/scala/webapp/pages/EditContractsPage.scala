@@ -804,12 +804,12 @@ class ContractType(
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("2", "Contract Type", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("2", "Contract Schema", existingId, existingValue, editingValue, disabled, disabledDescription) {
   def render: VNode = {
     this.editStep(
       div(
         cls := "p-4",
-        label(cls := "font-bold", "Contract type:"),
+        label(cls := "font-bold", "Contract schema:"),
         ContractPageAttributes().contractAssociatedType.renderEdit("", editingValue, cls := "rounded-md"),
       ),
     )
@@ -1525,7 +1525,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
                     Seq(
                       (!contract.contractAssociatedHiwi.get.nonEmpty -> "a hiwi"),
                       (!contract.contractAssociatedSupervisor.get.nonEmpty -> "a supervisor"),
-                      (!contract.contractType.get.nonEmpty -> "a contract type"),
+                      (!contract.contractType.get.nonEmpty -> "a contract schema"),
                       (!jsImplicits.discovery.online.value -> "to be connected to the discovery server"),
                       ((contract.contractType.get.nonEmpty && requiredDocuments
                         .getOrElse(Seq.empty)

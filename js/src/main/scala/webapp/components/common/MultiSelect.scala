@@ -13,6 +13,8 @@ import org.scalajs.dom.HTMLElement
 import scala.annotation.nowarn
 import org.scalajs.dom.ResizeObserver
 import webapp.remToPx
+import webapp.npm.JSUtils.cleanPopper
+import webapp.npm.JSUtils.updatePopper
 
 private class MultiSelect(
     options: Signal[Seq[SelectOption]],
@@ -31,8 +33,6 @@ private class MultiSelect(
 
   private val id = s"multi-select-${js.Math.round(js.Math.random() * 100000)}"
   private val search = Var("")
-
-  createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
 
   private def updateSelectAll(value: Seq[String]): Unit = {
     val selectAll = Option(
@@ -94,8 +94,14 @@ private class MultiSelect(
     value.observe(_ => handleResize)
 
     div(
-      onDomMount.foreach(element => resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))),
-      onDomUnmount.foreach(element => resizeObserver.disconnect()),
+      onDomMount.foreach(element => {
+        resizeObserver.observe(element.querySelector(".multiselect-value-wrapper"))
+        createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+      }),
+      onDomUnmount.foreach(element => {
+        resizeObserver.disconnect()
+        cleanPopper(s"#$id .multiselect-select")
+      }),
       cls := "rounded multiselect-dropdown dropdown bg-slate-50 relative w-full h-9 dark:bg-gray-700 border border-gray-300 dark:border-none",
       cls <-- Signal { if (dropdownOpen.value) Some("dropdown-open") else None },
       props,
@@ -104,6 +110,7 @@ private class MultiSelect(
         cls := "multiselect-select flex flex-row w-full h-full items-center",
         onClick.foreach(_ => {
           dropdownOpen.transform(!_)
+          updatePopper(s"#$id .multiselect-select")
         }),
         Signal {
           input(
