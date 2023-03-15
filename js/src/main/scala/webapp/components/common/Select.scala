@@ -41,10 +41,10 @@ def Select(
       onClick.foreach(e => {
         dropdownOpen.transform(wasOpen => {
           if (wasOpen) {
-            cleanPopper(s"#$id .multiselect-select")
+            cleanPopper(s"#$id .select-select")
           } else {
-            cleanPopper(s"#$id .multiselect-select")
-            createPopper(s"#$id .multiselect-select", s"#$id .multiselect-dropdown-list-wrapper")
+            cleanPopper(s"#$id .select-select")
+            createPopper(s"#$id .select-select", s"#$id .select-dropdown-list-wrapper")
           }
           !wasOpen
         })
