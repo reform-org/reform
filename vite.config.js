@@ -7,8 +7,16 @@ import { visualizer } from "rollup-plugin-visualizer";
 export default {
 	plugins: [
 		VitePWA({
+			registerType: 'autoUpdate',
 			workbox: {
-				maximumFileSizeToCacheInBytes: 10 * 1000 * 1000
+				maximumFileSizeToCacheInBytes: 10 * 1000 * 1000,
+				navigateFallbackDenylist: [
+					// TODO FIXME configure based on env variables
+					/^\/discovery-server-websocket/,
+					/^\/always-online-peer/,
+					/^\/api/,
+					/.*\.js\.map/,
+				],
 			},
 			includeAssets: ['favicon.ico', 'apple-touch-icon.png', 'safari-pinned-tab.svg', 'favicon-32x32.png', 'favicon-16x16.png'],
 			manifest: {
