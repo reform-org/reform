@@ -35,7 +35,6 @@ import webapp.utils.Futures.*
 import webapp.components.common.*
 import webapp.components.icons
 import webapp.given_ExecutionContext
-import webapp.npm.JSUtils.createPopper
 
 import scala.collection.mutable
 import webapp.npm.IIndexedDB
@@ -386,7 +385,7 @@ abstract class EntityPage[T <: Entity[T]](
       div(
         h1(cls := "text-3xl mt-4 text-center", title.plural),
         div(
-          cls := "w-[95%] mx-[2.5%] text-slate-400 dark:text-gray-200",
+          cls := "w-[95%] mx-[2.5%] text-slate-400 dark:text-gray-200 mt-4",
           description,
         ),
         div(

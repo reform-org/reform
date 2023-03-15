@@ -61,7 +61,7 @@ private def showConnectionToken(connection: PendingConnection)(using jsImplicits
       a(
         cls := "w-fit h-fit btn btn-square rounded-xl bg-green-600 p-2 min-h-10 border-0 hover:bg-white shadow-md group",
         icons.Whatsapp(cls := "w-6 h-6 group-hover:text-green-600 text-white"),
-        href := s"whatsapp://send?text=REForm%20Invitation&body=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
+        href := s"whatsapp://send?text=Hey%2C%0A${session.alias}%20would%20like%20you%20to%20accept%20the%20following%20invitation%20to%20connect%20to%20REForm%20by%20opening%20the%20following%20URL%20in%20your%20Browser%3A%0A%0A${PendingConnection
             .sessionAsToken(session)}%2F%0A%0ASee%20you%20there%2C%0AThe%20REForm%20Team",
       ),
     )

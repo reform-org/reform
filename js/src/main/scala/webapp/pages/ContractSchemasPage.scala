@@ -28,11 +28,30 @@ import webapp.JSImplicits
 
 import webapp.webrtc.WebRTCService
 import webapp.services.DiscoveryService
+
+import outwatch.*
+import outwatch.dsl.*
+import org.scalajs.dom.HTMLElement
+
 case class ContractSchemasPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[ContractSchema](
       Title("Contract Schema"),
-      Some("New contract schemas can be created here. They need a name and their required documents."),
+      Some(
+        span(
+          "Each contract schema has a number of ",
+          a(
+            cls := "underline cursor-pointer",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              jsImplicits.routing.to(DocumentsPage(), true)
+            }),
+            "documents",
+          ),
+          " that need to be checked before the contract can be finalized.",
+        ),
+      ),
       jsImplicits.repositories.contractSchemas,
       jsImplicits.repositories.contractSchemas.all,
       Seq(ContractSchemaAttributes().name, ContractSchemaAttributes().files),
