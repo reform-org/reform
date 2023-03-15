@@ -1473,20 +1473,23 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
   }
 
   def render: VNode = {
+    Signal
+      .dynamic {
+        existingValue.flatMap(existingValue =>
+          editingValue.value.map((_, a) => a.value == existingValue.signal.value),
+        ) == Some(false)
+      }
+      .observe(edited => {
+        if (edited) window.addEventListener("beforeunload", unloadListener)
+        else window.removeEventListener("beforeunload", unloadListener)
+      })
+
     navigationHeader(
-      Signal
-        .dynamic {
-          existingValue.flatMap(existingValue =>
-            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
-          ) == Some(false)
-        }
-        .map(edited => {
-          if (edited) window.addEventListener("beforeunload", unloadListener)
-          else window.removeEventListener("beforeunload", unloadListener)
-          ""
-        }),
       onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
-      onDomUnmount.foreach(_ => document.removeEventListener("keydown", ctrlSListener)),
+      onDomUnmount.foreach(_ => {
+        document.removeEventListener("keydown", ctrlSListener)
+        window.removeEventListener("beforeunload", unloadListener)
+      }),
       div(
         cls := "flex flex-col items-center",
         div(
