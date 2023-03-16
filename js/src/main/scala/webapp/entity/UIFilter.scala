@@ -31,7 +31,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
 
   def render: VMod = {
     div(
-      cls := "max-w-[300px] min-w-[300px]",
+      cls := "max-w-[300px] md:min-w-[300px] w-full",
       uiAttribute.label,
       Input(
         placeholder := "Filter here",
@@ -57,7 +57,7 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
 
   def render: VMod = {
     div(
-      cls := "max-w-[300px] min-w-[300px]",
+      cls := "max-w-[300px] md:min-w-[300px] w-full",
       uiAttribute.label,
       div(
         cls := "flex flex-row gap-2 items-center",
@@ -118,7 +118,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
 
   def render: VMod = {
     div(
-      cls := "max-w-[300px] min-w-[300px]",
+      cls := "max-w-[300px] md:min-w-[300px] w-full",
       uiAttribute.label,
       MultiSelect(
         uiAttribute.optionsForFilter.map(option => option.map(selOpt => SelectOption(selOpt.id, selOpt.name))),
@@ -149,7 +149,7 @@ class UIMultiSelectFilter[EntityType](
 
   def render: VMod = {
     div(
-      cls := "max-w-[300px] min-w-[300px]",
+      cls := "max-w-[300px] md:min-w-[300px] w-full",
       uiAttribute.label,
       div(
         cls := "flex flex-col gap-2",
@@ -218,7 +218,7 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 
   def render: VMod = {
     div(
-      cls := "max-w-[300px] min-w-[300px]",
+      cls := "max-w-[300px] md:min-w-[300px] w-full",
       uiAttribute.label,
       MultiSelect(
         Signal(Seq(SelectOption("true", Signal("Yes")), SelectOption("false", Signal("No")))),
