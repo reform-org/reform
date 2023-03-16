@@ -431,7 +431,7 @@ abstract class EntityPage[T <: Entity[T]](
           cls := "menu p-2 mb-4 transition-none flex flex-row gap-2",
           filter.render,
           div(
-            cls := "max-w-[300px] min-w-[300px] min-w-[300px]",
+            cls := "max-w-[300px] md:min-w-[300px] w-full",
             "Columns",
             MultiSelect(
               Signal(
