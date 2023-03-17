@@ -41,6 +41,9 @@ import scala.util.Success
 import scala.util.Failure
 import webapp.services.MailService
 import webapp.JSImplicits
+import webapp.npm.PDF.getPDFFields
+import scala.collection.mutable.ArrayBuffer
+import webapp.components.icons
 
 case class SettingsPage()(using
     jsImplicits: JSImplicits,
@@ -96,6 +99,9 @@ case class SettingsPage()(using
 
     val multiSelectValue: Var[Seq[String]] = Var(Seq())
     val selectValue: Var[String] = Var("")
+
+    val pdfFields: Var[Seq[String]] = Var(Seq.empty)
+    def resetFields: Unit = pdfFields.set(Seq.empty)
 
     div(
       cls := "flex flex-col items-center",
@@ -155,20 +161,7 @@ case class SettingsPage()(using
               cls := "flex flex-col gap-2",
               div(
                 cls := "flex flex-col md:flex-row gap-2",
-                label(
-                  cls := "block h-[40px]",
-                  span(cls := "sr-only", "Choose profile photo"),
-                  input(
-                    tpe := "file",
-                    idAttr := "import-file",
-                    cls := """block w-full text-sm text-slate-500
-                            file:mr-4 file:py-2 file:px-4
-                            file:rounded-lg file:border-0
-                            file:text-sm file:font-semibold
-                            file:bg-purple-400 file:text-purple-800
-                            hover:file:bg-purple-400 h-full file:h-full dark:text-gray-400""",
-                  ),
-                ),
+                FileInput(idAttr := "import-file"),
                 Button(
                   ButtonStyle.Primary,
                   "Import Database",
@@ -221,11 +214,68 @@ case class SettingsPage()(using
                 "Deletes the local database, so make sure you have exported the data. Once a peer connects you may see deleted data again because the peer still has it.",
               ),
             ),
-            hr,
-            span(s"Version: ${Globals.APP_VERSION}", cls := "text-slate-400 dark:text-gray-400 text-sm italic"),
           ),
           deleteDBModal.render,
         ),
+        div(cls := "divider"),
+        div(
+          cls := "md:m-4 p-4",
+          h2(cls := "font-bold", "Inspect PDF Fields"),
+          div(cls := "divider"),
+          div(
+            cls := "flex flex-col md:flex-row gap-2",
+            FileInput(idAttr := "inspect-pdf"),
+            Button(
+              ButtonStyle.Primary,
+              "Inspect PDF",
+              onClick.foreach(_ => {
+                val fileList = document.querySelector("#inspect-pdf").asInstanceOf[HTMLInputElement].files
+                if (fileList.nonEmpty)
+                  fileList(0)
+                    .arrayBuffer()
+                    .toFuture
+                    .flatMap(buffer => getPDFFields(buffer))
+                    .onComplete(fields => {
+                      fields match {
+                        case Failure(exception) =>
+                          jsImplicits.toaster
+                            .make(s"Exception: ${exception.getMessage()}", ToastMode.Infinit, ToastType.Error)
+                        case Success(fields) => pdfFields.set(fields)
+                      }
+                    })
+              }),
+            ),
+          ),
+          Signal {
+            val fields = pdfFields.value
+            if (fields.size > 0) {
+              Some(
+                div(
+                  cls := "my-2 flex flex-col text-sm rounded-lg bg-slate-100 dark:bg-gray-700/50 p-2 relative",
+                  div(
+                    icons.Close(cls := "text-red-600 w-4 h-4"),
+                    cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer absolute right-2 top-2",
+                    data.tip := "Close",
+                    onClick.foreach(_ => {
+                      resetFields
+                    }),
+                  ),
+                  div(
+                    cls := "text-slate-400 dark:text-gray-400 text-xs italic my-2",
+                    "The fields are displayed in the order that they appear in the form and are presented as <type>:<name>. Required fields are marked with (required) behind the name.",
+                  ),
+                  fields.map(field => div(field)),
+                ),
+              )
+            } else None
+          },
+          div(
+            cls := "text-slate-400 dark:text-gray-400 text-xs italic my-2",
+            "If the Names are not clear enough you might want to use a PDF Editor like Adobe Acrobat Pro, here you can click on Prepare Form which opens a list with all the labels and renders the label name inside the fields in the PDF.",
+          ),
+        ),
+        hr,
+        span(s"Version: ${Globals.APP_VERSION}", cls := "text-slate-400 dark:text-gray-400 text-sm italic"),
       ),
     )
   }

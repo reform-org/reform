@@ -39,7 +39,17 @@ case class PaymentLevelsPage()(using
       Title("Payment Level"),
       Some(
         span(
-          "To check the correct checkbox in the PDF Contract you need to provide a payment level per contract which corresponds with the name of the checkbox in the PDF form. Each paymentlevel has a value that is used for cost calculations, those can be set on the ",
+          "To check the correct checkbox in the PDF Contract you need to provide a payment level per contract which corresponds with the name of the checkbox in the PDF form. To find out the names of the PDF form fields you can use the PDF Inspector on the ",
+          a(
+            cls := "underline cursor-pointer",
+            onClick.foreach(e => {
+              e.preventDefault()
+              e.target.asInstanceOf[HTMLElement].blur()
+              jsImplicits.routing.to(SettingsPage(), true)
+            }),
+            "settings page",
+          ),
+          ". Each paymentlevel has a value that is used for cost calculations, those can be set on the ",
           a(
             cls := "underline cursor-pointer",
             onClick.foreach(e => {

@@ -27,9 +27,19 @@ def TableInput(props: VMod*): VNode = {
   )
 }
 def FileInput(props: VMod*): VNode = {
-  input(
-    cls := "file-input w-full text-sm h-fit",
-    props,
+  label(
+    cls := "block h-[40px] cursor-pointer",
+    span(cls := "sr-only", "Choose file"),
+    input(
+      tpe := "file",
+      props,
+      cls := """block w-full text-sm text-slate-500
+              file:mr-4 file:py-2 file:px-4
+              file:rounded-lg file:border-0
+              file:text-sm file:font-semibold
+              file:bg-purple-400 file:text-purple-800
+              hover:file:bg-purple-400 h-full file:h-full dark:text-gray-400""",
+    ),
   )
 }
 

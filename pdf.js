@@ -36,6 +36,23 @@ const fill = async (uri, fields) => {
 	return await pdf.save();
 }
 
+export const getPDFFields = async (buffer) => {
+	const pdf = await PDFDocument.load(buffer);
+	const form = pdf.getForm();
+	const fields = form.getFields()
+	const fieldDescription = []
+	fields.forEach(field => {
+		const type = field.constructor.name
+		const required = field.isRequired()
+		const name = field.getName()
+		let description = `${type}: ${name}`
+		if (required) description += " (required)"
+		fieldDescription.push(description)
+	})
+
+	return fieldDescription
+}
+
 export const fillPDF = async (uri, fields) => {
 	return await fill(uri, fields);
 };
