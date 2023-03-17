@@ -50,6 +50,17 @@ const getPDFFieldType = (field) => {
 	return type
 }
 
+const getPDFFieldValue = (form, field) => {
+	let value = ""
+	switch (field.constructor) {
+		case PDFTextField: value = form.getTextField(field.getName()).getText(); break;
+		case PDFCheckBox: value = form.getCheckBox(field.getName()).isChecked() ? "checked" : ""; break;
+		default: value = ""; break;
+	}
+
+	return value
+}
+
 export const getPDFFields = async (buffer) => {
 	const pdf = await PDFDocument.load(buffer);
 	const form = pdf.getForm();
@@ -61,8 +72,10 @@ export const getPDFFields = async (buffer) => {
 		const readonly = field.isReadOnly()
 		const required = field.isRequired()
 		const name = field.getName()
+		const value = getPDFFieldValue(form, field)
 
 		let description = `${type}: ${name}`
+		if (value !== "") description += ` [${value}]`
 		if (required) description += " (required)"
 		if (readonly) description += " (readonly)"
 		fieldDescription.push(description)

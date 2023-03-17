@@ -262,7 +262,7 @@ case class SettingsPage()(using
                   ),
                   div(
                     cls := "text-slate-400 dark:text-gray-400 text-xs italic my-2",
-                    "The fields are displayed in the order that they appear in the form and are presented as <type>:<name>. Required fields are marked with (required) behind the name.",
+                    "The fields are displayed in the order that they appear in the form and are presented as <type>:<name> [<value>]. So if you are looking for a specific textfield just fill it with your text and then search in the list below for this text. If you are looking for the name of a checkbox, check it and look for the text \"checked\".",
                   ),
                   fields.map(field => div(field)),
                 ),
@@ -271,6 +271,7 @@ case class SettingsPage()(using
           },
           div(
             cls := "text-slate-400 dark:text-gray-400 text-xs italic my-2",
+            "The fields are displayed in the order that they appear in the form and are presented as <type>:<name> [<value>]. So if you are looking for a specific textfield just fill it with your text and then search in the list below for this text. If you are looking for the name of a checkbox, check it and look for the text \"checked\".",
             "If the Names are not clear enough you might want to use a PDF Editor like Adobe Acrobat Pro, here you can click on Prepare Form which opens a list with all the labels and renders the label name inside the fields in the PDF.",
           ),
         ),
