@@ -80,7 +80,7 @@ object PDF {
     ): js.Promise[js.typedarray.Uint8Array] =
       js.native
 
-    def fillPDF(getPDFFields: String, fields: js.Array[js.Object]): js.Promise[js.typedarray.Uint8Array] =
+    def fillPDF(inputFileURI: String, fields: js.Array[js.Object]): js.Promise[js.typedarray.Uint8Array] =
       js.native
 
     def download(outputFileName: String, bytes: js.typedarray.Uint8Array): Unit =
