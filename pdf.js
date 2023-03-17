@@ -34,55 +34,55 @@ const fill = async (uri, fields) => {
 	}
 
 	return await pdf.save();
-}
+};
 
 const getPDFFieldType = (field) => {
-	let type = ""
+	let type = "";
 	switch (field.constructor) {
 		case PDFTextField: type = "PDFTextField"; break;
 		case PDFCheckBox: type = "PDFCheckbox"; break;
 		case PDFButton: type = "PDFButton"; break;
 		case PDFDropdown: type = "PDFDropdown"; break;
-		case PDFRadioGroup: type = "PDFRadioType"; break;
+		case PDFRadioGroup: type = "PDFRadioGroup"; break;
 		default: type = "unknown"; break;
 	}
 
-	return type
-}
+	return type;
+};
 
 const getPDFFieldValue = (form, field) => {
-	let value = ""
+	let value = "";
 	switch (field.constructor) {
 		case PDFTextField: value = form.getTextField(field.getName()).getText(); break;
 		case PDFCheckBox: value = form.getCheckBox(field.getName()).isChecked() ? "checked" : ""; break;
 		default: value = ""; break;
 	}
 
-	return value
-}
+	return value;
+};
 
 export const getPDFFields = async (buffer) => {
 	const pdf = await PDFDocument.load(buffer);
 	const form = pdf.getForm();
-	const fields = form.getFields()
-	const fieldDescription = []
+	const fields = form.getFields();
+	const fieldDescription = [];
 
 	fields.forEach(field => {
-		const type = getPDFFieldType(field)
-		const readonly = field.isReadOnly()
-		const required = field.isRequired()
-		const name = field.getName()
-		const value = getPDFFieldValue(form, field)
+		const type = getPDFFieldType(field);
+		const readonly = field.isReadOnly();
+		const required = field.isRequired();
+		const name = field.getName();
+		const value = getPDFFieldValue(form, field);
 
-		let description = `${type}: ${name}`
-		if (value !== "") description += ` [${value}]`
-		if (required) description += " (required)"
-		if (readonly) description += " (readonly)"
-		fieldDescription.push(description)
-	})
+		let description = `${type}: ${name}`;
+		if (value !== "") description += ` [${value}]`;
+		if (required) description += " (required)";
+		if (readonly) description += " (readonly)";
+		fieldDescription.push(description);
+	});
 
-	return fieldDescription
-}
+	return fieldDescription;
+};
 
 export const fillPDF = async (uri, fields) => {
 	return await fill(uri, fields);
