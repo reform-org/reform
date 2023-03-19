@@ -198,8 +198,8 @@ class Login(using jsImplicits: JSImplicits) {
                 ),
             ),
             Button(
-              ButtonStyle.Error,
-              "SSO",
+              ButtonStyle.TU,
+              "Login with TU ID",
               cls := "w-full mt-2",
               onClick
                 .foreach(_ =>
