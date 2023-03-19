@@ -13,7 +13,7 @@ import webapp.JSImplicits
 
 import webapp.given_ExecutionContext
 
-def connectionRow(name: String, source: String, uuid: String, displayId: String, ref: RemoteRef)(using
+def connectionRow(name: String, source: String, uuid: String, displayId: String, tpe: String, ref: RemoteRef)(using
     jsImplicits: JSImplicits,
 ) = {
   if (source == "discovery") {
@@ -23,7 +23,11 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
       div(
         cls := "flex flex-col text-sm",
         div(
-          name,
+          div(
+            name,
+            if (tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
+            cls := "flex gap-2",
+          ),
           cls := "font-bold",
         ),
         i(

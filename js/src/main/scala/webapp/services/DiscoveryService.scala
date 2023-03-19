@@ -51,7 +51,7 @@ class DiscoveryService(using toaster: Toaster) {
     val codec: JsonValueCodec[LoginRepsonse] = JsonCodecMaker.make
   }
 
-  class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
+  class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String, val tpe: String)
 
   val availableConnections: Var[Seq[AvailableConnection]] = Var(Seq.empty)
 
@@ -79,6 +79,7 @@ class DiscoveryService(using toaster: Toaster) {
       decodedToken.iat.asInstanceOf[Int],
       decodedToken.username.asInstanceOf[String],
       decodedToken.uuid.asInstanceOf[String],
+      decodedToken.`type`.asInstanceOf[String],
     )
   }
 
@@ -217,6 +218,7 @@ class DiscoveryService(using toaster: Toaster) {
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.client.user.id.asInstanceOf[String],
           payload.client.user.displayId.asInstanceOf[String],
+          payload.client.user.`type`.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
       }
@@ -242,6 +244,7 @@ class DiscoveryService(using toaster: Toaster) {
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.host.user.id.asInstanceOf[String],
           payload.host.user.displayId.asInstanceOf[String],
+          payload.host.user.`type`.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
       }

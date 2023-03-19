@@ -75,7 +75,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
       Signal {
         jsImplicits.webrtc.connections.value.map(ref => {
           val info = jsImplicits.webrtc.getInformation(ref)
-          connectionRow(info.alias, info.source, info.uuid, info.displayId, ref)
+          connectionRow(info.alias, info.source, info.uuid, info.displayId, info.tpe, ref)
         })
       },
       Signal {
