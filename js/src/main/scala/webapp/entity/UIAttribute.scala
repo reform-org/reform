@@ -152,7 +152,7 @@ class UITextAttribute[EntityType, AttributeType](
       val (editStart, entityVar) = editing
       val editStartAttr = getter(editStart)
       div(
-        cls := "relative min-w-[1rem] h-9",
+        cls := "relative min-w-[1rem] edit-value",
         renderEditInput(
           formId,
           entityVar.map(getter(_)),

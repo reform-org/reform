@@ -1352,8 +1352,15 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     }
   }
 
-  protected def cancelEdit(): Unit = {
-    jsImplicits.routing.to(ContractsPage())
+  protected def cancelEdit(): Unit = Signal.dynamic {
+    editingValue.value.map((_, contract) => {
+      if (contract.value.isDraft.get.getOrElse(true)) {
+        jsImplicits.routing.to(ContractDraftsPage())
+      } else {
+        jsImplicits.routing.to(ContractsPage())
+      }
+    })
+
   }
 
   var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(

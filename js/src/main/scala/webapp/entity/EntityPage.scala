@@ -119,7 +119,7 @@ class EntityRow[T <: Entity[T]](
           .filter(attr => columns.isEmpty || columns.contains(toQueryParameterName(attr.label)))
           .map(ui => {
             td(
-              cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0",
+              cls := "border-b border-l border-gray-300 dark:border-gray-700 p-0 [&>div.edit-value]:h-9",
               styleAttr := (ui.width match {
                 case None    => "min-width: 200px"
                 case Some(v) => s"max-width: $v; min-width: $v; width: $v"
