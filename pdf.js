@@ -75,7 +75,7 @@ export const getPDFFields = async (buffer) => {
 		const value = getPDFFieldValue(form, field);
 
 		let description = `${type}: ${name}`;
-		if (value !== "") description += ` [${value}]`;
+		if (value !== "" && value !== undefined) description += ` [${value}]`;
 		if (required) description += " (required)";
 		if (readonly) description += " (readonly)";
 		fieldDescription.push(description);
