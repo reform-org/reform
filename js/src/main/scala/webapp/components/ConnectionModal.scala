@@ -202,7 +202,10 @@ class Login(using jsImplicits: JSImplicits) {
               "SSO",
               cls := "w-full mt-2",
               onClick
-                .foreach(_ => window.location.href = "https://reform.st.informatik.tu-darmstadt.de/api/v1/authorize"),
+                .foreach(_ =>
+                  window.location.href =
+                    s"https://reform.st.informatik.tu-darmstadt.de/api/v1/authorize?goto=${window.location.href}",
+                ),
             ),
           )
       },
