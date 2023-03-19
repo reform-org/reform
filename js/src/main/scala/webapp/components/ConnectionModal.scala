@@ -61,7 +61,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
         Signal {
           jsImplicits.discovery.token.value.map(t =>
             span(
-              cls := "inline-flex gap-2cflex-row",
+              cls := "inline-flex gap-2 flex-row",
               i(jsImplicits.discovery.decodeToken(t).username),
               if (jsImplicits.discovery.decodeToken(t).tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4")) else None,
             ),
