@@ -224,7 +224,7 @@ case class SettingsPage()(using
           div(cls := "divider"),
           div(
             cls := "flex flex-col md:flex-row gap-2",
-            FileInput(idAttr := "inspect-pdf"),
+            FileInput(idAttr := "inspect-pdf", accept := ".pdf"),
             Button(
               ButtonStyle.Primary,
               "Inspect PDF",
