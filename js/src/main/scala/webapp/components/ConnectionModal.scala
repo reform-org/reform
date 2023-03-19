@@ -197,6 +197,13 @@ class Login(using jsImplicits: JSImplicits) {
                     }),
                 ),
             ),
+            Button(
+              ButtonStyle.Error,
+              "SSO",
+              cls := "w-full mt-2",
+              onClick
+                .foreach(_ => window.location.href = "https://reform.st.informatik.tu-darmstadt.de/api/v1/authorize"),
+            ),
           )
       },
     )

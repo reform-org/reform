@@ -25,6 +25,7 @@ import scala.util.Try
 import loci.communicator.ws.webnative.WS
 import loci.registry.Registry
 import webapp.JSImplicits
+import webapp.utils.Cookies
 
 class AvailableConnection(
     val name: String,
@@ -54,7 +55,7 @@ class DiscoveryService(using toaster: Toaster) {
 
   val availableConnections: Var[Seq[AvailableConnection]] = Var(Seq.empty)
 
-  val token: Var[Option[String]] = Var(Option(window.localStorage.getItem("discovery-token")))
+  val token: Var[Option[String]] = Var(Cookies.getCookie("discovery-token"))
 
   val online: Var[Boolean] = Var(false)
 
@@ -84,10 +85,10 @@ class DiscoveryService(using toaster: Toaster) {
   def updateToken(value: Option[String]) = {
     value match {
       case Some(value) => {
-        window.localStorage.setItem("discovery-token", value)
+        Cookies.setCookie("discovery-token", value)
       }
       case None => {
-        window.localStorage.removeItem("discovery-token")
+        Cookies.clearCookie("discovery-token")
       }
     }
     token.set(value)
