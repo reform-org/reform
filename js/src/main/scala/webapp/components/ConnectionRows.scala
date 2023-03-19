@@ -69,14 +69,14 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
             ),
           )
         else None,
-        div(
-          icons.Close(cls := "text-red-600 w-4 h-4"),
-          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-          data.tip := "Close Connection",
-          onClick.foreach(_ => {
-            jsImplicits.discovery.disconnect(ref)
-          }),
-        ),
+        // div(
+        //   icons.Close(cls := "text-red-600 w-4 h-4"),
+        //   cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+        //   data.tip := "Close Connection",
+        //   onClick.foreach(_ => {
+        //     jsImplicits.discovery.disconnect(ref)
+        //   }),
+        // ),
       ),
     )
   } else
@@ -105,12 +105,12 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
           cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
       ),
-      div(
-        icons.Close(cls := "text-red-600 w-4 h-4"),
-        cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-        data.tip := "Close Connection",
-        onClick.foreach(_ => jsImplicits.discovery.disconnect(ref)),
-      ),
+      // div(
+      //   icons.Close(cls := "text-red-600 w-4 h-4"),
+      //   cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+      //   data.tip := "Close Connection",
+      //   onClick.foreach(_ => jsImplicits.discovery.disconnect(ref)),
+      // ),
     )
 }
 

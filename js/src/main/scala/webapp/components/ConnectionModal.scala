@@ -58,15 +58,15 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
       span(
         cls := "text-green-600 font-semibold text-center",
         "You are connected to the discovery server as ",
-        i(Signal {
+        Signal {
           jsImplicits.discovery.token.value.map(t =>
             span(
-              cls := "inline-block flex gap-2",
-              jsImplicits.discovery.decodeToken(t).username,
+              cls := "inline-flex gap-2cflex-row",
+              i(jsImplicits.discovery.decodeToken(t).username),
               if (jsImplicits.discovery.decodeToken(t).tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4")) else None,
             ),
           )
-        }),
+        },
         "!",
       ),
     )
