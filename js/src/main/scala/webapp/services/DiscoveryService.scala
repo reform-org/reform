@@ -33,6 +33,7 @@ class AvailableConnection(
     val displayId: String,
     val trusted: Boolean,
     val mutualTrust: Boolean,
+    val tpe: String,
 )
 
 class LoginException(val message: String, val fields: Seq[String]) extends Throwable(message)
@@ -258,6 +259,7 @@ class DiscoveryService(using toaster: Toaster) {
               client.displayId.asInstanceOf[String],
               client.trusted.asInstanceOf[Int] != 0,
               client.mutualTrust.asInstanceOf[Int] != 0,
+              client.`type`.asInstanceOf[String],
             ),
           )
         var clientsSeq: Seq[AvailableConnection] = clients.toSeq

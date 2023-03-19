@@ -123,7 +123,8 @@ def availableConnectionRow(
       cls := "flex flex-col text-sm",
       div(
         connection.name,
-        cls := "font-bold",
+        if (connection.tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
+        cls := "flex gap-2",
       ),
       i(
         span(
