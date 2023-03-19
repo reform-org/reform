@@ -47,6 +47,7 @@ object Routes {
     case Root / "extend-contracts" / id => ExtendContractPage(id)
     case Root / "documents"             => DocumentsPage()
     case Root / "settings"              => SettingsPage()
+    case Root / "error"                 => ErrorPage()
     case _                              => ErrorPage()
   }
 

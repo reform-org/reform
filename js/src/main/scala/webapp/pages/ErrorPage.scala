@@ -9,13 +9,20 @@ import org.scalajs.dom.HTMLElement
 import webapp.npm.IIndexedDB
 import webapp.JSImplicits
 import webapp.components.common.*
+import rescala.default.*
+import webapp.given
 
 case class ErrorPage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  def render = {
-    error("404 | Page not found", "Take me Home", HomePage())
+  def render = Signal {
+    val errorText = jsImplicits.routing.getQueryParameterAsString("error").value
+    if (errorText != "") {
+      error(s"400 | $errorText", "Take me Home", HomePage())
+    } else {
+      error("404 | Page not found", "Take me Home", HomePage())
+    }
   }
 
   def error(text: String, label: String, page: Page) = {

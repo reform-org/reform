@@ -204,7 +204,7 @@ class Login(using jsImplicits: JSImplicits) {
               onClick
                 .foreach(_ =>
                   window.location.href =
-                    s"https://reform.st.informatik.tu-darmstadt.de/api/v1/authorize?goto=${window.location.href}",
+                    s"https://reform.st.informatik.tu-darmstadt.de/api/v1/authorize?goto=${window.location.href}&error=https://reform.st.informatik.tu-darmstadt.de/error",
                 ),
             ),
           )
