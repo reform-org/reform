@@ -762,9 +762,11 @@ class SelectProject(
           ),
           div(
             Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                s"${ContractPageAttributes().getTotalHours(existingId, value.value)} h",
-              )
+              editingValue.value.map((_, value) => {
+                if (value.value.contractEndDate.get.nonEmpty && value.value.contractStartDate.get.nonEmpty) {
+                  s"${ContractPageAttributes().getTotalHours(existingId, value.value)} h"
+                } else ""
+              })
             },
           ),
         ),
