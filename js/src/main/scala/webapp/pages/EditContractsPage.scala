@@ -1059,8 +1059,8 @@ class CreateContract(
         ),
         label(
           ContractPageAttributes().signed.renderEdit("", editingValue, cls := "rounded-md"),
-          " The contract has been signed",
-          cls := "mt-2 flex gap-2",
+          span(" The contract has been signed"),
+          cls := "mt-2 flex gap-2 items-center",
         ),
       ),
     )
@@ -1179,8 +1179,8 @@ class CreateLetter(
         ),
         label(
           ContractPageAttributes().submitted.renderEdit("", editingValue, cls := "rounded-md"),
-          " The letter has been submitted",
-          cls := "mt-2 flex gap-2",
+          span(" The letter has been submitted"),
+          cls := "mt-2 flex gap-2 items-center",
         ),
       ),
     )
