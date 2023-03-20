@@ -621,7 +621,7 @@ class BasicInformation(
                 })
 
                 contract.contractHoursPerMonth.get.getOrElse(0) match {
-                  case x if x > maxHoursForTax =>
+                  case x if x > maxHoursForTax && limit != 0 =>
                     p(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
                       icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),

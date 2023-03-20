@@ -11,6 +11,7 @@ import webapp.components.common.*
 import webapp.npm.JSUtils
 import webapp.services.RoutingService
 import webapp.services.Page
+import scala.scalajs.js
 
 class UIFormat[EntityType](val condition: (id: String, entity: EntityType) => Signal[Boolean], val classes: String) {
   def apply(id: String, entity: EntityType): Signal[String] = Signal {
@@ -151,13 +152,14 @@ class UITextAttribute[EntityType, AttributeType](
     editing.value.map(editing => {
       val (editStart, entityVar) = editing
       val editStartAttr = getter(editStart)
+      val id = s"${js.Math.round(js.Math.random() * 1000000)}"
       div(
         cls := "relative min-w-[1rem] edit-value",
         renderEditInput(
           formId,
           entityVar.map(getter(_)),
           x => set(entityVar, x),
-          Some(s"$formId-conflicting-values"),
+          Some(s"$id-conflicting-values"),
           entityVar,
           props,
         ),
@@ -165,7 +167,7 @@ class UITextAttribute[EntityType, AttributeType](
           Some(
             Seq(
               dataList(
-                idAttr := s"$formId-conflicting-values",
+                idAttr := s"$id-conflicting-values",
                 renderConflicts(editStartAttr),
               ),
             ),
