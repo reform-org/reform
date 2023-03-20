@@ -85,7 +85,11 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
       div(
         cls := "flex flex-col text-sm",
         div(
-          name,
+          div(
+            name,
+            if (tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
+            cls := "flex gap-2",
+          ),
           cls := "font-bold",
         ),
         i(
@@ -124,7 +128,7 @@ def availableConnectionRow(
       div(
         connection.name,
         if (connection.tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
-        cls := "flex gap-2",
+        cls := "flex gap-2 font-bold",
       ),
       i(
         span(
