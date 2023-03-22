@@ -12,23 +12,31 @@ import webapp.components.common.*
 import rescala.default.*
 import webapp.given
 
-case class ErrorPage()(using
+case class ErrorPage(code: Int = 404, title: String = "", description: String = "")(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
   def render = Signal {
-    val errorText = jsImplicits.routing.getQueryParameterAsString("error").value
-    if (errorText != "") {
-      error(s"400 | $errorText", "Take me Home", HomePage())
-    } else {
-      error("404 | Page not found", "Take me Home", HomePage())
-    }
+    val querytitle = jsImplicits.routing.getQueryParameterAsString("title").value
+    val querycode = jsImplicits.routing.getQueryParameterAsString("code").value
+    val querydescription = jsImplicits.routing.getQueryParameterAsString("description").value
+
+    println(querydescription)
+
+    error(
+      s"${if (querycode.isBlank()) this.code.toString() else querycode} | ${if (querytitle.isBlank()) this.title
+        else querytitle}",
+      if (querydescription.isBlank()) this.description else querydescription,
+      "Take me Home",
+      HomePage(),
+    )
   }
 
-  def error(text: String, label: String, page: Page) = {
+  def error(text: String, description: String, label: String, page: Page) = {
     div(
-      cls := "flex items-center justify-center h-[80vh] w-screen flex-col gap-6",
+      cls := "flex items-center justify-center h-[80vh] w-full flex-col gap-6",
       h1(text, cls := "text-6xl text-gray-200"),
+      div(description),
       Button(
         ButtonStyle.Primary,
         label,

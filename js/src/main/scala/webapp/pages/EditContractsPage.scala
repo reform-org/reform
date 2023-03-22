@@ -86,7 +86,7 @@ case class ExtendContractPage(contractId: String)(using
           case Some(currentContract) =>
             InnerExtendContractsPage(Some(currentContract), contractId).render
           case None =>
-            ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage())
+            ErrorPage().error("Contract not found", "", "Show me all contracts", ContractsPage())
         }
         result
       })
@@ -106,7 +106,7 @@ case class EditContractsPage(contractId: String)(using
           case Some(currentContract) =>
             InnerEditContractsPage(Some(currentContract), contractId).render
           case None =>
-            ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage())
+            ErrorPage().error("Contract not found", "", "Show me all contract drafts", ContractDraftsPage())
         }
         result
       })
