@@ -46,7 +46,7 @@ case class DocumentsPage()(using
             onClick.foreach(e => {
               e.preventDefault()
               e.target.asInstanceOf[HTMLElement].blur()
-              jsImplicits.routing.to(SalaryChangesPage(), true)
+              jsImplicits.routing.to(ContractSchemasPage(), true)
             }),
             "contract schema",
           ),
