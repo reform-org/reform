@@ -24,7 +24,7 @@
     "ts-node": "^10.9.1",
     "vite-plugin-pwa": "^0.14.4",
     "vitest": "^0.29.2",
-    "vite": "^4.1.4"
+    "vite": "^4.2.1"
   },
   "dependencies": {
     "rollup": "3.18.0",
