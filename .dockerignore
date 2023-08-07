@@ -4,7 +4,7 @@
 !/shared/src
 !/project/build.properties
 !/project/plugins.sbt
-!/webapp/js/src/main/js/public
+!/public
 !/build.sbt
 !/index.css
 !/index.html
@@ -17,4 +17,4 @@
 !/webapp/js/src/main/js/webapp/utils.js
 !/vite.config.ts
 !/.sbtopts
-!/webapp/js/src/main/js/.env.lukasschreiber
+!/.env.*
