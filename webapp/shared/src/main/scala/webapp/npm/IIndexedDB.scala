@@ -6,7 +6,7 @@ import scala.concurrent.Future
 
 trait IIndexedDB {
 
-  def requestPersistentStorage: Unit
+  def requestPersistentStorage(): Unit
 
   def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]]
 

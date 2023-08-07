@@ -86,7 +86,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "-Ysafe-init",
       "-Wunused:all",
       "-deprecation",
-      if (sys.env.get("CI") == Some("true")) "-Werror" else "",
+      if (sys.env.get("CI").contains("true")) "-Werror" else "",
       // "-Xcheck-macros", // breaks utest, outwatch
     ),
   )

@@ -1190,7 +1190,7 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
 ) extends InnerEditContractsPage(existingValue, contractId) {
 
   protected def createDraft(): Future[String] = {
-    jsImplicits.indexeddb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage()
 
     val editingNow = editingValue.now.get._2.now
     val draftContract = Contract(
@@ -1295,7 +1295,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       stayOnPage: Boolean = false,
       silent: Boolean = false,
   ): Future[String] = {
-    jsImplicits.indexeddb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage()
 
     val editingNow = editingValue.now.get._2.now
     existingValue match {

@@ -2,7 +2,7 @@ import { PDFDocument } from "pdf-lib";
 
 // downloads a file through the clients computer
 export const download = (name, byte) => {
-	var blob = new Blob([byte], { type: "application/pdf" });
+	const blob = new Blob([byte], {type: "application/pdf"});
 
 	const elem = document.createElement("a");
 	elem.setAttribute("href", window.URL.createObjectURL(blob));

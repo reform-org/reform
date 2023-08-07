@@ -85,7 +85,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   private def get(id: String): Future[Synced[A]] = valueSyncer.getOrCreateAndSync(id)
 
   def create(initialValue: A): Future[Synced[A]] = {
-    indexedDb.requestPersistentStorage
+    indexedDb.requestPersistentStorage()
     val id = UUID.randomUUID().toString
     valueSyncer
       .createAndSync(id, initialValue)
@@ -95,7 +95,7 @@ case class Repository[A](name: String, defaultValue: A)(using
   }
 
   def getOrCreate(id: String): Future[Synced[A]] = {
-    indexedDb.requestPersistentStorage
+    indexedDb.requestPersistentStorage()
     valueSyncer
       .getOrCreateAndSync(id)
       .flatMap(value => {

@@ -40,7 +40,7 @@ class SqliteDB extends IIndexedDB {
       )
       .nn
 
-  def requestPersistentStorage: Unit = {}
+  def requestPersistentStorage(): Unit = {}
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     synchronized {

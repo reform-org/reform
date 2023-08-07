@@ -23,7 +23,7 @@ class MemoryIndexedDB extends IIndexedDB {
 
   private var data: Map[String, String] = Map()
 
-  def requestPersistentStorage: Unit = {}
+  def requestPersistentStorage(): Unit = {}
 
   override def get[T](key: String)(using codec: JsonValueCodec[T]): Future[Option[T]] = {
     val o = data.get(key).map(readFromString(_))

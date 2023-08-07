@@ -108,7 +108,7 @@ class ReplicationGroup[A](name: String)(using
 
   registry.bindSbj(binding)((remoteRef: RemoteRef, payload: DeltaFor[A]) => {
     if (payload.name != "ids") {
-      indexeddb.requestPersistentStorage
+      indexeddb.requestPersistentStorage()
     }
     getOrCreateAndSync(payload.name).flatMap(_.update(v => v.getOrElse(bottom.empty).merge(payload.delta)))
   })

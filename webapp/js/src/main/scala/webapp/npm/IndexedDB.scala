@@ -197,7 +197,7 @@ class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
 
   var requestedPersistentStorage = Globals.VITE_SELENIUM
 
-  def requestPersistentStorage: Unit = {
+  def requestPersistentStorage(): Unit = {
     if (!requestedPersistentStorage) {
       println("request persistent storage")
       requestedPersistentStorage = true;

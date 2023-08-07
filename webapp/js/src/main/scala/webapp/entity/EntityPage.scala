@@ -283,7 +283,7 @@ class EntityRow[T <: Entity[T]](
   }
 
   private def removeEntity(s: Synced[T]): Unit = {
-    jsImplicits.indexeddb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage()
 
     s.update(e => e.get.withExists(false))
       .toastOnError(ToastMode.Infinit)
@@ -296,7 +296,7 @@ class EntityRow[T <: Entity[T]](
   protected def afterCreated(id: String): Unit = {}
 
   private def createOrUpdate(): Unit = {
-    jsImplicits.indexeddb.requestPersistentStorage
+    jsImplicits.indexeddb.requestPersistentStorage()
 
     val editingNow = editingValue.now.get._2.now
     existingValue match {
