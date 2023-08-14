@@ -1,4 +1,4 @@
-import { Peer } from "./lib.js";
+import { Peer } from "./lib";
 import { afterAll, beforeAll, describe, it } from "vitest";
 import browserstack from "browserstack-local";
 import { writeFile } from "fs/promises";

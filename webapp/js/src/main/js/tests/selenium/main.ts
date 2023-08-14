@@ -1,4 +1,4 @@
-import { Actions, chance, check, Peer, seed } from "./lib.js";
+import { Actions, chance, check, Peer, seed } from "./lib";
 import { strict as assert } from "node:assert";
 import browserstack from "browserstack-local";
 import { promisify } from "util";
