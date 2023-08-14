@@ -5,6 +5,8 @@ import basicSsl from '@vitejs/plugin-basic-ssl'
 import {visualizer} from "rollup-plugin-visualizer";
 
 /** @type {import('vitest/config').UserConfig} */
+
+
 export default {
     plugins: [
         scalaJSPlugin({
@@ -65,7 +67,8 @@ export default {
         //basicSsl()
         visualizer()
     ],
-    root: 'webapp/js/src/main/js',
+    root: './webapp/js/src/main/js',
+    envDir: process.cwd(),
     build: {
         sourcemap: true,
     },
@@ -81,4 +84,4 @@ export default {
         port: 5173,
     },
     clearScreen: false,
-};
+}

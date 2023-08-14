@@ -76,5 +76,5 @@ screenshots
 *.db
 
 .env.*
-.env
+webapp/js/src/main/js/.env
 !webapp/js/src/main/js/.env
