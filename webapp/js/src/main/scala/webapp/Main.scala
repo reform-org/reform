@@ -32,7 +32,6 @@ import outwatch.dsl.*
 
 object Main {
   def main(): Unit = {
-    println("Now just fix the fucking scala code, baka Shinji")
     lazy val jsImplicits: JSImplicits =
       new JSImplicits() {
         lazy val toaster: Toaster = Toaster()
