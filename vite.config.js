@@ -65,6 +65,7 @@ export default {
         //basicSsl()
         visualizer()
     ],
+    root: 'webapp/js/src/main/js',
     build: {
         sourcemap: true,
     },

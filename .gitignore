@@ -77,5 +77,4 @@ screenshots
 
 .env.*
 .env
-!.env.lukasschreiber
-!.env.podman
+!webapp/js/src/main/js/.env
