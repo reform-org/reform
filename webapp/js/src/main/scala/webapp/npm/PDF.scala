@@ -65,7 +65,7 @@ object PDF {
     NativeImpl.download(outputFileName, new js.typedarray.Uint8Array(bytes.toJSArray))
 
   @js.native
-  @JSImport("../../../pdf.js", JSImport.Namespace)
+  @JSImport("/pdf.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
 
     def fillAndDownloadPDF(

@@ -53,7 +53,7 @@ object JSUtils {
   val toMoneyString = NativeImpl.toMoneyString
 
   @js.native
-  @JSImport("../../../utils.js", JSImport.Namespace)
+  @JSImport("/utils.js", JSImport.Namespace)
   private object NativeImpl extends js.Object {
 
     def usesTurn(connection: js.Object): js.Promise[Boolean] =

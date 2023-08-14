@@ -20,7 +20,7 @@ lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
 lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
   // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
-  .in(file("."))
+  .in(file("webapp"))
   // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
