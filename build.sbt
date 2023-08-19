@@ -24,7 +24,7 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
-      ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
+      ModuleInitializer.mainMethod("de.tu_darmstadt.informatik.st.reform.Main", "main").withModuleID("main")
     }),
     Test / scalaJSUseTestModuleInitializer := true, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
     /*Test / scalaJSModuleInitializers := Seq(
