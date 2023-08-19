@@ -19,8 +19,8 @@ given ExecutionContext =
 
 object Globals {
   val VITE_DATABASE_VERSION: String =
-    sys.env.get("VITE_DATABASE_VERSION").get.nn
+    sys.env("VITE_DATABASE_VERSION").nn
 
   val VITE_PROTOCOL_VERSION: String =
-    sys.env.get("VITE_PROTOCOL_VERSION").get.nn
+    sys.env("VITE_PROTOCOL_VERSION").nn
 }

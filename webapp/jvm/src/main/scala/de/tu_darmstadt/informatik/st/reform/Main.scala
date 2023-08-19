@@ -33,68 +33,68 @@ import java.security.Principal
 import javax.security.auth.Subject
 
 // https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java#L50
-@main def runServer() = {
+@main def runServer(): Unit = {
   val registry = Registry()
   val indexedDb = SqliteDB()
   val _ = Repositories()(using registry, indexedDb)
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  val port = sys.env.get("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").get.toInt
-  val path = sys.env.get("VITE_ALWAYS_ONLINE_PEER_PATH").get
-  val secret = sys.env.get("JWT_KEY").get
+  val port = sys.env("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").toInt
+  val path = sys.env("VITE_ALWAYS_ONLINE_PEER_PATH")
+  val secret = sys.env("JWT_KEY")
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
-  val securityHandler = servletContextHandler.getSecurityHandler().nn
+  val securityHandler = servletContextHandler.getSecurityHandler.nn
 
-  val authenticator = new Authenticator {
+  val authenticator: Authenticator = new Authenticator {
 
     override def prepareRequest(request: ServletRequest | Null): Unit = {}
 
     override def setConfiguration(configuration: AuthConfiguration | Null): Unit = {}
 
-    override def getAuthMethod(): String | Null = "JWT Authenticator"
+    override def getAuthMethod: String | Null = "JWT Authenticator"
 
     override def validateRequest(
         req: ServletRequest | Null,
         res: ServletResponse | Null,
         mandatory: Boolean,
     ): Authentication | Null = {
-      val request: HttpServletRequest = req.asInstanceOf[HttpServletRequest];
-      val response: HttpServletResponse = res.asInstanceOf[HttpServletResponse];
-      val token = request.getQueryString()
+      val request: HttpServletRequest = req.asInstanceOf[HttpServletRequest]
+      val response: HttpServletResponse = res.asInstanceOf[HttpServletResponse]
+      val token = request.getQueryString
 
       if (token != null) {
         try {
-          val algorithm: Algorithm = Algorithm.HMAC256(secret).nn;
+          val algorithm: Algorithm = Algorithm.HMAC256(secret).nn
           val verifier: JWTVerifier = JWT
             .require(algorithm)
             .nn
             .build()
-            .nn;
+            .nn
 
-          val decodedJWT: DecodedJWT = verifier.verify(token).nn;
-          val issuedAt = decodedJWT.getIssuedAt();
-          val expiresAt = decodedJWT.getExpiresAt();
-          val uuid = decodedJWT.getClaim("uuid").nn.asString();
-          val device = decodedJWT.getClaim("device").nn.asString();
-          val username = decodedJWT.getClaim("username").nn.asString();
+          val decodedJWT: DecodedJWT = verifier.verify(token).nn
+          val issuedAt = decodedJWT.getIssuedAt
+          val expiresAt = decodedJWT.getExpiresAt
+          val uuid = decodedJWT.getClaim("uuid").nn.asString()
+          val device = decodedJWT.getClaim("device").nn.asString()
+          val username = decodedJWT.getClaim("username").nn.asString()
           println(
-            s"connection from ${username} (${uuid}) from device ${device} issued ${issuedAt} expiring ${expiresAt}",
+            s"connection from $username ($uuid) from device $device issued $issuedAt expiring $expiresAt",
           )
-          return new Authentication.User {
+          new Authentication.User {
 
             override def logout(request: ServletRequest | Null): Authentication | Null = ???
 
-            override def getAuthMethod(): String | Null = null
+            override def getAuthMethod: String | Null = null
 
-            override def getUserIdentity(): UserIdentity | Null = new UserIdentity {
+            override def getUserIdentity: UserIdentity | Null = new UserIdentity {
 
-              override def getSubject(): Subject | Null = ???
+              override def getSubject: Subject | Null = ???
 
-              override def getUserPrincipal(): Principal | Null = new Principal {
+              override def getUserPrincipal: Principal | Null = new Principal {
 
-                override def getName(): String | Null = "test"
+                override def getName: String | Null = "test"
 
               }
 
@@ -108,13 +108,13 @@ import javax.security.auth.Subject
         } catch {
           case exception: JWTVerificationException =>
             println(exception)
-            response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-            return Authentication.SEND_FAILURE
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+            Authentication.SEND_FAILURE
         }
       } else {
         println("not authenticated")
-        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
-        return Authentication.SEND_FAILURE
+        response.sendError(HttpServletResponse.SC_UNAUTHORIZED)
+        Authentication.SEND_FAILURE
       }
     }
 
@@ -125,7 +125,7 @@ import javax.security.auth.Subject
         validatedUser: Authentication.User | Null,
     ): Boolean = true
   }
-  securityHandler.setAuthenticator(authenticator);
+  securityHandler.setAuthenticator(authenticator)
   server.setHandler(servletContextHandler)
   server.addConnector(connector)
   registry.listen(WS(servletContextHandler, s"$path")).get
