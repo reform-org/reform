@@ -1,14 +1,12 @@
 package de.tu_darmstadt.informatik.st.reform.pages
 
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.components.common.*
 import de.tu_darmstadt.informatik.st.reform.services.*
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
+import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.*
-import org.scalajs.dom.HTMLElement
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
-import de.tu_darmstadt.informatik.st.reform.components.common.*
 
 case class ErrorPage()(using
     jsImplicits: JSImplicits,

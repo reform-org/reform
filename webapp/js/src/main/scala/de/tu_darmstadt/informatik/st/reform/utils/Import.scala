@@ -1,14 +1,15 @@
 package de.tu_darmstadt.informatik.st.reform.utils
-import de.tu_darmstadt.informatik.st.reform.Repositories
-import de.tu_darmstadt.informatik.st.reform.repo.{RepoAndValues, Repository}
-import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import scala.collection.mutable
-import de.tu_darmstadt.informatik.st.reform.*
-import scala.annotation.nowarn
-import scala.concurrent.Future
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import com.github.plokhotnyuk.jsoniter_scala.core.*
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.Repositories
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.repo.RepoAndValues
+import de.tu_darmstadt.informatik.st.reform.repo.Repository
+
+import scala.collection.mutable
+import scala.concurrent.Future
 
 def exportIndexedDBJson(using jsImplicits: JSImplicits): String = {
 

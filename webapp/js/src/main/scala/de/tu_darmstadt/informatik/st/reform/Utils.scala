@@ -1,12 +1,12 @@
 package de.tu_darmstadt.informatik.st.reform
 
+import org.scalajs.dom.MediaQueryList
+import org.scalajs.dom.StorageEvent
+import org.scalajs.dom.document
+import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
-import org.scalajs.dom.{document, window}
-import org.scalajs.dom.MediaQueryList
 import rescala.default.*
-import scala.annotation.nowarn
-import org.scalajs.dom.StorageEvent
 
 def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
   div(

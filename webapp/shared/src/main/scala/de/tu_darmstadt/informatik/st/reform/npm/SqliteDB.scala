@@ -16,10 +16,10 @@ limitations under the License.
 package de.tu_darmstadt.informatik.st.reform.npm
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
-
-import scala.concurrent.Future
-import java.sql.DriverManager
 import de.tu_darmstadt.informatik.st.reform.Globals
+
+import java.sql.DriverManager
+import scala.concurrent.Future
 
 class SqliteDB extends IIndexedDB {
   val url = "jdbc:sqlite:../data/reform.db"

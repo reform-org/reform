@@ -15,44 +15,27 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import org.scalajs.dom.*
-import scala.scalajs.js
-import outwatch.*
-import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.{*, given}
-import de.tu_darmstadt.informatik.st.reform.npm.*
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, ToastType, Toaster}
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import de.tu_darmstadt.informatik.st.reform.components.{Modal, ModalButton}
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import de.tu_darmstadt.informatik.st.reform.utils.{exportIndexedDBJson, importIndexedDBJson}
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
-import org.scalajs.dom.HTMLInputElement
-import rescala.default.*
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.*
-
-import scala.util.Success
-import scala.util.Failure
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toHumanMonth
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMilliseconds
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
+import de.tu_darmstadt.informatik.st.reform.components.common.*
 import de.tu_darmstadt.informatik.st.reform.entity.Contract
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toHumanMonth
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
+import de.tu_darmstadt.informatik.st.reform.npm.*
+import de.tu_darmstadt.informatik.st.reform.services.Page
+import de.tu_darmstadt.informatik.st.reform.{*, given}
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
+
+import scala.scalajs.js
 
 case class HomePage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  def getContractsForInterval(month: Int, year: Int, pred: (String, Contract) => Boolean = (a, b) => true) = {
+  def getContractsForInterval(month: Int, year: Int, pred: (String, Contract) => Boolean = (_, _) => true) = {
     Signal.dynamic {
       jsImplicits.repositories.contracts.existing.value
         .map(p => (p.id -> p.signal.value))
@@ -136,7 +119,7 @@ case class HomePage()(using
           Signal.dynamic {
             val sum = jsImplicits.repositories.contracts.existing.value
               .map(p => (p.id -> p.signal.value))
-              .filter((id, p) =>
+              .filter((_, p) =>
                 !p.isDraft.get.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
               )
               .map((id, contract) => {
@@ -157,7 +140,7 @@ case class HomePage()(using
           Signal.dynamic {
             val sum = jsImplicits.repositories.contracts.existing.value
               .map(p => (p.id -> p.signal.value))
-              .filter((id, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
+              .filter((_, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
               .map((id, contract) => {
                 val hourlyWage = ContractPageAttributes()
                   .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
@@ -181,9 +164,9 @@ case class HomePage()(using
 
         val contracts = jsImplicits.repositories.contracts.existing.value
           .map(p => (p.id -> p.signal.value))
-          .filter((id, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
+          .filter((_, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
 
-        projects.foreach((id, project) => {
+        projects.foreach((id, _) => {
           contractsPerProject += (id -> contracts
             .filter((_, contract) => contract.contractAssociatedProject.get.getOrElse("") == id))
         })
@@ -207,9 +190,9 @@ case class HomePage()(using
                         .value
                     val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                     val moneyPerMonth = moneyPerHour * hoursPerMonth
-                    val hiwi = hiwis.find((id, hiwi) => id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                    val hiwi = hiwis.find((id, _) => id == contract.contractAssociatedHiwi.get.getOrElse(""))
                     val supervisor = supervisors
-                      .find((id, supervisor) => id == contract.contractAssociatedSupervisor.get.getOrElse(""))
+                      .find((id, _) => id == contract.contractAssociatedSupervisor.get.getOrElse(""))
 
                     Seq(
                       "",

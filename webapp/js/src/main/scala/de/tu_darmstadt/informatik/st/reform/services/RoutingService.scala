@@ -17,20 +17,14 @@ package de.tu_darmstadt.informatik.st.reform.services
 
 import colibri.*
 import colibri.router.*
+import de.tu_darmstadt.informatik.st.reform.{*, given}
 import org.scalajs.dom
 import org.scalajs.dom.*
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.{*, given}
-
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanPopper
 
 import scala.scalajs.js
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import scala.annotation.nowarn
-import scalajs.js.JSConverters.JSRichOption
 
 trait Page {
   def render: VMod
@@ -141,7 +135,7 @@ class RoutingService(using
   }
 
   def cleanQueryParameters(newParams: Map[String, String | Seq[String]]) = {
-    newParams.filter((key, value) =>
+    newParams.filter((_, value) =>
       value match {
         case x: String      => !x.isBlank
         case x: Seq[String] => x.size > 0 && x.filter(p => !p.isBlank).size > 0

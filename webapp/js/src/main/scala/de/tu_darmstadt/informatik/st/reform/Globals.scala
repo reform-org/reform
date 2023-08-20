@@ -5,10 +5,7 @@ import scala.concurrent.ExecutionContext
 // macrotask executor breaks indexeddb
 given ExecutionContext = scala.concurrent.ExecutionContext.global
 
-import scala.concurrent.Future
 import scala.scalajs.js
-import scala.scalajs.js.Promise
-import scala.scalajs.js.annotation.JSImport
 import js.UndefOr
 import de.tu_darmstadt.informatik.st.reform.services.Toaster
 import de.tu_darmstadt.informatik.st.reform.services.MailService

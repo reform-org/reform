@@ -1,9 +1,8 @@
 package de.tu_darmstadt.informatik.st.reform.components.common
 
+import de.tu_darmstadt.informatik.st.reform.*
 import outwatch.*
 import outwatch.dsl.*
-import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.{*, given}
 
 def NumberCard(title: String, number: VMod, description: VMod, props: VMod*): VNode = {
   div(

@@ -1,5 +1,12 @@
 package de.tu_darmstadt.informatik.st.reform.components
 
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.services.LoginException
+import de.tu_darmstadt.informatik.st.reform.services.LoginInfo
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
 import org.scalajs.dom
 import org.scalajs.dom.HTMLInputElement
 import org.scalajs.dom.console
@@ -8,21 +15,9 @@ import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.given
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.LoginException
-import de.tu_darmstadt.informatik.st.reform.services.LoginInfo
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
 
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import scala.util.Failure
 import scala.util.Success
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import scala.annotation.nowarn
-import org.scalajs.dom.StorageEvent
 
 class ConnectionModal(using jsImplicits: JSImplicits) {
   val offlineBanner = {

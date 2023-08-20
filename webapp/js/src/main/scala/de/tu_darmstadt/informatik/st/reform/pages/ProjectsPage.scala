@@ -15,22 +15,14 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import de.tu_darmstadt.informatik.st.reform.Repositories
-import de.tu_darmstadt.informatik.st.reform.entity.*
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-import ProjectsPage.*
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.entity.UIBasicAttribute
+import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
+import de.tu_darmstadt.informatik.st.reform.*
 import outwatch.*
 import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.{*, given}
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 case class ProjectsPage()(using
     jsImplicits: JSImplicits,

@@ -1,11 +1,10 @@
 package de.tu_darmstadt.informatik.st.reform.components.common
 
-import rescala.default.*
-import outwatch.*
-import outwatch.dsl.*
 import de.tu_darmstadt.informatik.st.reform.{*, given}
 import org.scalajs.dom.document
-import cats.effect.SyncIO
+import outwatch.*
+import outwatch.dsl.*
+import rescala.default.*
 
 class SelectOption(
     val id: String,

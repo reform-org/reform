@@ -15,31 +15,22 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import de.tu_darmstadt.informatik.st.reform.Repositories
-import de.tu_darmstadt.informatik.st.reform.entity.*
-import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, Toaster}
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.getMonth
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.getYear
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
 import de.tu_darmstadt.informatik.st.reform.repo.Repository
+import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import kofre.base.Bottom
 import kofre.base.Lattice
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import outwatch.*
 import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
-import scala.scalajs.js
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import rescala.default.*
 
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.getYear
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.getMonth
+import scala.scalajs.js
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
     override val repository: Repository[T],

@@ -1,24 +1,17 @@
 package de.tu_darmstadt.informatik.st.reform.npm
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
+import de.tu_darmstadt.informatik.st.reform.Globals
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
+import org.scalajs.dom.IDBVersionChangeEvent
+import org.scalajs.dom.window
 
 import scala.concurrent.Future
 import scala.scalajs.js
 import scala.scalajs.js.JSON
-
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import scala.annotation.nowarn
 import scala.scalajs.js.annotation.JSImport
-import org.scalajs.dom.IDBVersionChangeEvent
-
-import org.scalajs.dom.window
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-import de.tu_darmstadt.informatik.st.reform.services.ToastMode
-import de.tu_darmstadt.informatik.st.reform.services.ToastType
-import de.tu_darmstadt.informatik.st.reform.Globals
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 // manually extracted from scalablytyped
 

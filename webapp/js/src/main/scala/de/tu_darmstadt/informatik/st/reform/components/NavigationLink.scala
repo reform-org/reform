@@ -15,13 +15,12 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.components
 
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.services.Page
 import org.scalajs.dom
 import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
 
 def navigationLink(using jsImplicits: JSImplicits)(page: Page, label: String): VNode = {
   a(

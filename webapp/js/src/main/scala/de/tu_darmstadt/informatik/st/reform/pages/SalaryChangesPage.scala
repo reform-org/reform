@@ -15,24 +15,13 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.Repositories
-import de.tu_darmstadt.informatik.st.reform.entity.*
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-
-import SalaryChangesPage.*
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
-
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.entity.*
+import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import org.scalajs.dom.HTMLElement
+import rescala.default.*
 
 case class SalaryChangesPage()(using
     jsImplicits: JSImplicits,

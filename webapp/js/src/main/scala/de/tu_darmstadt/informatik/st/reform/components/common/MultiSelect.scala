@@ -1,19 +1,20 @@
 package de.tu_darmstadt.informatik.st.reform.components.common
 
+import de.tu_darmstadt.informatik.st.reform.components.icons
+import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanPopper
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.createPopper
+import de.tu_darmstadt.informatik.st.reform.remToPx
+import org.scalajs.dom.HTMLElement
+import org.scalajs.dom.HTMLInputElement
+import org.scalajs.dom.ResizeObserver
+import org.scalajs.dom.console
+import org.scalajs.dom.document
 import outwatch.*
 import outwatch.dsl.*
-import scala.scalajs.js
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.createPopper
-import de.tu_darmstadt.informatik.st.reform.given
-import org.scalajs.dom.HTMLInputElement
-import de.tu_darmstadt.informatik.st.reform.components.icons
-import org.scalajs.dom.{console, document, window}
-import org.scalajs.dom.HTMLElement
-import scala.annotation.nowarn
-import org.scalajs.dom.ResizeObserver
-import de.tu_darmstadt.informatik.st.reform.remToPx
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanPopper
+
+import scala.scalajs.js
 
 private class MultiSelect(
     options: Signal[Seq[SelectOption]],

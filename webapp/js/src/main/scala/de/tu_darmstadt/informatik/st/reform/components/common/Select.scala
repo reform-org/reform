@@ -1,15 +1,16 @@
 package de.tu_darmstadt.informatik.st.reform.components.common
 
+import de.tu_darmstadt.informatik.st.reform.components.icons
+import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanPopper
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.createPopper
+import org.scalajs.dom.HTMLElement
+import org.scalajs.dom.document
 import outwatch.*
 import outwatch.dsl.*
-import scala.scalajs.js
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.createPopper
-import de.tu_darmstadt.informatik.st.reform.given
-import de.tu_darmstadt.informatik.st.reform.components.icons
-import org.scalajs.dom.{console, document}
-import org.scalajs.dom.HTMLElement
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanPopper
+
+import scala.scalajs.js
 
 def Select(
     options: Signal[Seq[SelectOption]],

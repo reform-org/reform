@@ -7,8 +7,6 @@ import rescala.default.*
 import de.tu_darmstadt.informatik.st.reform.*
 import de.tu_darmstadt.informatik.st.reform.given
 import de.tu_darmstadt.informatik.st.reform.services.AvailableConnection
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext

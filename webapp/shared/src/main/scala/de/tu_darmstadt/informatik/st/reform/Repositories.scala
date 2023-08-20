@@ -1,11 +1,11 @@
 package de.tu_darmstadt.informatik.st.reform
 
-import loci.registry.Registry
+import de.tu_darmstadt.informatik.st.reform.entity.Document
 import de.tu_darmstadt.informatik.st.reform.entity.*
 import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
 import de.tu_darmstadt.informatik.st.reform.repo.Repository
 import de.tu_darmstadt.informatik.st.reform.webrtc.PingService
-import de.tu_darmstadt.informatik.st.reform.entity.Document
+import loci.registry.Registry
 
 case class Repositories(
     val projects: Repository[Project],

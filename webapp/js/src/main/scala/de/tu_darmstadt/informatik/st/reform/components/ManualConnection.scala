@@ -1,28 +1,25 @@
 package de.tu_darmstadt.informatik.st.reform.components
 
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.components.common.Button
+import de.tu_darmstadt.informatik.st.reform.components.common.ButtonStyle
+import de.tu_darmstadt.informatik.st.reform.components.common.LabeledInput
+import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
+import de.tu_darmstadt.informatik.st.reform.webrtc.PendingConnection
 import loci.communicator.webrtc
 import loci.communicator.webrtc.WebRTC
+import loci.transmitter.RemoteRef
 import org.scalajs.dom
+import org.scalajs.dom.RTCConfiguration
+import org.scalajs.dom.RTCIceServer
 import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.given
-import de.tu_darmstadt.informatik.st.reform.webrtc.PendingConnection
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import loci.transmitter.RemoteRef
-import de.tu_darmstadt.informatik.st.reform.components.common.Input
-import de.tu_darmstadt.informatik.st.reform.components.common.LabeledInput
-import de.tu_darmstadt.informatik.st.reform.components.common.Button
-import de.tu_darmstadt.informatik.st.reform.components.common.ButtonStyle
-import de.tu_darmstadt.informatik.st.reform.components.icons
-import org.scalajs.dom.RTCConfiguration
+
 import scala.scalajs.js
-import org.scalajs.dom.RTCIceServer
 
 private val webrtcConfig = new RTCConfiguration {
   iceServers = js.Array(

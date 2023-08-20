@@ -15,21 +15,15 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.components
 
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.pages.DocumentsPage
+import de.tu_darmstadt.informatik.st.reform.pages.*
 import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.given
-import de.tu_darmstadt.informatik.st.reform.pages.*
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-import de.tu_darmstadt.informatik.st.reform.pages.DocumentsPage
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 def navigationMenu(using
     jsImplicits: JSImplicits,

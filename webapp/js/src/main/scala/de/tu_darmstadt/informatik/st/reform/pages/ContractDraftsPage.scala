@@ -15,25 +15,16 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import de.tu_darmstadt.informatik.st.reform.Repositories
-import de.tu_darmstadt.informatik.st.reform.entity.*
-import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.entity.*
 import de.tu_darmstadt.informatik.st.reform.repo.Repository
+import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import kofre.base.Bottom
 import kofre.base.Lattice
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import ContractsPage.*
-import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import rescala.default.*
 
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
 def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = Signal.dynamic {
   jsImplicits.repositories.contracts.all.value.filter(_.signal.value.isDraft.get.getOrElse(true))
 }

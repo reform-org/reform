@@ -16,32 +16,31 @@ limitations under the License.
 package de.tu_darmstadt.informatik.st.reform.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import com.github.plokhotnyuk.jsoniter_scala.core.*
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils
+import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
+import de.tu_darmstadt.informatik.st.reform.services.ToastMode
+import de.tu_darmstadt.informatik.st.reform.services.ToastType
+import de.tu_darmstadt.informatik.st.reform.services.Toaster
+import de.tu_darmstadt.informatik.st.reform.utils.Base64
 import loci.communicator.Connector
+import loci.communicator.broadcastchannel.BroadcastChannel
 import loci.communicator.webrtc.WebRTC
 import loci.communicator.webrtc.WebRTC.ConnectorFactory
 import loci.registry.*
 import loci.transmitter.RemoteRef
-import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.utils.Base64
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils
-
+import org.scalajs.dom.RTCPeerConnection
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default.*
 
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import scala.annotation.nowarn
 import scala.concurrent.Future
 import scala.concurrent.Promise
-import scala.annotation.nowarn
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, ToastType, Toaster}
-import loci.communicator.ws.webnative.WS
-import loci.communicator.broadcastchannel.BroadcastChannel
-import org.scalajs.dom.RTCPeerConnection
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
 import scala.util.Try
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
 
 class ConnectionInformation(val session: WebRTC.CompleteSession, val alias: String, val source: String = "manual") {}
 class StoredConnectionInformation(

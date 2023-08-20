@@ -17,17 +17,10 @@ package de.tu_darmstadt.informatik.st.reform
 
 import colibri.*
 import colibri.router.*
+import de.tu_darmstadt.informatik.st.reform.pages.DocumentsPage
 import de.tu_darmstadt.informatik.st.reform.pages.*
 import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
 import org.scalajs.dom.window
-import de.tu_darmstadt.informatik.st.reform.pages.DocumentsPage
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
 object Routes {
   def fromPath(using
       jsImplicits: JSImplicits,

@@ -2,13 +2,6 @@ package de.tu_darmstadt.informatik.st.reform
 
 import scala.concurrent.ExecutionContext
 import java.util.concurrent.Executors
-import scribe.Logger
-import java.util.Properties
-import java.io.File
-import scala.io.Source
-import java.io.FileNotFoundException
-import java.net.URL
-import java.net.URI
 
 given ExecutionContext =
   ExecutionContext.fromExecutor(Executors.newSingleThreadScheduledExecutor().nn)

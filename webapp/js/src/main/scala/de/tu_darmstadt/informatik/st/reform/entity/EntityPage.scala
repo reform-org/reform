@@ -15,31 +15,25 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.entity
 
-import scala.collection.mutable
+import de.tu_darmstadt.informatik.st.reform.components.Modal
+import de.tu_darmstadt.informatik.st.reform.components.ModalButton
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.components.icons
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
+import de.tu_darmstadt.informatik.st.reform.repo.Repository
+import de.tu_darmstadt.informatik.st.reform.repo.Synced
+import de.tu_darmstadt.informatik.st.reform.services.Page
+import de.tu_darmstadt.informatik.st.reform.services.ToastMode
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
+import de.tu_darmstadt.informatik.st.reform.{*, given}
 import kofre.base.*
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.repo.Repository
-import de.tu_darmstadt.informatik.st.reform.repo.Synced
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.{*, given}
-import de.tu_darmstadt.informatik.st.reform.components.{Modal, ModalButton}
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, Toaster}
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.components.icons
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 
 import scala.collection.mutable
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import scala.annotation.nowarn
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
-import de.tu_darmstadt.informatik.st.reform.services.MailService
 
 case class Title(singular: String) {
 

@@ -1,12 +1,10 @@
 package de.tu_darmstadt.informatik.st.reform.entity
 
-import rescala.default.*
-
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils
 import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import rescala.default.*
 
 case class UIAttributeBuilder[AttributeType](
     readConverter: AttributeType => String,

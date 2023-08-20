@@ -2,6 +2,7 @@ package de.tu_darmstadt.informatik.st.reform.components.common
 
 import outwatch.*
 import outwatch.dsl.*
+
 import scala.scalajs.js
 
 enum CheckboxStyle(val props: VMod*) {

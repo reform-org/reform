@@ -15,23 +15,22 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.repo
 
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
+import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
+import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.entity.Entity
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
+import de.tu_darmstadt.informatik.st.reform.webrtc.ReplicationGroup
 import kofre.base.*
 import loci.registry.Registry
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
 
 import java.util.UUID
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import scala.concurrent.Future
-import scala.annotation.nowarn
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
 import scala.collection.mutable
-import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import de.tu_darmstadt.informatik.st.reform.webrtc.ReplicationGroup
-import de.tu_darmstadt.informatik.st.reform.entity.Entity
+import scala.concurrent.Future
 
 type RepoAndValues[A] = (Repository[A], mutable.Map[String, A])
 

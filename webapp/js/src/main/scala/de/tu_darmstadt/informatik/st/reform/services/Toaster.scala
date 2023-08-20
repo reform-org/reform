@@ -10,8 +10,6 @@ import de.tu_darmstadt.informatik.st.reform.*
 import de.tu_darmstadt.informatik.st.reform.given
 import de.tu_darmstadt.informatik.st.reform.components.icons
 import org.scalajs.dom.HTMLHtmlElement
-import scala.annotation.nowarn
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils
 
 enum ToastMode(val autodismiss: Boolean, val closeable: Boolean, val duration: Int = 0) {
   case Short extends ToastMode(true, true, 10000)

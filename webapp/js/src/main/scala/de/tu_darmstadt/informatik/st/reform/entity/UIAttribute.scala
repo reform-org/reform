@@ -1,16 +1,15 @@
 package de.tu_darmstadt.informatik.st.reform.entity
 
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.duplicateValuesHandler
+import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils
+import de.tu_darmstadt.informatik.st.reform.services.Page
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.duplicateValuesHandler
-import de.tu_darmstadt.informatik.st.reform.given
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.services.Page
 
 class UIFormat[EntityType](val condition: (id: String, entity: EntityType) => Signal[Boolean], val classes: String) {
   def apply(id: String, entity: EntityType): Signal[String] = Signal {
