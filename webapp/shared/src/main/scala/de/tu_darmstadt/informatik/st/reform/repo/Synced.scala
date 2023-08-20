@@ -1,8 +1,9 @@
 package de.tu_darmstadt.informatik.st.reform.repo
 
-import rescala.default.*
-import scala.concurrent.Future
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import rescala.default.*
+
+import scala.concurrent.Future
 
 case class Synced[A](private val storage: Storage[A], id: String, private val value: Var[A]) {
 

@@ -2,8 +2,8 @@ package de.tu_darmstadt.informatik.st.reform.entity
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.*
-import kofre.base.*
 import de.tu_darmstadt.informatik.st.reform.BasicCodecs.*
+import kofre.base.*
 
 case class Supervisor(
     name: Attribute[String] = Attribute.empty,

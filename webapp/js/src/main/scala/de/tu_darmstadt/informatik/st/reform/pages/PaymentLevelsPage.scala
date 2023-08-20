@@ -15,24 +15,14 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import de.tu_darmstadt.informatik.st.reform.Repositories
-import de.tu_darmstadt.informatik.st.reform.entity.*
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-
-import PaymentLevelsPage.*
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
-import de.tu_darmstadt.informatik.st.reform.services.MailService
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
-
+import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
+import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
+import rescala.default.*
 
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import org.scalajs.dom.HTMLElement
 case class PaymentLevelsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[PaymentLevel](

@@ -3,7 +3,6 @@ package de.tu_darmstadt.informatik.st.reform.repo
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import de.tu_darmstadt.informatik.st.reform.npm.*
 
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import scala.concurrent.Future
 
 case class Storage[T](private val name: String)(using

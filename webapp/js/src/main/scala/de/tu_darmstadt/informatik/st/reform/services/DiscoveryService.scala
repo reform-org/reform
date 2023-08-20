@@ -3,28 +3,25 @@ package de.tu_darmstadt.informatik.st.reform.services
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import de.tu_darmstadt.informatik.st.reform.Globals
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
+import de.tu_darmstadt.informatik.st.reform.webrtc.PendingConnection
+import de.tu_darmstadt.informatik.st.reform.*
 import loci.communicator.webrtc.WebRTC
+import loci.communicator.ws.webnative.WS
+import loci.transmitter.RemoteRef
 import org.scalajs.dom
 import org.scalajs.dom.*
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.Globals
-import de.tu_darmstadt.informatik.st.reform.webrtc.PendingConnection
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
 
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import scala.concurrent.Future
 import scala.concurrent.Promise
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import loci.transmitter.RemoteRef
-import de.tu_darmstadt.informatik.st.reform.{*, given}
-import scala.annotation.nowarn
 import scala.util.Try
-import loci.communicator.ws.webnative.WS
-import loci.registry.Registry
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 class AvailableConnection(
     val name: String,
@@ -41,7 +38,7 @@ object LoginInfo {
   val codec: JsonValueCodec[LoginInfo] = JsonCodecMaker.make
 }
 
-class DiscoveryService(using toaster: Toaster) {
+class DiscoveryService {
   private var pendingConnections: Map[String, PendingConnection] = Map()
   private var ws: Option[WebSocket] = None
 

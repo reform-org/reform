@@ -1,12 +1,13 @@
 package de.tu_darmstadt.informatik.st.reform.components
 
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.given
+import org.scalajs.dom.Element
+import org.scalajs.dom.document
 import outwatch.VNode
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.given
-import org.scalajs.dom.{document, Element}
-import de.tu_darmstadt.informatik.st.reform.components.common.*
 
 class ModalButton(
     val text: String,

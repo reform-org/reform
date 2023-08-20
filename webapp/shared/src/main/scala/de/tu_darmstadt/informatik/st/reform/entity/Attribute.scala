@@ -1,9 +1,9 @@
 package de.tu_darmstadt.informatik.st.reform.entity
 
+import de.tu_darmstadt.informatik.st.reform.BasicCodecs.myReplicaID
 import kofre.base.*
 import kofre.datatypes.alternatives.MultiValueRegister
 import kofre.time.VectorClock
-import de.tu_darmstadt.informatik.st.reform.BasicCodecs.myReplicaID
 
 trait Default[T] {
   def default: T

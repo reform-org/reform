@@ -1,16 +1,14 @@
 package de.tu_darmstadt.informatik.st.reform.utils
 
-import de.tu_darmstadt.informatik.st.reform.services.Toaster
-
-import scala.concurrent.Future
-
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.services.ToastMode
 import de.tu_darmstadt.informatik.st.reform.services.ToastType
-import scala.util.Try
-import scala.util.Success
+
+import scala.concurrent.Future
 import scala.util.Failure
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import scala.util.Success
+import scala.util.Try
 
 object Futures {
 

@@ -16,22 +16,19 @@ limitations under the License.
 package de.tu_darmstadt.informatik.st.reform
 
 import cats.effect.SyncIO
-import loci.registry.Registry
-import outwatch.*
-import outwatch.dsl.*
+import de.tu_darmstadt.informatik.st.reform.BasicCodecs.*
+import de.tu_darmstadt.informatik.st.reform.components.navigationHeader
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
 import de.tu_darmstadt.informatik.st.reform.npm.IndexedDB
 import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
 import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
 import de.tu_darmstadt.informatik.st.reform.services.*
-import de.tu_darmstadt.informatik.st.reform.BasicCodecs.*
 import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-
-import scala.scalajs.js
-import scala.annotation.nowarn
-import de.tu_darmstadt.informatik.st.reform.components.navigationHeader
+import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
+import loci.registry.Registry
+import outwatch.*
+import outwatch.dsl.*
 
 object Main {
   def main(): Unit = {
@@ -44,7 +41,7 @@ object Main {
         lazy val registry: Registry = Registry()
         lazy val webrtc: WebRTCService = WebRTCService(using registry, toaster, discovery)
         lazy val repositories: Repositories = Repositories()(using registry, indexeddb)
-        lazy val discovery: DiscoveryService = DiscoveryService(using toaster)
+        lazy val discovery: DiscoveryService = DiscoveryService()
       }
     // we could assign the members later if this doesn't work?
 

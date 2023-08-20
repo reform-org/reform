@@ -21,17 +21,13 @@ import outwatch.*
 import outwatch.dsl.*
 import de.tu_darmstadt.informatik.st.reform.{*, given}
 import de.tu_darmstadt.informatik.st.reform.npm.*
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
 import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
 
 import de.tu_darmstadt.informatik.st.reform.components.common.*
 
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, ToastType, Toaster}
+import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, ToastType}
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.components.{Modal, ModalButton}
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
 import de.tu_darmstadt.informatik.st.reform.utils.{exportIndexedDBJson, importIndexedDBJson}
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
 import org.scalajs.dom.HTMLInputElement
@@ -39,7 +35,6 @@ import rescala.default.*
 
 import scala.util.Success
 import scala.util.Failure
-import de.tu_darmstadt.informatik.st.reform.services.MailService
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 case class SettingsPage()(using
@@ -93,9 +88,6 @@ case class SettingsPage()(using
         new ModalButton("Cancel", ButtonStyle.LightDefault),
       ),
     )
-
-    val multiSelectValue: Var[Seq[String]] = Var(Seq())
-    val selectValue: Var[String] = Var("")
 
     div(
       cls := "flex flex-col items-center",

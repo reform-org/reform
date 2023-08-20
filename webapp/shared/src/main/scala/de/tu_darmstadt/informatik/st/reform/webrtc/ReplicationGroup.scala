@@ -17,6 +17,11 @@ package de.tu_darmstadt.informatik.st.reform.webrtc
 
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import de.tu_darmstadt.informatik.st.reform.Globals
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
+import de.tu_darmstadt.informatik.st.reform.repo.Storage
+import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import kofre.base.Lattice.*
 import kofre.base.*
 import loci.registry.Binding
@@ -26,14 +31,8 @@ import loci.transmitter.*
 import rescala.core.Disconnectable
 import rescala.default.*
 
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import scala.concurrent.Future
 import scala.util.*
-import de.tu_darmstadt.informatik.st.reform.repo.Synced
-import scala.annotation.nowarn
-import de.tu_darmstadt.informatik.st.reform.repo.Storage
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import de.tu_darmstadt.informatik.st.reform.Globals
 
 /** @param name
   *   The name/type of the thing to sync

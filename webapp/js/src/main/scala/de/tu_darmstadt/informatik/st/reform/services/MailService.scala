@@ -1,24 +1,24 @@
 package de.tu_darmstadt.informatik.st.reform.services
 
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import scala.concurrent.Future
-import scala.concurrent.Promise
-import org.scalajs.dom.*
-import de.tu_darmstadt.informatik.st.reform.Globals
+import cats.effect.SyncIO
 import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
-import scala.scalajs.js
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import outwatch.*
-import outwatch.dsl.*
-import cats.effect.SyncIO
+import de.tu_darmstadt.informatik.st.reform.Globals
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.entity.Hiwi
 import de.tu_darmstadt.informatik.st.reform.entity.Supervisor
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
+import org.scalajs.dom.*
+import outwatch.*
+import outwatch.dsl.*
+
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.scalajs.js
 class MailService {
 
   class MailBody(

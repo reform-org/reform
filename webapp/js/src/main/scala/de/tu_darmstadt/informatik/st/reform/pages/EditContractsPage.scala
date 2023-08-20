@@ -15,50 +15,49 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.components.icons
+import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanStickyButtons
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffDays
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffHumanReadable
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.stickyButton
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
+import de.tu_darmstadt.informatik.st.reform.npm.PDF
+import de.tu_darmstadt.informatik.st.reform.npm.PDFCheckboxField
+import de.tu_darmstadt.informatik.st.reform.npm.PDFTextField
+import de.tu_darmstadt.informatik.st.reform.repo.Synced
+import de.tu_darmstadt.informatik.st.reform.services.ContractEmail
+import de.tu_darmstadt.informatik.st.reform.services.DekanatMail
+import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
+import de.tu_darmstadt.informatik.st.reform.services.MailService
+import de.tu_darmstadt.informatik.st.reform.services.Page
+import de.tu_darmstadt.informatik.st.reform.services.ReminderMail
+import de.tu_darmstadt.informatik.st.reform.services.ToastMode
+import de.tu_darmstadt.informatik.st.reform.services.ToastType
+import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
+import de.tu_darmstadt.informatik.st.reform.{*, given}
+import org.scalajs.dom.BeforeUnloadEvent
+import org.scalajs.dom.KeyboardEvent
+import org.scalajs.dom.document
+import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import rescala.default.*
-import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.entity.*
-import de.tu_darmstadt.informatik.st.reform.{*, given}
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, Toaster}
-import de.tu_darmstadt.informatik.st.reform.repo.Synced
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
-import de.tu_darmstadt.informatik.st.reform.services.ToastType
-import scala.scalajs.js.Date
-import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
-import de.tu_darmstadt.informatik.st.reform.components.icons
-import scala.scalajs.js
-import org.scalajs.dom.{console, document, window}
-import de.tu_darmstadt.informatik.st.reform.npm.{PDF, PDFCheckboxField, PDFTextField}
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
-import scala.annotation.nowarn
-import ContractsPage.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffHumanReadable
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.stickyButton
-import org.scalajs.dom.KeyboardEvent
-import scala.math.BigDecimal.RoundingMode
-import scala.concurrent.Promise
-import scala.concurrent.Future
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
-import de.tu_darmstadt.informatik.st.reform.services.ReminderMail
-import de.tu_darmstadt.informatik.st.reform.services.DekanatMail
-import de.tu_darmstadt.informatik.st.reform.services.ContractEmail
+
 import scala.collection.mutable.ArrayBuffer
+import scala.concurrent.Future
+import scala.concurrent.Promise
+import scala.math.BigDecimal.RoundingMode
+import scala.scalajs.js
+import scala.scalajs.js.Date
 import scala.util.Try
-import scala.util.Failure
-import de.tu_darmstadt.informatik.st.reform.components.icons.Edit
-import org.scalajs.dom.BeforeUnloadEvent
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffDays
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanStickyButtons
+
+import ContractsPage.*
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
@@ -184,7 +183,6 @@ abstract class Step(
 
       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
         val hiwi = hiwiOption.get.signal.now
-        val paymentLevel = paymentLevelOption.get.signal.now
         val project = projectOption.get.signal.now
         val moneyPerHour =
           toMoneyString(

@@ -1,7 +1,6 @@
 package de.tu_darmstadt.informatik.st.reform
 
 import java.util.concurrent.Executors
-import scala.concurrent.ExecutionContext
 
 given ExecutionContext =
   ExecutionContext.fromExecutor(Executors.newSingleThreadScheduledExecutor().nn)

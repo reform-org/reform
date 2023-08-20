@@ -1,14 +1,13 @@
 package de.tu_darmstadt.informatik.st.reform.entity
 
-import rescala.default.*
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.components.common.*
 import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.toQueryParameterName
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.toQueryParameterName
-import de.tu_darmstadt.informatik.st.reform.services.RoutingService
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import rescala.default.*
 
 trait UIFilter[EntityType] {
   def render: VMod
@@ -213,8 +212,6 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 ) extends UIFilter[EntityType] {
 
   private val name = toQueryParameterName(uiAttribute.label)
-
-  private val selected = Var("")
 
   def render: VMod = {
     div(
