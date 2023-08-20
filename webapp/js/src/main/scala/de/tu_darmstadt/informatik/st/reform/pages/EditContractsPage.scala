@@ -518,7 +518,7 @@ class BasicInformation(
                         ),
                         span(
                           cls := "text-slate-400 dark:text-gray-400 text-xs italic",
-                          s"the limit when the contract has started",
+                          "the limit when the contract has started",
                         ),
                       ),
                       div(
@@ -640,7 +640,7 @@ class BasicInformation(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
                       icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
                       span(
-                        s"Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
+                        "Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
                         span(
                           cls := "underline cursor-pointer",
                           onClick.foreach(_ => {

@@ -15,27 +15,28 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.pages
 
-import org.scalajs.dom.*
-import scala.scalajs.js
-import outwatch.*
-import outwatch.dsl.*
-import de.tu_darmstadt.informatik.st.reform.{*, given}
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.components.Modal
+import de.tu_darmstadt.informatik.st.reform.components.ModalButton
+import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
 import de.tu_darmstadt.informatik.st.reform.npm.*
 import de.tu_darmstadt.informatik.st.reform.services.Page
-
-import de.tu_darmstadt.informatik.st.reform.components.common.*
-
-import de.tu_darmstadt.informatik.st.reform.services.{ToastMode, ToastType}
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import de.tu_darmstadt.informatik.st.reform.components.{Modal, ModalButton}
-import de.tu_darmstadt.informatik.st.reform.utils.{exportIndexedDBJson, importIndexedDBJson}
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
+import de.tu_darmstadt.informatik.st.reform.services.ToastMode
+import de.tu_darmstadt.informatik.st.reform.services.ToastType
+import de.tu_darmstadt.informatik.st.reform.utils.exportIndexedDBJson
+import de.tu_darmstadt.informatik.st.reform.utils.importIndexedDBJson
+import de.tu_darmstadt.informatik.st.reform.{*, given}
 import org.scalajs.dom.HTMLInputElement
+import org.scalajs.dom.*
+import outwatch.*
+import outwatch.dsl.*
 import rescala.default.*
 
-import scala.util.Success
+import scala.scalajs.js
 import scala.util.Failure
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import scala.util.Success
 
 case class SettingsPage()(using
     jsImplicits: JSImplicits,

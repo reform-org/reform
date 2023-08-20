@@ -15,19 +15,19 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform
 
-import loci.registry.Registry
-import utest.*
 import de.tu_darmstadt.informatik.st.reform.MainSharedTest.testRepository
 import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
 import de.tu_darmstadt.informatik.st.reform.npm.MemoryIndexedDB
 import de.tu_darmstadt.informatik.st.reform.repo.Repository
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.utils.Seqnal.*
+import loci.communicator.ws.jetty.WS
+import loci.registry.Registry
 import org.eclipse.jetty.server.Server
 import org.eclipse.jetty.server.ServerConnector
 import org.eclipse.jetty.servlet.ServletContextHandler
-import loci.communicator.ws.jetty.WS
+import utest.*
 
 import scala.concurrent.Future
 

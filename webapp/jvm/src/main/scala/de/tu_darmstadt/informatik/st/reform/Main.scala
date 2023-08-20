@@ -1,26 +1,27 @@
 package de.tu_darmstadt.informatik.st.reform
 
-import loci.registry.Registry
-import loci.communicator.ws.jetty.WS
-import org.eclipse.jetty.server.Server
-import org.eclipse.jetty.server.ServerConnector
-import org.eclipse.jetty.servlet.ServletContextHandler
+import com.auth0.jwt.JWT
+import com.auth0.jwt.JWTVerifier
+import com.auth0.jwt.algorithms.Algorithm
+import com.auth0.jwt.exceptions.JWTVerificationException
+import com.auth0.jwt.interfaces.DecodedJWT
 import de.tu_darmstadt.informatik.st.reform.npm.SqliteDB
-import org.eclipse.jetty.security.SecurityHandler
-import org.eclipse.jetty.security.Authenticator
 import jakarta.servlet.ServletRequest
 import jakarta.servlet.ServletResponse
-import org.eclipse.jetty.server.Authentication
-import org.eclipse.jetty.server.UserIdentity
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
-import com.auth0.jwt.interfaces.DecodedJWT
-import com.auth0.jwt.algorithms.Algorithm
-import com.auth0.jwt.JWTVerifier
-import com.auth0.jwt.JWT
-import com.auth0.jwt.exceptions.JWTVerificationException
+import loci.communicator.ws.jetty.WS
+import loci.registry.Registry
+import org.eclipse.jetty.security.Authenticator
 import org.eclipse.jetty.security.Authenticator.AuthConfiguration
+import org.eclipse.jetty.security.SecurityHandler
+import org.eclipse.jetty.server.Authentication
+import org.eclipse.jetty.server.Server
+import org.eclipse.jetty.server.ServerConnector
+import org.eclipse.jetty.server.UserIdentity
 import org.eclipse.jetty.server.UserIdentity.Scope
+import org.eclipse.jetty.servlet.ServletContextHandler
+
 import java.security.Principal
 import javax.security.auth.Subject
 
