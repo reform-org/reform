@@ -113,10 +113,8 @@ case class EditContractsPage(contractId: String)(using
 }
 
 abstract class Step(
-    number: String,
     title: String,
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
@@ -305,14 +303,13 @@ abstract class Step(
 
 class BasicInformation(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
     extend: Boolean = false,
 )(using
     jsImplicits: JSImplicits,
-) extends Step("1", "Basic Information", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("Basic Information", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -670,13 +667,12 @@ class BasicInformation(
 
 class SelectProject(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("1b", "Select Project", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("Select Project", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -786,13 +782,12 @@ class SelectProject(
 
 class ContractType(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("2", "Contract Schema", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("Contract Schema", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -806,13 +801,12 @@ class ContractType(
 
 class ContractRequirements(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("3", "Contract requirements", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("Contract requirements", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -830,7 +824,6 @@ class ContractRequirements(
 
 class ContractRequirementsMail(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     save: () => Unit,
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
@@ -838,10 +831,8 @@ class ContractRequirementsMail(
 )(using
     jsImplicits: JSImplicits,
 ) extends Step(
-      "3a",
       "Contract requirements - reminder mail",
       existingId,
-      existingValue,
       editingValue,
       disabled,
       disabledDescription,
@@ -943,14 +934,13 @@ class ContractRequirementsMail(
 
 class CreateContract(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     save: () => Unit,
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("4", "Create Documents", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("Create Documents", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -1065,14 +1055,13 @@ class CreateContract(
 
 class CreateLetter(
     existingId: String,
-    existingValue: Option[Synced[Contract]],
     editingValue: Var[Option[(Contract, Var[Contract])]],
     save: () => Unit,
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("5", "Letter to Dekanat", existingId, existingValue, editingValue, disabled, disabledDescription) {
+) extends Step("Letter to Dekanat", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -1234,7 +1223,7 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
       div(
         cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
         form(
-          BasicInformation(contractId, existingValue, editingValue, Signal(Seq.empty), "", true).render,
+          BasicInformation(contractId, editingValue, Signal(Seq.empty), "", true).render,
           div(
             idAttr := "static_buttons",
             cls := "pl-4 flex flex-col md:flex-row gap-2",
@@ -1492,13 +1481,12 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
         div(
           cls := "relative md:shadow-md rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
           form(
-            BasicInformation(contractId, existingValue, editingValue).render,
-            SelectProject(contractId, existingValue, editingValue).render,
-            ContractType(contractId, existingValue, editingValue).render,
-            ContractRequirements(contractId, existingValue, editingValue).render,
+            BasicInformation(contractId, editingValue).render,
+            SelectProject(contractId, editingValue).render,
+            ContractType(contractId, editingValue).render,
+            ContractRequirements(contractId, editingValue).render,
             ContractRequirementsMail(
               contractId,
-              existingValue,
               editingValue,
               () => createOrUpdate(false, true, false),
               Signal.dynamic {
@@ -1529,7 +1517,6 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
             ).render,
             CreateContract(
               contractId,
-              existingValue,
               editingValue,
               () => createOrUpdate(false, true, true),
               Signal.dynamic {
@@ -1554,7 +1541,6 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
             ).render,
             CreateLetter(
               contractId,
-              existingValue,
               editingValue,
               () => createOrUpdate(false, true, true),
               Signal.dynamic {
