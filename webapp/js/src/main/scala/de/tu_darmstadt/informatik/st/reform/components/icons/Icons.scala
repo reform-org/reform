@@ -45,7 +45,7 @@ object Circle extends Icon {
 object Reform extends Icon {
   def apply(props: VMod*): VNode = {
     span(
-      cls := s"font-roboto-slab",
+      cls := "font-roboto-slab",
       props,
       span(
         cls := "text-purple-600 font-extrabold dark:text-gray-200",

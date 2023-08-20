@@ -1,15 +1,17 @@
 package de.tu_darmstadt.informatik.st.reform.services
 
+import de.tu_darmstadt.informatik.st.reform.*
+import de.tu_darmstadt.informatik.st.reform.components.icons
+import de.tu_darmstadt.informatik.st.reform.given
+import org.scalajs.dom.HTMLHtmlElement
+import org.scalajs.dom.document
+import org.scalajs.dom.window
 import outwatch.VNode
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
-import org.scalajs.dom.{document, window}
+
 import scala.scalajs.js
-import de.tu_darmstadt.informatik.st.reform.*
-import de.tu_darmstadt.informatik.st.reform.given
-import de.tu_darmstadt.informatik.st.reform.components.icons
-import org.scalajs.dom.HTMLHtmlElement
 
 enum ToastMode(val autodismiss: Boolean, val closeable: Boolean, val duration: Int = 0) {
   case Short extends ToastMode(true, true, 10000)

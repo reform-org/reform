@@ -15,21 +15,16 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform
 
-import loci.registry.Registry
-import utest.*
 import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
 import de.tu_darmstadt.informatik.st.reform.npm.MemoryIndexedDB
 import de.tu_darmstadt.informatik.st.reform.repo.Repository
 import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import de.tu_darmstadt.informatik.st.reform.utils.Seqnal.*
-import scala.concurrent.Future
-
-import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
-import scala.concurrent.Promise
+import loci.registry.Registry
 import rescala.default.*
-import rescala.core.Disconnectable
-import scala.annotation.nowarn
+import utest.*
 
 object MainSharedTest extends TestSuite {
 

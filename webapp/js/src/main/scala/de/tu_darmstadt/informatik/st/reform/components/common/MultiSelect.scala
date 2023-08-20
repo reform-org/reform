@@ -64,7 +64,7 @@ private class MultiSelect(
       val maxWidth = element.get.getBoundingClientRect().width - remToPx(4.5)
       val items = options.value
         .filter(v => value.value.contains(v.id))
-      val rect = element.get.querySelector(s".multiselect-value-wrapper").getBoundingClientRect()
+      val rect = element.get.querySelector(".multiselect-value-wrapper").getBoundingClientRect()
       if (maxWidth > 0 && items.nonEmpty && rect.width > maxWidth) {
         val widths = items.map(v => v.displayWidth("pl-2 pr-7").value)
         var widthAcc = 0.0

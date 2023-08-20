@@ -90,3 +90,13 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       // "-Xcheck-macros", // breaks utest, outwatch
     ),
   )
+
+// needed by scalafix
+ThisBuild / scalafixDependencies += "org.scalalint" %% "rules" % "0.1.4"
+inThisBuild(
+  List(
+    scalaVersion := "3.3.0",
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
+  ),
+)
