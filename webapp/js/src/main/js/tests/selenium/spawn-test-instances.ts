@@ -1,4 +1,3 @@
-import { parseArgs } from "node:util";
 import { Peer } from "./lib";
 import readline from "readline";
 

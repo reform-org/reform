@@ -1,13 +1,11 @@
 import { Peer } from "./lib";
 import { afterAll, beforeAll, describe, it } from "vitest";
 import browserstack from "browserstack-local";
-import { writeFile } from "fs/promises";
 
 async function startPeers(count: number) {
 	return await Promise.all(
 		[...Array(Number(count))].map(async () => {
-			let peer = await Peer.create(process.env.CI === "true");
-			return peer;
+			return await Peer.create(process.env.CI === "true");
 		}),
 	);
 }
@@ -26,7 +24,7 @@ async function quitPeers(peers: Peer[]) {
 const bs_local = new browserstack.Local();
 const start = () => {
 	console.log("start");
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<void>((resolve) => {
 		bs_local.start({}, (error) => {
 			console.log(error);
 			resolve();
@@ -35,7 +33,7 @@ const start = () => {
 };
 const stop = () => {
 	console.log("stop");
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<void>((resolve) => {
 		bs_local.stop(() => {
 			resolve();
 		});

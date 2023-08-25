@@ -1,7 +1,6 @@
 import { Actions, chance, check, Peer, seed } from "./lib.js";
 import { strict as assert } from "node:assert";
 import browserstack from "browserstack-local";
-import { promisify } from "util";
 
 export async function run() {
 	let peers: Peer[];
@@ -160,7 +159,7 @@ export async function run() {
 const bs_local = new browserstack.Local();
 const start = () => {
 	console.log("start");
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<void>((resolve) => {
 		bs_local.start({}, (error) => {
 			console.log(error);
 			resolve();
@@ -169,7 +168,7 @@ const start = () => {
 };
 const stop = () => {
 	console.log("stop");
-	return new Promise<void>((resolve, reject) => {
+	return new Promise<void>((resolve) => {
 		bs_local.stop(() => {
 			resolve();
 		});
