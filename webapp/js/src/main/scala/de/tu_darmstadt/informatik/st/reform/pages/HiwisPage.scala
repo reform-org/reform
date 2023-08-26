@@ -32,7 +32,7 @@ case class HiwisPage()(using
     ) {}
 
 class HiwiAttributes(using jsImplicits: JSImplicits) {
-  def firstName = BuildUIAttribute().string
+  def firstName: UIAttribute[Hiwi, String] = BuildUIAttribute().string
     .withLabel("First Name")
     .require
     .bindAsText[Hiwi](
@@ -40,7 +40,7 @@ class HiwiAttributes(using jsImplicits: JSImplicits) {
       (h, a) => h.copy(firstName = a),
     )
 
-  def lastName = BuildUIAttribute().string
+  def lastName: UIAttribute[Hiwi, String] = BuildUIAttribute().string
     .withLabel("Last Name")
     .require
     .bindAsText[Hiwi](
@@ -48,7 +48,7 @@ class HiwiAttributes(using jsImplicits: JSImplicits) {
       (h, a) => h.copy(lastName = a),
     )
 
-  def eMail = BuildUIAttribute().email
+  def eMail: UIAttribute[Hiwi, String] = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Hiwi](
@@ -56,7 +56,7 @@ class HiwiAttributes(using jsImplicits: JSImplicits) {
       (h, a) => h.copy(eMail = a),
     )
 
-  def birthdate = BuildUIAttribute().date
+  def birthdate: UIAttribute[Hiwi, Long] = BuildUIAttribute().date
     .withLabel("Birthdate")
     .bindAsDatePicker[Hiwi](
       _.birthdate,

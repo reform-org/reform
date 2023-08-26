@@ -79,14 +79,14 @@ object mod {
 
   @JSImport("@reform-org/idb", JSImport.Namespace)
   @js.native
-  val ^ : js.Any = js.native
+  private val ^ : js.Any = js.native
 
   inline def openDB[DBTypes /* <: DBSchema */ ](
       name: String,
       version: Double,
       param2: OpenDBCallbacks[DBTypes],
-  ): js.Promise[IDBPDatabase[DBTypes]] = (^.asInstanceOf[js.Dynamic]
-    .applyDynamic("openDB")(name.asInstanceOf[js.Any], version.asInstanceOf[js.Any], param2.asInstanceOf[js.Any]))
+  ): js.Promise[IDBPDatabase[DBTypes]] = ^.asInstanceOf[js.Dynamic]
+    .applyDynamic("openDB")(name.asInstanceOf[js.Any], version.asInstanceOf[js.Any], param2.asInstanceOf[js.Any])
     .asInstanceOf[js.Promise[IDBPDatabase[DBTypes]]]
 }
 
@@ -176,7 +176,7 @@ object IDBTransactionMode {
 
 class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
 
-  val database =
+  private val database: Future[IDBPDatabase[Any]] =
     mod
       .openDB(
         "reform",
@@ -188,15 +188,15 @@ class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
       )
       .toFuture
 
-  var requestedPersistentStorage = Globals.VITE_SELENIUM
+  private var requestedPersistentStorage: Boolean = Globals.VITE_SELENIUM
 
   def requestPersistentStorage(): Unit = {
     if (!requestedPersistentStorage) {
       println("request persistent storage")
-      requestedPersistentStorage = true;
+      requestedPersistentStorage = true
       if (
-        !(!(js.Dynamic.global.navigator.storage))
-          .asInstanceOf[Boolean] && (!(!js.Dynamic.global.navigator.storage.persist)).asInstanceOf[Boolean]
+        !(!js.Dynamic.global.navigator.storage)
+          .asInstanceOf[Boolean] && js.Dynamic.global.navigator.storage.persist.asInstanceOf[Boolean]
       ) {
         window.navigator.storage
           .persist()
@@ -236,7 +236,7 @@ class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
     tx = db.transaction(js.Array(s"reform_${Globals.VITE_DATABASE_VERSION}"), IDBTransactionMode.readwrite)
     store = tx.objectStore(s"reform_${Globals.VITE_DATABASE_VERSION}")
     v <- store.get(key).toFuture
-    value = Option(v.orNull).map(castFromJsDynamic(_))
+    value = Option(v.orNull).map(castFromJsDynamic)
     newValue = scalaFun(value)
     _ <- store.put(castToJsDynamic(newValue), key).toFuture
     _ <- tx.done.toFuture

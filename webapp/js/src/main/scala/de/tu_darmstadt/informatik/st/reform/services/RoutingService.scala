@@ -33,13 +33,13 @@ trait Page {
 class RoutingService(using
     jsImplicits: JSImplicits,
 ) {
-  given RoutingService = this;
+  given RoutingService = this
 
   private lazy val page = Var[Page](Routes.fromPath(Path(window.location.pathname)))
   private lazy val query =
     Var[Map[String, String | Seq[String]]](decodeQueryParameters(window.location.search))
 
-  val queryParameters: Signal[Map[String, String | Seq[String]]] = query.map(identity)
+  private val queryParameters: Signal[Map[String, String | Seq[String]]] = query.map(identity)
 
   def render: VMod =
     page.map(_.render)
@@ -49,9 +49,9 @@ class RoutingService(using
       newTab: Boolean = false,
       queryParams: Map[String, String | Seq[String]] = Map(),
       keepFocus: Boolean = false,
-  ) = {
+  ): Unit = {
     if (newTab) {
-      window.open(linkPath(newPage, queryParams), "_blank").focus();
+      window.open(linkPath(newPage, queryParams), "_blank").focus()
     } else {
       window.history.pushState(null.asInstanceOf[js.Any], "", linkPath(newPage, queryParams))
       page.set(newPage)
@@ -63,10 +63,10 @@ class RoutingService(using
     }
   }
 
-  def decodeQueryParameters(query: String): Map[String, String | Seq[String]] = {
+  private def decodeQueryParameters(query: String): Map[String, String | Seq[String]] = {
     var res: Map[String, String | Seq[String]] = Map()
     val decodedQuery = js.URIUtils.decodeURI(query)
-    if (decodedQuery.isBlank() || !decodedQuery.startsWith("?")) return res
+    if (decodedQuery.isBlank || !decodedQuery.startsWith("?")) return res
     decodedQuery
       .substring(1)
       .nn
@@ -81,15 +81,15 @@ class RoutingService(using
             val key = kv(0).nn.replace("[]", "").nn
             if (!res.contains(key)) res += (key -> Seq(value))
             else {
-              val oldVal = res.get(key).getOrElse(Seq())
+              val oldVal = res.getOrElse(key, Seq())
               oldVal match {
                 case oldVal: Seq[String] => res += (key -> (oldVal :+ value))
-                case _                   => {}
+                case _                   =>
               }
 
             }
           } else {
-            res += (kv(0).nn -> (value))
+            res += (kv(0).nn -> value)
           }
         }
       })
@@ -97,9 +97,9 @@ class RoutingService(using
     res
   }
 
-  def encodeQueryParameters(map: Map[String, String | Seq[String]]) = {
+  private def encodeQueryParameters(map: Map[String, String | Seq[String]]): String = {
     var res = ""
-    if (map.size != 0) {
+    if (map.nonEmpty) {
       var entries: Seq[String] = Seq()
       map.foreach((k, v) => {
         v match {
@@ -116,49 +116,49 @@ class RoutingService(using
 
   def countQueryParameters(validParams: Seq[String] = Seq.empty): Signal[Int] = Signal {
     queryParameters.value.count((p, _) =>
-      validParams.isEmpty || validParams.find(q => q == "(?=:).*".r.replaceAllIn(p, "")).nonEmpty,
+      validParams.isEmpty || validParams.contains("(?=:).*".r.replaceAllIn(p, "")),
     )
   }
 
   def getQueryParameterAsString(key: String): Signal[String] = Signal {
-    query.value.get(key).getOrElse("") match {
+    query.value.getOrElse(key, "") match {
       case v: String      => v
       case v: Seq[String] => v.mkString
     }
   }
 
   def getQueryParameterAsSeq(key: String): Signal[Seq[String]] = Signal {
-    query.value.get(key).getOrElse(Seq()) match {
+    query.value.getOrElse(key, Seq()) match {
       case v: String      => Seq(v)
       case v: Seq[String] => v
     }
   }
 
-  def cleanQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+  private def cleanQueryParameters(newParams: Map[String, String | Seq[String]]): Map[ByteString, ByteString | Seq[ByteString]] = {
     newParams.filter((_, value) =>
       value match {
         case x: String      => !x.isBlank
-        case x: Seq[String] => x.size > 0 && x.filter(p => !p.isBlank).size > 0
+        case x: Seq[String] => x.exists(p => !p.isBlank)
       },
     )
   }
 
-  def setQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+  def setQueryParameters(newParams: Map[String, String | Seq[String]]): Unit = {
     query.set(cleanQueryParameters(newParams))
   }
 
-  def updateQueryParameters(newParams: Map[String, String | Seq[String]]) = {
+  def updateQueryParameters(newParams: Map[String, String | Seq[String]]): Unit = {
     query.transform(a => cleanQueryParameters(a ++ newParams))
   }
 
-  def link(newPage: Page) =
+  def link(newPage: Page): ByteString =
     URL(linkPath(newPage), window.location.href).toString
 
-  def linkPath(newPage: Page, newQuery: Map[String, String | Seq[String]] = Map()) = {
+  def linkPath(newPage: Page, newQuery: Map[String, String | Seq[String]] = Map()): ByteString = {
     Routes.toPath(newPage).pathString + encodeQueryParameters(newQuery)
   }
 
-  def back() =
+  def back(): Unit =
     window.history.back()
 
   Signal {

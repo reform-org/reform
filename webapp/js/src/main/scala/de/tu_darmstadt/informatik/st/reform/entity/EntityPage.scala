@@ -134,7 +134,7 @@ class EntityRow[T <: Entity[T]](
             }),
           ), {
             existingValue match {
-              case Some(p) => {
+              case Some(p) =>
                 List(
                   TableButton(
                     ButtonStyle.LightPrimary,
@@ -155,8 +155,7 @@ class EntityRow[T <: Entity[T]](
                     data.tip := "Cancel",
                   ),
                 )
-              }
-              case None => {
+              case None =>
                 TableButton(
                   ButtonStyle.LightPrimary,
                   formId := id,
@@ -167,7 +166,6 @@ class EntityRow[T <: Entity[T]](
                   cls := "h-7 tooltip tooltip-top entity-add",
                   data.tip := "Add" + this.title.singular,
                 )
-              }
             }
           },
           existingValue.map(p => {
@@ -287,14 +285,12 @@ class EntityRow[T <: Entity[T]](
     editingValue.set(None)
   }
 
-  protected def afterCreated(id: String): Unit = {}
-
   private def createOrUpdate(): Unit = {
     jsImplicits.indexeddb.requestPersistentStorage()
 
     val editingNow = editingValue.now.get._2.now
     existingValue match {
-      case Some(existing) => {
+      case Some(existing) =>
         existing
           .update(p => {
             p.get.merge(editingNow)
@@ -303,17 +299,14 @@ class EntityRow[T <: Entity[T]](
             editingValue.set(None)
           })
           .toastOnError(ToastMode.Infinit)
-      }
-      case None => {
+      case None =>
         repository
           .create(editingNow)
           .map(entity => {
             editingValue.set(Some((bottom.empty.default, Var(bottom.empty.default))))
             entity
           })
-          .map(value => { afterCreated(value.id); value })
           .toastOnError(ToastMode.Infinit)
-      }
     }
   }
 
@@ -518,22 +511,18 @@ abstract class EntityPage[T <: Entity[T]](
   }
 
   private def countEntities: Signal[Int] = Signal.dynamic {
-    entityRows.value
-      .filter(_.value match {
-        case New(_)             => false
-        case Existing(value, _) => value.signal.value.exists
-      })
-      .size
+    entityRows.value.count(_.value match {
+      case New(_) => false
+      case Existing(value, _) => value.signal.value.exists
+    })
   }
 
   private def countFilteredEntities: Signal[Int] = Signal.dynamic {
     val predicate = filter.predicate.value
-    entityRows.value
-      .filter(_.value match {
-        case New(_)             => false
-        case Existing(value, _) => value.signal.value.exists && predicate(value.signal.value)
-      })
-      .size
+    entityRows.value.count(_.value match {
+      case New(_) => false
+      case Existing(value, _) => value.signal.value.exists && predicate(value.signal.value)
+    })
   }
 
   private def exportView(): Unit = {
@@ -549,7 +538,7 @@ abstract class EntityPage[T <: Entity[T]](
 
     rows.foreach(row => {
       row.value match {
-        case New(_) => {}
+        case New(_) =>
         case Existing(v, _) =>
           val id = v.id
           val value = v.signal.now
@@ -560,25 +549,22 @@ abstract class EntityPage[T <: Entity[T]](
             .foreach(attr => {
               selectedHeaders = selectedHeaders :+ attr.label
               attr match {
-                case attr: UIReadOnlyAttribute[?, ?] => {
+                case attr: UIReadOnlyAttribute[?, ?] =>
                   if (value.exists) {
                     val a = attr.getter(id, value).now
                     csvRow = csvRow :+ attr.readConverter(a)
                   }
-                }
-                case attr: UISelectAttribute[?, ?] => {
+                case attr: UISelectAttribute[?, ?] =>
                   val a = attr.getter(value)
                   csvRow = csvRow :+ a.getAll
                     .map(x => attr.options(value).now.filter(p => p.id == x).map(v => v.name.now).mkString(", "))
                     .mkString(", ")
-                }
-                case attr: UIAttribute[?, ?] => {
+                case attr: UIAttribute[?, ?] =>
                   if (value.exists) {
                     val a = attr.getter(value)
                     csvRow = csvRow :+ a.getAll.map(x => attr.readConverter(x)).mkString(", ")
                   }
-                }
-                case _ => {}
+                case _ =>
               }
             })
 

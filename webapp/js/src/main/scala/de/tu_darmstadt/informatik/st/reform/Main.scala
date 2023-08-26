@@ -83,4 +83,4 @@ object Main {
   )
 }
 
-val _ = Main.main()
+private val _ = Main.main()

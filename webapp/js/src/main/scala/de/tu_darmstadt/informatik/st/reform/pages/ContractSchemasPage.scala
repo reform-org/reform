@@ -51,7 +51,7 @@ case class ContractSchemasPage()(using
 class ContractSchemaAttributes(using
     jsImplicits: JSImplicits,
 ) {
-  def name = BuildUIAttribute().string
+  def name: UIAttribute[ContractSchema, String] = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[ContractSchema](

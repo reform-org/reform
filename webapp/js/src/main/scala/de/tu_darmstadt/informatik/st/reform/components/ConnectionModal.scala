@@ -20,7 +20,7 @@ import scala.util.Failure
 import scala.util.Success
 
 class ConnectionModal(using jsImplicits: JSImplicits) {
-  val offlineBanner = {
+  private val offlineBanner: VNode = {
     div(
       cls := "bg-amber-100 flex flex-col items-center",
       icons.Reload(
@@ -47,7 +47,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
     )
   }
 
-  val onlineBanner = {
+  private val onlineBanner: VNode = {
     div(
       cls := "bg-green-100 flex flex-col	items-center",
       span(
@@ -75,7 +75,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
       },
       Signal {
         var emptyState: VNode = div()
-        if (jsImplicits.webrtc.connections.value.size == 0) {
+        if (jsImplicits.webrtc.connections.value.isEmpty) {
           emptyState = div(
             cls := "flex flex-col items-center mt-4 mb-4",
             icons.Ghost(cls := "w-14 h-14 mb-2"),
@@ -170,26 +170,22 @@ class Login(using jsImplicits: JSImplicits) {
               ButtonStyle.Primary,
               "Login",
               cls := "w-full mt-2",
-              disabled <-- Signal { username.value.isBlank() || password.value.isBlank() },
+              disabled <-- Signal { username.value.isBlank || password.value.isBlank },
               onClick
                 .foreach(_ =>
                   jsImplicits.discovery
                     .login(new LoginInfo(username.now, password.now))
-                    .onComplete(result => {
-                      result match {
-                        case Failure(exception: LoginException) => {
-                          exception.fields.foreach(field => {
-                            val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
-                            input.setCustomValidity(exception.message)
-                            input.reportValidity()
-                          })
-                        }
-                        case Failure(_) => console.log("some login error has happened")
-                        case Success(value) => {
-                          jsImplicits.discovery.setAutoconnect(true)
-                        }
-                      }
-                    }),
+                    .onComplete {
+                      case Failure(exception: LoginException) =>
+                        exception.fields.foreach(field => {
+                          val input = document.querySelector(s"#login-$field").asInstanceOf[HTMLInputElement]
+                          input.setCustomValidity(exception.message)
+                          input.reportValidity()
+                        })
+                      case Failure(_) => console.log("some login error has happened")
+                      case Success(value) =>
+                        jsImplicits.discovery.setAutoconnect(true)
+                    },
                 ),
             ),
           )

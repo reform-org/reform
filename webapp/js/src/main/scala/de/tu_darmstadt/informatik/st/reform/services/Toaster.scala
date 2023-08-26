@@ -62,38 +62,37 @@ class Toast(using toaster: Toaster)(
     val text: VNode,
     val toastMode: ToastMode,
     val toastType: ToastType,
-    val onclose: (Toast) => Unit,
+    val onclose: Toast => Unit,
 ) {
-  val id = js.Math.round(js.Math.random() * 100000)
+  val id: Double = js.Math.round(js.Math.random() * 100000)
   var start: Option[Double] = None
-  var previousTimeStamp: Double = 0
-  var pausedAtTimeStamp: Double = 0
-  var animationDone = false
-  var animationRef: Option[Int] = None
+  private var previousTimeStamp: Double = 0
+  private var pausedAtTimeStamp: Double = 0
+  private val animationDone = false
+  private var animationRef: Option[Int] = None
 
   private def animate(timestamp: Double, resumeTo: Double = 0): Unit = {
-    val element = Option(document.querySelector(s"#toast-$id").asInstanceOf[HTMLHtmlElement]);
+    val element = Option(document.querySelector(s"#toast-$id").asInstanceOf[HTMLHtmlElement])
     if (resumeTo > 0) {
       start match {
-        case None             => {}
+        case None             =>
         case Some(startValue) => start = Some(startValue + timestamp - resumeTo)
       }
     }
 
     element match {
-      case Some(element) => {
+      case Some(element) =>
         start match {
-          case None => {
+          case None =>
             start = Some(timestamp)
             window.requestAnimationFrame(t => animate(t))
-          }
-          case Some(startValue) => {
+          case Some(startValue) =>
             val elapsed = timestamp - startValue
 
             if (previousTimeStamp != timestamp) {
               // animation magic
               val widthVal = js.Math.min((100 / toastMode.duration.toDouble) * elapsed, 100)
-              val width = s"${widthVal}%"
+              val width = s"$widthVal%"
               element.querySelector(".toast-progress").asInstanceOf[HTMLHtmlElement].style.width = width
 
               if (widthVal >= 100) {
@@ -107,12 +106,9 @@ class Toast(using toaster: Toaster)(
                 animationRef = Some(window.requestAnimationFrame(t => animate(t)))
               }
             }
-          }
         }
-      }
-      case None => {
+      case None =>
         animationRef = Some(window.requestAnimationFrame(t => animate(t)))
-      }
     }
   }
 
@@ -127,21 +123,19 @@ class Toast(using toaster: Toaster)(
     div(
       cls := s"${toastType.primaryBgClass} ${toastType.textClass} toast-elem shadow-md alert relative overflow-hidden w-fit",
       onMouseEnter.foreach(_ => {
-        killTimer.map(window.clearTimeout(_))
+        killTimer.foreach(window.clearTimeout)
         animationRef match {
-          case Some(ref) => {
+          case Some(ref) =>
             pausedAtTimeStamp = previousTimeStamp
             window.cancelAnimationFrame(ref)
-          }
-          case None => {}
+          case None =>
         }
       }),
       onMouseLeave.foreach(_ =>
         animationRef match {
-          case Some(ref) => {
+          case Some(ref) =>
             animationRef = Some(window.requestAnimationFrame(t => animate(t, pausedAtTimeStamp)))
-          }
-          case None => {}
+          case None =>
         },
       ),
       idAttr := s"toast-$id", {
@@ -210,7 +204,7 @@ class Toaster() {
   private val addToastB = addToast.act(current[Seq[Toast]] :+ _)
   private val removeToastB = removeToast.act(r => current[Seq[Toast]].filter(b => !b.equals(r)))
 
-  val toasts = Fold(Seq.empty: Seq[Toast])(addToastB, removeToastB)
+  private val toasts: rescala.default.Signal[Seq[Toast]] = Fold(Seq.empty: Seq[Toast])(addToastB, removeToastB)
 
   def make(text: String, mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Default): Unit = {
     this.make(span(text), mode, style)
@@ -219,7 +213,7 @@ class Toaster() {
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
     if (Globals.VITE_SELENIUM && style != ToastType.Error) return
     val toast = new Toast(using this)(text, mode, style, (t: Toast) => { this.removeToast.fire(t) })
-    this.addToast.fire(toast);
+    this.addToast.fire(toast)
   }
 
   def render: VMod = {

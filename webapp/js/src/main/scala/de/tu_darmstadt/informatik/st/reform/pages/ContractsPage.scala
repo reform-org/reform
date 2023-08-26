@@ -18,19 +18,16 @@ package de.tu_darmstadt.informatik.st.reform.pages
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.common.*
 import de.tu_darmstadt.informatik.st.reform.entity.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.getMonth
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.getYear
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
-import de.tu_darmstadt.informatik.st.reform.repo.Repository
-import de.tu_darmstadt.informatik.st.reform.repo.Synced
-import kofre.base.Bottom
-import kofre.base.Lattice
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.{dateDiffMonth, getMonth, getYear, toMoneyString}
+import de.tu_darmstadt.informatik.st.reform.repo.{Repository, Synced}
+import kofre.base.{Bottom, Lattice}
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 
+import scala.annotation.nowarn
 import scala.scalajs.js
+
 class DetailPageEntityRow[T <: Entity[T]](
     override val title: Title,
     override val repository: Repository[T],
@@ -326,12 +323,16 @@ class ContractPageAttributes(using
     false
   }
 
-  def getSalaryChange(id: String, contract: Contract, date: Long): Signal[Option[SalaryChange]] =
+  // TODO: These parameters are an insane dependency magnet
+  //       Also the ID is not even used
+  //       We need to refactor this and similar methods
+  @nowarn("msg=unused explicit parameter")
+  private def getSalaryChange(id: String, contract: Contract, date: Long): Signal[Option[SalaryChange]] =
     Signal.dynamic {
       val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
       salaryChanges
         .map(_.signal.value)
-        .filter(p => Some(p.paymentLevel.get.getOrElse("")) == contract.contractAssociatedPaymentLevel.get)
+        .filter(p => contract.contractAssociatedPaymentLevel.get.contains(p.paymentLevel.get.getOrElse("")))
         .filter(_.fromDate.get.getOrElse(0L) <= date)
         .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
         .headOption

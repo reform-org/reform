@@ -39,7 +39,7 @@ def duplicateValuesHandler[T <: outwatch.VMod](values: Seq[T]) = {
         )
       } else {
         None
-      };
+      }
       res
     },
   )
@@ -108,6 +108,6 @@ def remToPx(rem: Float): Float = {
 }
 
 def escapeCSVString(in: String): String = {
-  if (!"""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isEmpty) s"\"${in.replaceAll("\"", "\"\"")}\""
+  if ("""\s|,|\"|(\r\n|\r|\n)""".r.findFirstMatchIn(in).isDefined) s"\"${in.replaceAll("\"", "\"\"")}\""
   else in
 }

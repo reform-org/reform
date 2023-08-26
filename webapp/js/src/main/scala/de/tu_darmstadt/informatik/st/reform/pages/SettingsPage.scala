@@ -108,7 +108,7 @@ case class SettingsPage()(using
                 SelectOption("default", Signal("Use browser preferences")),
               ),
             ),
-            (value) => {
+            value => {
               window.localStorage.setItem("theme", value)
               theme.set(value)
             },

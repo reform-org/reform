@@ -43,7 +43,7 @@ case class ProjectsPage()(using
     ) {}
 
 class ProjectAttributes(using jsImplicits: JSImplicits) {
-  def name = BuildUIAttribute().string
+  def name: UIAttribute[Project, String] = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Project](
@@ -51,7 +51,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
       (p, a) => p.copy(name = a),
     )
 
-  def maxHours = BuildUIAttribute().int
+  def maxHours: UIAttribute[Project, Int] = BuildUIAttribute().int
     .withLabel("Max Hours")
     .withMin("0")
     .withRegex("\\d*")
@@ -61,7 +61,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
       (p, a) => p.copy(maxHours = a),
     )
 
-  def accountName = BuildUIAttribute().string
+  def accountName: UIAttribute[Project, Option[String]] = BuildUIAttribute().string
     .withLabel("Account")
     .withDefaultValue("")
     .bindAsText[Project](
@@ -84,7 +84,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
           (id, project) => {
             Signal.dynamic {
               val contracts = jsImplicits.repositories.contracts.all.value.map(_.signal.value)
-              contracts.filter(contract => contract.contractAssociatedProject.get == Some(id)).size == 0
+              !contracts.exists(contract => contract.contractAssociatedProject.get.contains(id))
             }
           },
           "text-slate-400 dark:text-gray-400 italic",

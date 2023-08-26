@@ -58,7 +58,7 @@ case class SalaryChangesPage()(using
 class SalaryChangeAttributes(using
     jsImplicits: JSImplicits,
 ) {
-  def salaryChangeValue = BuildUIAttribute().money
+  def salaryChangeValue: UIAttribute[SalaryChange, BigDecimal] = BuildUIAttribute().money
     .withLabel("Value")
     .withMin("0")
     .withRegex("[0-9]+([\\.,][0-9]+)?")
@@ -68,7 +68,7 @@ class SalaryChangeAttributes(using
       (s, a) => s.copy(value = a),
     )
 
-  def salaryChangeLimit = BuildUIAttribute().money
+  def salaryChangeLimit: UIAttribute[SalaryChange, BigDecimal] = BuildUIAttribute().money
     .withLabel("Limit")
     .withMin("0")
     .withRegex("[0-9]+([\\.,][0-9]+)?")
@@ -96,7 +96,7 @@ class SalaryChangeAttributes(using
       )
   }
 
-  def salaryChangeFromDate = BuildUIAttribute().date
+  def salaryChangeFromDate: UIAttribute[SalaryChange, Long] = BuildUIAttribute().date
     .withLabel("From")
     .require
     .bindAsDatePicker[SalaryChange](

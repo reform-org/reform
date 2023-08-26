@@ -32,7 +32,7 @@ case class SupervisorsPage()(using
     ) {}
 
 class SupervisorAttributes(using jsImplicits: JSImplicits) {
-  def name = BuildUIAttribute().string
+  def name: UIAttribute[Supervisor, String] = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Supervisor](
@@ -40,7 +40,7 @@ class SupervisorAttributes(using jsImplicits: JSImplicits) {
       (s, a) => s.copy(name = a),
     )
 
-  def eMail = BuildUIAttribute().email
+  def eMail: UIAttribute[Supervisor, String] = BuildUIAttribute().email
     .withLabel("Email")
     .require
     .bindAsText[Supervisor](

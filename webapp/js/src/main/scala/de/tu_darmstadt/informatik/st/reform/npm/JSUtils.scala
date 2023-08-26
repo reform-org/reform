@@ -33,24 +33,24 @@ object JSUtils {
 
   def cleanStickyButtons(): Unit = NativeImpl.cleanStickyButtons()
 
-  def toGermanDate(input: Long) = NativeImpl.toGermanDate(input.toString())
-  def getMonth(input: Long) = NativeImpl.getMonth(input.toString())
-  def getYear(input: Long) = NativeImpl.getYear(input.toString())
-  def toMilliseconds(month: Int, year: Int) = NativeImpl.toMilliseconds(month, year)
+  def toGermanDate(input: Long): String = NativeImpl.toGermanDate(input.toString)
+  def getMonth(input: Long): Int = NativeImpl.getMonth(input.toString)
+  def getYear(input: Long): Int = NativeImpl.getYear(input.toString)
+  def toMilliseconds(month: Int, year: Int): Long = NativeImpl.toMilliseconds(month, year)
 
-  def toHumanMonth(input: Int) = NativeImpl.toHumanMonth(input)
+  def toHumanMonth(input: Int): String = NativeImpl.toHumanMonth(input)
 
-  def DateTimeFromISO(input: String) = NativeImpl.DateTimeFromISO(input).toLong
+  def DateTimeFromISO(input: String): Long = NativeImpl.DateTimeFromISO(input).toLong
 
-  def toYYYYMMDD(input: Long) = NativeImpl.toYYYYMMDD(input.toString())
+  def toYYYYMMDD(input: Long): String = NativeImpl.toYYYYMMDD(input.toString)
 
-  def dateDiffDays(a: Long, b: Long) = NativeImpl.dateDiffDays(a.toString(), b.toString())
+  def dateDiffDays(a: Long, b: Long): Int = NativeImpl.dateDiffDays(a.toString, b.toString)
 
-  def dateDiffMonth(a: Long, b: Long) = NativeImpl.dateDiffMonth(a.toString(), b.toString())
+  def dateDiffMonth(a: Long, b: Long): Int = NativeImpl.dateDiffMonth(a.toString, b.toString)
 
-  def dateDiffHumanReadable(a: Long, b: Long) = NativeImpl.dateDiffHumanReadable(a.toString(), b.toString())
+  def dateDiffHumanReadable(a: Long, b: Long): String = NativeImpl.dateDiffHumanReadable(a.toString, b.toString)
 
-  val toMoneyString = NativeImpl.toMoneyString
+  val toMoneyString: BigDecimal => String = NativeImpl.toMoneyString
 
   @js.native
   @JSImport("/utils.js", JSImport.Namespace)

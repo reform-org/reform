@@ -27,7 +27,7 @@ def Select(
   val id = s"select-${js.Math.round(js.Math.random() * 100000)}"
   val search = Var("")
 
-  def close() = {
+  def close(): Unit = {
     document.querySelector(s"#$id .select-select").asInstanceOf[HTMLElement].click()
   }
 
@@ -58,12 +58,10 @@ def Select(
           cls := "peer/select w-[1px] focus:outline-none opacity-0 border-none max-w-[1px] pointer-events-none absolute",
           tabIndex := -1,
           formId := props
-            .collectFirst(p => {
-              p match {
-                case AccumAttr("form", value, _) => value
-                case BasicAttr("form", value)    => value
-              }
-            })
+            .collectFirst {
+              case AccumAttr("form", value, _) => value
+              case BasicAttr("form", value) => value
+            }
             .getOrElse("")
             .toString,
         )
@@ -118,7 +116,7 @@ def Select(
         Signal {
           options.value.map(uiOption =>
             Signal {
-              if (search.value.isBlank() || uiOption.name.value.toLowerCase().nn.contains(search.value.toLowerCase())) {
+              if (search.value.isBlank || uiOption.name.value.toLowerCase().nn.contains(search.value.toLowerCase())) {
                 Some(
                   label(
                     cls := "block w-full hover:bg-slate-50 dark:hover:bg-gray-700",

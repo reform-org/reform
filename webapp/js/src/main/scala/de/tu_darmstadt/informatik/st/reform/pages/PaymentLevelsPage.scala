@@ -53,7 +53,7 @@ case class PaymentLevelsPage()(using
     ) {}
 
 class PaymentLevelAttributes(using jsImplicits: JSImplicits) {
-  def title = BuildUIAttribute().string
+  def title: UIAttribute[PaymentLevel, String] = BuildUIAttribute().string
     .withLabel("Title")
     .require
     .bindAsText[PaymentLevel](
@@ -61,7 +61,7 @@ class PaymentLevelAttributes(using jsImplicits: JSImplicits) {
       (p, a) => p.copy(title = a),
     )
 
-  def pdfCheckboxName = BuildUIAttribute().string
+  def pdfCheckboxName: UIAttribute[PaymentLevel, String] = BuildUIAttribute().string
     .withLabel("PDF Checkbox Name")
     .require
     .bindAsText[PaymentLevel](
