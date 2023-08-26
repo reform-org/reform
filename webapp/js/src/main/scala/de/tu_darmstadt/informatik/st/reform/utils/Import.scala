@@ -18,11 +18,10 @@ def exportIndexedDBJson(using jsImplicits: JSImplicits): String = {
       def encodeValue(x: Repositories, out: JsonWriter): Unit = {
         out.writeObjectStart()
         x.productIterator.foreach {
-          case repository: Repository[?] => {
+          case repository: Repository[?] =>
             out.writeKey(repository.name)
             repository.encodeRepository(out)
-          }
-          case _ => {}
+          case _ =>
         }
         out.writeObjectEnd()
       }
@@ -38,12 +37,11 @@ def importIndexedDBJson(
     json: String,
 )(using jsImplicits: JSImplicits): Future[scala.collection.mutable.Iterable[Repository[?]]] = {
   Future {
-    var repositoryCodecs: mutable.Map[String, Repository[?]] = mutable.Map()
+    val repositoryCodecs: mutable.Map[String, Repository[?]] = mutable.Map()
     jsImplicits.repositories.productIterator.foreach {
-      case repository: Repository[?] => {
+      case repository: Repository[?] =>
         repositoryCodecs += (repository.name -> repository)
-      }
-      case _ => {}
+      case _ =>
     }
 
     given repositoryMapCodec: JsonValueCodec[mutable.Map[String, (Repository[?], mutable.Map[String, ?])]] =
@@ -82,7 +80,7 @@ def importIndexedDBJson(
       .sequence(
         result.map((_, repoAndValues) => {
           repoAndValues match {
-            case repoAndValues: RepoAndValues[?] => {
+            case repoAndValues: RepoAndValues[?] =>
               Future
                 .sequence(repoAndValues._2.map((k, v) => {
                   repoAndValues._1
@@ -95,7 +93,6 @@ def importIndexedDBJson(
                     )
                 }))
                 .map(_ => repoAndValues._1)
-            }
           }
         }),
       )

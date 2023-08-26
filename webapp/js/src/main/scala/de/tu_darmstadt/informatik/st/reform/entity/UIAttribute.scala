@@ -179,7 +179,7 @@ class UITextAttribute[EntityType, AttributeType](
   protected def getEditString(attr: Attribute[AttributeType]): String =
     attr.get.map(x => editConverter(x)).getOrElse("")
 
-  protected def renderConflicts(attr: Attribute[AttributeType]): VMod =
+  private def renderConflicts(attr: Attribute[AttributeType]): VMod =
     attr.getAll.map(x => option(value := readConverter(x)))
 }
 

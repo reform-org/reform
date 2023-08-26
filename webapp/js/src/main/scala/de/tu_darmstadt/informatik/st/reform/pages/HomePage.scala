@@ -35,12 +35,14 @@ case class HomePage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  def getContractsForInterval(month: Int, year: Int, pred: (String, Contract) => Boolean = (_, _) => true) = {
-    Signal.dynamic {
-      jsImplicits.repositories.contracts.existing.value
-        .map(p => (p.id -> p.signal.value))
-        .filter((id, p) => pred(id, p) && ContractPageAttributes().isInInterval(p, month, year))
-    }
+  private def getContractsForInterval(
+      month: Int,
+      year: Int,
+      pred: (String, Contract) => Boolean = (_, _) => true,
+  ): Signal[Seq[(String, Contract)]] = Signal.dynamic {
+    jsImplicits.repositories.contracts.existing.value
+      .map(p => p.id -> p.signal.value)
+      .filter((id, p) => pred(id, p) && ContractPageAttributes().isInInterval(p, month, year))
   }
 
   def render: VMod = {
@@ -65,8 +67,8 @@ case class HomePage()(using
             val y = year.now
             jsImplicits.routing.updateQueryParameters(
               Map(
-                ("month" -> (if (m == 1) "12" else (m - 1).toString)),
-                ("year" -> (if (m == 1) (y - 1).toString else y.toString)),
+                "month" -> (if (m == 1) "12" else (m - 1).toString),
+                "year" -> (if (m == 1) (y - 1).toString else y.toString),
               ),
             )
           }),
@@ -80,8 +82,8 @@ case class HomePage()(using
             val y = year.now
             jsImplicits.routing.updateQueryParameters(
               Map(
-                ("month" -> (if (m == 12) "1" else (m + 1).toString)),
-                ("year" -> (if (m == 12) (y + 1).toString else y.toString)),
+                "month" -> (if (m == 12) "1" else (m + 1).toString),
+                "year" -> (if (m == 12) (y + 1).toString else y.toString),
               ),
             )
           }),
@@ -118,7 +120,7 @@ case class HomePage()(using
           "Expenses:",
           Signal.dynamic {
             val sum = jsImplicits.repositories.contracts.existing.value
-              .map(p => (p.id -> p.signal.value))
+              .map(p => p.id -> p.signal.value)
               .filter((_, p) =>
                 !p.isDraft.get.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
               )
@@ -129,7 +131,7 @@ case class HomePage()(using
                 val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                 hoursPerMonth * hourlyWage
               })
-              .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
+              .sum
 
             toMoneyString(sum).substring(0, toMoneyString(sum).length() - 2).nn
           },
@@ -139,7 +141,7 @@ case class HomePage()(using
           "Planned Expenses:",
           Signal.dynamic {
             val sum = jsImplicits.repositories.contracts.existing.value
-              .map(p => (p.id -> p.signal.value))
+              .map(p => p.id -> p.signal.value)
               .filter((_, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
               .map((id, contract) => {
                 val hourlyWage = ContractPageAttributes()
@@ -148,7 +150,7 @@ case class HomePage()(using
                 val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                 hoursPerMonth * hourlyWage
               })
-              .fold[BigDecimal](0)((a: BigDecimal, b: BigDecimal) => a + b)
+              .sum
 
             toMoneyString(sum).substring(0, toMoneyString(sum).length() - 2).nn
           },
@@ -156,14 +158,14 @@ case class HomePage()(using
         ),
       ),
       Signal.dynamic {
-        val projects = jsImplicits.repositories.projects.existing.value.map(p => (p.id -> p.signal.value))
-        val hiwis = jsImplicits.repositories.hiwis.all.value.map(p => (p.id -> p.signal.value))
-        val supervisors = jsImplicits.repositories.supervisors.all.value.map(p => (p.id -> p.signal.value))
+        val projects = jsImplicits.repositories.projects.existing.value.map(p => p.id -> p.signal.value)
+        val hiwis = jsImplicits.repositories.hiwis.all.value.map(p => p.id -> p.signal.value)
+        val supervisors = jsImplicits.repositories.supervisors.all.value.map(p => p.id -> p.signal.value)
 
         var contractsPerProject: Map[String, Seq[(String, Contract)]] = Map.empty
 
         val contracts = jsImplicits.repositories.contracts.existing.value
-          .map(p => (p.id -> p.signal.value))
+          .map(p => p.id -> p.signal.value)
           .filter((_, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
 
         projects.foreach((id, _) => {
@@ -172,11 +174,11 @@ case class HomePage()(using
         })
 
         val projectsThisMonth = projects
-          .filter((id, _) => contractsPerProject.get(id).map(c => c.size > 0).getOrElse(false))
+          .filter((id, _) => contractsPerProject.get(id).exists(c => c.nonEmpty))
 
         div(
           cls := "flex flex-col gap-4 md:items-center",
-          if (projectsThisMonth.size > 0) {
+          if (projectsThisMonth.nonEmpty) {
             projectsThisMonth
               .map((id, project) => {
                 TableCard(
@@ -211,7 +213,7 @@ case class HomePage()(using
                     span(
                       contractsPerProject(id)
                         .map((_, contract) => contract.contractHoursPerMonth.get.getOrElse(0))
-                        .fold[Int](0)((a, b) => a + b),
+                        .sum,
                       " h",
                     ),
                     toMoneyString(
@@ -224,7 +226,7 @@ case class HomePage()(using
                           val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
                           moneyPerHour * hoursPerMonth
                         })
-                        .fold[BigDecimal](0)((a, b) => a + b),
+                        .sum,
                     ),
                   ),
                 )

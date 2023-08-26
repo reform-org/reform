@@ -60,7 +60,7 @@ class DiscoveryService {
   ): Unit = {
     window.localStorage.setItem("autoconnect", value.toString)
     autoconnect.set(value)
-    if (value == true) {
+    if (value) {
       connect()
         .toastOnError()
     } else {
@@ -69,7 +69,7 @@ class DiscoveryService {
   }
 
   def decodeToken(token: String): TokenPayload = {
-    val decodedToken = JSON.parse(window.atob(token.split('.')(1))).asInstanceOf[js.Dynamic]
+    val decodedToken = JSON.parse(window.atob(token.split('.')(1)))
     TokenPayload(
       decodedToken.exp.asInstanceOf[Int],
       decodedToken.iat.asInstanceOf[Int],
@@ -78,25 +78,23 @@ class DiscoveryService {
     )
   }
 
-  def updateToken(value: Option[String]) = {
+  private def updateToken(value: Option[String]): Unit = {
     value match {
-      case Some(value) => {
+      case Some(value) =>
         window.localStorage.setItem("discovery-token", value)
-      }
-      case None => {
+      case None =>
         window.localStorage.removeItem("discovery-token")
-      }
     }
     token.set(value)
   }
 
   def tokenIsValid(token: Option[String]): Boolean = {
-    return token.nonEmpty && !token.get.isBlank() && Date.now() > decodeToken(token.get).exp
+    token.nonEmpty && !token.get.isBlank && Date.now() > decodeToken(token.get).exp
   }
 
   def logout(): Unit = {
     ws match {
-      case None         => {}
+      case None         =>
       case Some(socket) => ws.get.close()
     }
     updateToken(None)
@@ -108,8 +106,8 @@ class DiscoveryService {
     val promise = Promise[String]()
 
     if (!tokenIsValid(token.now)) {
-      val requestHeaders = new Headers();
-      requestHeaders.set("content-type", "application/json");
+      val requestHeaders = new Headers()
+      requestHeaders.set("content-type", "application/json")
       fetch(
         s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_PATH}/login",
         new RequestInit {
@@ -122,7 +120,7 @@ class DiscoveryService {
           .toFuture
           .onComplete(json => {
             if (s.status > 400 && s.status < 500) {
-              val error = (json.get.asInstanceOf[js.Dynamic]).error;
+              val error = json.get.asInstanceOf[js.Dynamic].error
               promise.failure(
                 new LoginException(
                   error.message.asInstanceOf[String],
@@ -130,7 +128,7 @@ class DiscoveryService {
                 ),
               )
             } else {
-              val newToken = (json.get.asInstanceOf[js.Dynamic]).token.asInstanceOf[String]
+              val newToken = json.get.asInstanceOf[js.Dynamic].token.asInstanceOf[String]
               updateToken(Some(newToken))
               connect()
                 .toastOnError()
@@ -169,7 +167,7 @@ class DiscoveryService {
     ws.foreach(emit(_, "request_available_clients", null))
   }
 
-  private def emit(ws: WebSocket, name: String, payload: js.Any | Null) = {
+  private def emit(ws: WebSocket, name: String, payload: js.Any | Null): Unit = {
     val event = js.Dynamic.literal("type" -> name, "payload" -> payload.asInstanceOf[js.Any])
     ws.send(JSON.stringify(event))
   }
@@ -179,14 +177,14 @@ class DiscoveryService {
     new RTCConfiguration {
       iceServers = js.Array(
         new RTCIceServer {
-          urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
+          urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}"
         },
         new RTCIceServer {
-          urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
-          username = payload.client.turnKey.username.asInstanceOf[String];
-          credential = payload.client.turnKey.credential.asInstanceOf[String];
+          urls = s"turn:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}"
+          username = payload.client.turnKey.username.asInstanceOf[String]
+          credential = payload.client.turnKey.credential.asInstanceOf[String]
         },
-      );
+      )
     }
   }
 
@@ -194,7 +192,7 @@ class DiscoveryService {
     if (name != "ping") console.log(name, payload)
 
     name match {
-      case "request_host_token" => {
+      case "request_host_token" =>
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.offer(getRTCIceServers(payload)),
           payload.client.user.name.asInstanceOf[String],
@@ -215,8 +213,7 @@ class DiscoveryService {
           payload.client.user.displayId.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
-      }
-      case "request_client_token" => {
+      case "request_client_token" =>
         pendingConnections += (payload.id.asInstanceOf[String] -> PendingConnection.webrtcIntermediate(
           WebRTC.answer(getRTCIceServers(payload)),
           payload.host.user.name.asInstanceOf[String],
@@ -240,8 +237,7 @@ class DiscoveryService {
           payload.host.user.displayId.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
-      }
-      case "available_clients" => {
+      case "available_clients" =>
         val clients = payload.clients
           .asInstanceOf[js.Array[js.Dynamic]]
           .map(client =>
@@ -253,30 +249,25 @@ class DiscoveryService {
               client.mutualTrust.asInstanceOf[Int] != 0,
             ),
           )
-        var clientsSeq: Seq[AvailableConnection] = clients.toSeq
+        val clientsSeq: Seq[AvailableConnection] = clients.toSeq
         availableConnections.set(clientsSeq)
-      }
-      case "request_client_finish_connection" => {
+      case "request_client_finish_connection" =>
         pendingConnections -= payload.id.asInstanceOf[String]
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
-      }
-      case "request_host_finish_connection" => {
+      case "request_host_finish_connection" =>
         pendingConnections(payload.id.asInstanceOf[String]).connector
           .set(PendingConnection.tokenAsSession(payload.client.token.asInstanceOf[String]).session)
         pendingConnections -= payload.id.asInstanceOf[String]
         emit(ws, "finish_connection", js.Dynamic.literal("connection" -> payload.id))
-      }
-      case "ping" => {
+      case "ping" =>
         emit(ws, "pong", null)
-      }
-      case "connection_closed" => {
+      case "connection_closed" =>
         jsImplicits.webrtc.closeConnectionById(payload.id.asInstanceOf[String])
-      }
     }
   }
 
-  def close() = {
-    ws.map(ws => ws.close())
+  def close(): Unit = {
+    ws.foreach(ws => ws.close())
     ws = None
   }
 
@@ -290,7 +281,7 @@ class DiscoveryService {
     if (Option(window.localStorage.getItem("autoconnect")).getOrElse("true").toBoolean || force) {
       if (tokenIsValid(token.now)) {
         ws match {
-          case Some(socket) => {}
+          case Some(socket) =>
           case None =>
             ws = Some(
               new WebSocket(
@@ -300,22 +291,22 @@ class DiscoveryService {
             )
         }
 
-        ws.get.onopen = (_) => {
+        ws.get.onopen = _ => {
           online.set(true)
           emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
           promise.success(true)
         }
 
-        ws.get.onmessage = (event) => {
+        ws.get.onmessage = event => {
           val json = JSON.parse(event.data.asInstanceOf[String])
           handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
         }
 
-        ws.get.onclose = (_) => {
+        ws.get.onclose = _ => {
           online.set(false)
         }
 
-        ws.get.onerror = (_) => {
+        ws.get.onerror = _ => {
           promise.failure(new Exception("Connection failed"))
         }
 

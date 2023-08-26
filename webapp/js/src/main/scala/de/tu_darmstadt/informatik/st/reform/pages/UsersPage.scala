@@ -32,7 +32,7 @@ case class UsersPage()(using
     ) {}
 
 class UserAttributes(using jsImplicits: JSImplicits) {
-  def username = BuildUIAttribute().string
+  def username: UIAttribute[User, String] = BuildUIAttribute().string
     .withLabel("Username")
     .require
     .bindAsText[User](
@@ -40,7 +40,7 @@ class UserAttributes(using jsImplicits: JSImplicits) {
       (u, a) => u.copy(username = a),
     )
 
-  def role = BuildUIAttribute().string
+  def role: UIAttribute[User, String] = BuildUIAttribute().string
     .withLabel("Role")
     .require
     .bindAsText[User](
@@ -48,7 +48,7 @@ class UserAttributes(using jsImplicits: JSImplicits) {
       (u, a) => u.copy(role = a),
     )
 
-  def comment = BuildUIAttribute().string
+  def comment: UIAttribute[User, Option[String]] = BuildUIAttribute().string
     .withLabel("Comment")
     .withDefaultValue("")
     .bindAsText[User](

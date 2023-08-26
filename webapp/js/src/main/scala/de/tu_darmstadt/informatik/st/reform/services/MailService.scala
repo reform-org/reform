@@ -30,7 +30,7 @@ class MailService {
       val attachments: Seq[MailAttachment],
       val bcc: Seq[String],
   ) {}
-  object MailBody {
+  private object MailBody {
     val codec: JsonValueCodec[MailBody] = JsonCodecMaker.make
   }
 
@@ -49,9 +49,9 @@ class MailService {
     val htmlString = element.innerHTML
 
     if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.now)) {
-      val requestHeaders = new Headers();
-      requestHeaders.set("content-type", "application/json");
-      requestHeaders.set("authorization", s"Bearer ${jsImplicits.discovery.token.now.getOrElse("")}");
+      val requestHeaders = new Headers()
+      requestHeaders.set("content-type", "application/json")
+      requestHeaders.set("authorization", s"Bearer ${jsImplicits.discovery.token.now.getOrElse("")}")
       fetch(
         s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_PATH}/mail",
         new RequestInit {
@@ -65,7 +65,7 @@ class MailService {
           .toFuture
           .onComplete(json => {
             if (s.status > 400 && s.status < 500) {
-              val error = (json.get.asInstanceOf[js.Dynamic]).error;
+              val error = json.get.asInstanceOf[js.Dynamic].error
               promise.failure(
                 new LoginException(
                   error.message.asInstanceOf[String],
@@ -108,7 +108,7 @@ abstract class Mail(val subject: String) {
 
 class ReminderMail(hiwi: Hiwi, supervisor: Supervisor, due: Long, missingDocuments: Seq[String])
     extends Mail("Reminder") {
-  val body = div(
+  val body: VNode = div(
     p("Hallo ", hiwi.firstName.get.getOrElse(""), " ", hiwi.lastName.get.getOrElse(""), ","),
     p("Wir möchten Sie freundlich daran erinnern Ihre Unterlagen bis zum ", i(toGermanDate(due)), " einzureichen."),
     p("Es fehlen noch folgende Unterlage(n): ", ol(missingDocuments.map(li(_)))),
@@ -118,7 +118,7 @@ class ReminderMail(hiwi: Hiwi, supervisor: Supervisor, due: Long, missingDocumen
 
 class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, letter: ArrayBuffer[Short])
     extends Mail("Hiwistelle Software Technology Group") {
-  val body = div(
+  val body: VNode = div(
     p("Sehr geehrte Damen und Herren, "),
     p(
       "Im Anhang finden Sie ein förmliches Anschreiben bezüglich der Anstellung des Hiwis ",
@@ -141,7 +141,7 @@ class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, letter: ArrayBuffer[Short]
 
 class ContractEmail(hiwi: Hiwi, supervisor: Supervisor, due: Long, contract: ArrayBuffer[Short])
     extends Mail("Hiwistelle Software Technology Group") {
-  val body = div(
+  val body: VNode = div(
     p("Hallo ", hiwi.firstName.get.getOrElse(""), " ", hiwi.lastName.get.getOrElse(""), ","),
     p(
       "Im Anhang findest du den Arbeitsvertrag. Bitte schicke uns den Vertrag ausgefüllt bis zum ",

@@ -24,9 +24,9 @@ import scala.scalajs.js
 private val webrtcConfig = new RTCConfiguration {
   iceServers = js.Array(
     new RTCIceServer {
-      urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}";
+      urls = s"stun:${Globals.VITE_TURN_SERVER_HOST}:${Globals.VITE_TURN_SERVER_PORT}"
     },
-  );
+  )
 }
 
 private sealed trait State {
@@ -86,7 +86,7 @@ private case class Init()(using jsImplicits: JSImplicits) extends State {
         ButtonStyle.Primary,
         cls := "w-full mt-2",
         "Create Invitation",
-        disabled <-- Signal { alias.value.isBlank() },
+        disabled <-- Signal { alias.value.isBlank },
         onClick.foreach(_ => initializeHostSession),
       ),
     )
@@ -110,7 +110,7 @@ private case class ClientAskingForHostSessionToken()(using jsImplicits: JSImplic
       ButtonStyle.Primary,
       "Connect",
       cls := "w-full mt-2",
-      disabled <-- Signal { alias.value.isBlank() || sessionToken.value.isBlank() },
+      disabled <-- Signal { alias.value.isBlank || sessionToken.value.isBlank },
       onClick.foreach(_ => connectToHost),
     ),
   )
@@ -180,7 +180,7 @@ private case class HostPending(connection: PendingConnection)(using
       ButtonStyle.Primary,
       "Finish Connection",
       cls := "w-full mt-2",
-      disabled <-- Signal { sessionTokenFromClient.value.isBlank() },
+      disabled <-- Signal { sessionTokenFromClient.value.isBlank },
       onClick.foreach(_ => confirmConnectionToClient()),
     ),
   )

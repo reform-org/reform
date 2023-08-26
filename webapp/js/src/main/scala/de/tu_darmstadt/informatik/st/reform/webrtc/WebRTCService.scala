@@ -89,7 +89,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster, discovery: Disco
       uuid: String = "",
       displayId: String = "",
       connectionId: String = "",
-      onConnected: (ref: RemoteRef) => Unit = (_) => {},
+      onConnected: (ref: RemoteRef) => Unit = _ => {},
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
@@ -110,10 +110,9 @@ class WebRTCService(using registry: Registry, toaster: Toaster, discovery: Disco
   def closeConnectionById(id: String): Unit = {
     connectionRefs.get(id) match {
       case None =>
-      case Some(ref) => {
+      case Some(ref) =>
         ref.disconnect()
         discovery.reportClosedConnection(id)
-      }
     }
   }
 
@@ -137,7 +136,7 @@ class WebRTCService(using registry: Registry, toaster: Toaster, discovery: Disco
   }
 
   registry.remoteLeft.monitor(remoteRef => {
-    val connectionInfo = getInformation(remoteRef);
+    val connectionInfo = getInformation(remoteRef)
     toaster.make(span(b(connectionInfo.alias), " has left! 👋"), ToastMode.Short, ToastType.Default)
 
     removeConnection.fire(remoteRef)

@@ -60,7 +60,7 @@ object PDF {
     promise.`then`(array => ArrayBuffer.from(array)).toFuture
   }
 
-  def download(outputFileName: String, bytes: ArrayBuffer[Short]) =
+  def download(outputFileName: String, bytes: ArrayBuffer[Short]): Unit =
     NativeImpl.download(outputFileName, new js.typedarray.Uint8Array(bytes.toJSArray))
 
   @js.native

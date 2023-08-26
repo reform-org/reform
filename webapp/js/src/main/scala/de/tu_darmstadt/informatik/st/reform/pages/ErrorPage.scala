@@ -12,11 +12,11 @@ case class ErrorPage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  def render = {
+  def render: VMod = {
     error("404 | Page not found", "Take me Home", HomePage())
   }
 
-  def error(text: String, label: String, page: Page) = {
+  def error(text: String, label: String, page: Page): VNode = {
     div(
       cls := "flex items-center justify-center h-[80vh] w-screen flex-col gap-6",
       h1(text, cls := "text-6xl text-gray-200"),

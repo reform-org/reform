@@ -30,9 +30,9 @@ def navigationLink(using jsImplicits: JSImplicits)(page: Page, label: String): V
       e.preventDefault()
       e.target.asInstanceOf[HTMLElement].blur()
       if (e.ctrlKey) {
-        jsImplicits.routing.to(page, true)
+        jsImplicits.routing.to(page, keepFocus = true)
       } else {
-        jsImplicits.routing.to(page, false)
+        jsImplicits.routing.to(page)
       }
     }),
     href := jsImplicits.routing.linkPath(page),
@@ -47,9 +47,9 @@ def navigationIconLink(using jsImplicits: JSImplicits)(page: Page, icon: VNode):
       e.preventDefault()
       e.target.asInstanceOf[HTMLElement].blur()
       if (e.ctrlKey) {
-        jsImplicits.routing.to(page, true)
+        jsImplicits.routing.to(page, keepFocus = true)
       } else {
-        jsImplicits.routing.to(page, false)
+        jsImplicits.routing.to(page)
       }
     }),
     href := jsImplicits.routing.linkPath(page),

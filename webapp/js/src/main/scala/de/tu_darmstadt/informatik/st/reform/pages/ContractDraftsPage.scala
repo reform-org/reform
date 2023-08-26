@@ -86,7 +86,7 @@ case class ContractDraftsPage()(using
     ) {}
 
 class ContractDraftAttributes(using jsImplicits: JSImplicits) {
-  def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
+  private def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
     Signal.dynamic {
       val contractTypeId = contract.contractType.get.getOrElse("")
       val contractSchema =

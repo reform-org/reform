@@ -48,7 +48,7 @@ case class DocumentsPage()(using
     ) {}
 
 class DocumentAttributes(using jsImplicits: JSImplicits) {
-  def name = BuildUIAttribute().string
+  def name: UIAttribute[Document, String] = BuildUIAttribute().string
     .withLabel("Name")
     .require
     .bindAsText[Document](
