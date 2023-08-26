@@ -60,7 +60,7 @@ def Select(
           formId := props
             .collectFirst {
               case AccumAttr("form", value, _) => value
-              case BasicAttr("form", value) => value
+              case BasicAttr("form", value)    => value
             }
             .getOrElse("")
             .toString,

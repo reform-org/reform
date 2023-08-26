@@ -129,8 +129,7 @@ abstract class Step(
       cls := "relative",
       Signal {
         if (
-          !disabledDescription
-            .isBlank && disabled.value.map((pred, _) => pred).fold[Boolean](false)((a, b) => a || b)
+          !disabledDescription.isBlank && disabled.value.map((pred, _) => pred).fold[Boolean](false)((a, b) => a || b)
         ) {
           var reasons: Seq[String] = Seq.empty
           disabled.value.foreach((pred, reason) => if (pred) reasons = reasons :+ reason)
@@ -434,24 +433,24 @@ class BasicInformation(
             val overlappingContracts = jsImplicits.repositories.contracts.existing.value.filter(c => {
               val contract = c.signal.value
               !contract.isDraft.get.getOrElse(true) &&
-                contract.contractAssociatedHiwi.get.nonEmpty &&
-                contract.contractAssociatedHiwi.get.get == hiwi &&
-                contract.contractStartDate.get.nonEmpty &&
-                contract.contractEndDate.get.nonEmpty &&
+              contract.contractAssociatedHiwi.get.nonEmpty &&
+              contract.contractAssociatedHiwi.get.get == hiwi &&
+              contract.contractStartDate.get.nonEmpty &&
+              contract.contractEndDate.get.nonEmpty &&
+              (
                 (
+                  contract.contractStartDate.get.getOrElse(0L) <= start &&
+                    contract.contractEndDate.get.getOrElse(0L) >= start
+                ) ||
                   (
-                    contract.contractStartDate.get.getOrElse(0L) <= start &&
-                      contract.contractEndDate.get.getOrElse(0L) >= start
-                    ) ||
-                    (
-                      (contract.contractStartDate.get.getOrElse(0L) <= end) &&
-                        contract.contractEndDate.get.getOrElse(0L) >= end
-                      ) ||
-                    (
-                      contract.contractStartDate.get.getOrElse(0L) >= start &&
-                        contract.contractEndDate.get.getOrElse(0L) <= end
-                      )
+                    (contract.contractStartDate.get.getOrElse(0L) <= end) &&
+                      contract.contractEndDate.get.getOrElse(0L) >= end
+                  ) ||
+                  (
+                    contract.contractStartDate.get.getOrElse(0L) >= start &&
+                      contract.contractEndDate.get.getOrElse(0L) <= end
                   )
+              )
             })
 
             overlappingContracts.nonEmpty
@@ -1256,20 +1255,20 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
           .flatMap(t => t.signal.value.files.get)
 
         contract.contractAssociatedHiwi.get.isEmpty ||
-          contract.contractAssociatedSupervisor.get.isEmpty ||
-          contract.contractStartDate.get.isEmpty ||
-          contract.contractEndDate.get.isEmpty ||
-          contract.contractAssociatedProject.get.isEmpty ||
-          contract.contractHoursPerMonth.get.isEmpty ||
-          contract.contractHoursPerMonth.get.getOrElse(0) < 0 ||
-          contract.contractAssociatedPaymentLevel.get.isEmpty ||
-          dateDiffDays(contract.contractStartDate.get.getOrElse(0L), contract.contractEndDate.get.getOrElse(0L)) < 0 ||
-          dateDiffDays(js.Date.now().toLong, contract.contractEndDate.get.getOrElse(0L)) < 0 ||
-          contract.requiredDocuments.get.isEmpty ||
-          !contract.isSigned.get.getOrElse(false) ||
-          !requiredDocuments
-            .getOrElse(Seq.empty)
-            .forall(id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id))
+        contract.contractAssociatedSupervisor.get.isEmpty ||
+        contract.contractStartDate.get.isEmpty ||
+        contract.contractEndDate.get.isEmpty ||
+        contract.contractAssociatedProject.get.isEmpty ||
+        contract.contractHoursPerMonth.get.isEmpty ||
+        contract.contractHoursPerMonth.get.getOrElse(0) < 0 ||
+        contract.contractAssociatedPaymentLevel.get.isEmpty ||
+        dateDiffDays(contract.contractStartDate.get.getOrElse(0L), contract.contractEndDate.get.getOrElse(0L)) < 0 ||
+        dateDiffDays(js.Date.now().toLong, contract.contractEndDate.get.getOrElse(0L)) < 0 ||
+        contract.requiredDocuments.get.isEmpty ||
+        !contract.isSigned.get.getOrElse(false) ||
+        !requiredDocuments
+          .getOrElse(Seq.empty)
+          .forall(id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id))
 
       })
     }
@@ -1349,9 +1348,9 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       "Save",
       Signal.dynamic {
         if (
-          existingValue.flatMap(existingValue =>
-            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
-          ).contains(false)
+          existingValue
+            .flatMap(existingValue => editingValue.value.map((_, a) => a.value == existingValue.signal.value))
+            .contains(false)
         ) span(cls := "inline-block ml-1", icons.Circle(cls := "w-3 h-3"))
         else span(cls := "inline-block ml-1", icons.Check(cls := "w-3 h-3"))
       },
@@ -1388,9 +1387,9 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       cls := "min-h-8",
       Signal.dynamic {
         if (
-          existingValue.flatMap(existingValue =>
-            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
-          ).contains(false)
+          existingValue
+            .flatMap(existingValue => editingValue.value.map((_, a) => a.value == existingValue.signal.value))
+            .contains(false)
         ) span(cls := "inline-block", icons.Save(cls := "w-4 h-4"))
         else span(cls := "inline-block", icons.Check(cls := "w-4 h-4"))
       },
@@ -1447,9 +1446,9 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     div(
       Signal
         .dynamic {
-          existingValue.flatMap(existingValue =>
-            editingValue.value.map((_, a) => a.value == existingValue.signal.value),
-          ).contains(false)
+          existingValue
+            .flatMap(existingValue => editingValue.value.map((_, a) => a.value == existingValue.signal.value))
+            .contains(false)
         }
         .map(edited => {
           if (edited) window.addEventListener("beforeunload", unloadListener)
@@ -1498,7 +1497,8 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
                       contract.contractType.get.isEmpty -> "a contract schema",
                       !jsImplicits.discovery.online.value -> "to be connected to the discovery server",
                       (contract.contractType.get.nonEmpty && requiredDocuments
-                        .getOrElse(Seq.empty).isEmpty) -> "at least one requirement that can be checked",
+                        .getOrElse(Seq.empty)
+                        .isEmpty) -> "at least one requirement that can be checked",
                       (contract.contractType.get.nonEmpty && requiredDocuments
                         .getOrElse(Seq.empty)
                         .forall(id =>

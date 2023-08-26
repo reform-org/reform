@@ -2,16 +2,32 @@
 
 set -e
 
-SCRIPT=$(realpath "$0")
-SCRIPTPATH=$(dirname "$SCRIPT")
-cd "$SCRIPTPATH"
+ensure_files_end_with_newline() {
+  for f in $(git grep --cached -Il ''); do
+    tail -c1 $f | read -r _ || echo >> $f;
+  done
+}
 
-sbt scalafmtAll
+restage_files() {
+  FILES=$(git diff --name-only --cached)
+  if [ "$FILES" != "" ]; then
+    echo "$FILES" | xargs git add
+  fi
+}
 
-# ensure every text file ends with a newline
-for f in $(git grep --cached -Il ''); do tail -c1 $f | read -r _ || echo >> $f; done
+run_local_pileline() {
+  export $(cat .env)
+  export CI=true
+  sbt clean compile test || local_pipeline_failed
+}
 
-FILES=$(git diff --name-only --cached)
-echo "$FILES" | xargs git add
+local_pipeline_failed() {
+  echo -e "\033[1;31m === GITHUB PIPELINE WILL FAIL! ===\033[0m"
+  echo -e "\033[1;31m ===        FIX YOUR CODE       ===\033[0m"
+  exit 1
+}
 
-exit 0
+run_local_pileline
+sbt scalafmtAll scalafixAll
+ensure_files_end_with_newline
+restage_files

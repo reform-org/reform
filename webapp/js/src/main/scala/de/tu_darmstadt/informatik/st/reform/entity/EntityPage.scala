@@ -512,7 +512,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private def countEntities: Signal[Int] = Signal.dynamic {
     entityRows.value.count(_.value match {
-      case New(_) => false
+      case New(_)             => false
       case Existing(value, _) => value.signal.value.exists
     })
   }
@@ -520,7 +520,7 @@ abstract class EntityPage[T <: Entity[T]](
   private def countFilteredEntities: Signal[Int] = Signal.dynamic {
     val predicate = filter.predicate.value
     entityRows.value.count(_.value match {
-      case New(_) => false
+      case New(_)             => false
       case Existing(value, _) => value.signal.value.exists && predicate(value.signal.value)
     })
   }

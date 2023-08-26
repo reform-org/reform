@@ -115,9 +115,7 @@ class RoutingService(using
   }
 
   def countQueryParameters(validParams: Seq[String] = Seq.empty): Signal[Int] = Signal {
-    queryParameters.value.count((p, _) =>
-      validParams.isEmpty || validParams.contains("(?=:).*".r.replaceAllIn(p, "")),
-    )
+    queryParameters.value.count((p, _) => validParams.isEmpty || validParams.contains("(?=:).*".r.replaceAllIn(p, "")))
   }
 
   def getQueryParameterAsString(key: String): Signal[String] = Signal {
@@ -134,7 +132,9 @@ class RoutingService(using
     }
   }
 
-  private def cleanQueryParameters(newParams: Map[String, String | Seq[String]]): Map[ByteString, ByteString | Seq[ByteString]] = {
+  private def cleanQueryParameters(
+      newParams: Map[String, String | Seq[String]],
+  ): Map[ByteString, ByteString | Seq[ByteString]] = {
     newParams.filter((_, value) =>
       value match {
         case x: String      => !x.isBlank
