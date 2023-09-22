@@ -29,7 +29,9 @@ jobs:
           node-version: 16
           cache: "npm"
       - run: npm ci
-      - name: Build ScalaJS
+      - name: Build Scala and check with scalafix
+        run: sbt "scalafixAll --check"
+      - name: Build JavaScript Sources from Scala
         run: sbt fastLinkJS
       - name: Build JavaScript
         run: npm run build -- --mode lukasschreiber
