@@ -1,0 +1,102 @@
+@import url('https://fonts.googleapis.com/css2?family=Roboto+Slab:wght@100;200;300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+.font-roboto-slab {
+    font-family: 'Roboto Slab', serif;
+}
+
+.font-roboto {
+    font-family: 'Roboto', serif;
+}
+
+.drawer-toggle~.drawer-side {
+    visibility: hidden;
+}
+
+.drawer-toggle:checked~.drawer-side {
+    visibility: visible;
+}
+
+.table-fixed-height td {
+    min-height: 39px;
+}
+
+tr.odd\:bg-slate-50:nth-child(odd) td {
+    background-color: #f8fafc;
+}
+
+.dark tr.odd\:dark\:bg-gray-600:nth-child(odd) td {
+    background-color: #394152;
+}
+
+tfoot td {
+    border-top-width: 1px;
+    border-bottom-width: 1px;
+}
+
+.dark .checkbox {
+    --chkbg: 217 19% 25% !important;
+}
+
+/* ===== Scrollbar CSS ===== */
+/* Firefox */
+.custom-scrollbar {
+    scrollbar-width: auto;
+    scrollbar-color: #e3e8f0 rgba(0, 0, 0, 0);
+}
+
+/* Chrome, Edge, and Safari */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0);
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #e3e8f0;
+    border-radius: 10px;
+    border: 3px solid rgba(0, 0, 0, 0);
+}
+
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+    background-color: #3a4153;
+}
+
+.dark .custom-scrollbar {
+    scrollbar-color: #3a4153 rgba(0, 0, 0, 0);
+}
+
+
+/* https://github.com/saadeghi/daisyui/issues/872 */
+.dropdown.dropdown-open .dropdown-content,
+.dropdown:not(.dropdown-open)>.dropdown-content,
+.dropdown:not(.dropdown-hover):focus>.dropdown-content,
+.dropdown:not(.dropdown-hover):focus-within>.dropdown-content {
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.dropdown.dropdown-open>.dropdown-content,
+.dropdown.dropdown-open:focus>.dropdown-content,
+.dropdown.dropdown-open:focus-within>.dropdown-content {
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.focus\:invalid\:text-red-600:invalid:focus::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24"><path fill="%23DC2626" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+}
+
+::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24"><path fill="%23000000" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+}
+
+.dark::-webkit-calendar-picker-indicator {
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="15" viewBox="0 0 24 24"><path fill="%23FFFFFF" d="M20 3h-1V1h-2v2H7V1H5v2H4c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 18H4V8h16v13z"/></svg>');
+}
