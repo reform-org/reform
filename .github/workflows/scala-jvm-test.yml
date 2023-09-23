@@ -24,5 +24,6 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           cache: "sbt"
+      - run: cp env.example .env
       - name: Test
         run: export $(cat .env | xargs) && sbt webappJVM/test
