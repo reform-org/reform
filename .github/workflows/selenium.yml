@@ -30,7 +30,7 @@ jobs:
       - name: Run Coturn
         uses: addnab/docker-run-action@v3
         with:
-          image: coturn:latest
+          image: coturn/coturn
           options: --network host
       - uses: actions/setup-node@v3
         with:
