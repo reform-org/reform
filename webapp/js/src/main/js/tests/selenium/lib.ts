@@ -473,16 +473,13 @@ export class Peer {
 			height: 800,
 		});
 
-		if (headless) {
-			chromeOptions = chromeOptions.headless();
-		}
-
 		let firefoxOptions = new firefox.Options().windowSize({
 			width: 1200,
 			height: 800,
 		});
 
 		if (headless) {
+			chromeOptions = chromeOptions.headless();
 			firefoxOptions = firefoxOptions.headless();
 		}
 
@@ -529,6 +526,7 @@ export class Peer {
 		};
 
 		let driver = new Builder()
+			.forBrowser(process.env.SELENIUM_BROWSER!)
 			.withCapabilities(capabilities[process.env.SELENIUM_BROWSER!])
 			.setChromeOptions(chromeOptions)
 			.setFirefoxOptions(firefoxOptions)
