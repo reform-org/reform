@@ -27,6 +27,11 @@ jobs:
           java-version: "17"
           distribution: "temurin"
           cache: "sbt"
+      - name: Run Coturn
+        uses: addnab/docker-run-action@v3
+        with:
+          image: coturn:latest
+          options: --network host
       - uses: actions/setup-node@v3
         with:
           node-version: 16
