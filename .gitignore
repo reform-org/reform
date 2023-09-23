@@ -75,6 +75,4 @@ public/*.pdf
 screenshots
 *.db
 
-.env.*
-webapp/js/src/main/js/.env
-!webapp/js/src/main/js/.env
+.env*
