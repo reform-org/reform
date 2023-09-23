@@ -37,7 +37,7 @@
     "daisyui": "^2.51.4",
     "luxon": "^3.3.0",
     "pdf-lib": "^1.17.1",
-    "rollup": "3.18.0",
+    "rollup": "3.29.2",
     "selenium-webdriver": "^4.8.1",
     "snabbdom": "github:outwatch/snabbdom#0.7.5",
     "typescript": "^5.2.2"
