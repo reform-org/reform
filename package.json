@@ -17,7 +17,7 @@
     "@scala-js/vite-plugin-scalajs": "^1.0.0",
     "@vitejs/plugin-basic-ssl": "^1.0.1",
     "autoprefixer": "^10.4.15",
-    "jsdom": "^21.1.1",
+    "jsdom": "^22.1.0",
     "postcss": "^8.4.27",
     "rollup-plugin-visualizer": "^5.9.2",
     "rome": "^11.0.0",
