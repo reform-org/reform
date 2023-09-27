@@ -40,6 +40,7 @@ object Routes {
     case Root / "extend-contracts" / id => ExtendContractPage(id)
     case Root / "documents"             => DocumentsPage()
     case Root / "settings"              => SettingsPage()
+    case Root / "error"                 => ErrorPage(404, "Page not Found")
     case _                              => ErrorPage()
   }
 
@@ -59,6 +60,6 @@ object Routes {
     case NewContractPage()      => Root / "new-contract"
     case DocumentsPage()        => Root / "documents"
     case SettingsPage()         => Root / "settings"
-    case ErrorPage()            => Root / window.location.pathname.nn.substring(1).nn
+    case ErrorPage(_, _, _)     => Root / window.location.pathname.nn.substring(1).nn
   }
 }

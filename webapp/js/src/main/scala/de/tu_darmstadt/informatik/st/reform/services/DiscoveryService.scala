@@ -22,6 +22,9 @@ import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
 import scala.util.Try
+import loci.communicator.ws.webnative.WS
+import loci.registry.Registry
+import webapp.JSImplicits
 
 class AvailableConnection(
     val name: String,
@@ -29,6 +32,7 @@ class AvailableConnection(
     val displayId: String,
     val trusted: Boolean,
     val mutualTrust: Boolean,
+    val tpe: String,
 )
 
 class LoginException(val message: String, val fields: Seq[String]) extends Throwable(message)
@@ -47,11 +51,11 @@ class DiscoveryService {
     val codec: JsonValueCodec[LoginRepsonse] = JsonCodecMaker.make
   }
 
-  class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String)
+  class TokenPayload(val exp: Int, val iat: Int, val username: String, val uuid: String, val tpe: String)
 
   val availableConnections: Var[Seq[AvailableConnection]] = Var(Seq.empty)
 
-  val token: Var[Option[String]] = Var(Option(window.localStorage.getItem("discovery-token")))
+  val token: Var[Option[String]] = Var(Cookies.getCookie("discovery-token"))
 
   val online: Var[Boolean] = Var(false)
 
@@ -75,15 +79,16 @@ class DiscoveryService {
       decodedToken.iat.asInstanceOf[Int],
       decodedToken.username.asInstanceOf[String],
       decodedToken.uuid.asInstanceOf[String],
+      decodedToken.`type`.asInstanceOf[String],
     )
   }
 
   private def updateToken(value: Option[String]): Unit = {
     value match {
       case Some(value) =>
-        window.localStorage.setItem("discovery-token", value)
+        Cookies.setCookie("discovery-token", value)
       case None =>
-        window.localStorage.removeItem("discovery-token")
+        Cookies.clearCookie("discovery-token")
     }
     token.set(value)
   }
@@ -211,6 +216,7 @@ class DiscoveryService {
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.client.user.id.asInstanceOf[String],
           payload.client.user.displayId.asInstanceOf[String],
+          payload.client.user.`type`.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
       case "request_client_token" =>
@@ -235,6 +241,7 @@ class DiscoveryService {
           pendingConnections(payload.id.asInstanceOf[String]).connection,
           payload.host.user.id.asInstanceOf[String],
           payload.host.user.displayId.asInstanceOf[String],
+          payload.host.user.`type`.asInstanceOf[String],
           payload.id.asInstanceOf[String],
         )
       case "available_clients" =>
@@ -247,6 +254,7 @@ class DiscoveryService {
               client.displayId.asInstanceOf[String],
               client.trusted.asInstanceOf[Int] != 0,
               client.mutualTrust.asInstanceOf[Int] != 0,
+              client.`type`.asInstanceOf[String],
             ),
           )
         val clientsSeq: Seq[AvailableConnection] = clients.toSeq

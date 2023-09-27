@@ -53,8 +53,15 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
       span(
         cls := "text-green-600 font-semibold text-center",
         "You are connected to the discovery server as ",
-        i(Signal { jsImplicits.discovery.token.value.map(t => jsImplicits.discovery.decodeToken(t).username) }),
-        "!",
+        Signal {
+          jsImplicits.discovery.token.value.map(t =>
+            span(
+              cls := "inline-flex gap-1 flex-row items-center",
+              i(jsImplicits.discovery.decodeToken(t).username),
+              if (jsImplicits.discovery.decodeToken(t).tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4")) else None,
+            ),
+          )
+        },
       ),
     )
   }
@@ -70,7 +77,7 @@ class ConnectionModal(using jsImplicits: JSImplicits) {
       Signal {
         jsImplicits.webrtc.connections.value.map(ref => {
           val info = jsImplicits.webrtc.getInformation(ref)
-          connectionRow(info.alias, info.source, info.uuid, info.displayId, ref)
+          connectionRow(info.alias, info.source, info.uuid, info.displayId, info.tpe, ref)
         })
       },
       Signal {
@@ -186,6 +193,16 @@ class Login(using jsImplicits: JSImplicits) {
                       case Success(value) =>
                         jsImplicits.discovery.setAutoconnect(true)
                     },
+                ),
+            ),
+            Button(
+              ButtonStyle.TU,
+              "Login with TU ID",
+              cls := "w-full mt-2",
+              onClick
+                .foreach(_ =>
+                  window.location.href =
+                    s"https://reform.st.informatik.tu-darmstadt.de/api/v1/authorize?goto=${window.location.href}&error=https://reform.st.informatik.tu-darmstadt.de/error",
                 ),
             ),
           )
