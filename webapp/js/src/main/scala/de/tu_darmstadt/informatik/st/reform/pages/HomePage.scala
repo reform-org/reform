@@ -53,7 +53,7 @@ case class HomePage()(using
     val month =
       jsImplicits.routing
         .getQueryParameterAsString("month")
-        .map(p => if (p == "") new js.Date().getMonth().toInt else p.toInt)
+        .map(p => if (p == "") new js.Date().getMonth().toInt + 1 else p.toInt)
 
     div(
       cls := "flex flex-col gap-4 w-full",

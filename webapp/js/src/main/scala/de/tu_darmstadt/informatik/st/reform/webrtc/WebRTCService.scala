@@ -49,6 +49,7 @@ class StoredConnectionInformation(
     val uuid: String = "",
     val displayId: String = "",
     val connectionId: String = "",
+    val tpe: String = "CLASSIC",
 ) {} // different object for discovery and manual
 
 case class PendingConnection(
@@ -88,13 +89,14 @@ class WebRTCService(using registry: Registry, toaster: Toaster, discovery: Disco
       connection: RTCPeerConnection,
       uuid: String = "",
       displayId: String = "",
+      tpe: String = "CLASSIC",
       connectionId: String = "",
       onConnected: (ref: RemoteRef) => Unit = _ => {},
   ): Future[RemoteRef] = {
     registry
       .connect(connector)
       .andThen(r => {
-        val storedConnection = StoredConnectionInformation(alias, source, uuid, displayId, connectionId)
+        val storedConnection = StoredConnectionInformation(alias, source, uuid, displayId, connectionId, tpe)
         connectionInfo += (r.get -> storedConnection)
         connectionRefs += (connectionId -> r.get)
         webRTCConnections += (r.get -> connection)

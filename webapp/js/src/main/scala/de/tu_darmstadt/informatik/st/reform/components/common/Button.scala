@@ -40,6 +40,7 @@ enum ButtonStyle(val props: VMod) {
       )
   case LightError
       extends ButtonStyle(cls := "bg-red-200 disabled:bg-red-200 disabled:text-red-600 hover:bg-red-300 text-red-600")
+  case TU extends ButtonStyle(cls := "bg-[#E4001A] hover:bg-[#be0016] text-white")
 }
 
 def Button(style: ButtonStyle, props: VMod*): VNode = {
