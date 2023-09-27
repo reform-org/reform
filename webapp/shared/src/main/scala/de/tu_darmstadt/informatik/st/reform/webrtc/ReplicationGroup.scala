@@ -79,21 +79,7 @@ class ReplicationGroup[A](name: String)(using
   }
 
   def getOrCreateAndSync(id: String): Future[Synced[A]] = {
-    synchronized {
-      if (cache.contains(id)) {
-        cache(id)
-      } else {
-        val synced = storage
-          .getOrDefault(id, bottom.empty)
-          .map(value => {
-            var synced = Synced(storage, id, Var(value))
-            distributeDeltaRDT(id, synced)
-            synced
-          })
-        cache = cache + (id -> synced)
-        synced
-      }
-    }
+    createAndSync(id, bottom.empty)
   }
 
   given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
