@@ -72,14 +72,14 @@ class ReplicationGroup[A](name: String)(using
             distributeDeltaRDT(id, synced)
             synced
           })
-        cache = cache + (id -> synced)
+        cache += (id -> synced)
         synced
       }
     }
   }
 
   def getOrCreateAndSync(id: String): Future[Synced[A]] = {
-    createAndSync(id, bottom.empty)
+    cache.getOrElse(id, createAndSync(id, bottom.empty))
   }
 
   given deltaCodec: JsonValueCodec[DeltaFor[A]] = JsonCodecMaker.make
