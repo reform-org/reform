@@ -18,7 +18,8 @@ restage_files() {
 run_local_pileline() {
   export $(cat .env)
   export CI=true
-  sbt clean compile test || local_pipeline_failed
+  sbt --client compile || local_pipeline_failed
+  sbt --client test || local_pipeline_failed
 }
 
 local_pipeline_failed() {
@@ -28,6 +29,7 @@ local_pipeline_failed() {
 }
 
 run_local_pileline
-sbt scalafmtAll scalafixAll
+sbt --client scalafmtAll
+sbt --client scalafixAll
 ensure_files_end_with_newline
 restage_files
