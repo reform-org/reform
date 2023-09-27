@@ -117,7 +117,7 @@ case class SettingsPage()(using
             span("Nothing found"),
             false,
             false,
-            cls := "max-w-[300px]",
+            cls := "max-w-[300px] rounded-md",
           ),
         ),
         div(cls := "divider"),
@@ -137,7 +137,7 @@ case class SettingsPage()(using
                   downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
                   jsImplicits.toaster.make("Database exported", ToastMode.Short, ToastType.Success)
                 }),
-                cls := "w-fit",
+                cls := "md:w-fit",
               ),
               div(
                 cls := "text-slate-400 dark:text-gray-400 text-xs italic",
@@ -207,7 +207,7 @@ case class SettingsPage()(using
                   downloadFile(s"reform-export-${new js.Date().toISOString()}.json", json, "data:text/json")
                   deleteDBModal.open()
                 }),
-                cls := "w-fit",
+                cls := "md:w-fit",
               ),
               div(
                 cls := "text-slate-400 dark:text-gray-400 text-xs italic",

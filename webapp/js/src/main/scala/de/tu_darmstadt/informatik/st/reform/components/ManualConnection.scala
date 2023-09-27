@@ -159,6 +159,7 @@ private case class HostPending(connection: PendingConnection)(using
       "",
       "",
       "",
+      "CLASSIC",
       onConnected,
     )
     .foreach(ref => onConnected(ref))
