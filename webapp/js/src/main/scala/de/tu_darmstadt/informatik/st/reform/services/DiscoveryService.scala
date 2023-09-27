@@ -2,6 +2,7 @@ package de.tu_darmstadt.informatik.st.reform.services
 
 import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.*
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.utils.Cookies
@@ -20,9 +21,6 @@ import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
 import scala.util.Try
-import loci.communicator.ws.webnative.WS
-import loci.registry.Registry
-import de.tu_darmstadt.informatik.st.reform.JSImplicits
 
 class AvailableConnection(
     val name: String,
