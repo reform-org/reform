@@ -10,7 +10,7 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
 
-def connectionRow(name: String, source: String, uuid: String, displayId: String, ref: RemoteRef)(using
+def connectionRow(name: String, source: String, uuid: String, displayId: String, tpe: String, ref: RemoteRef)(using
     jsImplicits: JSImplicits,
 ) = {
   if (source == "discovery") {
@@ -20,7 +20,11 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
       div(
         cls := "flex flex-col text-sm",
         div(
-          name,
+          div(
+            name,
+            if (tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
+            cls := "flex gap-2 items-center",
+          ),
           cls := "font-bold",
         ),
         i(
@@ -62,14 +66,14 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
             ),
           )
         else None,
-        div(
-          icons.Close(cls := "text-red-600 w-4 h-4"),
-          cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-          data.tip := "Close Connection",
-          onClick.foreach(_ => {
-            jsImplicits.discovery.disconnect(ref)
-          }),
-        ),
+        // div(
+        //   icons.Close(cls := "text-red-600 w-4 h-4"),
+        //   cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+        //   data.tip := "Close Connection",
+        //   onClick.foreach(_ => {
+        //     jsImplicits.discovery.disconnect(ref)
+        //   }),
+        // ),
       ),
     )
   } else
@@ -78,7 +82,11 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
       div(
         cls := "flex flex-col text-sm",
         div(
-          name,
+          div(
+            name,
+            if (tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
+            cls := "flex gap-2 items center",
+          ),
           cls := "font-bold",
         ),
         i(
@@ -98,12 +106,12 @@ def connectionRow(name: String, source: String, uuid: String, displayId: String,
           cls := "text-slate-500 text-xs dark:text-gray-200",
         ),
       ),
-      div(
-        icons.Close(cls := "text-red-600 w-4 h-4"),
-        cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
-        data.tip := "Close Connection",
-        onClick.foreach(_ => jsImplicits.discovery.disconnect(ref)),
-      ),
+      // div(
+      //   icons.Close(cls := "text-red-600 w-4 h-4"),
+      //   cls := "tooltip tooltip-left hover:bg-red-200 rounded-md p-0.5 h-fit w-fit cursor-pointer",
+      //   data.tip := "Close Connection",
+      //   onClick.foreach(_ => jsImplicits.discovery.disconnect(ref)),
+      // ),
     )
 }
 
@@ -116,7 +124,8 @@ def availableConnectionRow(
       cls := "flex flex-col text-sm",
       div(
         connection.name,
-        cls := "font-bold",
+        if (connection.tpe == "SSO") Some(icons.CheckCircle(cls := "w-4 h-4 text-blue-600")) else None,
+        cls := "flex gap-2 font-bold items-center",
       ),
       i(
         span(

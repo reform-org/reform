@@ -85,7 +85,7 @@ case class ExtendContractPage(contractId: String)(using
           case Some(currentContract) =>
             InnerExtendContractsPage(Some(currentContract), contractId).render
           case None =>
-            ErrorPage().error("Contract not found", "Show me all contracts", ContractsPage())
+            ErrorPage().error("Contract not found", "", "Show me all contracts", ContractsPage())
         }
         result
       })
@@ -105,7 +105,7 @@ case class EditContractsPage(contractId: String)(using
           case Some(currentContract) =>
             InnerEditContractsPage(Some(currentContract), contractId).render
           case None =>
-            ErrorPage().error("Contract not found", "Show me all contract drafts", ContractDraftsPage())
+            ErrorPage().error("Contract not found", "", "Show me all contract drafts", ContractDraftsPage())
         }
         result
       })
@@ -615,7 +615,7 @@ class BasicInformation(
                 })
 
                 contract.contractHoursPerMonth.get.getOrElse(0) match {
-                  case x if x > maxHoursForTax =>
+                  case x if x > maxHoursForTax && limit != 0 =>
                     p(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
                       icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
@@ -755,9 +755,11 @@ class SelectProject(
           ),
           div(
             Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                s"${ContractPageAttributes().getTotalHours(existingId, value.value)} h",
-              )
+              editingValue.value.map((_, value) => {
+                if (value.value.contractEndDate.get.nonEmpty && value.value.contractStartDate.get.nonEmpty) {
+                  s"${ContractPageAttributes().getTotalHours(existingId, value.value)} h"
+                } else ""
+              })
             },
           ),
         ),
@@ -1044,8 +1046,8 @@ class CreateContract(
         ),
         label(
           ContractPageAttributes().signed.renderEdit("", editingValue, cls := "rounded-md"),
-          " The contract has been signed",
-          cls := "mt-2 flex gap-2",
+          span(" The contract has been signed"),
+          cls := "mt-2 flex gap-2 items-center",
         ),
       ),
     )
@@ -1163,8 +1165,8 @@ class CreateLetter(
         ),
         label(
           ContractPageAttributes().submitted.renderEdit("", editingValue, cls := "rounded-md"),
-          " The letter has been submitted",
-          cls := "mt-2 flex gap-2",
+          span(" The letter has been submitted"),
+          cls := "mt-2 flex gap-2 items-center",
         ),
       ),
     )
@@ -1334,8 +1336,15 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     }
   }
 
-  protected def cancelEdit(): Unit = {
-    jsImplicits.routing.to(ContractsPage())
+  protected def cancelEdit(): Unit = Signal.dynamic {
+    editingValue.value.map((_, contract) => {
+      if (contract.value.isDraft.get.getOrElse(true)) {
+        jsImplicits.routing.to(ContractDraftsPage())
+      } else {
+        jsImplicits.routing.to(ContractsPage())
+      }
+    })
+
   }
 
   var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
