@@ -9,6 +9,10 @@ import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default.*
+import org.scalajs.dom.HTMLElement
+import de.tu_darmstadt.informatik.st.reform.npm.IIndexedDB
+import de.tu_darmstadt.informatik.st.reform.JSImplicits
+import de.tu_darmstadt.informatik.st.reform.components.common.*
 
 case class ErrorPage(code: Int = 404, title: String = "", description: String = "")(using
     jsImplicits: JSImplicits,

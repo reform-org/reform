@@ -12,6 +12,13 @@ import rescala.default
 import rescala.default.*
 
 import scalajs.js
+import webapp.duplicateValuesHandler
+import webapp.given
+import webapp.*
+import webapp.components.common.*
+import webapp.npm.JSUtils
+import webapp.services.RoutingService
+import webapp.services.Page
 
 class UIFormat[EntityType](val condition: (id: String, entity: EntityType) => Signal[Boolean], val classes: String) {
   def apply(id: String, entity: EntityType): Signal[String] = Signal {
