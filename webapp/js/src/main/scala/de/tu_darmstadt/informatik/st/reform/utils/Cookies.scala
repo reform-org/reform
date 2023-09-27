@@ -1,6 +1,7 @@
-package webapp.utils
+package de.tu_darmstadt.informatik.st.reform.utils
 
 import org.scalajs.dom.document
+
 import scala.scalajs.js
 
 object Cookies {

@@ -3,15 +3,12 @@ package de.tu_darmstadt.informatik.st.reform.pages
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.*
 import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.given
 import de.tu_darmstadt.informatik.st.reform.services.*
 import org.scalajs.dom.HTMLElement
 import outwatch.*
 import outwatch.dsl.*
-import webapp.*
-import org.scalajs.dom.HTMLElement
-import webapp.npm.IIndexedDB
-import webapp.JSImplicits
-import webapp.components.common.*
+import rescala.default.*
 
 case class ErrorPage(code: Int = 404, title: String = "", description: String = "")(using
     jsImplicits: JSImplicits,

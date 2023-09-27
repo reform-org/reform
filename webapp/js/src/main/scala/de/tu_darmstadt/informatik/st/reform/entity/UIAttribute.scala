@@ -10,13 +10,8 @@ import outwatch.*
 import outwatch.dsl.*
 import rescala.default
 import rescala.default.*
-import webapp.duplicateValuesHandler
-import webapp.given
-import webapp.*
-import webapp.components.common.*
-import webapp.npm.JSUtils
-import webapp.services.RoutingService
-import webapp.services.Page
+
+import scalajs.js
 
 class UIFormat[EntityType](val condition: (id: String, entity: EntityType) => Signal[Boolean], val classes: String) {
   def apply(id: String, entity: EntityType): Signal[String] = Signal {
