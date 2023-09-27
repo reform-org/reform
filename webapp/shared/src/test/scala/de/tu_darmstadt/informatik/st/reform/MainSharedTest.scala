@@ -26,6 +26,8 @@ import loci.registry.Registry
 import rescala.default.*
 import utest.*
 
+import scala.concurrent.Future
+
 object MainSharedTest extends TestSuite {
 
   @specialized def discard[A](evaluateForSideEffectOnly: A): Unit = {
@@ -40,7 +42,7 @@ object MainSharedTest extends TestSuite {
     now.default
   }
 
-  def testRepository[T <: Entity[T]](repository: Repository[T]) = {
+  def testRepository[T <: Entity[T]](repository: Repository[T]): Future[Unit] = {
     for _ <- repository.all.waitUntil(_.isEmpty)
     _ <- repository
       .create(repository.defaultValue)

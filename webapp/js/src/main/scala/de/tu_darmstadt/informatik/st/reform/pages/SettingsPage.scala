@@ -19,8 +19,10 @@ import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.Modal
 import de.tu_darmstadt.informatik.st.reform.components.ModalButton
 import de.tu_darmstadt.informatik.st.reform.components.common.*
+import de.tu_darmstadt.informatik.st.reform.components.icons
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.downloadFile
+import de.tu_darmstadt.informatik.st.reform.npm.PDF
 import de.tu_darmstadt.informatik.st.reform.npm.*
 import de.tu_darmstadt.informatik.st.reform.services.Page
 import de.tu_darmstadt.informatik.st.reform.services.ToastMode
@@ -37,7 +39,6 @@ import rescala.default.*
 import scala.scalajs.js
 import scala.util.Failure
 import scala.util.Success
-import scala.util.Failure
 
 case class SettingsPage()(using
     jsImplicits: JSImplicits,
@@ -91,8 +92,8 @@ case class SettingsPage()(using
       ),
     )
 
-    val multiSelectValue: Var[Seq[String]] = Var(Seq())
-    val selectValue: Var[String] = Var("")
+    val pdfFields: Var[Seq[String]] = Var(Seq.empty)
+    def resetFields: Unit = pdfFields.set(Seq.empty)
 
     div(
       cls := "flex flex-col items-center",
@@ -225,7 +226,7 @@ case class SettingsPage()(using
                   fileList(0)
                     .arrayBuffer()
                     .toFuture
-                    .flatMap(buffer => getPDFFields(buffer))
+                    .flatMap(buffer => PDF.getPDFFields(buffer))
                     .onComplete(fields => {
                       fields match {
                         case Failure(exception) =>
