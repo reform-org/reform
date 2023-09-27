@@ -75,7 +75,4 @@ public/*.pdf
 screenshots
 *.db
 
-.env.*
-.env
-!.env.lukasschreiber
-!.env.podman
+.env*

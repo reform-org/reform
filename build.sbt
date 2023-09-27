@@ -7,7 +7,7 @@ Global / onChangedBuildSource := ReloadOnSourceChanges
 
 name := "Reform"
 ThisBuild / version := "0.1.0-SNAPSHOT"
-ThisBuild / scalaVersion := "3.2.2"
+ThisBuild / scalaVersion := "3.3.0"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
@@ -20,11 +20,11 @@ lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
 lazy val webapp = crossProject(JSPlatform, JVMPlatform)
   // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
   // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
-  .in(file("."))
+  .in(file("webapp"))
   // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
-      ModuleInitializer.mainMethod("webapp.Main", "main").withModuleID("main")
+      ModuleInitializer.mainMethod("de.tu_darmstadt.informatik.st.reform.Main", "main").withModuleID("main")
     }),
     Test / scalaJSUseTestModuleInitializer := true, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
     /*Test / scalaJSModuleInitializers := Seq(
@@ -86,7 +86,17 @@ lazy val webapp = crossProject(JSPlatform, JVMPlatform)
       "-Ysafe-init",
       "-Wunused:all",
       "-deprecation",
-      if (sys.env.get("CI") == Some("true")) "-Werror" else "",
+      if (sys.env.get("CI").contains("true")) "-Werror" else "",
       // "-Xcheck-macros", // breaks utest, outwatch
     ),
   )
+
+// needed by scalafix
+ThisBuild / scalafixDependencies += "org.scalalint" %% "rules" % "0.1.4"
+inThisBuild(
+  List(
+    scalaVersion := "3.3.0",
+    semanticdbEnabled := true,
+    semanticdbVersion := scalafixSemanticdb.revision,
+  ),
+)

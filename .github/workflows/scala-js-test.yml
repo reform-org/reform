@@ -28,6 +28,7 @@ jobs:
         with:
           node-version: 16
           cache: "npm"
+      - run: cp env.example .env
       - run: npm ci
       - name: Test
         run: sbt webappJS/test
