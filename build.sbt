@@ -12,14 +12,7 @@ ThisBuild / scalaVersion := "3.3.0"
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
 
-lazy val rescalaJS = ProjectRef(file("REScala"), "rescalaJS")
-lazy val rescalaJVM = ProjectRef(file("REScala"), "rescalaJVM")
-lazy val kofreJS = ProjectRef(file("REScala"), "kofreJS")
-lazy val kofreJVM = ProjectRef(file("REScala"), "kofreJVM")
-
 lazy val webapp = crossProject(JSPlatform, JVMPlatform)
-  // .jsConfigure(_.dependsOn(rescalaJS).dependsOn(kofreJS))
-  // .jvmConfigure(_.dependsOn(rescalaJVM).dependsOn(kofreJVM))
   .in(file("webapp"))
   // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
