@@ -28,8 +28,10 @@ local_pipeline_failed() {
   exit 1
 }
 
+cd peer
 run_local_pileline
 sbt --client scalafmtAll
 sbt --client scalafixAll
+
 ensure_files_end_with_newline
 restage_files

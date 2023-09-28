@@ -10,11 +10,11 @@
 !/index.html
 !/package-lock.json
 !/package.json
-!/webapp/js/src/main/js/webapp/pdf.js
+!/src/js/src/main/js/webapp/pdf.js
 !/postcss.config.cjs
 !/tailwind.config.cjs
 !/tsconfig.json
-!/webapp/js/src/main/js/webapp/utils.js
+!/src/js/src/main/js/webapp/utils.js
 !/vite.config.ts
 !/.sbtopts
 !/.env.*
