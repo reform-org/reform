@@ -12,22 +12,19 @@ ThisBuild / scalaVersion := "3.3.0"
 
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
 
-lazy val webapp = crossProject(JSPlatform, JVMPlatform)
-  .in(file("webapp"))
+lazy val reform = crossProject(JSPlatform, JVMPlatform)
+  .in(file("src"))
   // .jsConfigure(_.enablePlugins(ScalablyTypedConverterExternalNpmPlugin))
   .jsSettings(
     Compile / scalaJSModuleInitializers := Seq({
       ModuleInitializer.mainMethod("de.tu_darmstadt.informatik.st.reform.Main", "main").withModuleID("main")
     }),
     Test / scalaJSUseTestModuleInitializer := true, // this disables the scalajsCom stuff (it injects some kind of communicator so the sbt test command works)
-    /*Test / scalaJSModuleInitializers := Seq(
-      {ModuleInitializer.mainMethod("webapp.MainJSTest", "main").withModuleID("main")}
-    ),*/
     scalaJSLinkerConfig ~= {
       _.withModuleKind(ModuleKind.ESModule)
     },
-    Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
-    Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "webapp",
+    Compile / fastLinkJS / scalaJSLinkerOutputDirectory := target.value / "reform",
+    Compile / fullLinkJS / scalaJSLinkerOutputDirectory := target.value / "reform",
     libraryDependencies ++= Seq(
       "io.github.outwatch" %%% "outwatch" % "1.0.0-RC14",
       "com.github.cornerman" %%% "colibri-router" % "0.7.8",
