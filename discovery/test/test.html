@@ -1,0 +1,72 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <input type="text" id="user" value="Lukas" />
+    <input type="text" id="pass" value="test" />
+    <button id="login">Login</button>
+
+    <script>
+        document.querySelector("#login").addEventListener("click", async () => {
+            const token = await fetch("http://localhost:3000/api/login", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: document.querySelector("#pass").value,
+                    username: document.querySelector("#user").value
+                })
+            }).then(res => res.json());
+
+            const ws = new WebSocket('ws://localhost:7071');
+            ws.onmessage = (message) => {
+                const event = JSON.parse(message.data);
+                handleEvent(event.type, event.payload);
+            }
+
+            const handleEvent = (type, payload) => {
+                if(type === "request_host_token") {
+                    // send host token to server
+                    ws.send(JSON.stringify({type: "host_token", payload: {token: "<HOST_TOKEN>", connection: payload.id}}))
+                }else if(type === "request_client_token") {
+                    ws.send(JSON.stringify({type: "client_token", payload: {token: "<CLIENT_TOKEN>"+payload.host.token, connection: payload.id}}))
+                }else if(type === "request_client_finish_connection") {
+                    console.log(`Connect with clientToken ${payload.client.token} from user ${payload.client.user.name} and hostToken ${payload.host.token} from user ${payload.host.user.name}`)
+                    console.log("opened connection:", payload.id)
+                    ws.send(JSON.stringify({type: "finish_connection", payload: {connection: payload.id}}))
+                }else if(type === "request_host_finish_connection") {
+                    console.log(`Connect with clientToken ${payload.client.token} from user ${payload.client.user.name} and hostToken ${payload.host.token} from user ${payload.host.user.name}`)
+                    console.log("opened connection:", payload.id)
+                    ws.send(JSON.stringify({type: "finish_connection", payload: {connection: payload.id}}))
+                }else if(type === "available_clients") {
+                    console.log("available clients:", payload.clients)
+                }else if(type === "ping") {
+                    console.log("ping")
+                    ws.send(JSON.stringify({type: "pong", payload: null}))
+                }else if(type === "connection_closed") {
+                    console.log("closed connection:", payload.id)
+                }
+            }
+
+            ws.onopen = () => {
+                console.log("opened");
+                ws.send(JSON.stringify({
+                    type: "authenticate",
+                    payload: {
+                        token: token.token
+                    }
+                }));
+            };
+
+            ws.onclose = () => {
+                console.log("closed")
+            }
+        });
+    </script>
+</body>
+
+</html>
