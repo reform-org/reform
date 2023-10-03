@@ -6,11 +6,11 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "nodemon --esm index.ts",
-    "debug": "nodemon --require=debugging-aid/network index.ts",
-    "user": "ts-node --esm cli.ts",
-    "db:reset": "ts-node --esm reset.ts"
+    "test": "echo \\\"Error: no src/test specified\\\" && exit 1",
+    "start": "nodemon --esm src/index.ts",
+    "debug": "nodemon --require=debugging-aid/network src/index.ts",
+    "user": "ts-node --esm src/cli.ts",
+    "db:reset": "ts-node --esm src/reset.ts"
   },
   "author": "",
   "license": "ISC",
