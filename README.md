@@ -84,6 +84,17 @@ npm run test
 sbt webappJS/test
 ```
 
+## Developing SSO Login
+
+We need to control the exact whitelisted url.
+This can be done with ssh reverse port forwarding:
+
+```bash
+ssh -vvv -N -R 43547:localhost:3000 reform.st.informatik.tu-darmstadt.de
+```
+
+Then develop in the `deployment` folder.
+
 ## Deployment
 
 Using podman-compose-git

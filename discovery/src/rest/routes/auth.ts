@@ -4,17 +4,20 @@ import { serverPath } from "../server.js";
 import { Issuer } from "openid-client";
 import { ClassicUser, createUser, UserTypes } from "../../wss/user.js";
 import { db } from "../../utils/db.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 interface Session {
     goto: string
     error: string
 }
 
-const prefix = `${process.env.VITE_SERVER_PROTOCOL}://${process.env.VITE_SERVER_HOST}${process.env.VITE_SERVER_PATH}`
+// TODO: prefix makes no sense for login url validation
+const prefix = `${process.env.DISCOVERY_SERVER_PROTOCOL}://${process.env.DISCOVERY_SERVER_HOST}${process.env.DISCOVERY_SERVER_PATH}`
 
 export const authRouter = async () => {
-    const redirect_uri = `${prefix}api/v1/redirect`
-
+    const redirect_uri = process.env.SSO_REDIRECT_URL;
 
     const router = express.Router()
     const issuer = await Issuer.discover("https://login.tu-darmstadt.de")
