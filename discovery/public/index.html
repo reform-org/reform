@@ -5,23 +5,24 @@
 </head>
 
 <body>
-    <input type="text" id="user" value="Lukas" />
-    <input type="text" id="pass" value="test" />
-    <button id="login">Login</button>
+    <h1>Classic login</h1>
+    <p>
+        <input type="text" id="user" value="osh" />
+        <input type="text" id="pass" value="pass" />
+        <button id="login">Login</button>
+    </p>
+
+    <h1>SSO login</h1>
+    <p>
+        <form action="http://localhost:3000/api/v1/authorize">
+            <input type="hidden" name="goto" value="https://reform.st.informatik.tu-darmstadt.de/">
+            <input type="hidden" name="error" value="https://reform.st.informatik.tu-darmstadt.de/error">
+            <input type="submit" value="SSO Login" />
+        </form>
+    </p>
 
     <script>
-        document.querySelector("#login").addEventListener("click", async () => {
-            const token = await fetch("http://localhost:3000/api/login", {
-                method: "POST",
-                headers: {
-                    "content-type": "application/json"
-                },
-                body: JSON.stringify({
-                    password: document.querySelector("#pass").value,
-                    username: document.querySelector("#user").value
-                })
-            }).then(res => res.json());
-
+        function handleEvents(token) {
             const ws = new WebSocket('ws://localhost:7071');
             ws.onmessage = (message) => {
                 const event = JSON.parse(message.data);
@@ -65,6 +66,21 @@
             ws.onclose = () => {
                 console.log("closed")
             }
+        }
+
+        document.querySelector("#login").addEventListener("click", async () => {
+            const token = await fetch("http://localhost:3000/api/v1/login", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/json"
+                },
+                body: JSON.stringify({
+                    password: document.querySelector("#pass").value,
+                    username: document.querySelector("#user").value
+                })
+            }).then(res => res.json());
+
+            handleEvents(token);
         });
     </script>
 </body>

@@ -11,7 +11,7 @@ dotenv.config()
 db.init()
 
 export const app = express();
-export const serverPath = process.env.VITE_DISCOVERY_SERVER_PATH;
+export const serverPath = process.env.DISCOVERY_SERVER_PATH;
 
 (async () => {
     
@@ -20,7 +20,7 @@ export const serverPath = process.env.VITE_DISCOVERY_SERVER_PATH;
 
     app.use(await authRouter())
     app.use(await mailRouter())
-    
 
+    app.use("/", express.static(process.cwd() + "/public"));
 })();
 export default app
