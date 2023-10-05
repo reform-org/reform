@@ -1,12 +1,12 @@
 {
-  "name": "discoveryserver",
+  "name": "reform-discovery",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "test": "echo \\\"Error: no src/test specified\\\" && exit 1",
+    "test": "echo \\\"Error: no test specified\\\" && exit 1",
     "start": "nodemon --esm src/index.ts",
     "debug": "nodemon --require=debugging-aid/network src/index.ts",
     "user": "ts-node --esm src/cli.ts",
