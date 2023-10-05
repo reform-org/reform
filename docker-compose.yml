@@ -1,6 +1,13 @@
 version: "3.9"
 
 services:
+  discovery:
+    build: discovery
+    env_file:
+      - discovery/.env
+    ports:
+      - 3000:3000
+      - 7071:7071
   coturn:
     image: docker.io/coturn/coturn
     restart: on-failure

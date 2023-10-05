@@ -1,11 +1,15 @@
-FROM node AS npm
-ARG DISCOVERY_SERVER_PATH
-ARG DISCOVERY_SERVER_LISTEN_PORT
-ARG DISCOVERY_SERVER_WEBSOCKET_PATH
-ARG DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL
-ARG DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT
+FROM node AS build
 WORKDIR /app
-COPY . .
-RUN npm ci
-EXPOSE $DISCOVERY_SERVER_LISTEN_PORT $DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT
-CMD ["npx", "ts-node", "index.ts"]
+COPY package*.json tsconfig.json ./
+RUN npm install
+COPY src src
+RUN npm run build
+
+FROM node AS run
+COPY --from=build /app/dist /app
+WORKDIR /app
+COPY package*.json ./
+COPY public public
+RUN npm install
+RUN find . -type d -name "node_modules" -prune -o -type f -print
+CMD ["node", "./index.js"]
