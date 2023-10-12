@@ -67,7 +67,7 @@ export default {
         //basicSsl()
         visualizer()
     ],
-    root: './webapp/js/src/main/js',
+    root: './src/js/src/main/js',
     envDir: process.cwd(),
     build: {
         sourcemap: true,
