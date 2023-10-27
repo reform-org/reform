@@ -1,4 +1,4 @@
-import { Peer } from "./lib";
+import { Peer } from "./lib.js";
 import readline from "readline";
 
 const rl = readline.createInterface({
