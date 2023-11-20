@@ -10,10 +10,18 @@ given ExecutionContext =
 // https://github.com/outr/scribe/wiki/Features
 // val _ = Logger("scala-loci").clearHandlers().replace()
 
-object Globals {
-  val VITE_DATABASE_VERSION: String =
-    sys.env("VITE_DATABASE_VERSION").nn
+object Env {
+  def get(name: String): String = {
+    val opt = sys.env.get(name)
+    if (opt.isEmpty) {
+      throw new IllegalStateException(s"Environment variable ${name} must be set. (Did you source .env)?")
+    }
+    opt.get
+  }
+}
 
-  val VITE_PROTOCOL_VERSION: String =
-    sys.env("VITE_PROTOCOL_VERSION").nn
+object Globals {
+  val VITE_DATABASE_VERSION: String = Env.get("VITE_DATABASE_VERSION")
+
+  val VITE_PROTOCOL_VERSION: String = Env.get("VITE_PROTOCOL_VERSION")
 }
