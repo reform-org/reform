@@ -1,4 +1,4 @@
-import express, { Router } from "express"
+import express from "express"
 import { error } from "../helpers.js";
 import { serverPath } from "../server.js";
 import { Issuer } from "openid-client";
@@ -13,8 +13,7 @@ interface Session {
     error: string
 }
 
-// TODO: prefix makes no sense for login url validation
-const prefix = `${process.env.DISCOVERY_SERVER_PROTOCOL}://${process.env.DISCOVERY_SERVER_HOST}${process.env.DISCOVERY_SERVER_PATH}`
+const ALLOWED_REDIRECT_ORIGIN: string = `${process.env.DISCOVERY_SERVER_PROTOCOL}://${process.env.DISCOVERY_SERVER_HOST}`
 
 export const authRouter = async () => {
     const redirect_uri = process.env.SSO_REDIRECT_URL;
@@ -29,6 +28,10 @@ export const authRouter = async () => {
         token_endpoint_auth_method: "client_secret_basic"
     });
 
+    function isValidRedirect(goto: string): boolean {
+        const url = new URL(goto);
+        return url.origin === ALLOWED_REDIRECT_ORIGIN;
+    }
 
     router.get(`${serverPath}/redirect`, async (req, res) => {
         const oidParams = openidClient.callbackParams(req)
@@ -36,8 +39,7 @@ export const authRouter = async () => {
 
         const state: Session = JSON.parse(Buffer.from(req.query.state.toString(), "base64url").toString("ascii"))
 
-        if(!state.goto.startsWith(prefix)) return res.redirect(`${state.error}?title=${encodeURIComponent("Forbidden Redirect")}&code=400&description=${encodeURIComponent(`redirect url is not permitted`)}`)
-        if(!state.error.startsWith(prefix)) return res.send("error url is not permitted")
+        if(!isValidRedirect(state.goto)) return res.redirect(`${state.error}?title=${encodeURIComponent("Forbidden Redirect")}&code=400&description=${encodeURIComponent(`redirect url is not permitted`)}`)
 
         if (!oidParams.code) return res.redirect(`${state.error}?title=${encodeURIComponent("Invalid Request")}&code=400&description=${encodeURIComponent("query parameter code has not been set")}`)
 
