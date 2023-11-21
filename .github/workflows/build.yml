@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: peer
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -28,6 +32,7 @@ jobs:
         with:
           node-version: 16
           cache: "npm"
+          cache-dependency-path: peer/package-lock.json
       - run: npm ci
       - name: Build Scala and check with scalafix
         run: sbt "scalafixAll --check"
