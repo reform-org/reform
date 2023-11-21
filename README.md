@@ -1,5 +1,9 @@
 # reform
 
+Reform allows managing hiwi contracts.
+Contract data is stored and procressed in your browser
+and distributed peer to peer.
+
 ## Prerequisites
 
 You should make sure that the following components are pre-installed on your machine:
@@ -7,11 +11,32 @@ You should make sure that the following components are pre-installed on your mac
  - [Node.js](https://nodejs.org/en/download/)
  - [sbt](https://www.scala-sbt.org/)
 
-## Development
+You will also need a browser supporting selenium.
+We recommend chromium
+```
+export SELENIUM_BROWSER=chrome 
+```
+
+Optionally, install the pre-commit hook (recommended)
+```bash
+ln -sr pre-commit.sh .git/hooks/pre-commit
+```
+For Windows: (run in elevated commandprompt)
+```bash
+cmd /c mklink ".git\\hooks\\pre-commit" "..\\..\\pre-commit.sh"
+```
+
+## Developing the peer (frontend)
+
+In the directory `peer` first load environment variables.
+```
+cp env.example .env
+$EDITOR .env
+export $(cat .env)
+```
 
 Cleaning the project:
 ```
-rm -R ~/.cache/scalablytyped
 sbt clean
 ```
 
@@ -22,67 +47,66 @@ Install node modules:
 npm install
 ```
 
-Install pre-commit hook (recommended)
-
-```bash
-ln -sr pre-commit.sh .git/hooks/pre-commit
-```
-For Windows: (run in elevated commandprompt)
-```bash
-cmd /c mklink ".git\\hooks\\pre-commit" "..\\..\\pre-commit.sh"
-```
-
-Then start the Scala.js build server with:
+Compile to javascript:
 ```bash
 sbt ~fastLinkJS
 ```
 
-In another window start the web dev server with:
+In another terminal start the web dev server: 
 ```bash
 npm run dev
 ```
 
-If you want to run the selenium tests you need to run:
+To start the always-online-peer (headless peer running inside the jvm)
 ```bash
-VITE_SELENIUM=true npm run dev
+sbt reformJVM/run
 ```
 
-To start the always-on server
-```bash
-export $(cat .env.lukasschreiber | xargs) && sbt webappJVM/run
-```
-
-Then open linked instances in your browser:
+Open peered instances of the frontend in your browser:
 
 ```
 npm run spawn-test-instances -- 2 http://localhost:5173/
 ```
 
-Or connect them manually, but use a temp dir:
+Developing using a temp dir:
 
 ```
 setsid -f chromium --user-data-dir=$(mktemp -d) http://localhost:5173/
 ```
 
-Dependency tree:
+Show dependency tree:
 ```
 sbt dependencyBrowseTreeHTML
 ```
 
 ## Testing
 
-```
-sbt "~Test / fastLinkJS"
-```
-
-In a separate window:
+Tun javascript tests:
 ```
 npm run test
 ```
 
+Run jvm tests:
+
 ```bash
-sbt webappJS/test
+sbt test
 ```
+
+If you want to run the selenium tests you need to run:
+```bash
+npm run selenium
+```
+
+## Developing SSO Login
+
+We need to control the exact whitelisted url.
+This can be done with ssh reverse port forwarding:
+
+```bash
+ssh -vvv -N -R 43547:localhost:3000 reform.st.informatik.tu-darmstadt.de
+```
+
+Then develop in the `discovery` folder.
 
 ## Deployment
 

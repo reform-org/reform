@@ -10,6 +10,10 @@ on:
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: peer
+
 jobs:
   scala-jvm-test:
     runs-on: ubuntu-latest
@@ -26,4 +30,4 @@ jobs:
           cache: "sbt"
       - run: cp env.example .env
       - name: Test
-        run: export $(cat .env | xargs) && sbt webappJVM/test
+        run: export $(cat .env | xargs) && sbt reformJVM/test
