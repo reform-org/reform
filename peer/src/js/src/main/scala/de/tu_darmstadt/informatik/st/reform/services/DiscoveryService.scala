@@ -288,12 +288,12 @@ class DiscoveryService {
       }
 
       ws = ws.orElse(
-          Some(
-            new WebSocket(
+        Some(
+          new WebSocket(
             s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PATH}",
             Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL,
-          )
-        )
+          ),
+        ),
       )
 
       ws.get.onopen = _ => {
@@ -322,7 +322,10 @@ class DiscoveryService {
       jsImplicits.registry
         .connect(alwaysOnlineWS)
         .transform {
-          case Failure(e) => Failure(new Exception("Connection to always online peer failed. Your data will not be synced on the server", e))
+          case Failure(e) =>
+            Failure(
+              new Exception("Connection to always online peer failed. Your data will not be synced on the server", e),
+            )
           case s => s
         }
         .toastOnError(ToastMode.Short, ToastType.Warning)
