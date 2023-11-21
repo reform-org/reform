@@ -20,7 +20,7 @@ import scala.concurrent.Promise
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.scalajs.js.JSON
-import scala.util.Try
+import scala.util.Failure
 
 class AvailableConnection(
     val name: String,
@@ -110,7 +110,7 @@ class DiscoveryService {
       val requestHeaders = new Headers()
       requestHeaders.set("content-type", "application/json")
       fetch(
-        s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_PATH}/login",
+        Globals.DISCOVERY_SERVER_URL + "/login",
         new RequestInit {
           method = HttpMethod.POST
           body = writeToString(loginInfo)(LoginInfo.codec)
@@ -283,53 +283,51 @@ class DiscoveryService {
     if (resetWebsocket) ws = None
 
     if (Option(window.localStorage.getItem("autoconnect")).getOrElse("true").toBoolean || force) {
-      if (tokenIsValid(token.now)) {
-        ws match {
-          case Some(socket) =>
-          case None =>
-            ws = Some(
-              new WebSocket(
-                s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PATH}",
-                Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL,
-              ),
-            )
-        }
-
-        ws.get.onopen = _ => {
-          online.set(true)
-          emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
-          promise.success(true)
-        }
-
-        ws.get.onmessage = event => {
-          val json = JSON.parse(event.data.asInstanceOf[String])
-          handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
-        }
-
-        ws.get.onclose = _ => {
-          online.set(false)
-        }
-
-        ws.get.onerror = _ => {
-          promise.failure(new Exception("Connection failed"))
-        }
-
-        Try({
-          val ws = WS(
-            s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}${Globals.VITE_ALWAYS_ONLINE_PEER_PATH}?${token.now
-                .getOrElse("")}",
-          )
-          jsImplicits.registry
-            .connect(
-              ws,
-            )
-            .toastOnError(ToastMode.Short, ToastType.Warning)
-        }).toastOnError(ToastMode.Short, ToastType.Warning)
-
-        promise.future
-      } else {
-        promise.failure(new Exception("Your token is wrong")).future
+      if (!tokenIsValid(token.now)) {
+        return promise.failure(new Exception("Your token is wrong")).future
       }
+
+      ws = ws.orElse(
+          Some(
+            new WebSocket(
+            s"${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_HOST}:${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_PATH}",
+            Globals.VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL,
+          )
+        )
+      )
+
+      ws.get.onopen = _ => {
+        online.set(true)
+        emit(ws.get, "authenticate", js.Dynamic.literal("token" -> token.now.orNull.nn))
+        promise.success(true)
+      }
+
+      ws.get.onmessage = event => {
+        val json = JSON.parse(event.data.asInstanceOf[String])
+        handle(ws.get, json.`type`.asInstanceOf[String], json.payload)
+      }
+
+      ws.get.onclose = _ => {
+        online.set(false)
+      }
+
+      ws.get.onerror = _ => {
+        promise.failure(new Exception("Connection failed"))
+      }
+
+      val alwaysOnlineWS = WS(
+        s"${Globals.VITE_ALWAYS_ONLINE_PEER_PROTOCOL}://${Globals.VITE_ALWAYS_ONLINE_PEER_HOST}:${Globals.VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT}${Globals.VITE_ALWAYS_ONLINE_PEER_PATH}?${token.now
+            .getOrElse("")}",
+      )
+      jsImplicits.registry
+        .connect(alwaysOnlineWS)
+        .transform {
+          case Failure(e) => Failure(new Exception("Connection to always online peer failed. Your data will not be synced on the server", e))
+          case s => s
+        }
+        .toastOnError(ToastMode.Short, ToastType.Warning)
+
+      promise.future
     } else {
       Future.successful(true)
     }

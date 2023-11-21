@@ -53,7 +53,7 @@ class MailService {
       requestHeaders.set("content-type", "application/json")
       requestHeaders.set("authorization", s"Bearer ${jsImplicits.discovery.token.now.getOrElse("")}")
       fetch(
-        s"${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}:${Globals.VITE_DISCOVERY_SERVER_PUBLIC_PORT}${Globals.VITE_DISCOVERY_SERVER_PATH}/mail",
+        Globals.DISCOVERY_SERVER_URL + "/mail",
         new RequestInit {
           method = HttpMethod.POST
           body =
