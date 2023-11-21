@@ -3,6 +3,7 @@ import scalaJSPlugin from "@scala-js/vite-plugin-scalajs";
 
 import basicSsl from '@vitejs/plugin-basic-ssl'
 import {visualizer} from "rollup-plugin-visualizer";
+import * as path from "path";
 
 /** @type {import('vitest/config').UserConfig} */
 
@@ -70,6 +71,7 @@ export default {
     root: './src/js/src/main/js',
     envDir: process.cwd(),
     build: {
+        outDir: path.join(process.cwd(), "..", "dist"),
         sourcemap: true,
     },
     define: {
