@@ -28,7 +28,7 @@ import javax.security.auth.Subject
 // https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java#L50
 @main def runServer(): Unit = {
   val registry = Registry()
-  val indexedDb = SqliteDB()
+  val indexedDb = SqliteDB(Globals.ALWAYS_ONLINE_PEER_DATABASE_PATH)
   val _ = Repositories()(using registry, indexedDb)
 
   val server = new Server()
