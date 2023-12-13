@@ -5,6 +5,10 @@ on: workflow_dispatch
 permissions:
   contents: read
 
+defaults:
+  run:
+    working-directory: peer
+
 jobs:
   browserstack:
     strategy:
@@ -33,6 +37,7 @@ jobs:
         with:
           node-version: 16
           cache: "npm"
+          cache-dependency-path: peer/package-lock.json
       - run: cp env.example .env
       - run: npm ci
       - name: Build ScalaJS
