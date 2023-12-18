@@ -8,6 +8,8 @@ addSbtPlugin("org.scoverage" % "sbt-scoverage" % "2.0.7")
 
 addSbtPlugin("ch.epfl.scala" % "sbt-scalafix" % "0.11.0")
 
+addSbtPlugin("nl.gn0s1s" % "sbt-dotenv" % "3.0.0")
+
 //addSbtPlugin("org.scalablytyped.converter" % "sbt-converter" % "1.0.0-beta41")
 
 addDependencyTreePlugin

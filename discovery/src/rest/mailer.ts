@@ -52,10 +52,10 @@ export class Mailer {
     public constructor() { }
 
     static isSetup() {
-        return process.env.SMTP_USERNAME !== "" 
-        && process.env.SMTP_PASSWORD !== "" 
-        && process.env.SMTP_HOST !== "" 
-        && process.env.SMTP_PORT !== "" 
+        return process.env.SMTP_USERNAME !== ""
+        && process.env.SMTP_PASSWORD !== ""
+        && process.env.SMTP_HOST !== ""
+        && process.env.SMTP_PORT !== ""
         && process.env.SMTP_SENDER !== ""
     }
 

@@ -60,6 +60,11 @@ object PDF {
     promise.`then`(array => ArrayBuffer.from(array)).toFuture
   }
 
+  def getPDFFields(buffer: js.typedarray.ArrayBuffer): Future[Seq[String]] = {
+    val promise: js.Promise[js.Array[String]] = NativeImpl.getPDFFields(buffer)
+    promise.`then`(array => array.toSeq).toFuture
+  }
+
   def download(outputFileName: String, bytes: ArrayBuffer[Short]): Unit =
     NativeImpl.download(outputFileName, new js.typedarray.Uint8Array(bytes.toJSArray))
 
@@ -79,5 +84,7 @@ object PDF {
 
     def download(outputFileName: String, bytes: js.typedarray.Uint8Array): Unit =
       js.native
+
+    def getPDFFields(buffer: js.typedarray.ArrayBuffer): js.Promise[js.Array[String]] = js.native
   }
 }

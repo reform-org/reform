@@ -93,6 +93,10 @@ object Globals {
 
   lazy val VITE_DEKANAT_MAIL: String = Env.get("VITE_DEKANAT_MAIL")
 
+  lazy val VITE_CONTRACT_PDF_PATH: String = Env.get("VITE_CONTRACT_PDF_PATH")
+
+  lazy val VITE_LETTER_PDF_PATH: String = Env.get("VITE_LETTER_PDF_PATH")
+
   lazy val APP_VERSION: String = js.Dynamic.global.APP_VERSION.asInstanceOf[String]
 
   lazy val DISCOVERY_SERVER_URL =

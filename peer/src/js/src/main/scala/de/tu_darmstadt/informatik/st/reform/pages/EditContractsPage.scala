@@ -194,7 +194,7 @@ abstract class Step(
         ) * hoursPerMonth
         PDF
           .fill(
-            "/letter_editable.pdf",
+            Globals.VITE_LETTER_PDF_PATH,
             Seq(
               PDFTextField(
                 "Name VornameRow1",
@@ -258,7 +258,7 @@ abstract class Step(
         val paymentLevel = paymentLevelOption.get.signal.now
         PDF
           .fill(
-            "/contract_unlocked.pdf",
+            Globals.VITE_CONTRACT_PDF_PATH,
             Seq(
               PDFTextField(
                 "Vorname Nachname (Studentische Hilfskraft)",
