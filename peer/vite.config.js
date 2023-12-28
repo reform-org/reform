@@ -17,7 +17,7 @@ export default {
 
             // sbt project ID from within the sbt build to get fast/fullLinkJS from
             // default: the root project of the sbt build
-            // projectID: 'webapp',
+            // projectID: 'reform',
 
             // URI prefix of imports that this plugin catches (without the trailing ':')
             // default: 'scalajs' (so the plugin recognizes URIs starting with 'scalajs:')
@@ -69,7 +69,7 @@ export default {
         visualizer()
     ],
     root: './src/js/src/main/js',
-    envDir: process.cwd(),
+    envDir: path.join(process.cwd(), ".."),
     build: {
         outDir: path.join(process.cwd(), "..", "dist"),
         sourcemap: true,

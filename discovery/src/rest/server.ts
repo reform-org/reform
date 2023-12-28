@@ -6,12 +6,12 @@ import dotenv from "dotenv"
 import { authRouter } from "./routes/auth.js";
 import { mailRouter } from "./routes/mail.js";
 
-dotenv.config()
+dotenv.config({ path: '../.env' });
 
 db.init()
 
 export const app = express();
-export const serverPath = process.env.DISCOVERY_SERVER_PATH;
+export const serverPath = process.env.VITE_DISCOVERY_SERVER_PATH;
 
 (async () => {
     

@@ -6,14 +6,14 @@ import { ClassicUser, createUser, UserTypes } from "../../wss/user.js";
 import { db } from "../../utils/db.js";
 import dotenv from "dotenv";
 
-dotenv.config();
+dotenv.config({ path: '../.env' });
 
 interface Session {
     goto: string
     error: string
 }
 
-const ALLOWED_REDIRECT_ORIGIN: string = `${process.env.DISCOVERY_SERVER_PROTOCOL}://${process.env.DISCOVERY_SERVER_HOST}`
+const ALLOWED_REDIRECT_ORIGIN: string = `${process.env.VITE_DISCOVERY_SERVER_PROTOCOL}://${process.env.VITE_DISCOVERY_SERVER_HOST}`
 
 export const authRouter = async () => {
     const redirect_uri = process.env.SSO_REDIRECT_URL;

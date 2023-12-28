@@ -10,6 +10,8 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.0"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
+ThisBuild  / envFileName := "../.env"
+
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
 
 lazy val reform = crossProject(JSPlatform, JVMPlatform)

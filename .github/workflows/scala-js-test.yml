@@ -34,6 +34,7 @@ jobs:
           cache: "npm"
           cache-dependency-path: peer/package-lock.json
       - run: cp env.example .env
+        working-directory: ..
       - run: npm ci
       - name: Test
         run: sbt reformJS/test

@@ -29,5 +29,6 @@ jobs:
           distribution: "temurin"
           cache: "sbt"
       - run: cp env.example .env
+        working-directory: ..
       - name: Test
         run: export $(cat .env | xargs) && sbt reformJVM/test

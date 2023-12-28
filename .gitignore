@@ -1,3 +1,5 @@
+**/.env
+
 dev-dist
 stats.html
 # bloop and metals
@@ -71,8 +73,5 @@ out/
 .netlify
 
 # PDFs in assets
-public/*.pdf
-screenshots
+**/*.pdf screenshots
 *.db
-
-peer/.env
