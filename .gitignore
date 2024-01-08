@@ -73,5 +73,6 @@ out/
 .netlify
 
 # PDFs in assets
-**/*.pdf screenshots
+**/*.pdf
+screenshots
 *.db

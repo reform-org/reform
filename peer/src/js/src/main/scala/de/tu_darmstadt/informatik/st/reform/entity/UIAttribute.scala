@@ -346,7 +346,7 @@ class UISelectAttribute[EntityType, AttributeType](
       cls := "!rounded-none",
       formats.map(f => cls <-- f.apply(id, entity)),
       duplicateValuesHandler(
-        attr.getAll.map(x => Signal { options(entity).value.filter(p => p.id == x).map(v => v.name) }),
+        attr.getAll.map(x => Signal { options(entity).value.filter(p => p.id == x.toString).map(v => v.name) }),
       ),
     )
   }

@@ -26,24 +26,22 @@ case class DocumentsPage()(using
     jsImplicits: JSImplicits,
 ) extends EntityPage[Document](
       Title("Document"),
-      Some(
-        span(
-          "Each ",
-          a(
-            cls := "underline cursor-pointer",
-            onClick.foreach(e => {
-              e.preventDefault()
-              e.target.asInstanceOf[HTMLElement].blur()
-              jsImplicits.routing.to(ContractSchemasPage(), true)
-            }),
-            "contract schema",
-          ),
-          " has a number of documents that need to be checked before the contract can be finalized.",
+      span(
+        "Each ",
+        a(
+          cls := "underline cursor-pointer",
+          onClick.foreach(e => {
+            e.preventDefault()
+            e.target.asInstanceOf[HTMLElement].blur()
+            jsImplicits.routing.to(ContractSchemasPage(), true)
+          }),
+          "contract schema",
         ),
+        " has a number of documents that need to be checked before the contract can be finalized.",
       ),
       jsImplicits.repositories.requiredDocuments,
       jsImplicits.repositories.requiredDocuments.all,
-      Seq(DocumentAttributes().name),
+      Seq(DocumentAttributes().name, DocumentAttributes().location, DocumentAttributes().autofill),
       DefaultEntityRow(),
     ) {}
 
@@ -54,5 +52,21 @@ class DocumentAttributes(using jsImplicits: JSImplicits) {
     .bindAsText[Document](
       _.name,
       (d, a) => d.copy(name = a),
+    )
+
+  def location: UIAttribute[Document, String] = BuildUIAttribute().string
+    .withLabel("Location")
+    .require
+    .bindAsText[Document](
+      _.location,
+      (d, a) => d.copy(location = a),
+    )
+
+  def autofill: UIAttribute[Document, Autofill] = BuildUIAttribute()
+    .enumSelect(Autofill.values, Autofill.valueOf)
+    .withLabel("Automatic filling")
+    .bindAsSelect[Document](
+      _.autofill,
+      (d, a) => d.copy(autofill = a),
     )
 }

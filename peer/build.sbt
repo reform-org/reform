@@ -66,7 +66,7 @@ lazy val reform = crossProject(JSPlatform, JVMPlatform)
       "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "com.github.rescala-lang.REScala" %%% "rescala" % "7de346f7abbe81eb0cacd0ee7f49420a8ff527f7",
       "com.github.rescala-lang.REScala" %%% "kofre" % "7de346f7abbe81eb0cacd0ee7f49420a8ff527f7",
-      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
+      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.27.1",
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.21.2",
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
