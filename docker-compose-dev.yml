@@ -3,11 +3,15 @@ version: "3.3"
 services:
   discovery:
     build: discovery
-    env_file:
-      - discovery/.env
     ports:
       - 3000:3000
       - 7071:7071
+  peer-dev:
+    build: peer
+    ports:
+      - 5173:5173
+    volumes:
+      - './src:/app/peer/src'
   coturn:
     image: docker.io/coturn/coturn
     restart: on-failure

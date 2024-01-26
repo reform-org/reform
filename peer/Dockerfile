@@ -1,0 +1,26 @@
+FROM ubuntu AS node
+
+WORKDIR /opt
+
+RUN apt-get update \
+  && apt-get -y install curl xz-utils
+
+RUN curl -fsSL https://nodejs.org/dist/v18.18.1/node-v18.18.1-linux-x64.tar.xz | tar xvJf -
+
+FROM sbtscala/scala-sbt:eclipse-temurin-17.0.4_1.7.1_3.2.0
+
+COPY --from=node /opt /opt
+ENV PATH="$PATH:/opt/node-v18.18.1-linux-x64/bin"
+
+WORKDIR /app/peer
+
+COPY package*.json .
+RUN npm install
+
+COPY build.sbt tailwind.config.cjs vite.config.js postcss.config.cjs tsconfig.json .
+COPY project project
+COPY src src
+
+RUN sbt compile
+
+CMD npm run dev
