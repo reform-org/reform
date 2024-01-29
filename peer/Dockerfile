@@ -7,6 +7,8 @@ RUN apt-get update \
 
 RUN curl -fsSL https://nodejs.org/dist/v18.18.1/node-v18.18.1-linux-x64.tar.xz | tar xvJf -
 
+RUN npm install -g npm
+
 FROM sbtscala/scala-sbt:eclipse-temurin-17.0.4_1.7.1_3.2.0
 
 COPY --from=node /opt /opt
