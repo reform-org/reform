@@ -58,6 +58,7 @@ lazy val reform = crossProject(JSPlatform, JVMPlatform)
       "org.xerial" % "sqlite-jdbc" % "3.41.0.0",
       "com.auth0" % "java-jwt" % "4.3.0",
     ),
+    assembly / mainClass := Some("de.tu_darmstadt.informatik.st.reform.Main")
   )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
@@ -92,3 +93,8 @@ inThisBuild(
     semanticdbVersion := scalafixSemanticdb.revision,
   ),
 )
+
+ThisBuild / assemblyMergeStrategy := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}
