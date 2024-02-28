@@ -33,9 +33,11 @@ def runServer(): Unit = {
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  val port = sys.env("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").toInt
-  val path = sys.env("VITE_ALWAYS_ONLINE_PEER_PATH")
-  val secret = sys.env("JWT_KEY")
+
+  val port = Globals.VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
+  val path = Globals.VITE_ALWAYS_ONLINE_PEER_PATH
+  val secret = Globals.JWT_KEY
+
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler.nn
@@ -130,6 +132,6 @@ def runServer(): Unit = {
 object Main {
 
    def main(args: Array[String]): Unit = {
-     runServer();
+     runServer()
    }
 }

@@ -1,28 +1,16 @@
-FROM ubuntu AS node
+FROM docker.io/sbtscala/scala-sbt:eclipse-temurin-jammy-19.0.1_10_1.8.2_3.2.2 AS sbt
 
-WORKDIR /opt
-
-RUN apt-get update \
-  && apt-get -y install curl xz-utils
-
-RUN curl -fsSL https://nodejs.org/dist/v18.18.1/node-v18.18.1-linux-x64.tar.xz | tar xvJf -
-
-RUN npm install -g npm
-
-FROM sbtscala/scala-sbt:eclipse-temurin-17.0.4_1.7.1_3.2.0
-
-COPY --from=node /opt /opt
-ENV PATH="$PATH:/opt/node-v18.18.1-linux-x64/bin"
-
-WORKDIR /app/peer
-
-COPY package*.json .
-RUN npm install
-
-COPY build.sbt tailwind.config.cjs vite.config.js postcss.config.cjs tsconfig.json .
+WORKDIR /app
+COPY build.sbt ./
 COPY project project
 COPY src src
 
-RUN sbt compile
+RUN sbt reformJVM/assembly
 
-CMD npm run dev
+
+FROM openjdk:17-alpine
+
+WORKDIR /app
+COPY --from=sbt /app/src/jvm/target/scala-3.3.0/reform-assembly-0.1.0-SNAPSHOT.jar ./
+
+CMD java -jar reform-assembly-0.1.0-SNAPSHOT.jar

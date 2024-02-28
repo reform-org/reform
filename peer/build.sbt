@@ -52,6 +52,7 @@ lazy val reform = crossProject(JSPlatform, JVMPlatform)
   )
   .jvmSettings(
     fork := true,
+    run/baseDirectory := file("."),
     libraryDependencies ++= Seq(
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "org.eclipse.jetty" % "jetty-slf4j-impl" % "11.0.14",

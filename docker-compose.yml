@@ -1,0 +1,33 @@
+version: "3.3"
+
+services:
+  coturn:
+    image: docker.io/coturn/coturn
+    restart: on-failure
+    environment:
+      - DETECT_EXTERNAL_IP=yes
+      - DETECT_RELAY_IP=yes
+      - DETECT_EXTERNAL_IPV6=yes
+      - DETECT_RELAY_IPV6=yes
+    command: "--verbose --min-port=49160 --max-port=49170 --realm=selfmade4u.de --no-cli --no-tls --no-dtls"
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "5349:5349"
+      - "5349:5349/udp"
+      - "49160-49170:49160-49170/udp"
+  always-online-peer:
+    build: peer
+    environment:
+      - ALWAYS_ONLINE_PEER_DATABASE_PATH=/always-online-peer.db
+      - JWT_KEY
+      - VITE_ALWAYS_ONLINE_PEER_HOST
+      - VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
+      - VITE_ALWAYS_ONLINE_PEER_PATH
+      - VITE_ALWAYS_ONLINE_PEER_PROTOCOL
+      - VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT
+      - VITE_ALWAYS_ONLINE_PEER_SUBPROTOCOL
+      - VITE_DATABASE_VERSION
+      - VITE_PROTOCOL_VERSION
+    volumes:
+      - ./peer/always-online-peer.db:/always-online-peer.db
