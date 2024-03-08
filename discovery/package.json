@@ -25,7 +25,7 @@
     "inquirer": "^9.1.5",
     "jsonwebtoken": "^9.0.0",
     "multer": "^1.4.5-lts.1",
-    "nodemailer": "^6.9.1",
+    "nodemailer": "^6.9.9",
     "openid-client": "^5.4.0",
     "sqlite3": "^5.1.4",
     "ws": "^8.12.0"
