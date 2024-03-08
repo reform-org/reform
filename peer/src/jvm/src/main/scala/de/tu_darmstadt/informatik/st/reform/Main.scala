@@ -131,7 +131,7 @@ def runServer(): Unit = {
 
 object Main {
 
-   def main(args: Array[String]): Unit = {
-     runServer()
-   }
+  def main(args: Array[String]): Unit = {
+    runServer()
+  }
 }

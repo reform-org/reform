@@ -195,7 +195,8 @@ class IndexedDB(using jsImplicits: JSImplicits) extends IIndexedDB {
       println("request persistent storage")
       requestedPersistentStorage = true
       if (
-        js.Dynamic.global.navigator.storage != js.undefined && js.Dynamic.global.navigator.storage.persist.isInstanceOf[js.Function]
+        js.Dynamic.global.navigator.storage != js.undefined && js.Dynamic.global.navigator.storage.persist
+          .isInstanceOf[js.Function]
       ) {
         window.navigator.storage
           .persist()
