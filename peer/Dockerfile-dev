@@ -7,6 +7,7 @@ RUN apt-get update \
 
 RUN curl -fsSL https://nodejs.org/dist/v18.18.1/node-v18.18.1-linux-x64.tar.xz | tar xvJf -
 
+ENV PATH="$PATH:/opt/node-v18.18.1-linux-x64/bin"
 RUN npm install -g npm
 
 FROM sbtscala/scala-sbt:eclipse-temurin-17.0.4_1.7.1_3.2.0
@@ -16,10 +17,10 @@ ENV PATH="$PATH:/opt/node-v18.18.1-linux-x64/bin"
 
 WORKDIR /app/peer
 
-COPY package*.json .
+COPY package*.json ./
 RUN npm install
 
-COPY build.sbt tailwind.config.cjs vite.config.js postcss.config.cjs tsconfig.json .
+COPY build.sbt tailwind.config.cjs vite.config.js postcss.config.cjs tsconfig.json ./
 COPY project project
 COPY src src
 
