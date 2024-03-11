@@ -26,16 +26,18 @@ import java.security.Principal
 import javax.security.auth.Subject
 
 // https://github.com/eclipse/jetty.project/blob/jetty-11.0.14/jetty-security/src/main/java/org/eclipse/jetty/security/authentication/BasicAuthenticator.java#L50
-@main def runServer(): Unit = {
+def runServer(): Unit = {
   val registry = Registry()
   val indexedDb = SqliteDB(Globals.ALWAYS_ONLINE_PEER_DATABASE_PATH)
   val _ = Repositories()(using registry, indexedDb)
 
   val server = new Server()
   val connector = new ServerConnector(server)
-  val port = sys.env("VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT").toInt
-  val path = sys.env("VITE_ALWAYS_ONLINE_PEER_PATH")
-  val secret = sys.env("JWT_KEY")
+
+  val port = Globals.VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
+  val path = Globals.VITE_ALWAYS_ONLINE_PEER_PATH
+  val secret = Globals.JWT_KEY
+
   connector.setPort(port)
   val servletContextHandler = new ServletContextHandler(ServletContextHandler.SESSIONS | ServletContextHandler.SECURITY)
   val securityHandler = servletContextHandler.getSecurityHandler.nn
@@ -125,4 +127,11 @@ import javax.security.auth.Subject
   server.start()
   println(s"listening on ws://localhost:$port$path")
   server.join()
+}
+
+object Main {
+
+  def main(args: Array[String]): Unit = {
+    runServer()
+  }
 }

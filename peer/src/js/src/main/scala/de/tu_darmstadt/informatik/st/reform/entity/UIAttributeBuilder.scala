@@ -65,6 +65,27 @@ case class UIAttributeBuilder[AttributeType](
     fieldType = fieldType,
   )
 
+  def bindAsSelect[EntityType](
+      getter: EntityType => Attribute[AttributeType],
+      setter: (EntityType, Attribute[AttributeType]) => EntityType,
+      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
+  ): UIAttribute[EntityType, AttributeType] =
+    UISelectAttribute(
+      getter,
+      setter,
+      readConverter = readConverter,
+      writeConverter = writeConverter,
+      label = label,
+      options =
+        if (filteredOptions.nonEmpty)
+          filteredOptions.get
+        else _ => options,
+      optionsForFilter = options,
+      isRequired = isRequired,
+      searchEnabled = searchEnabled,
+      createPage = createPage,
+    )
+
 }
 
 implicit class BindToInt[AttributeType](using jsImplicits: JSImplicits)(self: UIAttributeBuilder[AttributeType])(
@@ -159,31 +180,6 @@ implicit class BindToSeqOfString(using jsImplicits: JSImplicits)(self: UIAttribu
     )
 }
 
-implicit class BindToString(using jsImplicits: JSImplicits)(self: UIAttributeBuilder[String]) {
-
-  def bindAsSelect[EntityType](
-      getter: EntityType => Attribute[String],
-      setter: (EntityType, Attribute[String]) => EntityType,
-      filteredOptions: Option[EntityType => Signal[Seq[SelectOption]]] = None,
-  ): UIAttribute[EntityType, String] =
-    UISelectAttribute(
-      getter,
-      setter,
-      readConverter = self.readConverter,
-      writeConverter = self.writeConverter,
-      label = self.label,
-      options =
-        if (filteredOptions.nonEmpty)
-          filteredOptions.get
-        else _ => self.options,
-      optionsForFilter = self.options,
-      isRequired = self.isRequired,
-      searchEnabled = self.searchEnabled,
-      createPage = self.createPage,
-    )
-
-}
-
 class BuildUIAttribute(using jsImplicits: JSImplicits) {
 
   def string: UIAttributeBuilder[String] = UIAttributeBuilder(identity, identity)
@@ -208,6 +204,18 @@ class BuildUIAttribute(using jsImplicits: JSImplicits) {
 
   def select(options: Signal[Seq[SelectOption]]): UIAttributeBuilder[String] =
     string.copy(options = options)
+
+  def enumSelect[E <: Enum[E]](values: Array[E], valueOf: String => E): UIAttributeBuilder[E] =
+    UIAttributeBuilder[E](
+      _.toString,
+      valueOf,
+    )
+      .copy(options = Signal {
+        values.toSeq
+          .map { v =>
+            SelectOption(id = v.toString, name = Signal(v.toString))
+          }
+      })
 
   def multiSelect(
       options: Signal[Seq[SelectOption]],

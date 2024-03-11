@@ -8,14 +8,15 @@ import kofre.base.*
 
 case class Document(
     name: Attribute[String] = Attribute.empty,
+    location: Attribute[String] = Attribute.empty,
+    autofill: Attribute[Autofill] = Attribute(Autofill.NoFill),
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Document]
     derives Lattice,
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: Document =
-    Document(Attribute.default, Attribute(true))
+  def default: Document = Document()
 
   def identifier: Attribute[String] = name
 
@@ -29,5 +30,8 @@ case class Document(
 object Document {
   val empty: Document = Document()
 
-  implicit val codec: JsonValueCodec[Document] = JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
+  implicit val codec: JsonValueCodec[Document] = {
+    import scala.language.unsafeNulls
+    JsonCodecMaker.make(CodecMakerConfig.withMapAsArray(true))
+  }
 }

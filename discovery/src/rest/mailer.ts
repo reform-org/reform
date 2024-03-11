@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import nodemailer, { Transporter } from "nodemailer"
 import { Attachment } from "nodemailer/lib/mailer"
 
-dotenv.config()
+dotenv.config({ path: '../.env' });
 
 export interface MailOptions {
     from: string

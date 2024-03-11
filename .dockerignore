@@ -17,4 +17,4 @@
 !/src/js/src/main/js/webapp/utils.js
 !/vite.config.ts
 !/.sbtopts
-!/.env.*
+.env*

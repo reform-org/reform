@@ -330,7 +330,7 @@ private class Filter[EntityType](uiAttributes: Seq[UIBasicAttribute[EntityType]]
 
 abstract class EntityPage[T <: Entity[T]](
     title: Title,
-    description: Option[VMod],
+    description: VMod,
     repository: Repository[T],
     all: Signal[Seq[Synced[T]]],
     uiAttributes: Seq[UIBasicAttribute[T]],

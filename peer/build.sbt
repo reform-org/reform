@@ -10,6 +10,8 @@ ThisBuild / version := "0.1.0-SNAPSHOT"
 ThisBuild / scalaVersion := "3.3.0"
 // ThisBuild / wartremoverErrors ++= Warts.unsafe
 
+ThisBuild  / envFileName := "../.env"
+
 // https://stackoverflow.com/questions/33299892/how-to-depend-on-a-common-crossproject
 
 lazy val reform = crossProject(JSPlatform, JVMPlatform)
@@ -50,12 +52,14 @@ lazy val reform = crossProject(JSPlatform, JVMPlatform)
   )
   .jvmSettings(
     fork := true,
+    run/baseDirectory := file("."),
     libraryDependencies ++= Seq(
       "com.github.scala-loci.scala-loci" %%% "scala-loci-communicator-ws-jetty11" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "org.eclipse.jetty" % "jetty-slf4j-impl" % "11.0.14",
       "org.xerial" % "sqlite-jdbc" % "3.41.0.0",
       "com.auth0" % "java-jwt" % "4.3.0",
     ),
+    assembly / mainClass := Some("de.tu_darmstadt.informatik.st.reform.Main")
   )
   .settings(
     resolvers += "jitpack".at("https://jitpack.io"),
@@ -64,7 +68,7 @@ lazy val reform = crossProject(JSPlatform, JVMPlatform)
       "com.github.scala-loci.scala-loci" %%% "scala-loci-serializer-jsoniter-scala" % "3ea9afdeac1c46b5da65497b7d1fa54152128c2a",
       "com.github.rescala-lang.REScala" %%% "rescala" % "7de346f7abbe81eb0cacd0ee7f49420a8ff527f7",
       "com.github.rescala-lang.REScala" %%% "kofre" % "7de346f7abbe81eb0cacd0ee7f49420a8ff527f7",
-      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.21.2",
+      "com.github.plokhotnyuk.jsoniter-scala" %%% "jsoniter-scala-core" % "2.27.1",
       "com.github.plokhotnyuk.jsoniter-scala" %% "jsoniter-scala-macros" % "2.21.2",
     ),
     testFrameworks += new TestFramework("utest.runner.Framework"),
@@ -90,3 +94,8 @@ inThisBuild(
     semanticdbVersion := scalafixSemanticdb.revision,
   ),
 )
+
+ThisBuild / assemblyMergeStrategy := {
+  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+  case _ => MergeStrategy.first
+}

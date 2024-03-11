@@ -123,3 +123,22 @@ podman-compose --env-file .env.podman --project-name reform --file docker-compos
 ```
 
 The application is available on http://reform.localhost:8888/ by default
+
+## Build inside docker
+
+Building the peer
+
+```bash
+docker-compose -f docker-compose-dev.yml up -d --build peer-dev
+docker run --rm -v "$PWD/dist:/app/dist" reform-peer-dev:latest npm run build # Might also be called reform_peer-dev:latest
+docker-compose -f docker-compose-dev.yml down
+```
+
+## Release Builds
+
+Always Online Peer
+
+```bash
+sbt reformJVM/assembly
+java -jar src/jvm/target/scala-3.3.0/reform-assembly-0.1.0-SNAPSHOT.jar
+```

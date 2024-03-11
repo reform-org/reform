@@ -1,13 +1,6 @@
 version: "3.3"
 
 services:
-  discovery:
-    build: discovery
-    env_file:
-      - discovery/.env
-    ports:
-      - 3000:3000
-      - 7071:7071
   coturn:
     image: docker.io/coturn/coturn
     restart: on-failure
@@ -23,3 +16,18 @@ services:
       - "5349:5349"
       - "5349:5349/udp"
       - "49160-49170:49160-49170/udp"
+  always-online-peer:
+    build: peer
+    environment:
+      - ALWAYS_ONLINE_PEER_DATABASE_PATH=/always-online-peer.db
+      - JWT_KEY
+      - VITE_ALWAYS_ONLINE_PEER_HOST
+      - VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
+      - VITE_ALWAYS_ONLINE_PEER_PATH
+      - VITE_ALWAYS_ONLINE_PEER_PROTOCOL
+      - VITE_ALWAYS_ONLINE_PEER_PUBLIC_PORT
+      - VITE_ALWAYS_ONLINE_PEER_SUBPROTOCOL
+      - VITE_DATABASE_VERSION
+      - VITE_PROTOCOL_VERSION
+    volumes:
+      - ./peer/always-online-peer.db:/always-online-peer.db

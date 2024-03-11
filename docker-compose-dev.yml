@@ -1,0 +1,29 @@
+version: "3.3"
+
+services:
+  discovery:
+    build: discovery
+    ports:
+      - 3000:3000
+      - 7071:7071
+  peer-dev:
+    build: peer/Dockerfile-dev
+    ports:
+      - 5173:5173
+    volumes:
+      - './src:/app/peer/src'
+  coturn:
+    image: docker.io/coturn/coturn
+    restart: on-failure
+    environment:
+      - DETECT_EXTERNAL_IP=yes
+      - DETECT_RELAY_IP=yes
+      - DETECT_EXTERNAL_IPV6=yes
+      - DETECT_RELAY_IPV6=yes
+    command: "--verbose --min-port=49160 --max-port=49170 --realm=selfmade4u.de --no-cli --no-tls --no-dtls"
+    ports:
+      - "3478:3478"
+      - "3478:3478/udp"
+      - "5349:5349"
+      - "5349:5349/udp"
+      - "49160-49170:49160-49170/udp"
