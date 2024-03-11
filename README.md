@@ -129,9 +129,8 @@ The application is available on http://reform.localhost:8888/ by default
 Building the peer
 
 ```bash
-docker-compose -f docker-compose-dev.yml up -d --build peer-dev
+docker-compose -f docker-compose-dev.yml build peer-dev
 docker run --rm -v "$PWD/dist:/app/dist" reform-peer-dev:latest npm run build # Might also be called reform_peer-dev:latest
-docker-compose -f docker-compose-dev.yml down
 ```
 
 ## Release Builds
