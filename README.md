@@ -130,7 +130,12 @@ Building the peer
 
 ```bash
 docker-compose -f docker-compose-dev.yml build peer-dev
-docker run --rm -v "$PWD/dist:/app/dist" reform-peer-dev:latest npm run build # Might also be called reform_peer-dev:latest
+docker run \
+ --rm \
+ -v "$PWD/dist:/app/dist" \
+ --env-file .env \
+ reform-peer-dev:latest \
+ npm run build # Might also be called reform_peer-dev:latest
 ```
 
 ## Release Builds
