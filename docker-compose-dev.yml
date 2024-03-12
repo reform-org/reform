@@ -7,7 +7,9 @@ services:
       - 3000:3000
       - 7071:7071
   peer-dev:
-    build: peer/Dockerfile-dev
+    build:
+      context: peer
+      dockerfile: Dockerfile-dev
     ports:
       - 5173:5173
     volumes:

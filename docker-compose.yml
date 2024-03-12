@@ -16,6 +16,7 @@ services:
       - "5349:5349"
       - "5349:5349/udp"
       - "49160-49170:49160-49170/udp"
+
   always-online-peer:
     build: peer
     environment:
@@ -31,3 +32,28 @@ services:
       - VITE_PROTOCOL_VERSION
     volumes:
       - ./peer/always-online-peer.db:/always-online-peer.db
+
+  discovery:
+    build: discovery
+    restart: on-failure
+    volumes:
+      - "./discovery/discovery.db:/discovery.db"
+    ports:
+      - "$VITE_DISCOVERY_SERVER_PUBLIC_PORT:$VITE_DISCOVERY_SERVER_LISTEN_PORT"
+    environment:
+     - VITE_DISCOVERY_SERVER_PROTOCOL
+     - VITE_DISCOVERY_SERVER_HOST
+     - VITE_DISCOVERY_SERVER_PATH
+     - VITE_DISCOVERY_SERVER_LISTEN_PORT
+     - VITE_DISCOVERY_SERVER_PUBLIC_PORT
+
+     - VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL
+     - VITE_DISCOVERY_SERVER_WEBSOCKET_HOST
+     - VITE_DISCOVERY_SERVER_WEBSOCKET_PATH
+     - VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL
+     - VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT
+     - VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT
+
+     - SSO_REDIRECT_URL
+     - SSO_CLIENT_ID
+     - SSO_CLIENT_SECRET
