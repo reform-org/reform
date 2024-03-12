@@ -6,14 +6,29 @@ services:
     ports:
       - 3000:3000
       - 7071:7071
+    environment:
+      - VITE_DISCOVERY_SERVER_PROTOCOL
+      - VITE_DISCOVERY_SERVER_HOST
+      - VITE_DISCOVERY_SERVER_PATH
+      - VITE_DISCOVERY_SERVER_LISTEN_PORT
+      - VITE_DISCOVERY_SERVER_PUBLIC_PORT
+      - VITE_DISCOVERY_SERVER_WEBSOCKET_PROTOCOL
+      - VITE_DISCOVERY_SERVER_WEBSOCKET_HOST
+      - VITE_DISCOVERY_SERVER_WEBSOCKET_PATH
+      - VITE_DISCOVERY_SERVER_WEBSOCKET_SUBPROTOCOL
+      - VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT
+      - VITE_DISCOVERY_SERVER_WEBSOCKET_PUBLIC_PORT
+      - SSO_REDIRECT_URL
+      - SSO_CLIENT_ID
+      - SSO_CLIENT_SECRET
   peer-dev:
     build:
       context: peer
       dockerfile: Dockerfile-dev
     ports:
-      - 5173:5173
+      - "5173:5173"
     volumes:
-      - './src:/app/peer/src'
+      - './peer/src:/app/peer/src'
   coturn:
     image: docker.io/coturn/coturn
     restart: on-failure

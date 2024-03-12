@@ -22,7 +22,6 @@ RUN npm install
 
 COPY build.sbt tailwind.config.cjs vite.config.js postcss.config.cjs tsconfig.json ./
 COPY project project
-COPY src src
 
 RUN sbt compile
 

@@ -63,7 +63,8 @@ export const authRouter = async () => {
             res.cookie("discovery-token", token.access_token, {maxAge: token.maxAge})
             res.redirect(state.goto)
         } catch (e) {
-            res.json({ error: e })
+            console.error(e);
+            res.status(500).json({ error: 'Internal Server Error' })
         }
     })
 
