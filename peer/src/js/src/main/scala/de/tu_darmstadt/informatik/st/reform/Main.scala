@@ -70,7 +70,7 @@ object Main {
         .connect(using jsImplicits)()
         .toastOnError(using jsImplicits)()
     }
-    
+
     Outwatch
       .renderReplace[SyncIO](
         "#app",
