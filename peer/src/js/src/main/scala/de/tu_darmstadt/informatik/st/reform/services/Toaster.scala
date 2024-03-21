@@ -3,6 +3,8 @@ package de.tu_darmstadt.informatik.st.reform.services
 import de.tu_darmstadt.informatik.st.reform.*
 import de.tu_darmstadt.informatik.st.reform.components.icons
 import de.tu_darmstadt.informatik.st.reform.given
+import de.tu_darmstadt.informatik.st.reform.services.ToastMode.*
+import de.tu_darmstadt.informatik.st.reform.services.ToastType.*
 import org.scalajs.dom.HTMLHtmlElement
 import org.scalajs.dom.document
 import org.scalajs.dom.window
@@ -197,7 +199,7 @@ class Toast(using toaster: Toaster)(
   }
 }
 
-class Toaster() {
+class Toaster {
 
   private val removeToast = Evt[Toast]()
   private val addToast = Evt[Toast]()
@@ -209,6 +211,10 @@ class Toaster() {
   def make(text: String, mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Default): Unit = {
     this.make(span(text), mode, style)
   }
+
+  def warn(text: String): Unit = make(text, Long, Warning)
+
+  def error(text: String): Unit = make(text, Persistent, ToastType.Error)
 
   def make(text: VNode, mode: ToastMode, style: ToastType): Unit = {
     if (Globals.VITE_SELENIUM && style != ToastType.Error) return
