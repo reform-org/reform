@@ -2,16 +2,14 @@ import express from "express";
 import { db } from "../utils/db.js";
 import cors from "cors";
 import bodyParser from "body-parser";
-import dotenv from "dotenv"
 import { authRouter } from "./routes/auth.js";
 import { mailRouter } from "./routes/mail.js";
-
-dotenv.config({ path: '../.env' });
+import * as Globals from "../utils/globals.js";
 
 db.init()
 
 export const app = express();
-export const serverPath = process.env.VITE_DISCOVERY_SERVER_PATH;
+export const serverPath = Globals.VITE_DISCOVERY_SERVER_PATH;
 
 (async () => {
     

@@ -1,8 +1,6 @@
-import dotenv from "dotenv"
-import nodemailer, { Transporter } from "nodemailer"
-import { Attachment } from "nodemailer/lib/mailer"
-
-dotenv.config({ path: '../.env' });
+import nodemailer from "nodemailer";
+import { Attachment } from "nodemailer/lib/mailer";
+import * as Globals from "../utils/globals.js";
 
 export interface MailOptions {
     from: string
@@ -52,11 +50,11 @@ export class Mailer {
     public constructor() { }
 
     static isSetup() {
-        return process.env.SMTP_USERNAME !== ""
-        && process.env.SMTP_PASSWORD !== ""
-        && process.env.SMTP_HOST !== ""
-        && process.env.SMTP_PORT !== ""
-        && process.env.SMTP_SENDER !== ""
+        return Globals.SMTP_USERNAME !== ""
+        && Globals.SMTP_PASSWORD !== ""
+        && Globals.SMTP_HOST !== ""
+        && Globals.SMTP_PORT !== ""
+        && Globals.SMTP_SENDER !== ""
     }
 
     static getInstance() {
@@ -68,12 +66,12 @@ export class Mailer {
 
     public async createConnection() {
         this.transporter = nodemailer.createTransport({
-            host: process.env.SMTP_HOST,
-            port: parseInt(process.env.SMTP_PORT),
-            secure: parseInt(process.env.SMTP_PORT) === 465,
+            host: Globals.SMTP_HOST,
+            port: parseInt(Globals.SMTP_PORT),
+            secure: parseInt(Globals.SMTP_PORT) === 465,
             auth: {
-                user: process.env.SMTP_USERNAME,
-                pass: process.env.SMTP_PASSWORD,
+                user: Globals.SMTP_USERNAME,
+                pass: Globals.SMTP_PASSWORD,
             },
         });
     }
@@ -81,7 +79,7 @@ export class Mailer {
     public async send(mail: Mail) {
         return await this.transporter
             .sendMail({
-                from: `${mail.options.fromName || ""} ${process.env.SMTP_SENDER || mail.options.from}`,
+                from: `${mail.options.fromName || ""} ${Globals.SMTP_SENDER || mail.options.from}`,
                 to: mail.options.to,
                 cc: mail.options.cc || "",
                 bcc: mail.options.bcc || "",
