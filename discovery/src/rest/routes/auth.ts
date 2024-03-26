@@ -4,25 +4,23 @@ import { serverPath } from "../server.js";
 import { Issuer } from "openid-client";
 import { ClassicUser, createUser, UserTypes } from "../../wss/user.js";
 import { db } from "../../utils/db.js";
-import dotenv from "dotenv";
-
-dotenv.config({ path: '../.env' });
+import * as Globals from "../../utils/globals.js";
 
 interface Session {
     goto: string
     error: string
 }
 
-const ALLOWED_REDIRECT_ORIGIN: string = `${process.env.VITE_DISCOVERY_SERVER_PROTOCOL}://${process.env.VITE_DISCOVERY_SERVER_HOST}`
+const ALLOWED_REDIRECT_ORIGIN: string = `${Globals.VITE_DISCOVERY_SERVER_PROTOCOL}://${Globals.VITE_DISCOVERY_SERVER_HOST}`
 
 export const authRouter = async () => {
-    const redirect_uri = process.env.SSO_REDIRECT_URL;
+    const redirect_uri = Globals.SSO_REDIRECT_URL;
 
     const router = express.Router()
     const issuer = await Issuer.discover("https://login.tu-darmstadt.de")
     const openidClient = new issuer.Client({
-        client_id: process.env.SSO_CLIENT_ID,
-        client_secret: process.env.SSO_CLIENT_SECRET,
+        client_id: Globals.SSO_CLIENT_ID,
+        client_secret: Globals.SSO_CLIENT_SECRET,
         redirect_uris: [redirect_uri],
         response_types: ['code'],
         token_endpoint_auth_method: "client_secret_basic"
@@ -63,7 +61,8 @@ export const authRouter = async () => {
             res.cookie("discovery-token", token.access_token, {maxAge: token.maxAge})
             res.redirect(state.goto)
         } catch (e) {
-            res.json({ error: e })
+            console.error(e);
+            res.status(500).json({ error: 'Internal Server Error' })
         }
     })
 

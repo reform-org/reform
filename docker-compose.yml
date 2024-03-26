@@ -20,8 +20,8 @@ services:
   always-online-peer:
     build: peer
     environment:
-      - ALWAYS_ONLINE_PEER_DATABASE_PATH=/always-online-peer.db
       - JWT_KEY
+      - ALWAYS_ONLINE_PEER_DATABASE_PATH
       - VITE_ALWAYS_ONLINE_PEER_HOST
       - VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT
       - VITE_ALWAYS_ONLINE_PEER_PATH
@@ -32,14 +32,17 @@ services:
       - VITE_PROTOCOL_VERSION
     volumes:
       - ./peer/always-online-peer.db:/always-online-peer.db
+    ports:
+      - "$VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT:$VITE_ALWAYS_ONLINE_PEER_LISTEN_PORT"
 
   discovery:
     build: discovery
     restart: on-failure
     volumes:
-      - "./discovery/discovery.db:/discovery.db"
+      - "./discovery/discovery.db:/app/discovery.db"
     ports:
-      - "$VITE_DISCOVERY_SERVER_PUBLIC_PORT:$VITE_DISCOVERY_SERVER_LISTEN_PORT"
+      - "$VITE_DISCOVERY_SERVER_LISTEN_PORT:$VITE_DISCOVERY_SERVER_LISTEN_PORT"
+      - "$VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT:$VITE_DISCOVERY_SERVER_WEBSOCKET_LISTEN_PORT"
     environment:
      - VITE_DISCOVERY_SERVER_PROTOCOL
      - VITE_DISCOVERY_SERVER_HOST
@@ -57,3 +60,6 @@ services:
      - SSO_REDIRECT_URL
      - SSO_CLIENT_ID
      - SSO_CLIENT_SECRET
+
+     - JWT_KEY
+     - TURN_SECRET

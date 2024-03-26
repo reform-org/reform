@@ -40,9 +40,14 @@ export const mailRouter = async () => {
         })
 
         const mail = new Mail(options)
-        const answer: SentMessageInfo = await mailer.send(mail)
-
-        res.json({accepted: answer.accepted, rejected: answer.rejected})
+        try {
+            const answer: SentMessageInfo = await mailer.send(mail);
+            return res.json({accepted: answer.accepted, rejected: answer.rejected});
+        } catch (error) {
+            console.error("Sending mail has failed");
+            console.error(error);
+            return res.status(500).json({ accepted:[], rejected: [to, options["cc"], options["bcc"]].flat() });
+        }
     })
 
     return router

@@ -2,6 +2,7 @@ import { db } from "../utils/db.js"
 import bcrypt from "bcrypt"
 import { randomUUID } from "crypto"
 import jwt from "jsonwebtoken"
+import * as Globals from "../utils/globals.js";
 
 export enum UserTypes {
     SSO = "SSO",
@@ -79,7 +80,7 @@ export abstract class User {
     public issueToken(): UserToken {
         const maxAgeDays = 14
         return {
-            access_token: jwt.sign({ username: this.name, type: this.type, uuid: this.id, device: randomUUID() }, process.env.JWT_KEY, { expiresIn: `${maxAgeDays}d` }),
+            access_token: jwt.sign({ username: this.name, type: this.type, uuid: this.id, device: randomUUID() }, Globals.JWT_KEY, { expiresIn: `${maxAgeDays}d` }),
             maxAge: maxAgeDays * 86400000
         }
     }

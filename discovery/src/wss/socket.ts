@@ -1,19 +1,14 @@
-import { createServer } from "https";
-import { readFileSync } from "fs";
 import { createServer as createHttpServer } from "http";
 import { WebSocket, WebSocketServer } from "ws";
 import { AuthPayload, Event, ConnectionPayload, Payload, TokenPayload, TransmitTokenPayload, SingleUserIdPayload, EmptyPayload } from "./events.js";
 import jwt from "jsonwebtoken";
 import { db } from "../utils/db.js";
-import { ping } from "./helpers.js";
 import { ConnectionManager } from "./connectionManager.js";
 import { Peer } from "./peer.js";
 import { createUser, User, UserTypes } from "./user.js";
+import * as Globals from "../utils/globals.js";
 
-export const webSocketServer = process.env.HTTPS === "TRUE" ? createServer({
-    cert: readFileSync(process.env.CERT_PATH),
-    key: readFileSync(process.env.KEY_PATH)
-}) : createHttpServer();
+export const webSocketServer = createHttpServer();
 
 const wss = new WebSocketServer({ noServer: true });
 
@@ -45,7 +40,7 @@ wss.on("connection", (ws: WebSocket) => {
             connections.getPeer(ws).registerPong()
         })
         .on("authenticate", (payload: AuthPayload) => {
-            jwt.verify(payload.token, process.env.JWT_KEY, async (err, tokenPayload: TokenPayload) => {
+            jwt.verify(payload.token, Globals.JWT_KEY, async (err, tokenPayload: TokenPayload) => {
                 if (err) {
                     ws.close();
                     return;

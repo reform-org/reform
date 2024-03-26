@@ -30,14 +30,7 @@ import de.tu_darmstadt.informatik.st.reform.npm.PDF
 import de.tu_darmstadt.informatik.st.reform.npm.PDFCheckboxField
 import de.tu_darmstadt.informatik.st.reform.npm.PDFTextField
 import de.tu_darmstadt.informatik.st.reform.repo.Synced
-import de.tu_darmstadt.informatik.st.reform.services.ContractEmail
-import de.tu_darmstadt.informatik.st.reform.services.DekanatMail
-import de.tu_darmstadt.informatik.st.reform.services.DiscoveryService
-import de.tu_darmstadt.informatik.st.reform.services.MailService
-import de.tu_darmstadt.informatik.st.reform.services.Page
-import de.tu_darmstadt.informatik.st.reform.services.ReminderMail
-import de.tu_darmstadt.informatik.st.reform.services.ToastMode
-import de.tu_darmstadt.informatik.st.reform.services.ToastType
+import de.tu_darmstadt.informatik.st.reform.services.*
 import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
 import de.tu_darmstadt.informatik.st.reform.{*, given}
 import org.scalajs.dom.BeforeUnloadEvent
@@ -50,12 +43,11 @@ import rescala.default
 import rescala.default.*
 
 import scala.collection.mutable.ArrayBuffer
-import scala.concurrent.Future
-import scala.concurrent.Promise
+import scala.concurrent.*
 import scala.math.BigDecimal.RoundingMode
 import scala.scalajs.js
 import scala.scalajs.js.Date
-import scala.util.Try
+import scala.util.*
 
 import ContractsPage.*
 
@@ -892,23 +884,26 @@ class ContractRequirementsMail(
                     ),
                     Seq(supervisor.eMail.get.getOrElse("")),
                   )
-                  .andThen(ans => {
-                    document.querySelector("#sendReminder").classList.remove("loading")
-                    if (ans.get.rejected.length > 0) {
-                      jsImplicits.toaster.make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
-                    }
-                    if (ans.get.accepted.length > 0) {
-                      editingValue.now
-                        .foreach((_, contract) => {
-                          contract
-                            .set(contract.now.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
-                          save()
-                        })
+                  .onComplete({
+                    case Failure(e) =>
+                      println(e)
+                      jsImplicits.toaster.error("Sending mail")
+                    case Success(ans) =>
+                      document.querySelector("#sendReminder").classList.remove("loading")
+                      if (ans.rejected.length > 0) {
+                        jsImplicits.toaster.warn(s"Could not deliver mail to ${ans.rejected.mkString(", ")}.")
+                      }
+                      if (ans.accepted.length > 0) {
+                        editingValue.now
+                          .foreach((_, contract) => {
+                            contract
+                              .set(contract.now.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
+                            save()
+                          })
 
-                      jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
-                    }
+                        jsImplicits.toaster.make(s"Sent mail to ${ans.accepted.mkString(" and ")}.")
+                      }
                   })
-                  .toastOnError()
               }
 
             })

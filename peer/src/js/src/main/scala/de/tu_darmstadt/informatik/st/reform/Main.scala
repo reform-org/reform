@@ -65,10 +65,12 @@ object Main {
         }
       })
 
-    if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.now))
+    if (jsImplicits.discovery.tokenIsValid(jsImplicits.discovery.token.now)) {
       jsImplicits.discovery
         .connect(using jsImplicits)()
         .toastOnError(using jsImplicits)()
+    }
+
     Outwatch
       .renderReplace[SyncIO](
         "#app",
