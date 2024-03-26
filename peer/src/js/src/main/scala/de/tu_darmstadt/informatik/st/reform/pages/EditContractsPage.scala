@@ -44,10 +44,11 @@ import rescala.default.*
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.*
-import scala.util.*
 import scala.math.BigDecimal.RoundingMode
 import scala.scalajs.js
 import scala.scalajs.js.Date
+import scala.util.*
+
 import ContractsPage.*
 
 // TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
