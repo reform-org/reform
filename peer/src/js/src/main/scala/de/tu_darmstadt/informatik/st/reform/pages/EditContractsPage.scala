@@ -60,7 +60,7 @@ case class NewContractPage()(using
     jsImplicits.repositories.contracts
       .create(Contract.empty.default)
       .map(currentContract => {
-        InnerEditContractsPage(Some(currentContract), "").render
+        InnerEditContractsPage(currentContract, "").render
       })
   }
 }
@@ -70,12 +70,13 @@ case class ExtendContractPage(contractId: String)(using
 ) extends Page {
 
   private val existingValue = Signal { jsImplicits.repositories.contracts.all.value.find(c => c.id == contractId) }
+
   def render: VMod = {
     existingValue
       .map(currentContract => {
         val result: VMod = currentContract match {
           case Some(currentContract) =>
-            InnerExtendContractsPage(Some(currentContract), contractId).render
+            InnerExtendContractsPage(currentContract, contractId).render
           case None =>
             ErrorPage().error("Contract not found", "", "Show me all contracts", ContractsPage())
         }
@@ -95,7 +96,7 @@ case class EditContractsPage(contractId: String)(using
       .map(currentContract => {
         val result: VMod = currentContract match {
           case Some(currentContract) =>
-            InnerEditContractsPage(Some(currentContract), contractId).render
+            InnerEditContractsPage(currentContract, contractId).render
           case None =>
             ErrorPage().error("Contract not found", "", "Show me all contract drafts", ContractDraftsPage())
         }
@@ -1168,8 +1169,8 @@ class CreateLetter(
   }
 }
 
-class InnerExtendContractsPage(override val existingValue: Option[Synced[Contract]], override val contractId: String)(
-    using jsImplicits: JSImplicits,
+class InnerExtendContractsPage(override val existingValue: Synced[Contract], override val contractId: String)(using
+    jsImplicits: JSImplicits,
 ) extends InnerEditContractsPage(existingValue, contractId) {
 
   private def createDraft(): Future[String] = {
@@ -1177,27 +1178,17 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
 
     val editingNow = editingValue.now.get._2.now
     val draftContract = Contract(
-      Attribute.empty,
-      editingNow.contractAssociatedHiwi,
-      editingNow.contractAssociatedPaymentLevel,
-      editingNow.contractAssociatedSupervisor,
-      editingNow.contractStartDate,
-      editingNow.contractEndDate,
-      Attribute.empty,
-      editingNow.contractHoursPerMonth,
-      Attribute(true),
-      Attribute.empty,
-      Attribute(false),
-      Attribute(false),
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute(true),
+      contractAssociatedProject = editingNow.contractAssociatedProject,
+      contractAssociatedHiwi = editingNow.contractAssociatedHiwi,
+      contractAssociatedPaymentLevel = editingNow.contractAssociatedPaymentLevel,
+      contractAssociatedSupervisor = editingNow.contractAssociatedSupervisor,
+      contractStartDate = editingNow.contractStartDate,
+      contractEndDate = editingNow.contractEndDate,
+      contractHoursPerMonth = editingNow.contractHoursPerMonth,
+      isDraft = Attribute(true),
     )
     jsImplicits.repositories.contracts
-      .create({
-        draftContract
-      })
+      .create(draftContract)
       .map(entity => {
         editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
         jsImplicits.routing.to(EditContractsPage(entity.id))
@@ -1238,10 +1229,9 @@ class InnerExtendContractsPage(override val existingValue: Option[Synced[Contrac
   }
 }
 
-class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val contractId: String)(using
+class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId: String)(using
     jsImplicits: JSImplicits,
 ) {
-  val startEditEntity: Option[Contract] = existingValue.map(_.signal.now)
 
   private def isCompleted: Signal[Boolean] = {
     Signal.dynamic {
@@ -1279,56 +1269,34 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     jsImplicits.indexeddb.requestPersistentStorage()
 
     val editingNow = editingValue.now.get._2.now
-    existingValue match {
-      case Some(existing) =>
-        existing
-          .update(p => {
-            val c = p.getOrElse(Contract.empty).merge(editingNow)
-            if (finalize) {
-              c.copy(isDraft = c.isDraft.set(false))
-            } else {
-              c
-            }
-          })
-          .map(value => {
-            if (!silent) {
-              jsImplicits.toaster.make(
-                "Contract saved!",
-                ToastMode.Short,
-                ToastType.Success,
-              )
-            }
+    existingValue
+      .update(p => {
+        val c = p.getOrElse(Contract.empty).merge(editingNow)
+        if (finalize) {
+          c.copy(isDraft = c.isDraft.set(false))
+        } else {
+          c
+        }
+      })
+      .map(value => {
+        if (!silent) {
+          jsImplicits.toaster.make(
+            "Contract saved!",
+            ToastMode.Short,
+            ToastType.Success,
+          )
+        }
 
-            if (!stayOnPage) {
-              if (value.isDraft.get.getOrElse(true)) {
-                jsImplicits.routing.to(ContractDraftsPage())
-              } else {
-                jsImplicits.routing.to(ContractsPage())
-              }
-            }
+        if (!stayOnPage) {
+          if (value.isDraft.get.getOrElse(true)) {
+            jsImplicits.routing.to(ContractDraftsPage())
+          } else {
+            jsImplicits.routing.to(ContractsPage())
+          }
+        }
 
-            existing.id
-          })
-      case None =>
-        jsImplicits.repositories.contracts
-          .create({
-            if (finalize) {
-              editingNow.copy(isDraft = editingNow.isDraft.set(false))
-            } else {
-              editingNow
-            }
-          })
-          .map(entity => {
-            editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
-            if (entity.signal.now.isDraft.get.getOrElse(true)) {
-              jsImplicits.routing.to(ContractDraftsPage())
-            } else {
-              jsImplicits.routing.to(ContractsPage())
-            }
-
-            entity.id
-          })
-    }
+        existingValue.id
+      })
   }
 
   protected def cancelEdit(): Unit = Signal.dynamic {
@@ -1343,19 +1311,21 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
   }
 
   var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
-    Option(existingValue.get.signal.now, Var(existingValue.get.signal.now)),
+    Option(existingValue.signal.now, Var(existingValue.signal.now)),
   )
+
+  private val isDirty: Signal[Boolean] = Signal.dynamic {
+    !editingValue.value.forall { (_, a) =>
+      a.value == existingValue.signal
+    }
+  }
 
   private val actions: Seq[VNode] = Seq(
     Button(
       ButtonStyle.LightPrimary,
       "Save",
       Signal.dynamic {
-        if (
-          existingValue
-            .flatMap(existingValue => editingValue.value.map((_, a) => a.value == existingValue.signal.value))
-            .contains(false)
-        ) span(cls := "inline-block ml-1", icons.Circle(cls := "w-3 h-3"))
+        if (isDirty.value) span(cls := "inline-block ml-1", icons.Circle(cls := "w-3 h-3"))
         else span(cls := "inline-block ml-1", icons.Check(cls := "w-3 h-3"))
       },
       onClick.foreach(e => {
@@ -1378,7 +1348,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       "Save and finalize",
       onClick.foreach(e => {
         e.preventDefault()
-        createOrUpdate(true).toastOnError(ToastMode.Infinit)
+        createOrUpdate(finalize = true).toastOnError(ToastMode.Infinit)
       }),
       disabled <-- isCompleted,
     ),
@@ -1390,11 +1360,7 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
       ButtonStyle.LightPrimary,
       cls := "min-h-8",
       Signal.dynamic {
-        if (
-          existingValue
-            .flatMap(existingValue => editingValue.value.map((_, a) => a.value == existingValue.signal.value))
-            .contains(false)
-        ) span(cls := "inline-block", icons.Save(cls := "w-4 h-4"))
+        if (isDirty.value) span(cls := "inline-block", icons.Save(cls := "w-4 h-4"))
         else span(cls := "inline-block", icons.Check(cls := "w-4 h-4"))
       },
       onClick.foreach(e => {
@@ -1446,19 +1412,15 @@ class InnerEditContractsPage(val existingValue: Option[Synced[Contract]], val co
     ""
   }
 
+  private def markUnloadListener: VMod = Signal.dynamic {
+    if (isDirty.value) window.addEventListener("beforeunload", unloadListener)
+    else window.removeEventListener("beforeunload", unloadListener)
+    ""
+  }
+
   def render: VMod = {
     div(
-      Signal
-        .dynamic {
-          existingValue
-            .flatMap(existingValue => editingValue.value.map((_, a) => a.value == existingValue.signal.value))
-            .contains(false)
-        }
-        .map(edited => {
-          if (edited) window.addEventListener("beforeunload", unloadListener)
-          else window.removeEventListener("beforeunload", unloadListener)
-          ""
-        }),
+      markUnloadListener,
       onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
       onDomUnmount.foreach(_ => {
         document.removeEventListener("keydown", ctrlSListener)

@@ -22,9 +22,9 @@ case class ErrorPage(code: Int = 404, title: String = "", description: String = 
     println(querydescription)
 
     error(
-      s"${if (querycode.isBlank()) this.code.toString() else querycode} | ${if (querytitle.isBlank()) this.title
+      s"${if (querycode.isBlank) this.code.toString else querycode} | ${if (querytitle.isBlank) this.title
         else querytitle}",
-      if (querydescription.isBlank()) this.description else querydescription,
+      if (querydescription.isBlank) this.description else querydescription,
       "Take me Home",
       HomePage(),
     )
