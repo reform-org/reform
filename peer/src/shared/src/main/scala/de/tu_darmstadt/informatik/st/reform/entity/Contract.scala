@@ -22,7 +22,7 @@ case class Contract(
     reminderSentDate: Attribute[Long] = Attribute.empty,
     contractSentDate: Attribute[Long] = Attribute.empty,
     letterSentDate: Attribute[Long] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute.empty,
+    _exists: Attribute[Boolean] = Attribute(true),
 ) extends Entity[Contract]
     derives Lattice,
       Bottom {

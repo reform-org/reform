@@ -19,7 +19,13 @@ import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.common.*
 import de.tu_darmstadt.informatik.st.reform.components.icons
 import de.tu_darmstadt.informatik.st.reform.entity.*
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.*
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.cleanStickyButtons
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffDays
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffHumanReadable
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.dateDiffMonth
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.stickyButton
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
 import de.tu_darmstadt.informatik.st.reform.npm.PDF
 import de.tu_darmstadt.informatik.st.reform.npm.PDFCheckboxField
 import de.tu_darmstadt.informatik.st.reform.npm.PDFTextField
@@ -27,7 +33,10 @@ import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import de.tu_darmstadt.informatik.st.reform.services.*
 import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
 import de.tu_darmstadt.informatik.st.reform.{*, given}
-import org.scalajs.dom.*
+import org.scalajs.dom.BeforeUnloadEvent
+import org.scalajs.dom.KeyboardEvent
+import org.scalajs.dom.document
+import org.scalajs.dom.window
 import outwatch.*
 import outwatch.dsl.*
 import rescala.default
@@ -60,27 +69,19 @@ case class ExtendContractPage(contractId: String)(using
     jsImplicits: JSImplicits,
 ) extends Page {
 
-  private val currentContract = jsImplicits.repositories.contracts.find(contractId)
+  private val existingValue = Signal { jsImplicits.repositories.contracts.all.value.find(c => c.id == contractId) }
 
-  private val extendedContract = Signal.dynamic {
-    currentContract.value.map { synced =>
-      val contract = synced.signal.value
-      synced.copy(
-        value = Var(
-          contract.copy(
-            contractStartDate = contract.contractEndDate.update(dateAdd(_, days = 1)),
-            contractEndDate = contract.contractEndDate.update(dateAdd(_, years = 1)),
-          ),
-        ),
-      )
-    }
-  }
-
-  def render: VMod = Signal.dynamic {
-    extendedContract.value match {
-      case Some(contract) => InnerExtendContractsPage(contract, contractId).render
-      case None           => ErrorPage().error("Contract not found", "", "Show me all contracts", ContractsPage())
-    }
+  def render: VMod = {
+    existingValue
+      .map(currentContract => {
+        val result: VMod = currentContract match {
+          case Some(currentContract) =>
+            InnerExtendContractsPage(currentContract, contractId).render
+          case None =>
+            ErrorPage().error("Contract not found", "", "Show me all contracts", ContractsPage())
+        }
+        result
+      })
   }
 }
 
@@ -163,12 +164,12 @@ abstract class Step(
       val contract = contractOption.now
       val hiwiOption =
         jsImplicits.repositories.hiwis.all.now
-          .find(_.id == contract.contractAssociatedHiwi.getOrElse(""))
+          .find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
       val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
-        .find(_.id == contract.contractAssociatedPaymentLevel.getOrElse(""))
+        .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
       val projectOption =
         jsImplicits.repositories.projects.all.now
-          .find(_.id == contract.contractAssociatedProject.getOrElse(""))
+          .find(_.id == contract.contractAssociatedProject.get.getOrElse(""))
 
       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
         val hiwi = hiwiOption.get.signal.now
@@ -176,13 +177,13 @@ abstract class Step(
         val moneyPerHour =
           toMoneyString(
             ContractPageAttributes()
-              .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
+              .getMoneyPerHour(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
               .now,
           )
-        val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
+        val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
         val totalHours = dateDiffMonth(
-          contract.contractStartDate.getOrElse(0L),
-          contract.contractEndDate.getOrElse(0L),
+          contract.contractStartDate.get.getOrElse(0L),
+          contract.contractEndDate.get.getOrElse(0L),
         ) * hoursPerMonth
         PDF
           .fill(
@@ -190,19 +191,19 @@ abstract class Step(
             Seq(
               PDFTextField(
                 "Name VornameRow1",
-                s"${hiwi.lastName.getOrElse("")}, ${hiwi.firstName.getOrElse("")}",
+                s"${hiwi.lastName.get.getOrElse("")}, ${hiwi.firstName.get.getOrElse("")}",
               ),
               PDFTextField(
                 "GebDatumRow1",
-                s"${toGermanDate(hiwi.birthdate.getOrElse(0))}",
+                s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
               ),
               PDFTextField(
                 "Vertrags beginnRow1",
-                toGermanDate(contract.contractStartDate.getOrElse(0)),
+                toGermanDate(contract.contractStartDate.get.getOrElse(0)),
               ),
               PDFTextField(
                 "Vertrags endeRow1",
-                toGermanDate(contract.contractEndDate.getOrElse(0)),
+                toGermanDate(contract.contractEndDate.get.getOrElse(0)),
               ),
               PDFTextField(
                 "€StdRow1",
@@ -216,7 +217,7 @@ abstract class Step(
               ),
               PDFTextField(
                 "Account",
-                project.accountName.option.flatten.getOrElse(""),
+                project.accountName.get.flatten.getOrElse(""),
               ),
               PDFTextField(
                 "Datum",
@@ -241,9 +242,9 @@ abstract class Step(
       val contract = contractOption.now
       val hiwiOption =
         jsImplicits.repositories.hiwis.all.now
-          .find(_.id == contract.contractAssociatedHiwi.getOrElse(""))
+          .find(_.id == contract.contractAssociatedHiwi.get.getOrElse(""))
       val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
-        .find(_.id == contract.contractAssociatedPaymentLevel.getOrElse(""))
+        .find(_.id == contract.contractAssociatedPaymentLevel.get.getOrElse(""))
 
       if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty) {
         val hiwi = hiwiOption.get.signal.now
@@ -254,27 +255,27 @@ abstract class Step(
             Seq(
               PDFTextField(
                 "Vorname Nachname (Studentische Hilfskraft)",
-                s"${hiwi.firstName.getOrElse("")} ${hiwi.lastName.getOrElse("")}",
+                s"${hiwi.firstName.get.getOrElse("")} ${hiwi.lastName.get.getOrElse("")}",
               ),
               PDFTextField(
                 "Geburtsdatum (Studentische Hilfskraft)",
-                s"${toGermanDate(hiwi.birthdate.getOrElse(0))}",
+                s"${toGermanDate(hiwi.birthdate.get.getOrElse(0))}",
               ),
               PDFTextField(
                 "Vertragsbeginn",
-                toGermanDate(contract.contractStartDate.getOrElse(0)),
+                toGermanDate(contract.contractStartDate.get.getOrElse(0)),
               ),
               PDFTextField(
                 "Vertragsende",
-                toGermanDate(contract.contractEndDate.getOrElse(0)),
+                toGermanDate(contract.contractEndDate.get.getOrElse(0)),
               ),
               PDFTextField(
                 "Arbeitszeit Kästchen 1",
-                contract.contractHoursPerMonth.getOrElse(0).toString,
+                contract.contractHoursPerMonth.get.getOrElse(0).toString,
               ),
               PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
               PDFCheckboxField(
-                paymentLevel.pdfCheckboxName.getOrElse(""),
+                paymentLevel.pdfCheckboxName.get.getOrElse(""),
                 true,
               ),
             ),
@@ -316,8 +317,8 @@ class BasicInformation(
               Signal.dynamic {
                 editingValue.value.map((_, c) => {
                   jsImplicits.repositories.hiwis.all.value
-                    .find(hiwi => hiwi.id == c.value.contractAssociatedHiwi.getOrElse(""))
-                    .map(hiwi => hiwi.signal.value.eMail.getOrElse(""))
+                    .find(hiwi => hiwi.id == c.value.contractAssociatedHiwi.get.getOrElse(""))
+                    .map(hiwi => hiwi.signal.value.eMail.get.getOrElse(""))
                 })
               },
             ),
@@ -331,8 +332,8 @@ class BasicInformation(
               Signal.dynamic {
                 editingValue.value.map((_, c) => {
                   jsImplicits.repositories.supervisors.all.value
-                    .find(supervisor => supervisor.id == c.value.contractAssociatedSupervisor.getOrElse(""))
-                    .map(supervisor => supervisor.signal.value.eMail.getOrElse(""))
+                    .find(supervisor => supervisor.id == c.value.contractAssociatedSupervisor.get.getOrElse(""))
+                    .map(supervisor => supervisor.signal.value.eMail.get.getOrElse(""))
                 })
               },
             ),
@@ -348,9 +349,9 @@ class BasicInformation(
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
                 if (
-                  contract.contractStartDate.option.nonEmpty && dateDiffDays(
+                  contract.contractStartDate.get.nonEmpty && dateDiffDays(
                     js.Date.now().toLong,
-                    contract.contractStartDate.getOrElse(0L),
+                    contract.contractStartDate.get.getOrElse(0L),
                   ) < 0
                 ) {
                   Some(
@@ -373,16 +374,16 @@ class BasicInformation(
                 val contract = contractSignal.value
 
                 if (
-                  contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty && !(dateDiffDays(
-                    contract.contractStartDate.getOrElse(0L),
-                    contract.contractEndDate.getOrElse(0L),
+                  contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty && !(dateDiffDays(
+                    contract.contractStartDate.get.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
                   ) < 0 ||
-                    dateDiffDays(js.Date.now().toLong, contract.contractEndDate.getOrElse(0L)) < 0)
+                    dateDiffDays(js.Date.now().toLong, contract.contractEndDate.get.getOrElse(0L)) < 0)
                 ) {
                   Some(
                     dateDiffHumanReadable(
-                      contract.contractStartDate.getOrElse(0L),
-                      contract.contractEndDate.getOrElse(0L),
+                      contract.contractStartDate.get.getOrElse(0L),
+                      contract.contractEndDate.get.getOrElse(0L),
                     ),
                   )
                 } else None
@@ -397,12 +398,12 @@ class BasicInformation(
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
                 if (
-                  contract.contractEndDate.option.nonEmpty && (dateDiffDays(
-                    contract.contractStartDate.getOrElse(0L),
-                    contract.contractEndDate.getOrElse(0L),
+                  contract.contractEndDate.get.nonEmpty && (dateDiffDays(
+                    contract.contractStartDate.get.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
                   ) < 0 || dateDiffDays(
                     js.Date.now().toLong,
-                    contract.contractEndDate.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
                   ) < 0)
                 ) {
                   Some(
@@ -419,28 +420,28 @@ class BasicInformation(
         ),
         Signal.dynamic {
           val overlappingContract = editingValue.value.exists((_, contractSignal) => {
-            val start = contractSignal.value.contractStartDate.getOrElse(0L)
-            val end = contractSignal.value.contractEndDate.getOrElse(0L)
-            val hiwi = contractSignal.value.contractAssociatedHiwi.getOrElse("")
+            val start = contractSignal.value.contractStartDate.get.getOrElse(0L)
+            val end = contractSignal.value.contractEndDate.get.getOrElse(0L)
+            val hiwi = contractSignal.value.contractAssociatedHiwi.get.getOrElse("")
             val overlappingContracts = jsImplicits.repositories.contracts.existing.value.filter(c => {
               val contract = c.signal.value
-              !contract.isDraft.getOrElse(true) &&
-              contract.contractAssociatedHiwi.option.nonEmpty &&
-              contract.contractAssociatedHiwi.option.get == hiwi &&
-              contract.contractStartDate.option.nonEmpty &&
-              contract.contractEndDate.option.nonEmpty &&
+              !contract.isDraft.get.getOrElse(true) &&
+              contract.contractAssociatedHiwi.get.nonEmpty &&
+              contract.contractAssociatedHiwi.get.get == hiwi &&
+              contract.contractStartDate.get.nonEmpty &&
+              contract.contractEndDate.get.nonEmpty &&
               (
                 (
-                  contract.contractStartDate.getOrElse(0L) <= start &&
-                    contract.contractEndDate.getOrElse(0L) >= start
+                  contract.contractStartDate.get.getOrElse(0L) <= start &&
+                    contract.contractEndDate.get.getOrElse(0L) >= start
                 ) ||
                   (
-                    (contract.contractStartDate.getOrElse(0L) <= end) &&
-                      contract.contractEndDate.getOrElse(0L) >= end
+                    (contract.contractStartDate.get.getOrElse(0L) <= end) &&
+                      contract.contractEndDate.get.getOrElse(0L) >= end
                   ) ||
                   (
-                    contract.contractStartDate.getOrElse(0L) >= start &&
-                      contract.contractEndDate.getOrElse(0L) <= end
+                    contract.contractStartDate.get.getOrElse(0L) >= start &&
+                      contract.contractEndDate.get.getOrElse(0L) <= end
                   )
               )
             })
@@ -469,16 +470,16 @@ class BasicInformation(
                   val contract = c.value
                   val limit =
                     ContractPageAttributes()
-                      .getLimit(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                      .getLimit(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
                       .value
                   val hourlyWage =
                     ContractPageAttributes()
-                      .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                      .getMoneyPerHour(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
                       .value
 
                   val month = dateDiffMonth(
-                    contract.contractStartDate.getOrElse(0L),
-                    contract.contractEndDate.getOrElse(0L),
+                    contract.contractStartDate.get.getOrElse(0L),
+                    contract.contractEndDate.get.getOrElse(0L),
                   )
 
                   if (hourlyWage > BigDecimal(0) && limit > BigDecimal(0)) {
@@ -491,7 +492,7 @@ class BasicInformation(
                           span(cls := "text-sm text-slate-600 dark:text-gray-200", "Base Salary: "),
                           span(
                             cls := "font-bold",
-                            toMoneyString(contract.contractHoursPerMonth.getOrElse(0) * hourlyWage),
+                            toMoneyString(contract.contractHoursPerMonth.get.getOrElse(0) * hourlyWage),
                           ),
                         ),
                         span(
@@ -525,14 +526,14 @@ class BasicInformation(
                         ),
                       ),
                       if (
-                        contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty && month >= 0
+                        contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty && month >= 0
                       ) {
                         Some(
                           div(
                             cls := "flex flex-col gap-1",
                             span(
                               span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
-                              span(cls := "font-bold", contract.contractHoursPerMonth.getOrElse(0) * month),
+                              span(cls := "font-bold", contract.contractHoursPerMonth.get.getOrElse(0) * month),
                             ),
                             span(
                               cls := "text-slate-400 dark:text-gray-400 text-xs italic",
@@ -558,16 +559,16 @@ class BasicInformation(
             Signal.dynamic {
               editingValue.value.map((_, contractSignal) => {
                 val contract = contractSignal.value
-                val project = contract.contractAssociatedProject.option.flatMap(id =>
+                val project = contract.contractAssociatedProject.get.flatMap(id =>
                   jsImplicits.repositories.projects.all.value
                     .find(project => project.id == id),
                 )
                 val limit =
                   ContractPageAttributes()
-                    .getLimit(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                    .getLimit(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
                     .value
                 val hourlyWage = ContractPageAttributes()
-                  .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                  .getMoneyPerHour(existingId, contract, contract.contractStartDate.get.getOrElse(0L))
                   .value
                 val maxHoursForTax =
                   if (hourlyWage > BigDecimal(0)) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
@@ -575,23 +576,23 @@ class BasicInformation(
                     BigDecimal(0)
                   }
                 val month = dateDiffMonth(
-                  contract.contractStartDate.getOrElse(0L),
-                  contract.contractEndDate.getOrElse(0L),
+                  contract.contractStartDate.get.getOrElse(0L),
+                  contract.contractEndDate.get.getOrElse(0L),
                 )
 
                 val totalHoursWithoutThisContract = project.map(project =>
                   ProjectAttributes()
                     .countContractHours(
-                      contract.contractAssociatedProject.getOrElse(""),
+                      contract.contractAssociatedProject.get.getOrElse(""),
                       project.signal.value,
-                      (id, contract) => !contract.isDraft.getOrElse(true) && id != existingId,
+                      (id, contract) => !contract.isDraft.get.getOrElse(true) && id != existingId,
                     )
                     .value +
                     ProjectAttributes()
                       .countContractHours(
-                        contract.contractAssociatedProject.getOrElse(""),
+                        contract.contractAssociatedProject.get.getOrElse(""),
                         project.signal.value,
-                        (id, contract) => contract.isDraft.getOrElse(true) && id != existingId,
+                        (id, contract) => contract.isDraft.get.getOrElse(true) && id != existingId,
                       )
                       .value,
                 )
@@ -600,13 +601,13 @@ class BasicInformation(
                   if (month == 0) None
                   else
                     Some(
-                      (project.signal.value.maxHours.getOrElse(0) - totalHoursWithoutThisContract.getOrElse(
+                      (project.signal.value.maxHours.get.getOrElse(0) - totalHoursWithoutThisContract.getOrElse(
                         0,
                       )) / month,
                     )
                 })
 
-                contract.contractHoursPerMonth.getOrElse(0) match {
+                contract.contractHoursPerMonth.get.getOrElse(0) match {
                   case x if x > maxHoursForTax && limit != 0 =>
                     p(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
@@ -625,7 +626,7 @@ class BasicInformation(
                     )
                   case x
                       if project.nonEmpty && x * month + totalHoursWithoutThisContract
-                        .getOrElse(0) > project.get.signal.value.maxHours.option
+                        .getOrElse(0) > project.get.signal.value.maxHours.get
                         .getOrElse(0) && !extend && maxHoursForProject.nonEmpty =>
                     p(
                       cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
@@ -679,14 +680,14 @@ class SelectProject(
             cls := "font-bold",
             Signal.dynamic {
               editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "Contracts:" else "Other Contracts:",
+                if (value.value.isDraft.get.getOrElse(true)) "Contracts:" else "Other Contracts:",
               )
             },
           ),
           div(
             Signal.dynamic {
               editingValue.value.flatMap((_, value) =>
-                value.value.contractAssociatedProject.option.flatMap(id =>
+                value.value.contractAssociatedProject.get.flatMap(id =>
                   jsImplicits.repositories.projects.all.value
                     .find(project => project.id == id)
                     .map(project =>
@@ -694,7 +695,7 @@ class SelectProject(
                         .countContractHours(
                           id,
                           project.signal.value,
-                          (id, contract) => !contract.isDraft.getOrElse(true) && id != existingId,
+                          (id, contract) => !contract.isDraft.get.getOrElse(true) && id != existingId,
                         )
                         .value
                         .toString + " h",
@@ -710,14 +711,14 @@ class SelectProject(
             cls := "font-bold",
             Signal.dynamic {
               editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "Other Drafts:" else "Drafts:",
+                if (value.value.isDraft.get.getOrElse(true)) "Other Drafts:" else "Drafts:",
               )
             },
           ),
           div(
             Signal.dynamic {
               editingValue.value.flatMap((_, value) =>
-                value.value.contractAssociatedProject.option.flatMap(id =>
+                value.value.contractAssociatedProject.get.flatMap(id =>
                   jsImplicits.repositories.projects.all.value
                     .find(project => project.id == id)
                     .map(project =>
@@ -725,7 +726,7 @@ class SelectProject(
                         .countContractHours(
                           id,
                           project.signal.value,
-                          (id, contract) => contract.isDraft.getOrElse(true) && id != existingId,
+                          (id, contract) => contract.isDraft.get.getOrElse(true) && id != existingId,
                         )
                         .value
                         .toString + " h",
@@ -741,14 +742,14 @@ class SelectProject(
             cls := "font-bold",
             Signal.dynamic {
               editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "This Draft:" else "This Contract:",
+                if (value.value.isDraft.get.getOrElse(true)) "This Draft:" else "This Contract:",
               )
             },
           ),
           div(
             Signal.dynamic {
               editingValue.value.map((_, value) => {
-                if (value.value.contractEndDate.option.nonEmpty && value.value.contractStartDate.option.nonEmpty) {
+                if (value.value.contractEndDate.get.nonEmpty && value.value.contractStartDate.get.nonEmpty) {
                   s"${ContractPageAttributes().getTotalHours(existingId, value.value)} h"
                 } else ""
               })
@@ -760,10 +761,10 @@ class SelectProject(
           label(cls := "font-bold", "Max. hours"),
           div(Signal.dynamic {
             editingValue.value.flatMap((_, value) =>
-              value.value.contractAssociatedProject.option.flatMap(id =>
+              value.value.contractAssociatedProject.get.flatMap(id =>
                 jsImplicits.repositories.projects.all.value
                   .find(project => project.id == id)
-                  .map(value => s"${value.signal.value.maxHours.getOrElse(0)} h"),
+                  .map(value => s"${value.signal.value.maxHours.get.getOrElse(0)} h"),
               ),
             )
           }),
@@ -845,41 +846,44 @@ class ContractRequirementsMail(
 
             editingValue.now.map((contract, _) => {
               val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+                p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
               )
               val hiwiOption =
-                jsImplicits.repositories.hiwis.all.now.find(p => p.id == contract.contractAssociatedHiwi.getOrElse(""))
+                jsImplicits.repositories.hiwis.all.now.find(p =>
+                  p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
+                )
 
-              val contractTypeOption =
-                jsImplicits.repositories.contractSchemas.all.now.find(p => p.id == contract.contractType.getOrElse(""))
+              val contractTypeOption = jsImplicits.repositories.contractSchemas.all.now.find(p =>
+                p.id == contract.contractType.get.getOrElse(""),
+              )
 
               val documents = jsImplicits.repositories.requiredDocuments.all.now
 
               if (hiwiOption.nonEmpty && supervisorOption.nonEmpty && contractTypeOption.nonEmpty) {
                 val hiwi = hiwiOption.get.signal.now
                 val supervisor = supervisorOption.get.signal.now
-                val neededDocuments = contractTypeOption.get.signal.now.files.option
+                val neededDocuments = contractTypeOption.get.signal.now.files.get
                   .getOrElse(Seq.empty)
-                  .filter(p => !contract.requiredDocuments.getOrElse(Seq.empty).contains(p))
+                  .filter(p => !contract.requiredDocuments.get.getOrElse(Seq.empty).contains(p))
                   .map(documentId =>
                     documents
                       .find(p => p.id == documentId)
-                      .map(document => document.signal.now.name.getOrElse(""))
+                      .map(document => document.signal.now.name.get.getOrElse(""))
                       .getOrElse(""),
                   )
 
                 jsImplicits.mailing
                   .sendMail(
-                    hiwi.eMail.getOrElse(""),
-                    supervisor.eMail.getOrElse(""),
-                    supervisor.name.getOrElse(""),
+                    hiwi.eMail.get.getOrElse(""),
+                    supervisor.eMail.get.getOrElse(""),
+                    supervisor.name.get.getOrElse(""),
                     ReminderMail(
                       hiwi,
                       supervisor,
                       (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
                       neededDocuments,
                     ),
-                    Seq(supervisor.eMail.getOrElse("")),
+                    Seq(supervisor.eMail.get.getOrElse("")),
                   )
                   .onComplete({
                     case Failure(e) =>
@@ -913,7 +917,7 @@ class ContractRequirementsMail(
             cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
             Signal.dynamic {
               val date = editingValue.value
-                .flatMap((_, contract) => contract.value.reminderSentDate.option)
+                .flatMap((_, contract) => contract.value.reminderSentDate.get)
                 .getOrElse(0L)
 
               if (date > 0L) toGermanDate(date) else "Never"
@@ -971,11 +975,11 @@ class CreateContract(
 
                 editingValue.now.map((contract, _) => {
                   val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                    p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+                    p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
                   )
                   val hiwiOption =
                     jsImplicits.repositories.hiwis.all.now.find(p =>
-                      p.id == contract.contractAssociatedHiwi.getOrElse(""),
+                      p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
                     )
 
                   if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
@@ -986,16 +990,16 @@ class CreateContract(
                       .andThen(cotract => {
                         jsImplicits.mailing
                           .sendMail(
-                            hiwi.eMail.getOrElse(""),
-                            supervisor.eMail.getOrElse(""),
-                            supervisor.name.getOrElse(""),
+                            hiwi.eMail.get.getOrElse(""),
+                            supervisor.eMail.get.getOrElse(""),
+                            supervisor.name.get.getOrElse(""),
                             ContractEmail(
                               hiwi,
                               supervisor,
                               (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
                               cotract.get.get,
                             ),
-                            Seq(supervisor.eMail.getOrElse("")),
+                            Seq(supervisor.eMail.get.getOrElse("")),
                           )
                           .andThen(ans => {
                             document.querySelector("#sendContract").classList.remove("loading")
@@ -1027,7 +1031,7 @@ class CreateContract(
                 cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
                   val date = editingValue.value
-                    .flatMap((_, contract) => contract.value.contractSentDate.option)
+                    .flatMap((_, contract) => contract.value.contractSentDate.get)
                     .getOrElse(0L)
 
                   if (date > 0L) toGermanDate(date) else "Never"
@@ -1091,11 +1095,11 @@ class CreateLetter(
                 document.querySelector("#sendLetter").classList.add("loading")
                 editingValue.now.map((contract, _) => {
                   val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                    p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+                    p.id == contract.contractAssociatedSupervisor.get.getOrElse(""),
                   )
                   val hiwiOption =
                     jsImplicits.repositories.hiwis.all.now.find(p =>
-                      p.id == contract.contractAssociatedHiwi.getOrElse(""),
+                      p.id == contract.contractAssociatedHiwi.get.getOrElse(""),
                     )
 
                   if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
@@ -1107,14 +1111,14 @@ class CreateLetter(
                         jsImplicits.mailing
                           .sendMail(
                             Globals.VITE_DEKANAT_MAIL,
-                            supervisor.eMail.getOrElse(""),
-                            supervisor.name.getOrElse(""),
+                            supervisor.eMail.get.getOrElse(""),
+                            supervisor.name.get.getOrElse(""),
                             DekanatMail(
                               hiwi,
                               supervisor,
                               letter.get.get,
                             ),
-                            Seq(supervisor.eMail.getOrElse("")),
+                            Seq(supervisor.eMail.get.getOrElse("")),
                           )
                           .andThen(ans => {
                             document.querySelector("#sendLetter").classList.remove("loading")
@@ -1146,7 +1150,7 @@ class CreateLetter(
                 cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
                   val date = editingValue.value
-                    .flatMap((_, contract) => contract.value.letterSentDate.option)
+                    .flatMap((_, contract) => contract.value.letterSentDate.get)
                     .getOrElse(0L)
 
                   if (date > 0L) toGermanDate(date) else "Never"
@@ -1181,7 +1185,6 @@ class InnerExtendContractsPage(override val existingValue: Synced[Contract], ove
       contractStartDate = editingNow.contractStartDate,
       contractEndDate = editingNow.contractEndDate,
       contractHoursPerMonth = editingNow.contractHoursPerMonth,
-      contractType = editingNow.contractType,
       isDraft = Attribute(true),
     )
     jsImplicits.repositories.contracts
@@ -1235,24 +1238,24 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
       editingValue.value.exists((_, contractSignal) => {
         val contract = contractSignal.value
         val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
-          .find(s => s.id == contract.contractType.getOrElse(""))
-          .flatMap(t => t.signal.value.files.option)
+          .find(s => s.id == contract.contractType.get.getOrElse(""))
+          .flatMap(t => t.signal.value.files.get)
 
-        contract.contractAssociatedHiwi.option.isEmpty ||
-        contract.contractAssociatedSupervisor.option.isEmpty ||
-        contract.contractStartDate.option.isEmpty ||
-        contract.contractEndDate.option.isEmpty ||
-        contract.contractAssociatedProject.option.isEmpty ||
-        contract.contractHoursPerMonth.option.isEmpty ||
-        contract.contractHoursPerMonth.getOrElse(0) < 0 ||
-        contract.contractAssociatedPaymentLevel.option.isEmpty ||
-        dateDiffDays(contract.contractStartDate.getOrElse(0L), contract.contractEndDate.getOrElse(0L)) < 0 ||
-        dateDiffDays(js.Date.now().toLong, contract.contractEndDate.getOrElse(0L)) < 0 ||
-        contract.requiredDocuments.option.isEmpty ||
-        !contract.isSigned.getOrElse(false) ||
+        contract.contractAssociatedHiwi.get.isEmpty ||
+        contract.contractAssociatedSupervisor.get.isEmpty ||
+        contract.contractStartDate.get.isEmpty ||
+        contract.contractEndDate.get.isEmpty ||
+        contract.contractAssociatedProject.get.isEmpty ||
+        contract.contractHoursPerMonth.get.isEmpty ||
+        contract.contractHoursPerMonth.get.getOrElse(0) < 0 ||
+        contract.contractAssociatedPaymentLevel.get.isEmpty ||
+        dateDiffDays(contract.contractStartDate.get.getOrElse(0L), contract.contractEndDate.get.getOrElse(0L)) < 0 ||
+        dateDiffDays(js.Date.now().toLong, contract.contractEndDate.get.getOrElse(0L)) < 0 ||
+        contract.requiredDocuments.get.isEmpty ||
+        !contract.isSigned.get.getOrElse(false) ||
         !requiredDocuments
           .getOrElse(Seq.empty)
-          .forall(id => contract.requiredDocuments.getOrElse(Seq.empty).contains(id))
+          .forall(id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id))
 
       })
     }
@@ -1285,7 +1288,7 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
         }
 
         if (!stayOnPage) {
-          if (value.isDraft.getOrElse(true)) {
+          if (value.isDraft.get.getOrElse(true)) {
             jsImplicits.routing.to(ContractDraftsPage())
           } else {
             jsImplicits.routing.to(ContractsPage())
@@ -1298,7 +1301,7 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
 
   protected def cancelEdit(): Unit = Signal.dynamic {
     editingValue.value.map((_, contract) => {
-      if (contract.value.isDraft.getOrElse(true)) {
+      if (contract.value.isDraft.get.getOrElse(true)) {
         jsImplicits.routing.to(ContractDraftsPage())
       } else {
         jsImplicits.routing.to(ContractsPage())
@@ -1431,7 +1434,7 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
             cls := "text-3xl mt-4 text-center",
             Signal.dynamic {
               editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "Edit Contract Draft" else "Edit Contract",
+                if (value.value.isDraft.get.getOrElse(true)) "Edit Contract Draft" else "Edit Contract",
               )
             },
           ),
@@ -1452,20 +1455,20 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
                   .map((_, contractSignal) => {
                     val contract = contractSignal.value
                     val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
-                      .find(s => s.id == contract.contractType.getOrElse(""))
-                      .flatMap(t => t.signal.value.files.option)
+                      .find(s => s.id == contract.contractType.get.getOrElse(""))
+                      .flatMap(t => t.signal.value.files.get)
                     Seq(
-                      contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
-                      contract.contractAssociatedSupervisor.option.isEmpty -> "a supervisor",
-                      contract.contractType.option.isEmpty -> "a contract schema",
+                      contract.contractAssociatedHiwi.get.isEmpty -> "a hiwi",
+                      contract.contractAssociatedSupervisor.get.isEmpty -> "a supervisor",
+                      contract.contractType.get.isEmpty -> "a contract schema",
                       !jsImplicits.discovery.online.value -> "to be connected to the discovery server",
-                      (contract.contractType.option.nonEmpty && requiredDocuments
+                      (contract.contractType.get.nonEmpty && requiredDocuments
                         .getOrElse(Seq.empty)
                         .isEmpty) -> "at least one requirement that can be checked",
-                      (contract.contractType.option.nonEmpty && requiredDocuments
+                      (contract.contractType.get.nonEmpty && requiredDocuments
                         .getOrElse(Seq.empty)
                         .forall(id =>
-                          contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
+                          contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
                         )) -> "at least one requirement that has not been checked",
                     )
                   })
@@ -1482,15 +1485,15 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
                   .map((_, contractSignal) => {
                     val contract = contractSignal.value
                     val hiwi = jsImplicits.repositories.hiwis.all.value.find(hiwi =>
-                      hiwi.id == contract.contractAssociatedHiwi.getOrElse(""),
+                      hiwi.id == contract.contractAssociatedHiwi.get.getOrElse(""),
                     )
                     Seq(
                       hiwi.isEmpty -> "a hiwi",
-                      contract.contractEndDate.option.isEmpty -> "an end date",
-                      contract.contractStartDate.option.isEmpty -> "a start date",
-                      contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
-                      (hiwi.nonEmpty && hiwi.get.signal.value.birthdate.option.isEmpty) -> "a hiwi with a birthdate",
-                      contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
+                      contract.contractEndDate.get.isEmpty -> "an end date",
+                      contract.contractStartDate.get.isEmpty -> "a start date",
+                      contract.contractAssociatedPaymentLevel.get.isEmpty -> "a payment level",
+                      (hiwi.nonEmpty && hiwi.get.signal.value.birthdate.get.isEmpty) -> "a hiwi with a birthdate",
+                      contract.contractHoursPerMonth.get.isEmpty -> "to set hours per month",
                     )
                   })
                   .getOrElse(Seq.empty)
@@ -1506,13 +1509,13 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
                   .map((_, contractSignal) => {
                     val contract = contractSignal.value
                     Seq(
-                      contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
-                      contract.contractEndDate.option.isEmpty -> "an end date",
-                      contract.contractStartDate.option.isEmpty -> "a start date",
-                      contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
-                      contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
-                      contract.contractAssociatedProject.option.isEmpty -> "a project",
-                      !contract.isSigned.getOrElse(false) -> "a signed contract",
+                      contract.contractAssociatedHiwi.get.isEmpty -> "a hiwi",
+                      contract.contractEndDate.get.isEmpty -> "an end date",
+                      contract.contractStartDate.get.isEmpty -> "a start date",
+                      contract.contractAssociatedPaymentLevel.get.isEmpty -> "a payment level",
+                      contract.contractHoursPerMonth.get.isEmpty -> "to set hours per month",
+                      contract.contractAssociatedProject.get.isEmpty -> "a project",
+                      !contract.isSigned.get.getOrElse(false) -> "a signed contract",
                     )
                   })
                   .getOrElse(Seq.empty)
