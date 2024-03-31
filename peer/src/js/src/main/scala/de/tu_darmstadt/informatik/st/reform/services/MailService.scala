@@ -109,10 +109,10 @@ abstract class Mail(val subject: String) {
 class ReminderMail(hiwi: Hiwi, supervisor: Supervisor, due: Long, missingDocuments: Seq[String])
     extends Mail("Reminder") {
   val body: VNode = div(
-    p("Hallo ", hiwi.firstName.get.getOrElse(""), " ", hiwi.lastName.get.getOrElse(""), ","),
+    p("Hallo ", hiwi.firstName.getOrElse(""), " ", hiwi.lastName.getOrElse(""), ","),
     p("Wir möchten Sie freundlich daran erinnern Ihre Unterlagen bis zum ", i(toGermanDate(due)), " einzureichen."),
     p("Es fehlen noch folgende Unterlage(n): ", ol(missingDocuments.map(li(_)))),
-    Signature(supervisor.name.get.getOrElse("")),
+    Signature(supervisor.name.getOrElse("")),
   )
 }
 
@@ -122,17 +122,17 @@ class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, letter: ArrayBuffer[Short]
     p("Sehr geehrte Damen und Herren, "),
     p(
       "Im Anhang finden Sie ein förmliches Anschreiben bezüglich der Anstellung des Hiwis ",
-      hiwi.firstName.get.getOrElse(""),
+      hiwi.firstName.getOrElse(""),
       " ",
-      hiwi.lastName.get.getOrElse(""),
+      hiwi.lastName.getOrElse(""),
       ".",
     ),
-    Signature(supervisor.name.get.getOrElse("")),
+    Signature(supervisor.name.getOrElse("")),
   )
 
   override val attachments: Seq[MailAttachment] = Seq(
     new MailAttachment(
-      s"Anstellung-${hiwi.firstName.get.getOrElse("")}-${hiwi.lastName.get.getOrElse("")}.pdf",
+      s"Anstellung-${hiwi.firstName.getOrElse("")}-${hiwi.lastName.getOrElse("")}.pdf",
       letter,
       "application/pdf",
     ),
@@ -142,19 +142,19 @@ class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, letter: ArrayBuffer[Short]
 class ContractEmail(hiwi: Hiwi, supervisor: Supervisor, due: Long, contract: ArrayBuffer[Short])
     extends Mail("Hiwistelle Software Technology Group") {
   val body: VNode = div(
-    p("Hallo ", hiwi.firstName.get.getOrElse(""), " ", hiwi.lastName.get.getOrElse(""), ","),
+    p("Hallo ", hiwi.firstName.getOrElse(""), " ", hiwi.lastName.getOrElse(""), ","),
     p(
       "Im Anhang findest du den Arbeitsvertrag. Bitte schicke uns den Vertrag ausgefüllt bis zum ",
       i(toGermanDate(due)),
       " zurück.",
     ),
     p("Vielen Dank!"),
-    Signature(supervisor.name.get.getOrElse("")),
+    Signature(supervisor.name.getOrElse("")),
   )
 
   override val attachments: Seq[MailAttachment] = Seq(
     new MailAttachment(
-      s"Vertrag-${hiwi.firstName.get.getOrElse("")}-${hiwi.lastName.get.getOrElse("")}.pdf",
+      s"Vertrag-${hiwi.firstName.getOrElse("")}-${hiwi.lastName.getOrElse("")}.pdf",
       contract,
       "application/pdf",
     ),

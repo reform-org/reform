@@ -33,27 +33,9 @@ case class Contract(
     this.copy(_exists = _exists.set(exists))
   }
 
-  override def exists: Boolean = _exists.get.getOrElse(true)
+  override def exists: Boolean = _exists.getOrElse(true)
 
-  def default: Contract =
-    Contract(
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute(true),
-      Attribute.empty,
-      Attribute(false),
-      Attribute(false),
-      Attribute.empty,
-      Attribute.empty,
-      Attribute.empty,
-      Attribute(true),
-    )
+  def default: Contract = Contract()
 
 }
 

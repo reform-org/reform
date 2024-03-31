@@ -13,7 +13,7 @@ case class Synced[A](private val storage: Storage[A], id: String, private val va
       .update(id, f)
       .map(newValue => {
         // TODO FIXME this is prone to race conditions with the storage.update
-        // maybe we could do this update within the databae transation?
+        // maybe we could do this update within the database translation?
         value.set(newValue)
         newValue
       })

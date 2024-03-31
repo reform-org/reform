@@ -171,7 +171,7 @@ class EntityRow[T <: Entity[T]](
           existingValue.map(p => {
             val modal = new Modal(
               "Delete",
-              s"Do you really want to delete the entity \"${p.signal.now.identifier.get.getOrElse("")}\"?",
+              s"Do you really want to delete the entity \"${p.signal.now.identifier.getOrElse("")}\"?",
               Seq(
                 new ModalButton(
                   "Delete",
@@ -211,7 +211,7 @@ class EntityRow[T <: Entity[T]](
       "Delete",
       span(
         s"Do you really want to delete the ${title.singular} \"",
-        Signal { synced.signal.value.identifier.get.getOrElse("") },
+        Signal { synced.signal.value.identifier.getOrElse("") },
         "\"?",
       ),
       Seq(
@@ -355,7 +355,7 @@ abstract class EntityPage[T <: Entity[T]](
 
   private val entityRows: Signal[Seq[EntityRow[T]]] = Signal.dynamic {
     all.value
-      .sortBy(_.signal.value.identifier.get)
+      .sortBy(_.signal.value.identifier.option)
       .map(syncedEntity => {
         val existing = cachedExisting.getOrElseUpdate(syncedEntity.id, Existing[T](syncedEntity))
         entityRowConstructor.construct(title, repository, existing, uiAttributes)

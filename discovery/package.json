@@ -7,10 +7,10 @@
   "scripts": {
     "build": "tsc",
     "test": "echo \\\"Error: no test specified\\\" && exit 1",
-    "start": "nodemon --esm src/index.ts",
+    "start": "nodemon src/index.ts",
     "debug": "nodemon --require=debugging-aid/network src/index.ts",
-    "cli": "ts-node --esm src/cli.ts",
-    "db:reset": "ts-node --esm src/reset.ts"
+    "cli": "tsx src/cli.ts",
+    "db:reset": "tsx src/reset.ts"
   },
   "author": "",
   "license": "ISC",
@@ -41,8 +41,8 @@
     "@types/sqlite3": "^3.1.8",
     "@types/uuid": "^9.0.0",
     "@types/ws": "^8.5.4",
-    "nodemon": "^2.0.20",
-    "ts-node": "^10.9.1",
+    "nodemon": "^3.1.0",
+    "tsx": "^4.7.1",
     "typescript": "^4.9.5",
     "wrtc": "^0.4.7"
   }

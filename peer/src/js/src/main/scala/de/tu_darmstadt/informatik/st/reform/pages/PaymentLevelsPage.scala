@@ -88,10 +88,10 @@ class PaymentLevelAttributes(using jsImplicits: JSImplicits) {
           toMoneyString(
             salaryChanges
               .map(_.signal.value)
-              .filter(_.paymentLevel.get.getOrElse("") == id)
-              .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+              .filter(_.paymentLevel.getOrElse("") == id)
+              .sortWith(_.fromDate.getOrElse(0L) > _.fromDate.getOrElse(0L))
               .headOption
-              .flatMap(_.value.get)
+              .flatMap(_.value.option)
               .getOrElse(0),
           )
         },

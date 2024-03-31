@@ -26,7 +26,7 @@ import outwatch.dsl.*
 import rescala.default.*
 
 def onlyDrafts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = Signal.dynamic {
-  jsImplicits.repositories.contracts.all.value.filter(_.signal.value.isDraft.get.getOrElse(true))
+  jsImplicits.repositories.contracts.all.value.filter(_.signal.value.isDraft.getOrElse(true))
 }
 
 class DraftDetailPageEntityRow[T <: Entity[T]](
@@ -88,10 +88,10 @@ case class ContractDraftsPage()(using
 class ContractDraftAttributes(using jsImplicits: JSImplicits) {
   private def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
     Signal.dynamic {
-      val contractTypeId = contract.contractType.get.getOrElse("")
+      val contractTypeId = contract.contractType.getOrElse("")
       val contractSchema =
         jsImplicits.repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
-      contractSchema.flatMap(_.signal.value.files.get).getOrElse(Seq.empty).count(predicate)
+      contractSchema.flatMap(_.signal.value.files.option).getOrElse(Seq.empty).count(predicate)
     }
 
   def forms =
@@ -99,7 +99,7 @@ class ContractDraftAttributes(using jsImplicits: JSImplicits) {
       label = "Forms",
       getter = (id, contract) =>
         Signal {
-          s"${countForms(contract, id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id)).value} of ${countForms(contract, _ => true).value}"
+          s"${countForms(contract, id => contract.requiredDocuments.getOrElse(Seq.empty).contains(id)).value} of ${countForms(contract, _ => true).value}"
         },
       readConverter = identity,
       formats = Seq(
@@ -108,7 +108,7 @@ class ContractDraftAttributes(using jsImplicits: JSImplicits) {
             Signal {
               countForms(
                 contract,
-                id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+                id => contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
               ).value == countForms(contract, _ => true).value
             },
           "bg-green-200 text-green-600 justify-center",
@@ -118,7 +118,7 @@ class ContractDraftAttributes(using jsImplicits: JSImplicits) {
             Signal {
               countForms(
                 contract,
-                id => contract.requiredDocuments.get.getOrElse(Seq.empty).contains(id),
+                id => contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
               ).value != countForms(contract, _ => true).value
             },
           "bg-red-200 text-red-600 justify-center",

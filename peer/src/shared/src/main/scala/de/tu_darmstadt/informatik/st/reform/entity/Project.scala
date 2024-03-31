@@ -16,17 +16,17 @@ case class Project(
       Bottom {
 
   // empty for required fields, default for optional fields
-  def default: Project = Project(Attribute.empty, Attribute.empty, Attribute.default, Attribute(true))
+  def default: Project = Project()
 
   def identifier: Attribute[String] = Attribute(
-    s"${name.get.getOrElse("")} - ${accountName.get.getOrElse(None).getOrElse("")}",
+    s"${name.getOrElse("")} - ${accountName.option.flatten.getOrElse("")}",
   )
 
   def withExists(exists: Boolean): Project = {
     this.copy(_exists = _exists.set(exists))
   }
 
-  override def exists: Boolean = _exists.get.getOrElse(true)
+  override def exists: Boolean = _exists.getOrElse(true)
 }
 
 object Project {

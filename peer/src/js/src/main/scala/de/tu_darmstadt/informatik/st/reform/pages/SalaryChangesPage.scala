@@ -83,7 +83,7 @@ class SalaryChangeAttributes(using
       .select(
         Signal {
           jsImplicits.repositories.paymentLevels.existing.value.map(value =>
-            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+            SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
