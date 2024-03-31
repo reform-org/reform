@@ -75,7 +75,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
       getter = (id, project) =>
         Signal.dynamic {
           jsImplicits.repositories.contracts.all.value
-            .count(contract => contract.signal.value.contractAssociatedProject.get.contains(id))
+            .count(contract => contract.signal.value.contractAssociatedProject.option.contains(id))
             .toString + " Contract(s)"
         },
       readConverter = identity,
@@ -84,7 +84,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
           (id, project) => {
             Signal.dynamic {
               val contracts = jsImplicits.repositories.contracts.all.value.map(_.signal.value)
-              !contracts.exists(contract => contract.contractAssociatedProject.get.contains(id))
+              !contracts.exists(contract => contract.contractAssociatedProject.option.contains(id))
             }
           },
           "text-slate-400 dark:text-gray-400 italic",
@@ -99,13 +99,13 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
   ): Signal[Int] = {
     Signal.dynamic {
       jsImplicits.repositories.contracts.all.value
-        .filter(contract => contract.signal.value.contractAssociatedProject.get.contains(id))
+        .filter(contract => contract.signal.value.contractAssociatedProject.option.contains(id))
         .filter(contract => pred(contract.id, contract.signal.value))
         .map(x => {
           val contract = x.signal.value
-          contract.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-            contract.contractStartDate.get.getOrElse(0L),
-            contract.contractEndDate.get.getOrElse(0L),
+          contract.contractHoursPerMonth.getOrElse(0) * dateDiffMonth(
+            contract.contractStartDate.getOrElse(0L),
+            contract.contractEndDate.getOrElse(0L),
           )
         })
         .fold[Int](0)((acc: Int, x: Int) => acc + x)
@@ -120,7 +120,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
           countContractHours(
             id,
             project,
-            (id, contract) => !contract.isDraft.get.getOrElse(true),
+            (id, contract) => !contract.isDraft.getOrElse(true),
           ).value.toString + " h"
         },
       readConverter = identity,
@@ -134,7 +134,7 @@ class ProjectAttributes(using jsImplicits: JSImplicits) {
           countContractHours(
             id,
             project,
-            (id, contract) => contract.isDraft.get.getOrElse(true),
+            (id, contract) => contract.isDraft.getOrElse(true),
           ).value.toString + " h"
         },
       readConverter = identity,

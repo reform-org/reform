@@ -101,14 +101,14 @@ case class HomePage()(using
         NumberCard(
           "Draft Contracts:",
           Signal.dynamic {
-            getContractsForInterval(month.value, year.value, (_, p) => p.isDraft.get.getOrElse(true)).map(a => a.size)
+            getContractsForInterval(month.value, year.value, (_, p) => p.isDraft.getOrElse(true)).map(a => a.size)
           },
           "only draft contracts",
         ),
         NumberCard(
           "Contracts:",
           Signal.dynamic {
-            getContractsForInterval(month.value, year.value, (_, p) => !p.isDraft.get.getOrElse(true)).map(a => a.size)
+            getContractsForInterval(month.value, year.value, (_, p) => !p.isDraft.getOrElse(true)).map(a => a.size)
 
           },
           "only finalized contracts",
@@ -122,13 +122,13 @@ case class HomePage()(using
             val sum = jsImplicits.repositories.contracts.existing.value
               .map(p => p.id -> p.signal.value)
               .filter((_, p) =>
-                !p.isDraft.get.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
+                !p.isDraft.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
               )
               .map((id, contract) => {
                 val hourlyWage = ContractPageAttributes()
-                  .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                  .getMoneyPerHour(id, contract, contract.contractStartDate.getOrElse(0L))
                   .value
-                val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
                 hoursPerMonth * hourlyWage
               })
               .sum
@@ -145,9 +145,9 @@ case class HomePage()(using
               .filter((_, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
               .map((id, contract) => {
                 val hourlyWage = ContractPageAttributes()
-                  .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                  .getMoneyPerHour(id, contract, contract.contractStartDate.getOrElse(0L))
                   .value
-                val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
                 hoursPerMonth * hourlyWage
               })
               .sum
@@ -170,7 +170,7 @@ case class HomePage()(using
 
         projects.foreach((id, _) => {
           contractsPerProject += (id -> contracts
-            .filter((_, contract) => contract.contractAssociatedProject.get.getOrElse("") == id))
+            .filter((_, contract) => contract.contractAssociatedProject.getOrElse("") == id))
         })
 
         val projectsThisMonth = projects
@@ -182,26 +182,26 @@ case class HomePage()(using
             projectsThisMonth
               .map((id, project) => {
                 TableCard(
-                  project.name.get,
-                  project.accountName.get,
+                  project.name.option,
+                  project.accountName.option,
                   Seq("", "Hiwi", "Supervisor", "From", "To", "€/h", "h/mon", "€/mon"),
                   contractsPerProject(id).map((contractId, contract) => {
                     val moneyPerHour =
                       ContractPageAttributes()
-                        .getMoneyPerHour(contractId, contract, contract.contractStartDate.get.getOrElse(0L))
+                        .getMoneyPerHour(contractId, contract, contract.contractStartDate.getOrElse(0L))
                         .value
-                    val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                    val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
                     val moneyPerMonth = moneyPerHour * hoursPerMonth
-                    val hiwi = hiwis.find((id, _) => id == contract.contractAssociatedHiwi.get.getOrElse(""))
+                    val hiwi = hiwis.find((id, _) => id == contract.contractAssociatedHiwi.getOrElse(""))
                     val supervisor = supervisors
-                      .find((id, _) => id == contract.contractAssociatedSupervisor.get.getOrElse(""))
+                      .find((id, _) => id == contract.contractAssociatedSupervisor.getOrElse(""))
 
                     Seq(
                       "",
-                      hiwi.map((_, hiwi) => s"${hiwi.firstName.get.getOrElse("")} ${hiwi.firstName.get.getOrElse("")}"),
-                      supervisor.map((_, supervisor) => supervisor.name.get.getOrElse("")),
-                      toGermanDate(contract.contractStartDate.get.getOrElse(0L)),
-                      toGermanDate(contract.contractEndDate.get.getOrElse(0L)),
+                      hiwi.map((_, hiwi) => s"${hiwi.firstName.getOrElse("")} ${hiwi.firstName.getOrElse("")}"),
+                      supervisor.map((_, supervisor) => supervisor.name.getOrElse("")),
+                      toGermanDate(contract.contractStartDate.getOrElse(0L)),
+                      toGermanDate(contract.contractEndDate.getOrElse(0L)),
                       toMoneyString(moneyPerHour),
                       span(hoursPerMonth, " h"),
                       toMoneyString(moneyPerMonth),
@@ -212,7 +212,7 @@ case class HomePage()(using
                     colSpan := 5,
                     span(
                       contractsPerProject(id)
-                        .map((_, contract) => contract.contractHoursPerMonth.get.getOrElse(0))
+                        .map((_, contract) => contract.contractHoursPerMonth.getOrElse(0))
                         .sum,
                       " h",
                     ),
@@ -221,9 +221,9 @@ case class HomePage()(using
                         .map((id, contract) => {
                           val moneyPerHour =
                             ContractPageAttributes()
-                              .getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L))
+                              .getMoneyPerHour(id, contract, contract.contractStartDate.getOrElse(0L))
                               .value
-                          val hoursPerMonth = contract.contractHoursPerMonth.get.getOrElse(0)
+                          val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
                           moneyPerHour * hoursPerMonth
                         })
                         .sum,

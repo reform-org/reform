@@ -63,7 +63,7 @@ class DetailPageEntityRowBuilder[T <: Entity[T]] extends EntityRowBuilder[T] {
 }
 
 def onlyFinalizedContracts(using jsImplicits: JSImplicits): Signal[Seq[Synced[Contract]]] = Signal.dynamic {
-  jsImplicits.repositories.contracts.all.value.filter(!_.signal.value.isDraft.get.getOrElse(true))
+  jsImplicits.repositories.contracts.all.value.filter(!_.signal.value.isDraft.getOrElse(true))
 }
 
 case class ContractsPage()(using
@@ -95,7 +95,7 @@ class ContractPageAttributes(using
       .select(
         Signal {
           jsImplicits.repositories.hiwis.existing.value.map(value =>
-            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+            SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
@@ -112,7 +112,7 @@ class ContractPageAttributes(using
     BuildUIAttribute()
       .select(options = Signal {
         jsImplicits.repositories.projects.existing.value.map(value =>
-          SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+          SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
         )
       })
       .withCreatePage(ProjectsPage())
@@ -129,7 +129,7 @@ class ContractPageAttributes(using
       .select(
         Signal {
           jsImplicits.repositories.supervisors.existing.value.map(value =>
-            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+            SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
@@ -147,7 +147,7 @@ class ContractPageAttributes(using
       .select(
         Signal {
           jsImplicits.repositories.contractSchemas.existing.value.map(value =>
-            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+            SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
@@ -239,7 +239,7 @@ class ContractPageAttributes(using
       .select(
         Signal {
           jsImplicits.repositories.paymentLevels.existing.value.map(value =>
-            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+            SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
@@ -257,7 +257,7 @@ class ContractPageAttributes(using
       .checkboxList(
         Signal {
           jsImplicits.repositories.requiredDocuments.existing.value.map(value =>
-            SelectOption(value.id, value.signal.map(_.identifier.get.getOrElse(""))),
+            SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
@@ -268,15 +268,15 @@ class ContractPageAttributes(using
         (c, a) => c.copy(requiredDocuments = a),
         filteredOptions = Some(contract =>
           Signal.dynamic {
-            contract.contractType.get
+            contract.contractType.option
               .flatMap(contractTypeId =>
                 jsImplicits.repositories.contractSchemas.all.value
                   .find(contractType => contractType.id == contractTypeId)
                   .flatMap(value =>
-                    value.signal.value.files.get.flatMap(requiredDocuments => {
+                    value.signal.value.files.option.flatMap(requiredDocuments => {
                       val documents = jsImplicits.repositories.requiredDocuments.all.value
                       val checkedDocuments =
-                        if (contract.requiredDocuments.get.nonEmpty) contract.requiredDocuments.get
+                        if (contract.requiredDocuments.hasValue) contract.requiredDocuments.option
                         else Some(Seq.empty)
 
                       checkedDocuments
@@ -289,7 +289,7 @@ class ContractPageAttributes(using
                                 .map(file => {
                                   SelectOption(
                                     fileId,
-                                    Signal { file.signal.value.name.get.getOrElse("") },
+                                    Signal { file.signal.value.name.getOrElse("") },
                                     if (!requiredDocuments.contains(fileId)) Seq(cls := "italic", checked := true)
                                     else None,
                                   )
@@ -314,9 +314,9 @@ class ContractPageAttributes(using
   }
 
   def isInInterval(contract: Contract, month: Int, year: Int): Boolean = {
-    if (contract.contractStartDate.get.nonEmpty && contract.contractEndDate.get.nonEmpty) {
-      val start = contract.contractStartDate.get.get
-      val end = contract.contractEndDate.get.get
+    if (contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty) {
+      val start = contract.contractStartDate.option.get
+      val end = contract.contractEndDate.option.get
 
       if (
         (getYear(start) < year || getYear(start) == year && getMonth(start) <= month) && (getYear(
@@ -337,30 +337,30 @@ class ContractPageAttributes(using
       val salaryChanges = jsImplicits.repositories.salaryChanges.all.value
       salaryChanges
         .map(_.signal.value)
-        .filter(p => contract.contractAssociatedPaymentLevel.get.contains(p.paymentLevel.get.getOrElse("")))
-        .filter(_.fromDate.get.getOrElse(0L) <= date)
-        .sortWith(_.fromDate.get.getOrElse(0L) > _.fromDate.get.getOrElse(0L))
+        .filter(p => contract.contractAssociatedPaymentLevel.option.contains(p.paymentLevel.getOrElse("")))
+        .filter(_.fromDate.getOrElse(0L) <= date)
+        .sortWith(_.fromDate.getOrElse(0L) > _.fromDate.getOrElse(0L))
         .headOption
     }
 
   def getTotalHours(id: String, contract: Contract): Int = {
-    contract.contractHoursPerMonth.get.getOrElse(0) * dateDiffMonth(
-      contract.contractStartDate.get.getOrElse(0L),
-      contract.contractEndDate.get.getOrElse(0L),
+    contract.contractHoursPerMonth.getOrElse(0) * dateDiffMonth(
+      contract.contractStartDate.getOrElse(0L),
+      contract.contractEndDate.getOrElse(0L),
     )
   }
 
   def getMoneyPerHour(id: String, contract: Contract, date: Long): Signal[BigDecimal] =
     Signal.dynamic {
       getSalaryChange(id, contract, date).value
-        .flatMap(_.value.get)
+        .flatMap(_.value.option)
         .getOrElse(BigDecimal(0))
     }
 
   def getLimit(id: String, contract: Contract, date: Long): Signal[BigDecimal] =
     Signal.dynamic {
       getSalaryChange(id, contract, date).value
-        .flatMap(_.limit.get)
+        .flatMap(_.limit.option)
         .getOrElse(BigDecimal(0))
     }
 
@@ -368,13 +368,13 @@ class ContractPageAttributes(using
     new UIReadOnlyAttribute[Contract, String](
       label = "€/h",
       getter = (id, contract) =>
-        Signal { toMoneyString(getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value) },
+        Signal { toMoneyString(getMoneyPerHour(id, contract, contract.contractStartDate.getOrElse(0L)).value) },
       readConverter = identity,
       formats = Seq(
         UIFormat(
           (id, contract) =>
             Signal {
-              getMoneyPerHour(id, contract, contract.contractStartDate.get.getOrElse(0L)).value != getMoneyPerHour(
+              getMoneyPerHour(id, contract, contract.contractStartDate.getOrElse(0L)).value != getMoneyPerHour(
                 id,
                 contract,
                 js.Date.now().toLong,

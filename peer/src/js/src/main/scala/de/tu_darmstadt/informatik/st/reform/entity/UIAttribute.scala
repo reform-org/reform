@@ -180,7 +180,7 @@ class UITextAttribute[EntityType, AttributeType](
   }
 
   protected def getEditString(attr: Attribute[AttributeType]): String =
-    attr.get.map(x => editConverter(x)).getOrElse("")
+    attr.option.map(x => editConverter(x)).getOrElse("")
 
   private def renderConflicts(attr: Attribute[AttributeType]): VMod =
     attr.getAll.map(x => option(value := readConverter(x)))
@@ -306,8 +306,8 @@ class UICheckboxAttribute[EntityType](
     CheckboxStyle.Default,
     cls := "absolute top-1/2 -translate-y-1/2",
     formId := _formId,
-    checked <-- attr.map(_.get.getOrElse(false)),
-    onClick.foreach(_ => set(!attr.now.get.getOrElse(false))),
+    checked <-- attr.map(_.getOrElse(false)),
+    onClick.foreach(_ => set(!attr.now.getOrElse(false))),
     props,
   )
 
@@ -453,7 +453,7 @@ class UIMultiSelectAttribute[EntityType](
         v => {
           set(v)
         },
-        attr.map(_.get.getOrElse(Seq())),
+        attr.map(_.getOrElse(Seq())),
         showItems,
         searchEnabled, {
           createPage match {
@@ -534,7 +534,7 @@ class UICheckboxListAttribute[EntityType](
         v => {
           set(v)
         },
-        attr.map(_.get.getOrElse(Seq())),
+        attr.map(_.getOrElse(Seq())),
         div("Nothing found..."),
         isRequired,
         formId := _formId,

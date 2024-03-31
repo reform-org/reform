@@ -42,7 +42,7 @@ class UISubstringFilter[EntityType, AttributeType](uiAttribute: UIAttribute[Enti
 
   val predicate: Signal[EntityType => Boolean] = Signal {
     val n = jsImplicits.routing.getQueryParameterAsString(name).value
-    e => uiAttribute.getter(e).get.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(n.toLowerCase))
+    e => uiAttribute.getter(e).option.forall(v => uiAttribute.readConverter(v).toLowerCase.nn.contains(n.toLowerCase))
   }
 }
 
@@ -84,7 +84,7 @@ class UIIntervalFilter[EntityType, AttributeType](uiAttribute: UITextAttribute[E
     (e: EntityType) =>
       uiAttribute
         .getter(e)
-        .get
+        .option
         .forall(
           isBetween(min, _, max),
         )
@@ -134,7 +134,7 @@ class UISelectFilter[EntityType, AttributeType](uiAttribute: UISelectAttribute[E
 
   val predicate: Signal[EntityType => Boolean] = Signal {
     val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
-    e => n.isEmpty || uiAttribute.getter(e).get.exists(a => n.contains(a))
+    e => n.isEmpty || uiAttribute.getter(e).option.exists(a => n.contains(a))
   }
 }
 
@@ -192,7 +192,7 @@ class UIMultiSelectFilter[EntityType](
     (e: EntityType) =>
       n.isEmpty || uiAttribute
         .getter(e)
-        .get
+        .option
         .exists(a => {
           var res = false
           if (mode == "or") {
@@ -232,6 +232,6 @@ class UIBooleanFilter[EntityType](uiAttribute: UITextAttribute[EntityType, Boole
 
   val predicate: Signal[EntityType => Boolean] = Signal {
     val n = jsImplicits.routing.getQueryParameterAsSeq(name).value
-    (e: EntityType) => uiAttribute.getter(e).get.forall(v => n.isEmpty || n.map(p => p.toBoolean).contains(v))
+    (e: EntityType) => uiAttribute.getter(e).option.forall(v => n.isEmpty || n.map(p => p.toBoolean).contains(v))
   }
 }

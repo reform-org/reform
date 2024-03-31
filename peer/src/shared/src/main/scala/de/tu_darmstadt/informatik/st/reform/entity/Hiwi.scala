@@ -25,13 +25,13 @@ case class Hiwi(
       Attribute(true),
     )
 
-  def identifier: Attribute[String] = Attribute(s"${firstName.get.getOrElse("")} ${lastName.get.getOrElse("")}")
+  def identifier: Attribute[String] = Attribute(s"${firstName.getOrElse("")} ${lastName.getOrElse("")}")
 
   def withExists(exists: Boolean): Hiwi = {
     this.copy(_exists = _exists.set(exists))
   }
 
-  override def exists: Boolean = _exists.get.getOrElse(true)
+  override def exists: Boolean = _exists.getOrElse(true)
 }
 
 object Hiwi {

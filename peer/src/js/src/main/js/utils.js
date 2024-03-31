@@ -165,6 +165,14 @@ const formatter = new Intl.NumberFormat('de-DE', {
 	currency: 'EUR'
 });
 
+export const dateAdd = (millis, days, months, years) => {
+	const date = DateTime.fromMillis(Number(millis));
+	return date
+		.plus({ days, months, years })
+		.toMillis()
+		.toString();
+}
+
 export const toMoneyString = (input) => {
 	return formatter.format(input);
 };

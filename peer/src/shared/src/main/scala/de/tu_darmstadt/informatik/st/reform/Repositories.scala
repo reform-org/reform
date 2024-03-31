@@ -8,15 +8,15 @@ import de.tu_darmstadt.informatik.st.reform.webrtc.PingService
 import loci.registry.Registry
 
 case class Repositories(
-    val projects: Repository[Project],
-    val users: Repository[User],
-    val hiwis: Repository[Hiwi],
-    val supervisors: Repository[Supervisor],
-    val contractSchemas: Repository[ContractSchema],
-    val paymentLevels: Repository[PaymentLevel],
-    val salaryChanges: Repository[SalaryChange],
-    val requiredDocuments: Repository[Document],
-    val contracts: Repository[Contract],
+    projects: Repository[Project],
+    users: Repository[User],
+    hiwis: Repository[Hiwi],
+    supervisors: Repository[Supervisor],
+    contractSchemas: Repository[ContractSchema],
+    paymentLevels: Repository[PaymentLevel],
+    salaryChanges: Repository[SalaryChange],
+    requiredDocuments: Repository[Document],
+    contracts: Repository[Contract],
 )(using registry: Registry) {
   val _ = PingService()
 }

@@ -50,6 +50,9 @@ object JSUtils {
 
   def dateDiffHumanReadable(a: Long, b: Long): String = NativeImpl.dateDiffHumanReadable(a.toString, b.toString)
 
+  def dateAdd(date: Long, days: Long = 0, months: Long = 0, years: Long = 0): Long =
+    NativeImpl.dateAdd(date.toString, days.toString, months.toString, years.toString).toLong
+
   val toMoneyString: BigDecimal => String = NativeImpl.toMoneyString
 
   @js.native
@@ -87,6 +90,8 @@ object JSUtils {
     def dateDiffMonth(a: String, b: String): Int = js.native
 
     def dateDiffHumanReadable(a: String, b: String): String = js.native
+
+    def dateAdd(date: String, deltaDays: String, deltaMonths: String, deltaYears: String): String = js.native
 
     def toMoneyString(input: BigDecimal): String = js.native
   }

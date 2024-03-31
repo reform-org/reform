@@ -74,14 +74,18 @@ case class Repository[A](name: String, defaultValue: A)(using
   val all: Signal[Seq[Synced[A]]] = {
     ids
       .map(ids => {
-        val futures = ids.toSeq.map(get)
+        val futures = ids.toSeq.map(load)
         val future = Future.sequence(futures)
         Signal.fromFuture(future)
       })
       .flatten
   }
 
-  private def get(id: String): Future[Synced[A]] = valueSyncer.getOrCreateAndSync(id)
+  def find(id: String): Signal[Option[Synced[A]]] = Signal.dynamic {
+    all.value.find(c => c.id == id)
+  }
+
+  private def load(id: String): Future[Synced[A]] = valueSyncer.getOrCreateAndSync(id)
 
   def create(initialValue: A): Future[Synced[A]] = {
     indexedDb.requestPersistentStorage()

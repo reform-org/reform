@@ -22,7 +22,7 @@ case class Contract(
     reminderSentDate: Attribute[Long] = Attribute.empty,
     contractSentDate: Attribute[Long] = Attribute.empty,
     letterSentDate: Attribute[Long] = Attribute.empty,
-    _exists: Attribute[Boolean] = Attribute(true),
+    _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Contract]
     derives Lattice,
       Bottom {
@@ -33,7 +33,7 @@ case class Contract(
     this.copy(_exists = _exists.set(exists))
   }
 
-  override def exists: Boolean = _exists.get.getOrElse(true)
+  override def exists: Boolean = _exists.getOrElse(true)
 
   def default: Contract = Contract()
 

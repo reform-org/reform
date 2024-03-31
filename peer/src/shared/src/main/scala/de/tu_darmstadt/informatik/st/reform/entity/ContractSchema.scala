@@ -22,7 +22,7 @@ case class ContractSchema(
     this.copy(_exists = _exists.set(exists))
   }
 
-  override def exists: Boolean = _exists.get.getOrElse(true)
+  override def exists: Boolean = _exists.getOrElse(true)
 
 }
 

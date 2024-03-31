@@ -13,11 +13,9 @@ case class Storage[T](private val name: String)(using
   def getOrDefault(id: String, default: T): Future[T] = {
     indexedDb.update[T](
       getKey(id),
-      currentValue => {
-        currentValue match {
-          case Some(v) => v
-          case None    => default
-        }
+      {
+        case Some(v) => v
+        case None    => default
       },
     )
   }
