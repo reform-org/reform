@@ -41,7 +41,12 @@ case class DocumentsPage()(using
       ),
       jsImplicits.repositories.requiredDocuments,
       jsImplicits.repositories.requiredDocuments.all,
-      Seq(DocumentAttributes().name, DocumentAttributes().location, DocumentAttributes().autofill),
+      Seq(
+        DocumentAttributes().name,
+        DocumentAttributes().location,
+        DocumentAttributes().autofill,
+        DocumentAttributes().mailto,
+      ),
       DefaultEntityRow(),
     ) {}
 
@@ -68,5 +73,13 @@ class DocumentAttributes(using jsImplicits: JSImplicits) {
     .bindAsSelect[Document](
       _.autofill,
       (d, a) => d.copy(autofill = a),
+    )
+
+  def mailto: UIAttribute[Document, DocumentForWhom] = BuildUIAttribute()
+    .enumSelect(DocumentForWhom.values, DocumentForWhom.valueOf)
+    .withLabel("For Whom?")
+    .bindAsSelect[Document](
+      _.mailto,
+      (d, a) => d.copy(mailto = a),
     )
 }

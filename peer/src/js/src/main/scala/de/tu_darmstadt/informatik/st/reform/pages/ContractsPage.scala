@@ -47,8 +47,8 @@ class DetailPageEntityRow[T <: Entity[T]](
   override protected val editLabel: String = "Extend"
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => jsImplicits.routing.to(ExtendContractPage(value.id))
-      case New(value)                    =>
+      case Existing(value) => jsImplicits.routing.to(ExtendContractPage(value.id))
+      case New(value)      =>
     }
   }
 }

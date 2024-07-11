@@ -107,13 +107,13 @@ case class EditContractsPage(contractId: String)(using
 abstract class Step(
     title: String,
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using jsImplicits: JSImplicits) {
 
-  protected def updateHoursPerMonth(hours: Int): Option[Unit] = {
-    editingValue.now.map((_, a) => a.transform(c => c.copy(contractHoursPerMonth = c.contractHoursPerMonth.set(hours))))
+  protected def updateHoursPerMonth(hours: Int): Unit = {
+    editingValue.transform(c => c.copy(contractHoursPerMonth = c.contractHoursPerMonth.set(hours)))
   }
 
   protected def editStep(children: VMod*): VNode = {
@@ -143,9 +143,10 @@ abstract class Step(
       div(
         cls := "border rounded-lg m-4 border-purple-200 dark:border-gray-500 dark:text-gray-200 overflow-hidden",
         cls <-- Signal {
-          if (disabled.value.map((pred, _) => pred).fold[Boolean](false)((a, b) => a || b))
-            "blur-[3px] pointer-events-none select-none	"
-          else ""
+          if (disabled.value.exists((pred, _) => pred))
+            "blur-[3px] pointer-events-none select-none"
+          else
+            ""
         },
         div(
           cls := "bg-purple-200 p-4 dark:bg-gray-700 dark:text-gray-200 text-purple-600",
@@ -156,137 +157,131 @@ abstract class Step(
     )
   }
 
-  protected def letterPDF: Future[Try[ArrayBuffer[Short]]] = {
-    val promise: Promise[Try[ArrayBuffer[Short]]] = Promise()
+  protected def fillLetterPDF(url: String): Future[ArrayBuffer[Short]] = {
+    val contract = editingValue.now
+    val hiwiOption =
+      jsImplicits.repositories.hiwis
+        .find(contract.contractAssociatedHiwi.getOrElse(""))
+        .now
+    val paymentLevelOption =
+      jsImplicits.repositories.paymentLevels
+        .find(contract.contractAssociatedPaymentLevel.getOrElse(""))
+        .now
+    val projectOption =
+      jsImplicits.repositories.projects
+        .find(contract.contractAssociatedProject.getOrElse(""))
+        .now
 
-    editingValue.now.map((_, contractOption) => {
-      val contract = contractOption.now
-      val hiwiOption =
-        jsImplicits.repositories.hiwis.all.now
-          .find(_.id == contract.contractAssociatedHiwi.getOrElse(""))
-      val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
-        .find(_.id == contract.contractAssociatedPaymentLevel.getOrElse(""))
-      val projectOption =
-        jsImplicits.repositories.projects.all.now
-          .find(_.id == contract.contractAssociatedProject.getOrElse(""))
+    if (hiwiOption.isEmpty || paymentLevelOption.isEmpty || projectOption.isEmpty) {
+      Future.failed(new Exception("The PDF could not be created because not all required fields are filled in!"))
+    }
 
-      if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty && projectOption.nonEmpty) {
-        val hiwi = hiwiOption.get.signal.now
-        val project = projectOption.get.signal.now
-        val moneyPerHour =
-          toMoneyString(
-            ContractPageAttributes()
-              .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
-              .now,
-          )
-        val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
-        val totalHours = dateDiffMonth(
-          contract.contractStartDate.getOrElse(0L),
-          contract.contractEndDate.getOrElse(0L),
-        ) * hoursPerMonth
-        PDF
-          .fill(
-            Globals.VITE_LETTER_PDF_PATH,
-            Seq(
-              PDFTextField(
-                "Name VornameRow1",
-                s"${hiwi.lastName.getOrElse("")}, ${hiwi.firstName.getOrElse("")}",
-              ),
-              PDFTextField(
-                "GebDatumRow1",
-                s"${toGermanDate(hiwi.birthdate.getOrElse(0))}",
-              ),
-              PDFTextField(
-                "Vertrags beginnRow1",
-                toGermanDate(contract.contractStartDate.getOrElse(0)),
-              ),
-              PDFTextField(
-                "Vertrags endeRow1",
-                toGermanDate(contract.contractEndDate.getOrElse(0)),
-              ),
-              PDFTextField(
-                "€StdRow1",
-                moneyPerHour,
-              ),
-              PDFTextField("Stunden gesamtRow1", totalHours.toString),
-              PDFTextField("Stunden gesamtSumme", totalHours.toString),
-              PDFTextField(
-                "Std MonatRow1",
-                hoursPerMonth.toString,
-              ),
-              PDFTextField(
-                "Account",
-                project.accountName.option.flatten.getOrElse(""),
-              ),
-              PDFTextField(
-                "Datum",
-                toGermanDate(js.Date.now().toLong),
-              ),
-            ),
-          )
-          .andThen(a => promise.success(a))
-          .toastOnError()
-      } else {
-        promise.failure(new Exception("The PDF could not be created because not all required fields are filled in!"))
+    val hiwi = hiwiOption.get.signal.now
+    val project = projectOption.get.signal.now
+    val moneyPerHour =
+      toMoneyString(
+        ContractPageAttributes()
+          .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
+          .now,
+      )
+    val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
+    val totalHours = dateDiffMonth(
+      contract.contractStartDate.getOrElse(0L),
+      contract.contractEndDate.getOrElse(0L),
+    ) * hoursPerMonth
 
-      }
-    })
-
-    promise.future
+    PDF.fill(
+      url,
+      Seq(
+        PDFTextField(
+          "Name VornameRow1",
+          s"${hiwi.lastName.getOrElse("")}, ${hiwi.firstName.getOrElse("")}",
+        ),
+        PDFTextField(
+          "GebDatumRow1",
+          s"${toGermanDate(hiwi.birthdate.getOrElse(0))}",
+        ),
+        PDFTextField(
+          "Vertrags beginnRow1",
+          toGermanDate(contract.contractStartDate.getOrElse(0)),
+        ),
+        PDFTextField(
+          "Vertrags endeRow1",
+          toGermanDate(contract.contractEndDate.getOrElse(0)),
+        ),
+        PDFTextField(
+          "€StdRow1",
+          moneyPerHour,
+        ),
+        PDFTextField("Stunden gesamtRow1", totalHours.toString),
+        PDFTextField("Stunden gesamtSumme", totalHours.toString),
+        PDFTextField(
+          "Std MonatRow1",
+          hoursPerMonth.toString,
+        ),
+        PDFTextField(
+          "Account",
+          project.accountName.option.flatten.getOrElse(""),
+        ),
+        PDFTextField(
+          "Datum",
+          toGermanDate(js.Date.now().toLong),
+        ),
+      ),
+    )
   }
 
-  protected def contractPDF: Future[Try[ArrayBuffer[Short]]] = {
-    val promise: Promise[Try[ArrayBuffer[Short]]] = Promise()
-    editingValue.now.map((_, contractOption) => {
-      val contract = contractOption.now
-      val hiwiOption =
-        jsImplicits.repositories.hiwis.all.now
-          .find(_.id == contract.contractAssociatedHiwi.getOrElse(""))
-      val paymentLevelOption = jsImplicits.repositories.paymentLevels.all.now
-        .find(_.id == contract.contractAssociatedPaymentLevel.getOrElse(""))
+  protected def fillContractPDF(url: String): Future[ArrayBuffer[Short]] = {
+    val promise: Promise[ArrayBuffer[Short]] = Promise()
+    val contract = editingValue.now
 
-      if (hiwiOption.nonEmpty && paymentLevelOption.nonEmpty) {
-        val hiwi = hiwiOption.get.signal.now
-        val paymentLevel = paymentLevelOption.get.signal.now
-        PDF
-          .fill(
-            Globals.VITE_CONTRACT_PDF_PATH,
-            Seq(
-              PDFTextField(
-                "Vorname Nachname (Studentische Hilfskraft)",
-                s"${hiwi.firstName.getOrElse("")} ${hiwi.lastName.getOrElse("")}",
-              ),
-              PDFTextField(
-                "Geburtsdatum (Studentische Hilfskraft)",
-                s"${toGermanDate(hiwi.birthdate.getOrElse(0))}",
-              ),
-              PDFTextField(
-                "Vertragsbeginn",
-                toGermanDate(contract.contractStartDate.getOrElse(0)),
-              ),
-              PDFTextField(
-                "Vertragsende",
-                toGermanDate(contract.contractEndDate.getOrElse(0)),
-              ),
-              PDFTextField(
-                "Arbeitszeit Kästchen 1",
-                contract.contractHoursPerMonth.getOrElse(0).toString,
-              ),
-              PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
-              PDFCheckboxField(
-                paymentLevel.pdfCheckboxName.getOrElse(""),
-                true,
-              ),
-            ),
-          )
-          .andThen(a => promise.success(a))
-          .toastOnError()
-      } else {
-        promise.failure(new Exception("The PDF could not be created because not all required fields are filled in!"))
-      }
-    })
+    val hiwiOption =
+      jsImplicits.repositories.hiwis
+        .find(contract.contractAssociatedHiwi.getOrElse(""))
+        .now
 
-    promise.future
+    val paymentLevelOption =
+      jsImplicits.repositories.paymentLevels
+        .find(contract.contractAssociatedPaymentLevel.getOrElse(""))
+        .now
+
+    if (hiwiOption.isEmpty || paymentLevelOption.isEmpty) {
+      promise.failure(new Exception("The PDF could not be created because not all required fields are filled in!"))
+    }
+
+    val hiwi = hiwiOption.get.signal.now
+    val paymentLevel = paymentLevelOption.get.signal.now
+
+    PDF.fill(
+      url,
+      Seq(
+        PDFTextField(
+          "Vorname Nachname (Studentische Hilfskraft)",
+          s"${hiwi.firstName.getOrElse("")} ${hiwi.lastName.getOrElse("")}",
+        ),
+        PDFTextField(
+          "Geburtsdatum (Studentische Hilfskraft)",
+          s"${toGermanDate(hiwi.birthdate.getOrElse(0))}",
+        ),
+        PDFTextField(
+          "Vertragsbeginn",
+          toGermanDate(contract.contractStartDate.getOrElse(0)),
+        ),
+        PDFTextField(
+          "Vertragsende",
+          toGermanDate(contract.contractEndDate.getOrElse(0)),
+        ),
+        PDFTextField(
+          "Arbeitszeit Kästchen 1",
+          contract.contractHoursPerMonth.getOrElse(0).toString,
+        ),
+        PDFCheckboxField("Arbeitszeit Kontrollkästchen 1", true),
+        PDFCheckboxField(
+          paymentLevel.pdfCheckboxName.getOrElse(""),
+          true,
+        ),
+      ),
+    )
   }
 
   def render: VMod
@@ -294,371 +289,361 @@ abstract class Step(
 
 class BasicInformation(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
     extend: Boolean = false,
 )(using
     jsImplicits: JSImplicits,
 ) extends Step("Basic Information", existingId, editingValue, disabled, disabledDescription) {
-  def render: VMod = {
-    this.editStep(
+  def render: VMod = this.editStep(
+    div(
+      cls := "p-4 space-y-4",
       div(
-        cls := "p-4 space-y-4",
+        cls := "flex flex-col md:flex-row md:space-x-4",
         div(
-          cls := "flex flex-col md:flex-row md:space-x-4",
-          div(
-            cls := "basis-1/2",
-            label(cls := "font-bold", "Hiwi:"),
-            ContractPageAttributes().contractAssociatedHiwi.renderEdit("", editingValue, cls := "rounded-md"),
-            span(
-              cls := "text-slate-400 dark:text-gray-400 italic text-xs",
-              Signal.dynamic {
-                editingValue.value.map((_, c) => {
-                  jsImplicits.repositories.hiwis.all.value
-                    .find(hiwi => hiwi.id == c.value.contractAssociatedHiwi.getOrElse(""))
-                    .map(hiwi => hiwi.signal.value.eMail.getOrElse(""))
-                })
-              },
-            ),
-          ),
-          div(
-            cls := "basis-1/2",
-            label(cls := "font-bold", "Supervisor:"),
-            ContractPageAttributes().contractAssociatedSupervisor.renderEdit("", editingValue, cls := "rounded-md"),
-            span(
-              cls := "text-slate-400 dark:text-gray-400 dark:text-gray-400 italic text-xs",
-              Signal.dynamic {
-                editingValue.value.map((_, c) => {
-                  jsImplicits.repositories.supervisors.all.value
-                    .find(supervisor => supervisor.id == c.value.contractAssociatedSupervisor.getOrElse(""))
-                    .map(supervisor => supervisor.signal.value.eMail.getOrElse(""))
-                })
-              },
-            ),
-          ),
-        ),
-        div(
-          cls := "flex flex-col md:flex-row md:space-x-4",
-          div(
-            cls := "basis-2/5",
-            label(cls := "font-bold", "Start date:"),
-            ContractPageAttributes().contractStartDate.renderEdit("", editingValue, cls := "!rounded-md"),
+          cls := "basis-1/2",
+          label(cls := "font-bold", "Hiwi:"),
+          ContractPageAttributes().contractAssociatedHiwi.renderEdit("", editingValue, cls := "rounded-md"),
+          span(
+            cls := "text-slate-400 dark:text-gray-400 italic text-xs",
             Signal.dynamic {
-              editingValue.value.map((_, contractSignal) => {
-                val contract = contractSignal.value
-                if (
-                  contract.contractStartDate.option.nonEmpty && dateDiffDays(
-                    js.Date.now().toLong,
-                    contract.contractStartDate.getOrElse(0L),
-                  ) < 0
-                ) {
-                  Some(
-                    p(
-                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
-                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                      "Start date is in the past",
-                    ),
-                  )
-                } else None
-              })
-            },
-          ),
-          div(
-            cls := "basis-1/5",
-            label(cls := "font-bold", "Duration: "),
-            br,
-            Signal.dynamic {
-              editingValue.value.map((_, contractSignal) => {
-                val contract = contractSignal.value
-
-                if (
-                  contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty && !(dateDiffDays(
-                    contract.contractStartDate.getOrElse(0L),
-                    contract.contractEndDate.getOrElse(0L),
-                  ) < 0 ||
-                    dateDiffDays(js.Date.now().toLong, contract.contractEndDate.getOrElse(0L)) < 0)
-                ) {
-                  Some(
-                    dateDiffHumanReadable(
-                      contract.contractStartDate.getOrElse(0L),
-                      contract.contractEndDate.getOrElse(0L),
-                    ),
-                  )
-                } else None
-              })
-            },
-          ),
-          div(
-            cls := "basis-2/5",
-            label(cls := "font-bold", "End date:"),
-            ContractPageAttributes().contractEndDate.renderEdit("", editingValue, cls := "!rounded-md"),
-            Signal.dynamic {
-              editingValue.value.map((_, contractSignal) => {
-                val contract = contractSignal.value
-                if (
-                  contract.contractEndDate.option.nonEmpty && (dateDiffDays(
-                    contract.contractStartDate.getOrElse(0L),
-                    contract.contractEndDate.getOrElse(0L),
-                  ) < 0 || dateDiffDays(
-                    js.Date.now().toLong,
-                    contract.contractEndDate.getOrElse(0L),
-                  ) < 0)
-                ) {
-                  Some(
-                    p(
-                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
-                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                      "End date is in the past or before start date",
-                    ),
-                  )
-                } else None
-              })
+              jsImplicits.repositories.hiwis
+                .find(editingValue.value.contractAssociatedHiwi.getOrElse(""))
+                .value
+                .flatMap(hiwi => hiwi.signal.value.eMail.option)
             },
           ),
         ),
-        Signal.dynamic {
-          val overlappingContract = editingValue.value.exists((_, contractSignal) => {
-            val start = contractSignal.value.contractStartDate.getOrElse(0L)
-            val end = contractSignal.value.contractEndDate.getOrElse(0L)
-            val hiwi = contractSignal.value.contractAssociatedHiwi.getOrElse("")
-            val overlappingContracts = jsImplicits.repositories.contracts.existing.value.filter(c => {
-              val contract = c.signal.value
-              !contract.isDraft.getOrElse(true) &&
-              contract.contractAssociatedHiwi.option.nonEmpty &&
-              contract.contractAssociatedHiwi.option.get == hiwi &&
-              contract.contractStartDate.option.nonEmpty &&
-              contract.contractEndDate.option.nonEmpty &&
-              (
-                (
-                  contract.contractStartDate.getOrElse(0L) <= start &&
-                    contract.contractEndDate.getOrElse(0L) >= start
-                ) ||
-                  (
-                    (contract.contractStartDate.getOrElse(0L) <= end) &&
-                      contract.contractEndDate.getOrElse(0L) >= end
-                  ) ||
-                  (
-                    contract.contractStartDate.getOrElse(0L) >= start &&
-                      contract.contractEndDate.getOrElse(0L) <= end
-                  )
-              )
-            })
-
-            overlappingContracts.nonEmpty
-          })
-
-          if (overlappingContract) {
-            Some(
-              p(
-                cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
-                icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                "This hiwi aleady has a finalized contract that overlaps with your selected contract period.",
-              ),
-            )
-          } else None
-        },
         div(
-          cls := "flex flex-col md:flex-row md:space-x-4",
-          div(
-            cls := "basis-1/2",
-            p(
-              cls := "",
-              Signal.dynamic {
-                editingValue.value.map((_, c) => {
-                  val contract = c.value
-                  val limit =
-                    ContractPageAttributes()
-                      .getLimit(existingId, contract, contract.contractStartDate.getOrElse(0L))
-                      .value
-                  val hourlyWage =
-                    ContractPageAttributes()
-                      .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
-                      .value
-
-                  val month = dateDiffMonth(
-                    contract.contractStartDate.getOrElse(0L),
-                    contract.contractEndDate.getOrElse(0L),
-                  )
-
-                  if (hourlyWage > BigDecimal(0) && limit > BigDecimal(0)) {
-                    val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
-                    div(
-                      cls := "flex flex-col gap-2",
-                      div(
-                        cls := "flex flex-col gap-1",
-                        span(
-                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Base Salary: "),
-                          span(
-                            cls := "font-bold",
-                            toMoneyString(contract.contractHoursPerMonth.getOrElse(0) * hourlyWage),
-                          ),
-                        ),
-                        span(
-                          cls := "text-slate-400 dark:text-gray-400 text-xs italic",
-                          s"calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started",
-                        ),
-                      ),
-                      div(
-                        cls := "flex flex-col gap-1 dark:text-gray-200",
-                        span(
-                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Minijob Limit: "),
-                          span(cls := "font-bold", toMoneyString(limit)),
-                        ),
-                        span(
-                          cls := "text-slate-400 dark:text-gray-400 text-xs italic",
-                          "the limit when the contract has started",
-                        ),
-                      ),
-                      div(
-                        cls := "flex flex-col gap-1 dark:text-gray-200",
-                        span(
-                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Maximum Hours below Limit: "),
-                          span(cls := "font-bold", maxHours.toInt),
-                          span(
-                            "use",
-                            cls := "underline py-1 px-2 bg-purple-200 text-purple-600 text-xs rounded-md ml-2 cursor-pointer",
-                            onClick.foreach(_ => {
-                              this.updateHoursPerMonth(maxHours.toInt)
-                            }),
-                          ),
-                        ),
-                      ),
-                      if (
-                        contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty && month >= 0
-                      ) {
-                        Some(
-                          div(
-                            cls := "flex flex-col gap-1",
-                            span(
-                              span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
-                              span(cls := "font-bold", contract.contractHoursPerMonth.getOrElse(0) * month),
-                            ),
-                            span(
-                              cls := "text-slate-400 dark:text-gray-400 text-xs italic",
-                              s"calculating with $month month",
-                            ),
-                          ),
-                        )
-                      } else None,
-                    )
-                  } else {
-                    span()
-                  }
-                })
-              },
-            ),
-          ),
-          div(
-            cls := "basis-1/2",
-            label(cls := "font-bold", "Payment Level:"),
-            ContractPageAttributes().contractAssociatedPaymentLevel.renderEdit("", editingValue, cls := "rounded-md"),
-            label(cls := "font-bold", "Hours per month:"),
-            ContractPageAttributes().contractHoursPerMonth.renderEdit("", editingValue, cls := "!rounded-md"),
+          cls := "basis-1/2",
+          label(cls := "font-bold", "Supervisor:"),
+          ContractPageAttributes().contractAssociatedSupervisor.renderEdit("", editingValue, cls := "rounded-md"),
+          span(
+            cls := "text-slate-400 dark:text-gray-400 dark:text-gray-400 italic text-xs",
             Signal.dynamic {
-              editingValue.value.map((_, contractSignal) => {
-                val contract = contractSignal.value
-                val project = contract.contractAssociatedProject.option.flatMap(id =>
-                  jsImplicits.repositories.projects.all.value
-                    .find(project => project.id == id),
-                )
-                val limit =
-                  ContractPageAttributes()
-                    .getLimit(existingId, contract, contract.contractStartDate.getOrElse(0L))
-                    .value
-                val hourlyWage = ContractPageAttributes()
-                  .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
-                  .value
-                val maxHoursForTax =
-                  if (hourlyWage > BigDecimal(0)) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
-                  else {
-                    BigDecimal(0)
-                  }
-                val month = dateDiffMonth(
-                  contract.contractStartDate.getOrElse(0L),
-                  contract.contractEndDate.getOrElse(0L),
-                )
-
-                val totalHoursWithoutThisContract = project.map(project =>
-                  ProjectAttributes()
-                    .countContractHours(
-                      contract.contractAssociatedProject.getOrElse(""),
-                      project.signal.value,
-                      (id, contract) => !contract.isDraft.getOrElse(true) && id != existingId,
-                    )
-                    .value +
-                    ProjectAttributes()
-                      .countContractHours(
-                        contract.contractAssociatedProject.getOrElse(""),
-                        project.signal.value,
-                        (id, contract) => contract.isDraft.getOrElse(true) && id != existingId,
-                      )
-                      .value,
-                )
-
-                val maxHoursForProject = project.flatMap(project => {
-                  if (month == 0) None
-                  else
-                    Some(
-                      (project.signal.value.maxHours.getOrElse(0) - totalHoursWithoutThisContract.getOrElse(
-                        0,
-                      )) / month,
-                    )
-                })
-
-                contract.contractHoursPerMonth.getOrElse(0) match {
-                  case x if x > maxHoursForTax && limit != 0 =>
-                    p(
-                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
-                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                      span(
-                        s"The monthly wage is above the minijob limit which is ${toMoneyString(limit)}. You might want to ",
-                        span(
-                          cls := "underline cursor-pointer",
-                          onClick.foreach(_ => {
-                            this.updateHoursPerMonth(maxHoursForTax.toInt)
-
-                          }),
-                          s"reduce the hours to $maxHoursForTax hours.",
-                        ),
-                      ),
-                    )
-                  case x
-                      if project.nonEmpty && x * month + totalHoursWithoutThisContract
-                        .getOrElse(0) > project.get.signal.value.maxHours.option
-                        .getOrElse(0) && !extend && maxHoursForProject.nonEmpty =>
-                    p(
-                      cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
-                      icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
-                      span(
-                        "Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
-                        span(
-                          cls := "underline cursor-pointer",
-                          onClick.foreach(_ => {
-                            this.updateHoursPerMonth(
-                              if (maxHoursForProject.get < 0) 0
-                              else maxHoursForProject.get,
-                            )
-                          }),
-                          s"You might want to reduce the monthly hours to ${if (maxHoursForProject.get < 0) 0
-                            else maxHoursForProject.get}.",
-                        ),
-                      ),
-                    )
-                  case _ => p()
-                }
-              })
+              jsImplicits.repositories.supervisors
+                .find(editingValue.value.contractAssociatedSupervisor.getOrElse(""))
+                .value
+                .flatMap(supervisor => supervisor.signal.value.eMail.option)
             },
           ),
         ),
       ),
-    )
-  }
+      div(
+        cls := "flex flex-col md:flex-row md:space-x-4",
+        div(
+          cls := "basis-2/5",
+          label(cls := "font-bold", "Start date:"),
+          ContractPageAttributes().contractStartDate.renderEdit("", editingValue, cls := "!rounded-md"),
+          Signal.dynamic {
+            val contract = editingValue.value
+            if (
+              contract.contractStartDate.hasValue && dateDiffDays(
+                js.Date.now().toLong,
+                contract.contractStartDate.get,
+              ) < 0
+            ) {
+              Some(
+                p(
+                  cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                  icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                  "Start date is in the past",
+                ),
+              )
+            } else None
+          },
+        ),
+        div(
+          cls := "basis-1/5",
+          label(cls := "font-bold", "Duration: "),
+          br,
+          Signal.dynamic {
+            val contract = editingValue.value
+
+            if (
+              contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty && !(dateDiffDays(
+                contract.contractStartDate.getOrElse(0L),
+                contract.contractEndDate.getOrElse(0L),
+              ) < 0 ||
+                dateDiffDays(js.Date.now().toLong, contract.contractEndDate.getOrElse(0L)) < 0)
+            ) {
+              Some(
+                dateDiffHumanReadable(
+                  contract.contractStartDate.getOrElse(0L),
+                  contract.contractEndDate.getOrElse(0L),
+                ),
+              )
+            } else None
+          },
+        ),
+        div(
+          cls := "basis-2/5",
+          label(cls := "font-bold", "End date:"),
+          ContractPageAttributes().contractEndDate.renderEdit("", editingValue, cls := "!rounded-md"),
+          Signal.dynamic {
+            val contract = editingValue.value
+            if (
+              contract.contractEndDate.option.nonEmpty && (dateDiffDays(
+                contract.contractStartDate.getOrElse(0L),
+                contract.contractEndDate.getOrElse(0L),
+              ) < 0 || dateDiffDays(
+                js.Date.now().toLong,
+                contract.contractEndDate.getOrElse(0L),
+              ) < 0)
+            ) {
+              Some(
+                p(
+                  cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                  icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                  "End date is in the past or before start date",
+                ),
+              )
+            } else None
+          },
+        ),
+      ),
+      Signal.dynamic {
+        val overlappingContract = {
+          val start = editingValue.value.contractStartDate.getOrElse(0L)
+          val end = editingValue.value.contractEndDate.getOrElse(0L)
+          val hiwi = editingValue.value.contractAssociatedHiwi.getOrElse("")
+          val overlappingContracts = jsImplicits.repositories.contracts.existing.value.filter(c => {
+            val contract = c.signal.value
+            !contract.isDraft.getOrElse(true) &&
+            contract.contractAssociatedHiwi.option.nonEmpty &&
+            contract.contractAssociatedHiwi.option.get == hiwi &&
+            contract.contractStartDate.option.nonEmpty &&
+            contract.contractEndDate.option.nonEmpty &&
+            (
+              (
+                contract.contractStartDate.getOrElse(0L) <= start &&
+                  contract.contractEndDate.getOrElse(0L) >= start
+              ) ||
+                (
+                  (contract.contractStartDate.getOrElse(0L) <= end) &&
+                    contract.contractEndDate.getOrElse(0L) >= end
+                ) ||
+                (
+                  contract.contractStartDate.getOrElse(0L) >= start &&
+                    contract.contractEndDate.getOrElse(0L) <= end
+                )
+            )
+          })
+
+          overlappingContracts.nonEmpty
+        }
+
+        if (overlappingContract) {
+          Some(
+            p(
+              cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+              icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+              "This hiwi already has a finalized contract that overlaps with your selected contract period.",
+            ),
+          )
+        } else None
+      },
+      div(
+        cls := "flex flex-col md:flex-row md:space-x-4",
+        div(
+          cls := "basis-1/2",
+          p(
+            cls := "",
+            Signal.dynamic {
+              val contract = editingValue.value
+              val limit =
+                ContractPageAttributes()
+                  .getLimit(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                  .value
+              val hourlyWage =
+                ContractPageAttributes()
+                  .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                  .value
+
+              val month = dateDiffMonth(
+                contract.contractStartDate.getOrElse(0L),
+                contract.contractEndDate.getOrElse(0L),
+              )
+
+              if (hourlyWage > BigDecimal(0) && limit > BigDecimal(0)) {
+                val maxHours = (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+                div(
+                  cls := "flex flex-col gap-2",
+                  div(
+                    cls := "flex flex-col gap-1",
+                    span(
+                      span(cls := "text-sm text-slate-600 dark:text-gray-200", "Base Salary: "),
+                      span(
+                        cls := "font-bold",
+                        toMoneyString(contract.contractHoursPerMonth.getOrElse(0) * hourlyWage),
+                      ),
+                    ),
+                    span(
+                      cls := "text-slate-400 dark:text-gray-400 text-xs italic",
+                      s"calculating with a salary of ${toMoneyString(hourlyWage)}/h that was set when the contract has started",
+                    ),
+                  ),
+                  div(
+                    cls := "flex flex-col gap-1 dark:text-gray-200",
+                    span(
+                      span(cls := "text-sm text-slate-600 dark:text-gray-200", "Minijob Limit: "),
+                      span(cls := "font-bold", toMoneyString(limit)),
+                    ),
+                    span(
+                      cls := "text-slate-400 dark:text-gray-400 text-xs italic",
+                      "the limit when the contract has started",
+                    ),
+                  ),
+                  div(
+                    cls := "flex flex-col gap-1 dark:text-gray-200",
+                    span(
+                      span(cls := "text-sm text-slate-600 dark:text-gray-200", "Maximum Hours below Limit: "),
+                      span(cls := "font-bold", maxHours.toInt),
+                      span(
+                        "use",
+                        cls := "underline py-1 px-2 bg-purple-200 text-purple-600 text-xs rounded-md ml-2 cursor-pointer",
+                        onClick.foreach(_ => {
+                          this.updateHoursPerMonth(maxHours.toInt)
+                        }),
+                      ),
+                    ),
+                  ),
+                  if (
+                    contract.contractStartDate.option.nonEmpty && contract.contractEndDate.option.nonEmpty && month >= 0
+                  ) {
+                    Some(
+                      div(
+                        cls := "flex flex-col gap-1",
+                        span(
+                          span(cls := "text-sm text-slate-600 dark:text-gray-200", "Total hours: "),
+                          span(cls := "font-bold", contract.contractHoursPerMonth.getOrElse(0) * month),
+                        ),
+                        span(
+                          cls := "text-slate-400 dark:text-gray-400 text-xs italic",
+                          s"calculating with $month month",
+                        ),
+                      ),
+                    )
+                  } else None,
+                )
+              } else {
+                span()
+              }
+            },
+          ),
+        ),
+        div(
+          cls := "basis-1/2",
+          label(cls := "font-bold", "Payment Level:"),
+          ContractPageAttributes().contractAssociatedPaymentLevel.renderEdit("", editingValue, cls := "rounded-md"),
+          label(cls := "font-bold", "Hours per month:"),
+          ContractPageAttributes().contractHoursPerMonth.renderEdit("", editingValue, cls := "!rounded-md"),
+          Signal.dynamic {
+            val contract = editingValue.value
+            val project = contract.contractAssociatedProject.option.flatMap(id =>
+              jsImplicits.repositories.projects.all.value
+                .find(project => project.id == id),
+            )
+            val limit =
+              ContractPageAttributes()
+                .getLimit(existingId, contract, contract.contractStartDate.getOrElse(0L))
+                .value
+            val hourlyWage = ContractPageAttributes()
+              .getMoneyPerHour(existingId, contract, contract.contractStartDate.getOrElse(0L))
+              .value
+            val maxHoursForTax =
+              if (hourlyWage > BigDecimal(0)) (limit / hourlyWage).setScale(0, RoundingMode.FLOOR)
+              else {
+                BigDecimal(0)
+              }
+            val month = dateDiffMonth(
+              contract.contractStartDate.getOrElse(0L),
+              contract.contractEndDate.getOrElse(0L),
+            )
+
+            val totalHoursWithoutThisContract = project.map(project =>
+              ProjectAttributes()
+                .countContractHours(
+                  contract.contractAssociatedProject.getOrElse(""),
+                  project.signal.value,
+                  (id, contract) => !contract.isDraft.getOrElse(true) && id != existingId,
+                )
+                .value +
+                ProjectAttributes()
+                  .countContractHours(
+                    contract.contractAssociatedProject.getOrElse(""),
+                    project.signal.value,
+                    (id, contract) => contract.isDraft.getOrElse(true) && id != existingId,
+                  )
+                  .value,
+            )
+
+            val maxHoursForProject = project.flatMap(project => {
+              if (month == 0) None
+              else
+                Some(
+                  (project.signal.value.maxHours.getOrElse(0) - totalHoursWithoutThisContract.getOrElse(
+                    0,
+                  )) / month,
+                )
+            })
+
+            val hours = BigDecimal(contract.contractHoursPerMonth.getOrElse(0))
+            if (hours > maxHoursForTax && limit != 0) {
+              p(
+                cls := "bg-yellow-100 text-yellow-600 flex flex-row p-4 rounded-md gap-2 mt-2 text-sm",
+                icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                span(
+                  s"The monthly wage is above the minijob limit which is ${toMoneyString(limit)}. You might want to ",
+                  span(
+                    cls := "underline cursor-pointer",
+                    onClick.foreach(_ => {
+                      this.updateHoursPerMonth(maxHoursForTax.toInt)
+
+                    }),
+                    s"reduce the hours to $maxHoursForTax hours.",
+                  ),
+                ),
+              )
+            } else if (
+              project.nonEmpty
+              && hours * month + totalHoursWithoutThisContract.getOrElse(0) > project.get.signal.value.maxHours
+                .getOrElse(0)
+              && !extend
+              && maxHoursForProject.nonEmpty
+            ) {
+              p(
+                cls := "bg-yellow-100 text-yellow-600 flex flex-row p-2 rounded-lg gap-2 mt-2 text-sm",
+                icons.WarningTriangle(cls := "w-6 h-6 shrink-0"),
+                span(
+                  "Together with the other contracts and contract drafts assigned to this project the maximum amount of hours is exceeded! ",
+                  span(
+                    cls := "underline cursor-pointer",
+                    onClick.foreach(_ => {
+                      this.updateHoursPerMonth(
+                        if (maxHoursForProject.get < 0) 0
+                        else maxHoursForProject.get,
+                      )
+                    }),
+                    s"You might want to reduce the monthly hours to ${if (maxHoursForProject.get < 0) 0
+                      else maxHoursForProject.get}.",
+                  ),
+                ),
+              )
+            } else {
+              p()
+            }
+          },
+        ),
+      ),
+    ),
+  )
 }
 
 class SelectProject(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
@@ -678,28 +663,27 @@ class SelectProject(
           label(
             cls := "font-bold",
             Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "Contracts:" else "Other Contracts:",
-              )
+              if (editingValue.value.isDraft.getOrElse(true))
+                "Contracts:"
+              else
+                "Other Contracts:"
             },
           ),
           div(
             Signal.dynamic {
-              editingValue.value.flatMap((_, value) =>
-                value.value.contractAssociatedProject.option.flatMap(id =>
-                  jsImplicits.repositories.projects.all.value
-                    .find(project => project.id == id)
-                    .map(project =>
-                      ProjectAttributes()
-                        .countContractHours(
-                          id,
-                          project.signal.value,
-                          (id, contract) => !contract.isDraft.getOrElse(true) && id != existingId,
-                        )
-                        .value
-                        .toString + " h",
-                    ),
-                ),
+              editingValue.value.contractAssociatedProject.option.flatMap(id =>
+                jsImplicits.repositories.projects.all.value
+                  .find(project => project.id == id)
+                  .map(project =>
+                    ProjectAttributes()
+                      .countContractHours(
+                        id,
+                        project.signal.value,
+                        (id, contract) => !contract.isDraft.getOrElse(true) && id != existingId,
+                      )
+                      .value
+                      .toString + " h",
+                  ),
               )
             },
           ),
@@ -709,28 +693,27 @@ class SelectProject(
           label(
             cls := "font-bold",
             Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "Other Drafts:" else "Drafts:",
-              )
+              if (editingValue.value.isDraft.getOrElse(true))
+                "Other Drafts:"
+              else
+                "Drafts:"
             },
           ),
           div(
             Signal.dynamic {
-              editingValue.value.flatMap((_, value) =>
-                value.value.contractAssociatedProject.option.flatMap(id =>
-                  jsImplicits.repositories.projects.all.value
-                    .find(project => project.id == id)
-                    .map(project =>
-                      ProjectAttributes()
-                        .countContractHours(
-                          id,
-                          project.signal.value,
-                          (id, contract) => contract.isDraft.getOrElse(true) && id != existingId,
-                        )
-                        .value
-                        .toString + " h",
-                    ),
-                ),
+              editingValue.value.contractAssociatedProject.option.flatMap(id =>
+                jsImplicits.repositories.projects.all.value
+                  .find(project => project.id == id)
+                  .map(project =>
+                    ProjectAttributes()
+                      .countContractHours(
+                        id,
+                        project.signal.value,
+                        (id, contract) => contract.isDraft.getOrElse(true) && id != existingId,
+                      )
+                      .value
+                      .toString + " h",
+                  ),
               )
             },
           ),
@@ -740,18 +723,18 @@ class SelectProject(
           label(
             cls := "font-bold",
             Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "This Draft:" else "This Contract:",
-              )
+              if (editingValue.value.isDraft.getOrElse(true))
+                "This Draft:"
+              else
+                "This Contract:"
             },
           ),
           div(
             Signal.dynamic {
-              editingValue.value.map((_, value) => {
-                if (value.value.contractEndDate.option.nonEmpty && value.value.contractStartDate.option.nonEmpty) {
-                  s"${ContractPageAttributes().getTotalHours(existingId, value.value)} h"
-                } else ""
-              })
+              val contract = editingValue.value
+              if (contract.contractEndDate.option.nonEmpty && contract.contractStartDate.option.nonEmpty) {
+                s"${ContractPageAttributes().getTotalHours(existingId, contract)} h"
+              } else ""
             },
           ),
         ),
@@ -759,12 +742,12 @@ class SelectProject(
           cls := "basis-[12.5%] flex flex-row md:flex-col justify-between",
           label(cls := "font-bold", "Max. hours"),
           div(Signal.dynamic {
-            editingValue.value.flatMap((_, value) =>
-              value.value.contractAssociatedProject.option.flatMap(id =>
-                jsImplicits.repositories.projects.all.value
-                  .find(project => project.id == id)
-                  .map(value => s"${value.signal.value.maxHours.getOrElse(0)} h"),
-              ),
+            val contract = editingValue.value
+            contract.contractAssociatedProject.option.flatMap(id =>
+              jsImplicits.repositories.projects
+                .find(id)
+                .value
+                .map(project => s"${project.signal.value.maxHours.getOrElse(0)} h"),
             )
           }),
         ),
@@ -775,7 +758,7 @@ class SelectProject(
 
 class ContractType(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
@@ -794,7 +777,7 @@ class ContractType(
 
 class ContractRequirements(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
@@ -817,7 +800,7 @@ class ContractRequirements(
 
 class ContractRequirementsMail(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editContract: Var[Contract],
     save: () => Unit,
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
@@ -826,7 +809,7 @@ class ContractRequirementsMail(
 ) extends Step(
       "Contract requirements - reminder mail",
       existingId,
-      editingValue,
+      editContract,
       disabled,
       disabledDescription,
     ) {
@@ -843,67 +826,62 @@ class ContractRequirementsMail(
             e.preventDefault()
             document.querySelector("#sendReminder").classList.add("loading")
 
-            editingValue.now.map((contract, _) => {
-              val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                p.id == contract.contractAssociatedSupervisor.getOrElse(""),
-              )
-              val hiwiOption =
-                jsImplicits.repositories.hiwis.all.now.find(p => p.id == contract.contractAssociatedHiwi.getOrElse(""))
+            val contract = editContract.now
 
-              val contractTypeOption =
-                jsImplicits.repositories.contractSchemas.all.now.find(p => p.id == contract.contractType.getOrElse(""))
+            val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
+              p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+            )
+            val hiwiOption =
+              jsImplicits.repositories.hiwis.all.now.find(p => p.id == contract.contractAssociatedHiwi.getOrElse(""))
 
-              val documents = jsImplicits.repositories.requiredDocuments.all.now
+            val contractTypeOption =
+              jsImplicits.repositories.contractSchemas.all.now.find(p => p.id == contract.contractType.getOrElse(""))
 
-              if (hiwiOption.nonEmpty && supervisorOption.nonEmpty && contractTypeOption.nonEmpty) {
-                val hiwi = hiwiOption.get.signal.now
-                val supervisor = supervisorOption.get.signal.now
-                val neededDocuments = contractTypeOption.get.signal.now.files.option
-                  .getOrElse(Seq.empty)
-                  .filter(p => !contract.requiredDocuments.getOrElse(Seq.empty).contains(p))
-                  .map(documentId =>
-                    documents
-                      .find(p => p.id == documentId)
-                      .map(document => document.signal.now.name.getOrElse(""))
-                      .getOrElse(""),
-                  )
+            val documents = jsImplicits.repositories.requiredDocuments.all.now
 
-                jsImplicits.mailing
-                  .sendMail(
-                    hiwi.eMail.getOrElse(""),
-                    supervisor.eMail.getOrElse(""),
-                    supervisor.name.getOrElse(""),
-                    ReminderMail(
-                      hiwi,
-                      supervisor,
-                      (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
-                      neededDocuments,
-                    ),
-                    Seq(supervisor.eMail.getOrElse("")),
-                  )
-                  .onComplete({
-                    case Failure(e) =>
-                      println(e)
-                      jsImplicits.toaster.error("Sending mail")
-                    case Success(ans) =>
-                      document.querySelector("#sendReminder").classList.remove("loading")
-                      if (ans.rejected.length > 0) {
-                        jsImplicits.toaster.warn(s"Could not deliver mail to ${ans.rejected.mkString(", ")}.")
-                      }
-                      if (ans.accepted.length > 0) {
-                        editingValue.now
-                          .foreach((_, contract) => {
-                            contract
-                              .set(contract.now.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
-                            save()
-                          })
+            if (hiwiOption.nonEmpty && supervisorOption.nonEmpty && contractTypeOption.nonEmpty) {
+              val hiwi = hiwiOption.get.signal.now
+              val supervisor = supervisorOption.get.signal.now
+              val neededDocuments = contractTypeOption.get.signal.now.files.option
+                .getOrElse(Seq.empty)
+                .filter(p => !contract.requiredDocuments.getOrElse(Seq.empty).contains(p))
+                .map(documentId =>
+                  documents
+                    .find(p => p.id == documentId)
+                    .map(document => document.signal.now.name.getOrElse(""))
+                    .getOrElse(""),
+                )
 
-                        jsImplicits.toaster.make(s"Sent mail to ${ans.accepted.mkString(" and ")}.")
-                      }
-                  })
-              }
+              jsImplicits.mailing
+                .sendMail(
+                  hiwi.eMail.getOrElse(""),
+                  supervisor.eMail.getOrElse(""),
+                  supervisor.name.getOrElse(""),
+                  ReminderMail(
+                    hiwi,
+                    supervisor,
+                    (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
+                    neededDocuments,
+                  ),
+                  Seq(supervisor.eMail.getOrElse("")),
+                )
+                .onComplete({
+                  case Failure(e) =>
+                    println(e)
+                    jsImplicits.toaster.error("Sending mail")
+                  case Success(ans) =>
+                    document.querySelector("#sendReminder").classList.remove("loading")
+                    if (ans.rejected.length > 0) {
+                      jsImplicits.toaster.warn(s"Could not deliver mail to ${ans.rejected.mkString(", ")}.")
+                    }
+                    if (ans.accepted.length > 0) {
+                      editContract.transform(_.copy(reminderSentDate = Attribute(js.Date.now.toLong)))
+                      save()
+                      jsImplicits.toaster.make(s"Sent mail to ${ans.accepted.mkString(" and ")}.")
+                    }
+                })
+            }
 
-            })
           }),
         ),
         div(
@@ -912,10 +890,7 @@ class ContractRequirementsMail(
           span(
             cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
             Signal.dynamic {
-              val date = editingValue.value
-                .flatMap((_, contract) => contract.value.reminderSentDate.option)
-                .getOrElse(0L)
-
+              val date = editContract.value.reminderSentDate.getOrElse(0L)
               if (date > 0L) toGermanDate(date) else "Never"
             },
           ),
@@ -925,15 +900,15 @@ class ContractRequirementsMail(
   }
 }
 
-class CreateContract(
+class CreateHiwiDocuments(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     save: () => Unit,
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("Create Documents", existingId, editingValue, disabled, disabledDescription) {
+) extends Step("Create Documents for Hiwi", existingId, editingValue, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -942,20 +917,21 @@ class CreateContract(
           cls := "flex gap-2",
           Button(
             ButtonStyle.LightPrimary,
-            "Create Contract PDF",
-            idAttr := "loadPDF",
+            "Create Documents",
+            idAttr := "loadDocuments",
             onClick.foreach(e => {
               e.preventDefault()
-              document.getElementById("loadPDF").classList.add("loading")
-              this.contractPDF
-                .andThen(v => {
-                  document.getElementById("loadPDF").classList.remove("loading")
+              document.getElementById("loadDocuments").classList.add("loading")
+              this
+                .fillContractPDF(Globals.VITE_CONTRACT_PDF_PATH)
+                .toastOnError()
+                .onComplete(v => {
+                  document.getElementById("loadDocuments").classList.remove("loading")
                   if (v.isSuccess) {
-                    val buffer = v.get.get
+                    val buffer = v.get
                     PDF.download("contract.pdf", buffer)
                   }
                 })
-                .toastOnError()
             }),
           ),
           div(
@@ -969,55 +945,52 @@ class CreateContract(
                 e.preventDefault()
                 document.querySelector("#sendContract").classList.add("loading")
 
-                editingValue.now.map((contract, _) => {
-                  val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                    p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+                val contract = editingValue.now
+
+                val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
+                  p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+                )
+                val hiwiOption =
+                  jsImplicits.repositories.hiwis.all.now.find(p =>
+                    p.id == contract.contractAssociatedHiwi.getOrElse(""),
                   )
-                  val hiwiOption =
-                    jsImplicits.repositories.hiwis.all.now.find(p =>
-                      p.id == contract.contractAssociatedHiwi.getOrElse(""),
-                    )
 
-                  if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
-                    val hiwi = hiwiOption.get.signal.now
-                    val supervisor = supervisorOption.get.signal.now
+                if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
+                  val hiwi = hiwiOption.get.signal.now
+                  val supervisor = supervisorOption.get.signal.now
 
-                    this.contractPDF
-                      .andThen(cotract => {
-                        jsImplicits.mailing
-                          .sendMail(
-                            hiwi.eMail.getOrElse(""),
-                            supervisor.eMail.getOrElse(""),
-                            supervisor.name.getOrElse(""),
-                            ContractEmail(
-                              hiwi,
-                              supervisor,
-                              (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
-                              cotract.get.get,
-                            ),
-                            Seq(supervisor.eMail.getOrElse("")),
-                          )
-                          .andThen(ans => {
-                            document.querySelector("#sendContract").classList.remove("loading")
-                            if (ans.get.rejected.length > 0) {
-                              jsImplicits.toaster
-                                .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
-                            }
-                            if (ans.get.accepted.length > 0) {
-                              editingValue.now
-                                .foreach((_, contract) => {
-                                  contract
-                                    .set(contract.now.copy(contractSentDate = Attribute(js.Date.now.toLong)))
-                                })
-                              save()
-                              jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
-                            }
-                          })
-                          .toastOnError()
-                      })
-                      .toastOnError()
-                  }
-                })
+                  this
+                    .fillContractPDF(Globals.VITE_CONTRACT_PDF_PATH)
+                    .toastOnError()
+                    .onComplete(contract => {
+                      jsImplicits.mailing
+                        .sendMail(
+                          hiwi.eMail.getOrElse(""),
+                          supervisor.eMail.getOrElse(""),
+                          supervisor.name.getOrElse(""),
+                          ContractEmail(
+                            hiwi,
+                            supervisor,
+                            (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
+                            contract.get,
+                          ),
+                          Seq(supervisor.eMail.getOrElse("")),
+                        )
+                        .andThen(ans => {
+                          document.querySelector("#sendContract").classList.remove("loading")
+                          if (ans.get.rejected.length > 0) {
+                            jsImplicits.toaster
+                              .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
+                          }
+                          if (ans.get.accepted.length > 0) {
+                            editingValue.transform(_.copy(contractSentDate = Attribute(js.Date.now.toLong)))
+                            save()
+                            jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
+                          }
+                        })
+                        .toastOnError()
+                    })
+                }
               }),
             ),
             div(
@@ -1026,10 +999,7 @@ class CreateContract(
               span(
                 cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
-                  val date = editingValue.value
-                    .flatMap((_, contract) => contract.value.contractSentDate.option)
-                    .getOrElse(0L)
-
+                  val date = editingValue.value.contractSentDate.getOrElse(0L)
                   if (date > 0L) toGermanDate(date) else "Never"
                 },
               ),
@@ -1044,11 +1014,13 @@ class CreateContract(
       ),
     )
   }
+
+  def generateDocuments: Future[Seq[ArrayBuffer[Short]]] = ???
 }
 
 class CreateLetter(
     existingId: String,
-    editingValue: Var[Option[(Contract, Var[Contract])]],
+    editingValue: Var[Contract],
     save: () => Unit,
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
@@ -1068,15 +1040,16 @@ class CreateLetter(
             onClick.foreach(e => {
               e.preventDefault()
               document.getElementById("loadLetter").classList.add("loading")
-              this.letterPDF
-                .andThen(v => {
+              this
+                .fillLetterPDF(Globals.VITE_LETTER_PDF_PATH)
+                .toastOnError()
+                .onComplete(v => {
                   document.getElementById("loadLetter").classList.remove("loading")
                   if (v.isSuccess) {
-                    val buffer = v.get.get
+                    val buffer = v.get
                     PDF.download("letter.pdf", buffer)
                   }
                 })
-                .toastOnError()
             }),
           ),
           div(
@@ -1089,54 +1062,52 @@ class CreateLetter(
               onClick.foreach(e => {
                 e.preventDefault()
                 document.querySelector("#sendLetter").classList.add("loading")
-                editingValue.now.map((contract, _) => {
-                  val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                    p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+
+                val contract = editingValue.now
+
+                val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
+                  p.id == contract.contractAssociatedSupervisor.getOrElse(""),
+                )
+                val hiwiOption =
+                  jsImplicits.repositories.hiwis.all.now.find(p =>
+                    p.id == contract.contractAssociatedHiwi.getOrElse(""),
                   )
-                  val hiwiOption =
-                    jsImplicits.repositories.hiwis.all.now.find(p =>
-                      p.id == contract.contractAssociatedHiwi.getOrElse(""),
-                    )
 
-                  if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
-                    val hiwi = hiwiOption.get.signal.now
-                    val supervisor = supervisorOption.get.signal.now
+                if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
+                  val hiwi = hiwiOption.get.signal.now
+                  val supervisor = supervisorOption.get.signal.now
 
-                    this.letterPDF
-                      .andThen(letter => {
-                        jsImplicits.mailing
-                          .sendMail(
-                            Globals.VITE_DEKANAT_MAIL,
-                            supervisor.eMail.getOrElse(""),
-                            supervisor.name.getOrElse(""),
-                            DekanatMail(
-                              hiwi,
-                              supervisor,
-                              letter.get.get,
-                            ),
-                            Seq(supervisor.eMail.getOrElse("")),
-                          )
-                          .andThen(ans => {
-                            document.querySelector("#sendLetter").classList.remove("loading")
-                            if (ans.get.rejected.length > 0) {
-                              jsImplicits.toaster
-                                .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
-                            }
-                            if (ans.get.accepted.length > 0) {
-                              editingValue.now
-                                .foreach((_, contract) => {
-                                  contract
-                                    .set(contract.now.copy(letterSentDate = Attribute(js.Date.now.toLong)))
-                                })
-                              save()
-                              jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
-                            }
-                          })
-                          .toastOnError()
-                      })
-                      .toastOnError()
-                  }
-                })
+                  this
+                    .fillLetterPDF(Globals.VITE_LETTER_PDF_PATH)
+                    .toastOnError()
+                    .onComplete(letter => {
+                      jsImplicits.mailing
+                        .sendMail(
+                          Globals.VITE_DEKANAT_MAIL,
+                          supervisor.eMail.getOrElse(""),
+                          supervisor.name.getOrElse(""),
+                          DekanatMail(
+                            hiwi,
+                            supervisor,
+                            letter.get,
+                          ),
+                          Seq(supervisor.eMail.getOrElse("")),
+                        )
+                        .andThen(ans => {
+                          document.querySelector("#sendLetter").classList.remove("loading")
+                          if (ans.get.rejected.length > 0) {
+                            jsImplicits.toaster
+                              .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
+                          }
+                          if (ans.get.accepted.length > 0) {
+                            editingValue.transform(_.copy(letterSentDate = Attribute(js.Date.now.toLong)))
+                            save()
+                            jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
+                          }
+                        })
+                        .toastOnError()
+                    })
+                }
               }),
             ),
             div(
@@ -1145,10 +1116,7 @@ class CreateLetter(
               span(
                 cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
-                  val date = editingValue.value
-                    .flatMap((_, contract) => contract.value.letterSentDate.option)
-                    .getOrElse(0L)
-
+                  val date = editingValue.value.letterSentDate.getOrElse(0L)
                   if (date > 0L) toGermanDate(date) else "Never"
                 },
               ),
@@ -1172,7 +1140,7 @@ class InnerExtendContractsPage(override val existingValue: Synced[Contract], ove
   private def createDraft(): Future[String] = {
     jsImplicits.indexeddb.requestPersistentStorage()
 
-    val editingNow = editingValue.now.get._2.now
+    val editingNow = editContract.now
     val draftContract = Contract(
       contractAssociatedProject = editingNow.contractAssociatedProject,
       contractAssociatedHiwi = editingNow.contractAssociatedHiwi,
@@ -1187,9 +1155,8 @@ class InnerExtendContractsPage(override val existingValue: Synced[Contract], ove
     jsImplicits.repositories.contracts
       .create(draftContract)
       .map(entity => {
-        editingValue.set(Some((Contract.empty.default, Var(Contract.empty.default))))
+        editContract.set(entity.signal.now)
         jsImplicits.routing.to(EditContractsPage(entity.id))
-
         entity.id
       })
   }
@@ -1207,7 +1174,7 @@ class InnerExtendContractsPage(override val existingValue: Synced[Contract], ove
       div(
         cls := "relative md:shadow-md md:rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
         form(
-          BasicInformation(contractId, editingValue, Signal(Seq.empty), "", true).render,
+          BasicInformation(contractId, editContract, Signal(Seq.empty), "", true).render,
           div(
             idAttr := "static_buttons",
             cls := "pl-4 flex flex-col md:flex-row gap-2",
@@ -1232,29 +1199,26 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
 
   private def isCompleted: Signal[Boolean] = {
     Signal.dynamic {
-      editingValue.value.exists((_, contractSignal) => {
-        val contract = contractSignal.value
-        val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
-          .find(s => s.id == contract.contractType.getOrElse(""))
-          .flatMap(t => t.signal.value.files.option)
+      val contract = editContract.value
+      val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
+        .find(s => s.id == contract.contractType.getOrElse(""))
+        .flatMap(t => t.signal.value.files.option)
 
-        contract.contractAssociatedHiwi.option.isEmpty ||
-        contract.contractAssociatedSupervisor.option.isEmpty ||
-        contract.contractStartDate.option.isEmpty ||
-        contract.contractEndDate.option.isEmpty ||
-        contract.contractAssociatedProject.option.isEmpty ||
-        contract.contractHoursPerMonth.option.isEmpty ||
-        contract.contractHoursPerMonth.getOrElse(0) < 0 ||
-        contract.contractAssociatedPaymentLevel.option.isEmpty ||
-        dateDiffDays(contract.contractStartDate.getOrElse(0L), contract.contractEndDate.getOrElse(0L)) < 0 ||
-        dateDiffDays(js.Date.now().toLong, contract.contractEndDate.getOrElse(0L)) < 0 ||
-        contract.requiredDocuments.option.isEmpty ||
-        !contract.isSigned.getOrElse(false) ||
-        !requiredDocuments
-          .getOrElse(Seq.empty)
-          .forall(id => contract.requiredDocuments.getOrElse(Seq.empty).contains(id))
-
-      })
+      contract.contractAssociatedHiwi.option.isEmpty ||
+      contract.contractAssociatedSupervisor.option.isEmpty ||
+      contract.contractStartDate.option.isEmpty ||
+      contract.contractEndDate.option.isEmpty ||
+      contract.contractAssociatedProject.option.isEmpty ||
+      contract.contractHoursPerMonth.option.isEmpty ||
+      contract.contractHoursPerMonth.getOrElse(0) < 0 ||
+      contract.contractAssociatedPaymentLevel.option.isEmpty ||
+      dateDiffDays(contract.contractStartDate.getOrElse(0L), contract.contractEndDate.getOrElse(0L)) < 0 ||
+      dateDiffDays(js.Date.now().toLong, contract.contractEndDate.getOrElse(0L)) < 0 ||
+      contract.requiredDocuments.option.isEmpty ||
+      !contract.isSigned.getOrElse(false) ||
+      !requiredDocuments
+        .getOrElse(Seq.empty)
+        .forall(id => contract.requiredDocuments.getOrElse(Seq.empty).contains(id))
     }
   }
 
@@ -1265,7 +1229,7 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
   ): Future[String] = {
     jsImplicits.indexeddb.requestPersistentStorage()
 
-    val editingNow = editingValue.now.get._2.now
+    val editingNow = editContract.now
     existingValue
       .update(p => {
         val c = p.getOrElse(Contract.empty).merge(editingNow)
@@ -1297,24 +1261,17 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
   }
 
   protected def cancelEdit(): Unit = Signal.dynamic {
-    editingValue.value.map((_, contract) => {
-      if (contract.value.isDraft.getOrElse(true)) {
-        jsImplicits.routing.to(ContractDraftsPage())
-      } else {
-        jsImplicits.routing.to(ContractsPage())
-      }
-    })
-
+    if (editContract.value.isDraft.getOrElse(true)) {
+      jsImplicits.routing.to(ContractDraftsPage())
+    } else {
+      jsImplicits.routing.to(ContractsPage())
+    }
   }
 
-  var editingValue: Var[Option[(Contract, Var[Contract])]] = Var(
-    Option(existingValue.signal.now, Var(existingValue.signal.now)),
-  )
+  var editContract: Var[Contract] = Var(existingValue.signal.now)
 
   private val isDirty: Signal[Boolean] = Signal.dynamic {
-    !editingValue.value.forall { (_, a) =>
-      a.value == existingValue.signal
-    }
+    editContract.value != existingValue.signal.value
   }
 
   private val actions: Seq[VNode] = Seq(
@@ -1430,92 +1387,81 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
           h1(
             cls := "text-3xl mt-4 text-center",
             Signal.dynamic {
-              editingValue.value.map((_, value) =>
-                if (value.value.isDraft.getOrElse(true)) "Edit Contract Draft" else "Edit Contract",
-              )
+              if (editContract.value.isDraft.getOrElse(true))
+                "Edit Contract Draft"
+              else
+                "Edit Contract"
             },
           ),
         ),
         div(
           cls := "relative md:shadow-md rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
           form(
-            BasicInformation(contractId, editingValue).render,
-            SelectProject(contractId, editingValue).render,
-            ContractType(contractId, editingValue).render,
-            ContractRequirements(contractId, editingValue).render,
+            BasicInformation(contractId, editContract).render,
+            SelectProject(contractId, editContract).render,
+            ContractType(contractId, editContract).render,
+            ContractRequirements(contractId, editContract).render,
             ContractRequirementsMail(
               contractId,
-              editingValue,
+              editContract,
               () => createOrUpdate(stayOnPage = true),
               Signal.dynamic {
-                editingValue.value
-                  .map((_, contractSignal) => {
-                    val contract = contractSignal.value
-                    val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
-                      .find(s => s.id == contract.contractType.getOrElse(""))
-                      .flatMap(t => t.signal.value.files.option)
-                    Seq(
-                      contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
-                      contract.contractAssociatedSupervisor.option.isEmpty -> "a supervisor",
-                      contract.contractType.option.isEmpty -> "a contract schema",
-                      !jsImplicits.discovery.online.value -> "to be connected to the discovery server",
-                      (contract.contractType.option.nonEmpty && requiredDocuments
-                        .getOrElse(Seq.empty)
-                        .isEmpty) -> "at least one requirement that can be checked",
-                      (contract.contractType.option.nonEmpty && requiredDocuments
-                        .getOrElse(Seq.empty)
-                        .forall(id =>
-                          contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
-                        )) -> "at least one requirement that has not been checked",
-                    )
-                  })
-                  .getOrElse(Seq.empty)
+                val contract = editContract.value
+                val requiredDocuments: Seq[String] =
+                  jsImplicits.repositories.contractSchemas
+                    .find(contract.contractType.get)
+                    .value
+                    .flatMap(t => t.signal.value.files.option)
+                    .getOrElse(Seq.empty)
+                Seq(
+                  contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
+                  contract.contractAssociatedSupervisor.option.isEmpty -> "a supervisor",
+                  contract.contractType.option.isEmpty -> "a contract schema",
+                  !jsImplicits.discovery.online.value -> "to be connected to the discovery server",
+                  (contract.contractType.hasValue && requiredDocuments.isEmpty) -> "at least one requirement that can be checked",
+                  (contract.contractType.hasValue && requiredDocuments
+                    .forall(id =>
+                      contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
+                    )) -> "at least one requirement that has not been checked",
+                )
               },
               "send a reminder email",
             ).render,
-            CreateContract(
+            CreateHiwiDocuments(
               contractId,
-              editingValue,
+              editContract,
               () => createOrUpdate(false, true, true),
               Signal.dynamic {
-                editingValue.value
-                  .map((_, contractSignal) => {
-                    val contract = contractSignal.value
-                    val hiwi = jsImplicits.repositories.hiwis.all.value.find(hiwi =>
-                      hiwi.id == contract.contractAssociatedHiwi.getOrElse(""),
-                    )
-                    Seq(
-                      hiwi.isEmpty -> "a hiwi",
-                      contract.contractEndDate.option.isEmpty -> "an end date",
-                      contract.contractStartDate.option.isEmpty -> "a start date",
-                      contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
-                      (hiwi.nonEmpty && hiwi.get.signal.value.birthdate.option.isEmpty) -> "a hiwi with a birthdate",
-                      contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
-                    )
-                  })
-                  .getOrElse(Seq.empty)
+                val contract = editContract.value
+                val hiwi =
+                  contract.contractAssociatedHiwi.option
+                    .flatMap(id => jsImplicits.repositories.hiwis.find(id).value)
+                Seq(
+                  hiwi.isEmpty -> "a hiwi",
+                  contract.contractEndDate.option.isEmpty -> "an end date",
+                  contract.contractStartDate.option.isEmpty -> "a start date",
+                  contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
+                  hiwi.flatMap(_.signal.value.birthdate.option).isEmpty -> "a hiwi with a date of birth",
+                  contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
+                )
               },
               "create and download a contract",
             ).render,
             CreateLetter(
               contractId,
-              editingValue,
+              editContract,
               () => createOrUpdate(false, true, true),
               Signal.dynamic {
-                editingValue.value
-                  .map((_, contractSignal) => {
-                    val contract = contractSignal.value
-                    Seq(
-                      contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
-                      contract.contractEndDate.option.isEmpty -> "an end date",
-                      contract.contractStartDate.option.isEmpty -> "a start date",
-                      contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
-                      contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
-                      contract.contractAssociatedProject.option.isEmpty -> "a project",
-                      !contract.isSigned.getOrElse(false) -> "a signed contract",
-                    )
-                  })
-                  .getOrElse(Seq.empty)
+                val contract = editContract.value
+                Seq(
+                  contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
+                  contract.contractEndDate.option.isEmpty -> "an end date",
+                  contract.contractStartDate.option.isEmpty -> "a start date",
+                  contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
+                  contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
+                  contract.contractAssociatedProject.option.isEmpty -> "a project",
+                  !contract.isSigned.getOrElse(false) -> "a signed contract",
+                )
               },
               "create and download a letter",
             ).render,

@@ -10,6 +10,7 @@ case class Document(
     name: Attribute[String] = Attribute.empty,
     location: Attribute[String] = Attribute.empty,
     autofill: Attribute[Autofill] = Attribute(Autofill.NoFill),
+    mailto: Attribute[DocumentForWhom] = Attribute(DocumentForWhom.NoOne),
     _exists: Attribute[Boolean] = Attribute.empty,
 ) extends Entity[Document]
     derives Lattice,

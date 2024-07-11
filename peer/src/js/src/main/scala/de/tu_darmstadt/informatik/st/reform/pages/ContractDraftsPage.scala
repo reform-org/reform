@@ -41,8 +41,8 @@ class DraftDetailPageEntityRow[T <: Entity[T]](
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
-      case New(value)                    =>
+      case Existing(value) => jsImplicits.routing.to(EditContractsPage(value.id))
+      case New(value)      =>
     }
   }
 }
