@@ -37,6 +37,7 @@ import scala.math.BigDecimal.RoundingMode
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.util.*
+
 import ContractsPage.*
 
 case class NewContractPage()(using
@@ -103,13 +104,13 @@ case class EditContractsPage(contractId: String)(using
 abstract class Step(
     title: String,
     existingId: String,
-    editingValue: Var[Contract],
+    contractVar: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
     disabledDescription: String = "",
 )(using jsImplicits: JSImplicits) {
 
   protected def updateHoursPerMonth(hours: Int): Unit = {
-    editingValue.transform(c => c.copy(contractHoursPerMonth = c.contractHoursPerMonth.set(hours)))
+    contractVar.transform(c => c.copy(contractHoursPerMonth = c.contractHoursPerMonth.set(hours)))
   }
 
   protected def editStep(children: VMod*): VNode = {
@@ -153,8 +154,32 @@ abstract class Step(
     )
   }
 
+  protected def fillDocuments(forWhom: DocumentsForWhom): Future[Seq[(String, ArrayBuffer[Short])]] = {
+    val docs = ContractDocuments()
+      .documentsFromSchema(contractVar)
+      .now
+      .map(id =>
+        jsImplicits.repositories.documents
+          .find(id)
+          .now
+          .get
+          .signal
+          .now,
+      )
+      .filter(_.mailto.option.contains(forWhom))
+      .map(doc => {
+        val filled = doc.autofill.getOrElse(Autofill.NoFill) match {
+          case Autofill.NoFill       => PDF.fill(doc.location.get, Seq.empty)
+          case Autofill.FillContract => fillContractPDF(doc.location.get)
+          case Autofill.FillLetter   => fillLetterPDF(doc.location.get)
+        }
+        filled.map(doc.name.getOrElse("Untitled") + ".pdf" -> _)
+      })
+    Future.sequence(docs)
+  }
+
   protected def fillLetterPDF(url: String): Future[ArrayBuffer[Short]] = {
-    val contract = editingValue.now
+    val contract = contractVar.now
     val hiwiOption =
       jsImplicits.repositories.hiwis
         .find(contract.contractAssociatedHiwi.getOrElse(""))
@@ -229,7 +254,7 @@ abstract class Step(
 
   protected def fillContractPDF(url: String): Future[ArrayBuffer[Short]] = {
     val promise: Promise[ArrayBuffer[Short]] = Promise()
-    val contract = editingValue.now
+    val contract = contractVar.now
 
     val hiwiOption =
       jsImplicits.repositories.hiwis
@@ -896,7 +921,8 @@ class ContractRequirementsMail(
   }
 }
 
-class CreateHiwiDocuments(
+class CreateDocuments(
+    forWhom: DocumentsForWhom,
     existingId: String,
     contractVar: Var[Contract],
     save: () => Unit,
@@ -904,8 +930,12 @@ class CreateHiwiDocuments(
     disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("Create Documents for the Hiwi", existingId, contractVar, disabled, disabledDescription) {
+) extends Step(s"Create Documents for ${forWhom.display}", existingId, contractVar, disabled, disabledDescription) {
+
   def render: VMod = {
+    val loadId = s"load-${forWhom.id}-docs"
+    val sendId = s"send-${forWhom.id}-docs"
+
     this.editStep(
       div(
         cls := "p-4 flex flex-col",
@@ -914,14 +944,14 @@ class CreateHiwiDocuments(
           Button(
             ButtonStyle.LightPrimary,
             "Create Documents",
-            idAttr := "loadHiwiDocs",
+            idAttr := loadId,
             onClick.foreach(e => {
               e.preventDefault()
-              document.getElementById("loadHiwiDocs").classList.add("loading")
-              fillDocuments(DocumentForWhom.Hiwi)
+              document.getElementById(loadId).classList.add("loading")
+              fillDocuments(forWhom)
                 .toastOnError()
                 .onComplete(v => {
-                  document.getElementById("loadHiwiDocs").classList.remove("loading")
+                  document.getElementById(loadId).classList.remove("loading")
                   if (v.isSuccess) {
                     val docs = v.get
                     docs.foreach { (name, buffer) =>
@@ -935,12 +965,17 @@ class CreateHiwiDocuments(
             cls := "flex flex-col gap-2",
             Button(
               ButtonStyle.LightDefault,
-              "Send Contract PDF",
-              idAttr := "sendContract",
+              "Send Documents",
+              idAttr := sendId,
               dsl.disabled <-- jsImplicits.discovery.online.map(!_),
               onClick.foreach(e => {
                 e.preventDefault()
-                document.querySelector("#sendContract").classList.add("loading")
+
+                if (forWhom == DocumentsForWhom.ForNobody) {
+                  throw new IllegalStateException()
+                }
+
+                document.getElementById(sendId).classList.add("loading")
 
                 val contract = contractVar.now
 
@@ -956,25 +991,43 @@ class CreateHiwiDocuments(
                   val hiwi = hiwiOption.get.signal.now
                   val supervisor = supervisorOption.get.signal.now
 
-                  this
-                    .fillContractPDF(Globals.VITE_CONTRACT_PDF_PATH)
+                  fillDocuments(forWhom)
                     .toastOnError()
-                    .onComplete(contract => {
-                      jsImplicits.mailing
-                        .sendMail(
-                          hiwi.eMail.getOrElse(""),
-                          supervisor.eMail.getOrElse(""),
-                          supervisor.name.getOrElse(""),
+                    .onComplete(documents => {
+
+                      val mail = forWhom match {
+                        case DocumentsForWhom.ForHiwi =>
                           ContractEmail(
                             hiwi,
                             supervisor,
                             (js.Date.now + 12096e5).toLong, // magic Number is 14 days in ms
-                            contract.get,
-                          ),
-                          Seq(supervisor.eMail.getOrElse("")),
+                            documents.get,
+                          )
+                        case DocumentsForWhom.ForDekanat =>
+                          DekanatMail(
+                            hiwi,
+                            supervisor,
+                            documents.get,
+                          )
+                        case _ => ???
+                      }
+
+                      val to = forWhom match {
+                        case DocumentsForWhom.ForHiwi    => hiwi.eMail.get
+                        case DocumentsForWhom.ForDekanat => Globals.VITE_DEKANAT_MAIL
+                        case _                           => ???
+                      }
+
+                      jsImplicits.mailing
+                        .sendMail(
+                          to,
+                          supervisor.eMail.get,
+                          supervisor.name.get,
+                          mail,
+                          Seq(supervisor.eMail.get),
                         )
                         .andThen(ans => {
-                          document.querySelector("#sendContract").classList.remove("loading")
+                          document.getElementById(sendId).classList.remove("loading")
                           if (ans.get.rejected.length > 0) {
                             jsImplicits.toaster
                               .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
@@ -996,7 +1049,7 @@ class CreateHiwiDocuments(
               span(
                 cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
-                  val date = contractVar.value.contractSentDate.getOrElse(0L)
+                  val date = forWhom.lastSent(contractVar.value)
                   if (date > 0L) toGermanDate(date) else "Never"
                 },
               ),
@@ -1005,151 +1058,13 @@ class CreateHiwiDocuments(
         ),
         label(
           ContractPageAttributes().signed.renderEdit("", contractVar, cls := "rounded-md"),
-          span(" The contract has been signed"),
+          span(s" ${forWhom.done}"),
           cls := "mt-2 flex gap-2 items-center",
         ),
       ),
     )
   }
 
-  private def fillDocuments(forWhom: DocumentForWhom): Future[Seq[(String, ArrayBuffer[Short])]] = {
-    val docs = ContractDocuments()
-      .documentsFromSchema(contractVar)
-      .now
-      .map(id =>
-        jsImplicits.repositories.documents
-          .find(id)
-          .now
-          .get
-          .signal
-          .now,
-      )
-      .filter(_.mailto.option.contains(forWhom))
-      .map(doc => {
-        val filled = doc.autofill.getOrElse(Autofill.NoFill) match {
-          case Autofill.NoFill       => PDF.fill(doc.location.get, Seq.empty)
-          case Autofill.FillContract => fillContractPDF(doc.location.get)
-          case Autofill.FillLetter   => fillLetterPDF(doc.location.get)
-        }
-        filled.map(doc.name.getOrElse("Untitled") + ".pdf" -> _)
-      })
-    Future.sequence(docs)
-  }
-}
-
-class CreateLetter(
-    existingId: String,
-    editingValue: Var[Contract],
-    save: () => Unit,
-    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
-    disabledDescription: String = "",
-)(using
-    jsImplicits: JSImplicits,
-) extends Step("Letter to Dekanat", existingId, editingValue, disabled, disabledDescription) {
-  def render: VMod = {
-    this.editStep(
-      div(
-        cls := "p-4 flex flex-col",
-        div(
-          cls := "flex flex-row gap-2",
-          Button(
-            ButtonStyle.LightPrimary,
-            "Create Letter",
-            idAttr := "loadLetter",
-            onClick.foreach(e => {
-              e.preventDefault()
-              document.getElementById("loadLetter").classList.add("loading")
-              this
-                .fillLetterPDF(Globals.VITE_LETTER_PDF_PATH)
-                .toastOnError()
-                .onComplete(v => {
-                  document.getElementById("loadLetter").classList.remove("loading")
-                  if (v.isSuccess) {
-                    val buffer = v.get
-                    PDF.download("letter.pdf", buffer)
-                  }
-                })
-            }),
-          ),
-          div(
-            cls := "flex flex-col gap-2",
-            Button(
-              ButtonStyle.LightDefault,
-              "Send Letter",
-              idAttr := "sendLetter",
-              dsl.disabled <-- jsImplicits.discovery.online.map(!_),
-              onClick.foreach(e => {
-                e.preventDefault()
-                document.querySelector("#sendLetter").classList.add("loading")
-
-                val contract = editingValue.now
-
-                val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
-                  p.id == contract.contractAssociatedSupervisor.getOrElse(""),
-                )
-                val hiwiOption =
-                  jsImplicits.repositories.hiwis.all.now.find(p =>
-                    p.id == contract.contractAssociatedHiwi.getOrElse(""),
-                  )
-
-                if (hiwiOption.nonEmpty && supervisorOption.nonEmpty) {
-                  val hiwi = hiwiOption.get.signal.now
-                  val supervisor = supervisorOption.get.signal.now
-
-                  this
-                    .fillLetterPDF(Globals.VITE_LETTER_PDF_PATH)
-                    .toastOnError()
-                    .onComplete(letter => {
-                      jsImplicits.mailing
-                        .sendMail(
-                          Globals.VITE_DEKANAT_MAIL,
-                          supervisor.eMail.getOrElse(""),
-                          supervisor.name.getOrElse(""),
-                          DekanatMail(
-                            hiwi,
-                            supervisor,
-                            letter.get,
-                          ),
-                          Seq(supervisor.eMail.getOrElse("")),
-                        )
-                        .andThen(ans => {
-                          document.querySelector("#sendLetter").classList.remove("loading")
-                          if (ans.get.rejected.length > 0) {
-                            jsImplicits.toaster
-                              .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
-                          }
-                          if (ans.get.accepted.length > 0) {
-                            editingValue.transform(_.copy(letterSentDate = Attribute(js.Date.now.toLong)))
-                            save()
-                            jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
-                          }
-                        })
-                        .toastOnError()
-                    })
-                }
-              }),
-            ),
-            div(
-              cls := "text-xs text-slate-400 dark:text-gray-400 italic",
-              "Last sent: ",
-              span(
-                cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
-                Signal.dynamic {
-                  val date = editingValue.value.letterSentDate.getOrElse(0L)
-                  if (date > 0L) toGermanDate(date) else "Never"
-                },
-              ),
-            ),
-          ),
-        ),
-        label(
-          ContractPageAttributes().submitted.renderEdit("", editingValue, cls := "rounded-md"),
-          span(" The letter has been submitted"),
-          cls := "mt-2 flex gap-2 items-center",
-        ),
-      ),
-    )
-  }
 }
 
 class InnerExtendContractsPage(override val existingValue: Synced[Contract], override val contractId: String)(using
@@ -1435,7 +1350,8 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
               },
               "send a reminder email",
             ).render,
-            CreateHiwiDocuments(
+            CreateDocuments(
+              DocumentsForWhom.ForHiwi,
               contractId,
               editContract,
               () => createOrUpdate(false, true, true),
@@ -1456,7 +1372,8 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
               },
               "create and download documents",
             ).render,
-            CreateLetter(
+            CreateDocuments(
+              DocumentsForWhom.ForDekanat,
               contractId,
               editContract,
               () => createOrUpdate(false, true, true),

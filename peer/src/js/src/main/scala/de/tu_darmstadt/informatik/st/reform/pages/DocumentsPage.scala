@@ -16,7 +16,6 @@ limitations under the License.
 package de.tu_darmstadt.informatik.st.reform.pages
 
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
-import de.tu_darmstadt.informatik.st.reform.entity.Document
 import de.tu_darmstadt.informatik.st.reform.entity.*
 import org.scalajs.dom.HTMLElement
 import outwatch.*
@@ -68,15 +67,15 @@ class DocumentAttributes(using jsImplicits: JSImplicits) {
     )
 
   def autofill: UIAttribute[Document, Autofill] = BuildUIAttribute()
-    .enumSelect(Autofill.values, Autofill.valueOf)
+    .enumSelect(Autofill.values, Autofill.valueOf, name = _.display)
     .withLabel("Automatic filling")
     .bindAsSelect[Document](
       _.autofill,
       (d, a) => d.copy(autofill = a),
     )
 
-  def mailto: UIAttribute[Document, DocumentForWhom] = BuildUIAttribute()
-    .enumSelect(DocumentForWhom.values, DocumentForWhom.valueOf)
+  def mailto: UIAttribute[Document, DocumentsForWhom] = BuildUIAttribute()
+    .enumSelect(DocumentsForWhom.values, DocumentsForWhom.valueOf, name = "For " + _.display)
     .withLabel("For Whom?")
     .bindAsSelect[Document](
       _.mailto,
