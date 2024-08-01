@@ -39,8 +39,8 @@ case class DocumentsPage()(using
         ),
         " has a number of documents that need to be checked before the contract can be finalized.",
       ),
-      jsImplicits.repositories.requiredDocuments,
-      jsImplicits.repositories.requiredDocuments.all,
+      jsImplicits.repositories.documents,
+      jsImplicits.repositories.documents.all,
       Seq(
         DocumentAttributes().name,
         DocumentAttributes().location,

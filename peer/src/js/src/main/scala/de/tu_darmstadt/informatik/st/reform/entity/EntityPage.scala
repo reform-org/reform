@@ -290,9 +290,9 @@ class EntityRow[T <: Entity[T]](
     jsImplicits.indexeddb.requestPersistentStorage()
 
     val editingNow = editingValue.now.get.now
-    existingValue match {
-      case Some(existing) =>
-        existing
+    value match {
+      case Existing(value) =>
+        value
           .update(e => {
             e.get.merge(editingNow)
           })
@@ -300,11 +300,11 @@ class EntityRow[T <: Entity[T]](
             editingValue.set(None)
           })
           .toastOnError(ToastMode.Infinit)
-      case None =>
+      case New(_) =>
         repository
           .create(editingNow)
           .map(entity => {
-            editingValue.set(None)
+            editingValue.set(Some(Var(bottom.empty.default)))
             entity
           })
           .toastOnError(ToastMode.Infinit)

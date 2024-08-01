@@ -88,7 +88,7 @@ case class ContractDraftsPage()(using
 class ContractDraftAttributes(using jsImplicits: JSImplicits) {
   private def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
     Signal.dynamic {
-      val contractTypeId = contract.contractType.getOrElse("")
+      val contractTypeId = contract.contractSchema.getOrElse("")
       val contractSchema =
         jsImplicits.repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
       contractSchema.flatMap(_.signal.value.files.option).getOrElse(Seq.empty).count(predicate)

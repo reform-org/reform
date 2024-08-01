@@ -756,7 +756,7 @@ class SelectProject(
   }
 }
 
-class ContractType(
+class SelectContractSchema(
     existingId: String,
     editingValue: Var[Contract],
     disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
@@ -769,7 +769,7 @@ class ContractType(
       div(
         cls := "p-4",
         label(cls := "font-bold", "Contract schema:"),
-        ContractPageAttributes().contractAssociatedType.renderEdit("", editingValue, cls := "rounded-md"),
+        ContractPageAttributes().contractSchema.renderEdit("", editingValue, cls := "rounded-md"),
       ),
     )
   }
@@ -835,9 +835,9 @@ class ContractRequirementsMail(
               jsImplicits.repositories.hiwis.all.now.find(p => p.id == contract.contractAssociatedHiwi.getOrElse(""))
 
             val contractTypeOption =
-              jsImplicits.repositories.contractSchemas.all.now.find(p => p.id == contract.contractType.getOrElse(""))
+              jsImplicits.repositories.contractSchemas.all.now.find(p => p.id == contract.contractSchema.getOrElse(""))
 
-            val documents = jsImplicits.repositories.requiredDocuments.all.now
+            val documents = jsImplicits.repositories.documents.all.now
 
             if (hiwiOption.nonEmpty && supervisorOption.nonEmpty && contractTypeOption.nonEmpty) {
               val hiwi = hiwiOption.get.signal.now
@@ -1149,7 +1149,7 @@ class InnerExtendContractsPage(override val existingValue: Synced[Contract], ove
       contractStartDate = editingNow.contractStartDate,
       contractEndDate = editingNow.contractEndDate,
       contractHoursPerMonth = editingNow.contractHoursPerMonth,
-      contractType = editingNow.contractType,
+      contractSchema = editingNow.contractSchema,
       isDraft = Attribute(true),
     )
     jsImplicits.repositories.contracts
@@ -1201,7 +1201,7 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
     Signal.dynamic {
       val contract = editContract.value
       val requiredDocuments = jsImplicits.repositories.contractSchemas.all.value
-        .find(s => s.id == contract.contractType.getOrElse(""))
+        .find(s => s.id == contract.contractSchema.getOrElse(""))
         .flatMap(t => t.signal.value.files.option)
 
       contract.contractAssociatedHiwi.option.isEmpty ||
@@ -1373,115 +1373,125 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
   }
 
   def render: VMod = {
-    div(
-      markUnloadListener,
-      onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
-      onDomUnmount.foreach(_ => {
-        document.removeEventListener("keydown", ctrlSListener)
-        window.removeEventListener("beforeunload", unloadListener)
-      }),
-      div(
-        cls := "flex flex-col items-center",
-        div(
-          cls := "p-1",
-          h1(
-            cls := "text-3xl mt-4 text-center",
-            Signal.dynamic {
-              if (editContract.value.isDraft.getOrElse(true))
-                "Edit Contract Draft"
-              else
-                "Edit Contract"
-            },
-          ),
-        ),
-        div(
-          cls := "relative md:shadow-md rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
-          form(
-            BasicInformation(contractId, editContract).render,
-            SelectProject(contractId, editContract).render,
-            ContractType(contractId, editContract).render,
-            ContractRequirements(contractId, editContract).render,
-            ContractRequirementsMail(
-              contractId,
-              editContract,
-              () => createOrUpdate(stayOnPage = true),
-              Signal.dynamic {
-                val contract = editContract.value
-                val requiredDocuments: Seq[String] =
-                  jsImplicits.repositories.contractSchemas
-                    .find(contract.contractType.get)
-                    .value
-                    .flatMap(t => t.signal.value.files.option)
-                    .getOrElse(Seq.empty)
-                Seq(
-                  contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
-                  contract.contractAssociatedSupervisor.option.isEmpty -> "a supervisor",
-                  contract.contractType.option.isEmpty -> "a contract schema",
-                  !jsImplicits.discovery.online.value -> "to be connected to the discovery server",
-                  (contract.contractType.hasValue && requiredDocuments.isEmpty) -> "at least one requirement that can be checked",
-                  (contract.contractType.hasValue && requiredDocuments
-                    .forall(id =>
-                      contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
-                    )) -> "at least one requirement that has not been checked",
-                )
-              },
-              "send a reminder email",
-            ).render,
-            CreateHiwiDocuments(
-              contractId,
-              editContract,
-              () => createOrUpdate(false, true, true),
-              Signal.dynamic {
-                val contract = editContract.value
-                val hiwi =
-                  contract.contractAssociatedHiwi.option
-                    .flatMap(id => jsImplicits.repositories.hiwis.find(id).value)
-                Seq(
-                  hiwi.isEmpty -> "a hiwi",
-                  contract.contractEndDate.option.isEmpty -> "an end date",
-                  contract.contractStartDate.option.isEmpty -> "a start date",
-                  contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
-                  hiwi.flatMap(_.signal.value.birthdate.option).isEmpty -> "a hiwi with a date of birth",
-                  contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
-                )
-              },
-              "create and download a contract",
-            ).render,
-            CreateLetter(
-              contractId,
-              editContract,
-              () => createOrUpdate(false, true, true),
-              Signal.dynamic {
-                val contract = editContract.value
-                Seq(
-                  contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
-                  contract.contractEndDate.option.isEmpty -> "an end date",
-                  contract.contractStartDate.option.isEmpty -> "a start date",
-                  contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
-                  contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
-                  contract.contractAssociatedProject.option.isEmpty -> "a project",
-                  !contract.isSigned.getOrElse(false) -> "a signed contract",
-                )
-              },
-              "create and download a letter",
-            ).render,
-            div(
-              idAttr := "static_buttons",
-              cls := "pl-4 flex flex-col md:flex-row gap-2",
-              actions,
-            ),
-          ),
-        ),
-        div(
-          idAttr := "sticky_buttons",
-          onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
-          onDomUnmount.foreach(_ => cleanStickyButtons()),
-          cls := "left-4 md:space-x-4 fixed bottom-4 p-3 bg-slate-50/75 dark:bg-gray-500/75 dark:border-gray-500 shadow-lg rounded-xl border border-slate-200 hidden z-[200]",
-          div(cls := "flex-row gap-2 hidden md:flex", actions),
-          div(cls := "flex flex-row gap-2 md:hidden", mobileActions),
-        ),
-      ),
-    )
+  div(
+  //   markUnloadListener,
+  //   onDomMount.foreach(_ => document.addEventListener("keydown", ctrlSListener)),
+  //   onDomUnmount.foreach(_ => {
+  //     document.removeEventListener("keydown", ctrlSListener)
+  //     window.removeEventListener("beforeunload", unloadListener)
+  //   }),
+  //   div(
+  //     cls := "flex flex-col items-center",
+  //     div(
+  //       cls := "p-1",
+  //       h1(
+  //         cls := "text-3xl mt-4 text-center",
+  //         Signal.dynamic {
+  //           if (editContract.value.isDraft.getOrElse(true))
+  //             "Edit Contract Draft"
+  //           else
+  //             "Edit Contract"
+  //         },
+  //       ),
+  //     ),
+       div(
+         cls := "relative md:shadow-md rounded-lg py-4 px-0 md:px-4 my-4 inline-block overflow-y-visible max-w-[900px] w-[95%]",
+         form(
+  //         BasicInformation(contractId, editContract).render,
+  //         SelectProject(contractId, editContract).render,
+           SelectContractSchema(contractId, editContract).render,
+  //         ContractRequirements(contractId, editContract).render,
+  //         ContractRequirementsMail(
+  //           contractId,
+  //           editContract,
+  //           () => createOrUpdate(stayOnPage = true),
+  //           Signal.dynamic {
+  //             val contract = editContract.value
+  //             val requiredDocuments: Seq[String] = contractDocuments.getDocumentsFromContractSchema(contract).value
+  //             Seq(
+  //               contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
+  //               contract.contractAssociatedSupervisor.option.isEmpty -> "a supervisor",
+  //               contract.contractSchema.option.isEmpty -> "a contract schema",
+  //               !jsImplicits.discovery.online.value -> "to be connected to the discovery server",
+  //               (contract.contractSchema.hasValue && requiredDocuments.isEmpty) -> "at least one requirement that can be checked",
+  //               (contract.contractSchema.hasValue && requiredDocuments
+  //                 .forall(id =>
+  //                   contract.requiredDocuments.getOrElse(Seq.empty).contains(id),
+  //                 )) -> "at least one requirement that has not been checked",
+  //             )
+  //           },
+  //           "send a reminder email",
+  //         ).render,
+  //         CreateHiwiDocuments(
+  //           contractId,
+  //           editContract,
+  //           () => createOrUpdate(false, true, true),
+  //           Signal.dynamic {
+  //             val contract = editContract.value
+  //             val hiwi =
+  //               contract.contractAssociatedHiwi.option
+  //                 .flatMap(id => jsImplicits.repositories.hiwis.find(id).value)
+  //             Seq(
+  //               hiwi.isEmpty -> "a hiwi",
+  //               contract.contractEndDate.option.isEmpty -> "an end date",
+  //               contract.contractStartDate.option.isEmpty -> "a start date",
+  //               contract.contractSchema.option.isEmpty -> "a contract schema",
+  //               contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
+  //               hiwi.flatMap(_.signal.value.birthdate.option).isEmpty -> "a hiwi with a date of birth",
+  //               contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
+  //             )
+  //           },
+  //           "create and download documents",
+  //         ).render,
+  //         CreateLetter(
+  //           contractId,
+  //           editContract,
+  //           () => createOrUpdate(false, true, true),
+  //           Signal.dynamic {
+  //             val contract = editContract.value
+  //             Seq(
+  //               contract.contractAssociatedHiwi.option.isEmpty -> "a hiwi",
+  //               contract.contractEndDate.option.isEmpty -> "an end date",
+  //               contract.contractStartDate.option.isEmpty -> "a start date",
+  //               contract.contractAssociatedPaymentLevel.option.isEmpty -> "a payment level",
+  //               contract.contractHoursPerMonth.option.isEmpty -> "to set hours per month",
+  //               contract.contractAssociatedProject.option.isEmpty -> "a project",
+  //               !contract.isSigned.getOrElse(false) -> "a signed contract",
+  //             )
+  //           },
+  //           "create and download a letter",
+  //         ).render,
+  //         div(
+  //           idAttr := "static_buttons",
+  //           cls := "pl-4 flex flex-col md:flex-row gap-2",
+  //           actions,
+  //         ),
+         ),
+       ),
+  //     div(
+  //       idAttr := "sticky_buttons",
+  //       onDomMount.foreach(_ => stickyButton("#static_buttons", "#sticky_buttons", "hidden")),
+  //       onDomUnmount.foreach(_ => cleanStickyButtons()),
+  //       cls := "left-4 md:space-x-4 fixed bottom-4 p-3 bg-slate-50/75 dark:bg-gray-500/75 dark:border-gray-500 shadow-lg rounded-xl border border-slate-200 hidden z-[200]",
+  //       div(cls := "flex-row gap-2 hidden md:flex", actions),
+  //       div(cls := "flex flex-row gap-2 md:hidden", mobileActions),
+  //     ),
+  //   ),
+  )
+  }
+
+}
+
+class ContractDocuments(using jsImplicits: JSImplicits) {
+
+  def getDocumentsFromContractSchema(contract: Contract): Signal[Seq[String]] = Signal.dynamic {
+    contract.contractSchema.option.flatMap({ schema =>
+        jsImplicits.repositories.contractSchemas
+          .find(schema)
+          .value
+          .flatMap(_.signal.value.files.option)
+      })
+      .getOrElse(Seq.empty)
   }
 
 }
