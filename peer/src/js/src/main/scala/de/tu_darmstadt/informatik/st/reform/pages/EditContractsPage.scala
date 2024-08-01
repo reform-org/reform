@@ -20,9 +20,7 @@ import de.tu_darmstadt.informatik.st.reform.components.common.*
 import de.tu_darmstadt.informatik.st.reform.components.icons
 import de.tu_darmstadt.informatik.st.reform.entity.*
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.*
-import de.tu_darmstadt.informatik.st.reform.npm.PDF
-import de.tu_darmstadt.informatik.st.reform.npm.PDFCheckboxField
-import de.tu_darmstadt.informatik.st.reform.npm.PDFTextField
+import de.tu_darmstadt.informatik.st.reform.npm.*
 import de.tu_darmstadt.informatik.st.reform.repo.Synced
 import de.tu_darmstadt.informatik.st.reform.services.*
 import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
@@ -39,10 +37,8 @@ import scala.math.BigDecimal.RoundingMode
 import scala.scalajs.js
 import scala.scalajs.js.Date
 import scala.util.*
-
 import ContractsPage.*
 
-// TODO FIXME implement this using the proper existingValue=none, editingValue=Some logic
 case class NewContractPage()(using
     jsImplicits: JSImplicits,
 ) extends Page {
@@ -50,8 +46,8 @@ case class NewContractPage()(using
   def render: VMod = {
     jsImplicits.repositories.contracts
       .create(Contract.empty.default)
-      .map(currentContract => {
-        InnerEditContractsPage(currentContract, "").render
+      .map(contract => {
+        InnerEditContractsPage(contract, contract.id).render
       })
   }
 }
@@ -901,14 +897,14 @@ class ContractRequirementsMail(
 }
 
 class CreateHiwiDocuments(
-    existingId: String,
-    editingValue: Var[Contract],
-    save: () => Unit,
-    disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
-    disabledDescription: String = "",
+                           existingId: String,
+                           contractVar: Var[Contract],
+                           save: () => Unit,
+                           disabled: Signal[Seq[(Boolean, String)]] = Signal(Seq.empty),
+                           disabledDescription: String = "",
 )(using
     jsImplicits: JSImplicits,
-) extends Step("Create Documents for Hiwi", existingId, editingValue, disabled, disabledDescription) {
+) extends Step("Create Documents for the Hiwi", existingId, contractVar, disabled, disabledDescription) {
   def render: VMod = {
     this.editStep(
       div(
@@ -922,14 +918,15 @@ class CreateHiwiDocuments(
             onClick.foreach(e => {
               e.preventDefault()
               document.getElementById("loadDocuments").classList.add("loading")
-              this
-                .fillContractPDF(Globals.VITE_CONTRACT_PDF_PATH)
+              fillDocuments(DocumentForWhom.Hiwi)
                 .toastOnError()
                 .onComplete(v => {
                   document.getElementById("loadDocuments").classList.remove("loading")
                   if (v.isSuccess) {
-                    val buffer = v.get
-                    PDF.download("contract.pdf", buffer)
+                    val docs = v.get
+                    docs.foreach { (name, buffer) =>
+                      PDF.download(name, buffer)
+                    }
                   }
                 })
             }),
@@ -945,7 +942,7 @@ class CreateHiwiDocuments(
                 e.preventDefault()
                 document.querySelector("#sendContract").classList.add("loading")
 
-                val contract = editingValue.now
+                val contract = contractVar.now
 
                 val supervisorOption = jsImplicits.repositories.supervisors.all.now.find(p =>
                   p.id == contract.contractAssociatedSupervisor.getOrElse(""),
@@ -983,7 +980,7 @@ class CreateHiwiDocuments(
                               .make(s"Could not deliver mail to ${ans.get.rejected.mkString(" and ")}.")
                           }
                           if (ans.get.accepted.length > 0) {
-                            editingValue.transform(_.copy(contractSentDate = Attribute(js.Date.now.toLong)))
+                            contractVar.transform(_.copy(contractSentDate = Attribute(js.Date.now.toLong)))
                             save()
                             jsImplicits.toaster.make(s"Sent mail to ${ans.get.accepted.mkString(" and ")}.")
                           }
@@ -999,7 +996,7 @@ class CreateHiwiDocuments(
               span(
                 cls := "bg-purple-200 py-1 px-2 rounded-md text-purple-600",
                 Signal.dynamic {
-                  val date = editingValue.value.contractSentDate.getOrElse(0L)
+                  val date = contractVar.value.contractSentDate.getOrElse(0L)
                   if (date > 0L) toGermanDate(date) else "Never"
                 },
               ),
@@ -1007,7 +1004,7 @@ class CreateHiwiDocuments(
           ),
         ),
         label(
-          ContractPageAttributes().signed.renderEdit("", editingValue, cls := "rounded-md"),
+          ContractPageAttributes().signed.renderEdit("", contractVar, cls := "rounded-md"),
           span(" The contract has been signed"),
           cls := "mt-2 flex gap-2 items-center",
         ),
@@ -1015,7 +1012,33 @@ class CreateHiwiDocuments(
     )
   }
 
-  def generateDocuments: Future[Seq[ArrayBuffer[Short]]] = ???
+  private val contractDocuments = ContractDocuments()
+
+  private def fillDocuments(forWhom: DocumentForWhom): Future[Seq[(String, ArrayBuffer[Short])]] = {
+    val docs = contractDocuments
+    .getDocumentsFromContractSchema(contractVar.now)
+    .now
+    .map(id =>
+      jsImplicits
+        .repositories
+        .documents
+        .find(id)
+        .now
+        .get
+        .signal
+        .now
+    )
+    .filter(_.mailto.option.contains(forWhom))
+    .map(doc => {
+      val filled = doc.autofill.getOrElse(Autofill.NoFill) match {
+        case Autofill.NoFill =>  PDF.fill(doc.location.get, Seq.empty)
+        case Autofill.FillContract => fillContractPDF(doc.location.get)
+        case Autofill.FillLetter => fillLetterPDF(doc.location.get)
+      }
+      filled.map(doc.name.getOrElse("Untitled") + ".pdf" -> _)
+    })
+    Future.sequence(docs)
+  }
 }
 
 class CreateLetter(
@@ -1478,20 +1501,6 @@ class InnerEditContractsPage(val existingValue: Synced[Contract], val contractId
   //     ),
   //   ),
   )
-  }
-
-}
-
-class ContractDocuments(using jsImplicits: JSImplicits) {
-
-  def getDocumentsFromContractSchema(contract: Contract): Signal[Seq[String]] = Signal.dynamic {
-    contract.contractSchema.option.flatMap({ schema =>
-        jsImplicits.repositories.contractSchemas
-          .find(schema)
-          .value
-          .flatMap(_.signal.value.files.option)
-      })
-      .getOrElse(Seq.empty)
   }
 
 }
