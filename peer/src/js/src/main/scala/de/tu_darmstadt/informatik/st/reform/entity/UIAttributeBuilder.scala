@@ -205,7 +205,13 @@ class BuildUIAttribute(using jsImplicits: JSImplicits) {
   def select(options: Signal[Seq[SelectOption]]): UIAttributeBuilder[String] =
     string.copy(options = options)
 
-  def enumSelect[E <: Enum[E]](values: Array[E], valueOf: String => E): UIAttributeBuilder[E] =
+  private def defaultEnumName(e: Any): String = e.toString
+
+  def enumSelect[E <: Enum[E]](
+      values: Array[E],
+      valueOf: String => E,
+      name: E => String = defaultEnumName,
+  ): UIAttributeBuilder[E] =
     UIAttributeBuilder[E](
       _.toString,
       valueOf,
@@ -213,7 +219,7 @@ class BuildUIAttribute(using jsImplicits: JSImplicits) {
       .copy(options = Signal {
         values.toSeq
           .map { v =>
-            SelectOption(id = v.toString, name = Signal(v.toString))
+            SelectOption(id = v.toString, Signal(name(v)))
           }
       })
 

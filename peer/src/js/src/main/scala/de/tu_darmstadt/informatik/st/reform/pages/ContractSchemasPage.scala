@@ -63,7 +63,7 @@ class ContractSchemaAttributes(using
     BuildUIAttribute()
       .multiSelect(
         Signal {
-          jsImplicits.repositories.requiredDocuments.existing.value.map(value =>
+          jsImplicits.repositories.documents.existing.value.map(value =>
             SelectOption(value.id, value.signal.map(_.name.getOrElse(""))),
           )
         },

@@ -13,7 +13,7 @@ case class Contract(
     contractAssociatedSupervisor: Attribute[String] = Attribute.empty,
     contractStartDate: Attribute[Long] = Attribute.empty,
     contractEndDate: Attribute[Long] = Attribute.empty,
-    contractType: Attribute[String] = Attribute.empty,
+    contractSchema: Attribute[String] = Attribute.empty,
     contractHoursPerMonth: Attribute[Int] = Attribute.empty,
     isDraft: Attribute[Boolean] = Attribute.empty,
     requiredDocuments: Attribute[Seq[String]] = Attribute.empty,

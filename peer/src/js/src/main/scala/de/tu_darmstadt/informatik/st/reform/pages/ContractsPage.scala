@@ -47,8 +47,8 @@ class DetailPageEntityRow[T <: Entity[T]](
   override protected val editLabel: String = "Extend"
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => jsImplicits.routing.to(ExtendContractPage(value.id))
-      case New(value)                    =>
+      case Existing(value) => jsImplicits.routing.to(ExtendContractPage(value.id))
+      case New(value)      =>
     }
   }
 }
@@ -142,7 +142,7 @@ class ContractPageAttributes(using
       )
   }
 
-  def contractAssociatedType: UIAttribute[Contract, String] = {
+  def contractSchema: UIAttribute[Contract, String] = {
     BuildUIAttribute()
       .select(
         Signal {
@@ -152,11 +152,11 @@ class ContractPageAttributes(using
         },
       )
       .withCreatePage(ContractSchemasPage())
-      .withLabel("Type")
+      .withLabel("Contract Schema")
       .require
       .bindAsSelect(
-        _.contractType,
-        (p, a) => p.copy(contractType = a),
+        _.contractSchema,
+        (p, a) => p.copy(contractSchema = a),
       )
   }
 
@@ -256,25 +256,26 @@ class ContractPageAttributes(using
     BuildUIAttribute()
       .checkboxList(
         Signal {
-          jsImplicits.repositories.requiredDocuments.existing.value.map(value =>
+          jsImplicits.repositories.documents.existing.value.map(value =>
             SelectOption(value.id, value.signal.map(_.identifier.getOrElse(""))),
           )
         },
       )
       .withLabel("Required Documents")
       .require
+      // TODO: We did refactor something similar, use that here
       .bindAsCheckboxList[Contract](
         _.requiredDocuments,
         (c, a) => c.copy(requiredDocuments = a),
         filteredOptions = Some(contract =>
           Signal.dynamic {
-            contract.contractType.option
+            contract.contractSchema.option
               .flatMap(contractTypeId =>
                 jsImplicits.repositories.contractSchemas.all.value
                   .find(contractType => contractType.id == contractTypeId)
                   .flatMap(value =>
                     value.signal.value.files.option.flatMap(requiredDocuments => {
-                      val documents = jsImplicits.repositories.requiredDocuments.all.value
+                      val documents = jsImplicits.repositories.documents.all.value
                       val checkedDocuments =
                         if (contract.requiredDocuments.hasValue) contract.requiredDocuments.option
                         else Some(Seq.empty)
