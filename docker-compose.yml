@@ -1,5 +1,3 @@
-version: "3.3"
-
 services:
   coturn:
     image: docker.io/coturn/coturn
