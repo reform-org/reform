@@ -15,9 +15,7 @@ limitations under the License.
  */
 package de.tu_darmstadt.informatik.st.reform.repo
 
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonReader
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonValueCodec
-import com.github.plokhotnyuk.jsoniter_scala.core.JsonWriter
+import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import de.tu_darmstadt.informatik.st.reform.*
 import de.tu_darmstadt.informatik.st.reform.entity.Entity
@@ -49,13 +47,13 @@ case class Repository[A](name: String, defaultValue: A)(using
   given mapCodec: JsonValueCodec[mutable.Map[String, A]] = JsonCodecMaker.make
 
   def encodeRepository(out: JsonWriter): Unit = {
-    var values: mutable.Map[String, A] = mutable.Map()
+    val values: mutable.Map[String, A] = mutable.Map()
     all.now.foreach(f => values += (f.id -> f.signal.now))
     mapCodec.encodeValue(values, out)
   }
 
   def decodeRepository(in: JsonReader): RepoAndValues[A] = {
-    var values = mapCodec.decodeValue(in, mutable.Map.empty)
+    val values = mapCodec.decodeValue(in, mutable.Map.empty)
     (this, values)
   }
 
@@ -83,6 +81,10 @@ case class Repository[A](name: String, defaultValue: A)(using
 
   def find(id: String): Signal[Option[Synced[A]]] = Signal.dynamic {
     all.value.find(c => c.id == id)
+  }
+  
+  def filter(pred: Synced[A] => Signal[Boolean]): Signal[Seq[Synced[A]]] = Signal.dynamic {
+    all.value.filter(pred(_).value)
   }
 
   private def load(id: String): Future[Synced[A]] = valueSyncer.getOrCreateAndSync(id)

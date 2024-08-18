@@ -18,10 +18,9 @@ package de.tu_darmstadt.informatik.st.reform.pages
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
 import de.tu_darmstadt.informatik.st.reform.components.*
 import de.tu_darmstadt.informatik.st.reform.components.common.*
-import de.tu_darmstadt.informatik.st.reform.entity.Contract
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toHumanMonth
-import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toMoneyString
+import de.tu_darmstadt.informatik.st.reform.entity.*
+import de.tu_darmstadt.informatik.st.reform.Queries.*
+import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.*
 import de.tu_darmstadt.informatik.st.reform.npm.*
 import de.tu_darmstadt.informatik.st.reform.services.Page
 import de.tu_darmstadt.informatik.st.reform.{*, given}
@@ -42,7 +41,7 @@ case class HomePage()(using
   ): Signal[Seq[(String, Contract)]] = Signal.dynamic {
     jsImplicits.repositories.contracts.existing.value
       .map(p => p.id -> p.signal.value)
-      .filter((id, p) => pred(id, p) && ContractPageAttributes().isInInterval(p, month, year))
+      .filter((id, contract) => pred(id, contract) && contract.isActiveInMonth(month, year))
   }
 
   def render: VMod = {
@@ -121,8 +120,8 @@ case class HomePage()(using
           Signal.dynamic {
             val sum = jsImplicits.repositories.contracts.existing.value
               .map(p => p.id -> p.signal.value)
-              .filter((_, p) =>
-                !p.isDraft.getOrElse(true) && ContractPageAttributes().isInInterval(p, month.value, year.value),
+              .filter((_, contract) =>
+                !contract.isDraft.getOrElse(true) && contract.isActiveInMonth(month.value, year.value),
               )
               .map((id, contract) => {
                 val hourlyWage = ContractPageAttributes()
@@ -165,8 +164,8 @@ case class HomePage()(using
         var contractsPerProject: Map[String, Seq[(String, Contract)]] = Map.empty
 
         val contracts = jsImplicits.repositories.contracts.existing.value
-          .map(p => p.id -> p.signal.value)
-          .filter((_, p) => ContractPageAttributes().isInInterval(p, month.value, year.value))
+          .map(contract => contract.id -> contract.signal.value)
+          .filter((_, contract) => contract.isActiveInMonth(month.value, year.value))
 
         projects.foreach((id, _) => {
           contractsPerProject += (id -> contracts
@@ -237,5 +236,11 @@ case class HomePage()(using
         )
       },
     )
+  }
+
+  private def activeContracts(month: Int, year: Int): Signal[Seq[Contract]] = Signal.dynamic {
+    jsImplicits.repositories.contracts.existing.value
+    .map(_.signal.value)
+    .filter(_.isActiveInMonth(month, year))
   }
 }
