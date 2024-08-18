@@ -164,7 +164,9 @@ case class HomePage()(using
         var contractsPerProject: Map[String, Seq[(String, Contract)]] = Map.empty
 
         val contracts = jsImplicits.repositories.contracts.existing.value
-          .map(contract => contract.id -> contract.signal.value)
+          .map(contract => {
+            contract.id -> contract.signal.value
+          })
           .filter((_, contract) => contract.isActiveInMonth(month.value, year.value))
 
         projects.foreach((id, _) => {
@@ -185,12 +187,11 @@ case class HomePage()(using
                   project.accountName.option,
                   Seq("", "Hiwi", "Supervisor", "From", "To", "€/h", "h/mon", "€/mon"),
                   contractsPerProject(id).map((contractId, contract) => {
-                    val moneyPerHour =
-                      ContractPageAttributes()
-                        .getMoneyPerHour(contractId, contract, contract.contractStartDate.getOrElse(0L))
-                        .value
+                    println("awuhd")
+                    val hourlyWage = contract.hourlyWage.value
+                    println("end awuhd")
                     val hoursPerMonth = contract.contractHoursPerMonth.getOrElse(0)
-                    val moneyPerMonth = moneyPerHour * hoursPerMonth
+                    val moneyPerMonth = hourlyWage * hoursPerMonth
                     val hiwi = hiwis.find((id, _) => id == contract.contractAssociatedHiwi.getOrElse(""))
                     val supervisor = supervisors
                       .find((id, _) => id == contract.contractAssociatedSupervisor.getOrElse(""))
@@ -201,7 +202,7 @@ case class HomePage()(using
                       supervisor.map((_, supervisor) => supervisor.name.getOrElse("")),
                       toGermanDate(contract.contractStartDate.getOrElse(0L)),
                       toGermanDate(contract.contractEndDate.getOrElse(0L)),
-                      toMoneyString(moneyPerHour),
+                      toMoneyString(hourlyWage),
                       span(hoursPerMonth, " h"),
                       toMoneyString(moneyPerMonth),
                     )

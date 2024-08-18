@@ -27,11 +27,32 @@ import de.tu_darmstadt.informatik.st.reform.services.*
 import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
 import de.tu_darmstadt.informatik.st.reform.webrtc.WebRTCService
 import loci.registry.Registry
+import rescala.default.*
 import outwatch.*
 import outwatch.dsl.*
 
 object Main {
+
+  def foo = Signal.dynamic {
+    Seq(
+      Signal.dynamic(1),
+      Signal.dynamic(2),
+      Signal.dynamic(3)
+    )
+  }
+
+  implicit class Square(self: Int) {
+    val bar = Signal.dynamic { self * self }
+  }
+
+  def baz = Signal.dynamic {
+    foo.value.map(x => x.value.bar.value)
+  }
+
   def main(): Unit = {
+    baz.observe(x => println("baz: " + x))
+
+
     lazy val jsImplicits: JSImplicits =
       new JSImplicits() {
         lazy val toaster: Toaster = Toaster()
