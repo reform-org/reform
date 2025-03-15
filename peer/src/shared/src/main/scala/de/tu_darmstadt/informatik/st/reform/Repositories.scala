@@ -15,7 +15,7 @@ case class Repositories(
     contractSchemas: Repository[ContractSchema],
     paymentLevels: Repository[PaymentLevel],
     salaryChanges: Repository[SalaryChange],
-    requiredDocuments: Repository[Document],
+    documents: Repository[Document],
     contracts: Repository[Contract],
 )(using registry: Registry) {
   val _ = PingService()

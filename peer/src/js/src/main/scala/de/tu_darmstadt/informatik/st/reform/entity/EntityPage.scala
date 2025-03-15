@@ -45,11 +45,10 @@ case class Title(singular: String) {
 }
 
 sealed trait EntityValue[T]
-case class Existing[T](value: Synced[T], editingValue: Var[Option[(T, Var[T])]] = Var[Option[(T, Var[T])]](None))
-    extends EntityValue[T]
 
-// TODO FIXME the type here is unnecessarily complex because the Var types need to be the same
-case class New[T](value: Var[Option[(T, Var[T])]]) extends EntityValue[T]
+case class Existing[T](value: Synced[T]) extends EntityValue[T]
+
+case class New[T](value: T) extends EntityValue[T]
 
 abstract class EntityRowBuilder[T <: Entity[T]] {
   def construct(
@@ -84,23 +83,25 @@ class EntityRow[T <: Entity[T]](
     jsImplicits: JSImplicits,
 ) {
 
-  def render: VMod = Signal {
-    editingValue.value.map(_ => renderEdit).getOrElse(renderExistingValue)
+  def render: VMod = Signal.dynamic {
+    editingValue.value
+      .map(renderEdit)
+      .getOrElse(renderExistingValue)
   }
 
-  def editingValue: Var[Option[(T, Var[T])]] = value match {
-    case Existing(_, editingValue) => editingValue
-    case New(value)                => value
+  val editingValue: Var[Option[Var[T]]] = value match {
+    case Existing(_)  => Var(None)
+    case New(default) => Var(Some(Var(default)))
   }
 
   def existingValue: Option[Synced[T]] = value match {
-    case Existing(value, _) => Some(value)
-    case New(_)             => None
+    case Existing(value) => Some(value)
+    case New(_)          => None
   }
 
   protected val editLabel = "Edit"
 
-  private def renderEdit: VMod = {
+  private def renderEdit(editingValue: Var[T]): VMod = {
     val deleteModal = Var[Option[Modal]](None)
     val id = s"form-${existingValue.map(_.id).getOrElse("new")}"
     tr(
@@ -288,22 +289,22 @@ class EntityRow[T <: Entity[T]](
   private def createOrUpdate(): Unit = {
     jsImplicits.indexeddb.requestPersistentStorage()
 
-    val editingNow = editingValue.now.get._2.now
-    existingValue match {
-      case Some(existing) =>
-        existing
-          .update(p => {
-            p.get.merge(editingNow)
+    val editingNow = editingValue.now.get.now
+    value match {
+      case Existing(value) =>
+        value
+          .update(e => {
+            e.get.merge(editingNow)
           })
           .map(_ => {
             editingValue.set(None)
           })
           .toastOnError(ToastMode.Infinit)
-      case None =>
+      case New(_) =>
         repository
           .create(editingNow)
           .map(entity => {
-            editingValue.set(Some((bottom.empty.default, Var(bottom.empty.default))))
+            editingValue.set(Some(Var(bottom.empty.default)))
             entity
           })
           .toastOnError(ToastMode.Infinit)
@@ -311,7 +312,7 @@ class EntityRow[T <: Entity[T]](
   }
 
   protected def startEditing(): Unit = {
-    editingValue.set(Some((existingValue.get.signal.now, Var(existingValue.get.signal.now))))
+    editingValue.set(Some(Var(existingValue.get.signal.now)))
   }
 }
 
@@ -347,7 +348,7 @@ abstract class EntityPage[T <: Entity[T]](
     entityRowConstructor.construct(
       title,
       repository,
-      New(Var(Some((bottom.empty.default, Var(bottom.empty.default))))),
+      New(bottom.empty.default),
       uiAttributes,
     )
 
@@ -512,16 +513,16 @@ abstract class EntityPage[T <: Entity[T]](
 
   private def countEntities: Signal[Int] = Signal.dynamic {
     entityRows.value.count(_.value match {
-      case New(_)             => false
-      case Existing(value, _) => value.signal.value.exists
+      case New(_)          => false
+      case Existing(value) => value.signal.value.exists
     })
   }
 
   private def countFilteredEntities: Signal[Int] = Signal.dynamic {
     val predicate = filter.predicate.value
     entityRows.value.count(_.value match {
-      case New(_)             => false
-      case Existing(value, _) => value.signal.value.exists && predicate(value.signal.value)
+      case New(_)          => false
+      case Existing(value) => value.signal.value.exists && predicate(value.signal.value)
     })
   }
 
@@ -532,14 +533,14 @@ abstract class EntityPage[T <: Entity[T]](
     val columns = jsImplicits.routing.getQueryParameterAsSeq("columns").now
     val pred = filter.predicate.now
     val rows = entityRows.now.filter(_.value match {
-      case New(_)             => false
-      case Existing(value, _) => pred(value.signal.now)
+      case New(_)          => false
+      case Existing(value) => pred(value.signal.now)
     })
 
     rows.foreach(row => {
       row.value match {
         case New(_) =>
-        case Existing(v, _) =>
+        case Existing(v) =>
           val id = v.id
           val value = v.signal.now
           var csvRow: Seq[String] = Seq()
@@ -582,8 +583,8 @@ abstract class EntityPage[T <: Entity[T]](
     val pred = filter.predicate.value
     entityRows.value
       .filter(_.value match {
-        case New(_)             => false
-        case Existing(value, _) => pred(value.signal.value)
+        case New(_)          => false
+        case Existing(value) => pred(value.signal.value)
       })
       .map(_.render)
   }

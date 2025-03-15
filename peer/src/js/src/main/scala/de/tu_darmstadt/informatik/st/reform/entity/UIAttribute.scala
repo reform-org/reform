@@ -33,7 +33,7 @@ abstract class UIBasicAttribute[EntityType](
     div()
   }
 
-  def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]], props: VMod*): VMod
+  def renderEdit(formId: String, editing: Var[EntityType], props: VMod*): VMod
 
   def uiFilter: UIFilter[EntityType] = UIFilterNothing()
 }
@@ -57,7 +57,7 @@ abstract class UIAttribute[EntityType, AttributeType](
 
   override def renderEdit(
       formId: String,
-      editing: Var[Option[(EntityType, Var[EntityType])]],
+      editing: Var[EntityType],
       props: VMod*,
   ): VMod
 
@@ -72,12 +72,13 @@ class UIReadOnlyAttribute[EntityType, T](
     override val formats: Seq[UIFormat[EntityType]] = Seq.empty[UIFormat[EntityType]],
 )(using renderMagic: Render[T])
     extends UIBasicAttribute[EntityType](label, width, formats) {
+
   override def render(id: String, entity: EntityType): VMod = {
     div(cls := "px-4 min-h-9 flex items-center", div(getter(id, entity)), formats.map(f => cls <-- f.apply(id, entity)))
   }
 
-  override def renderEdit(formId: String, editing: Var[Option[(EntityType, Var[EntityType])]], props: VMod*): VMod = {
-    div()
+  override def renderEdit(formId: String, editing: Var[EntityType], props: VMod*): VMod = Signal.dynamic {
+    render(formId, editing.value)
   }
 
   override def uiFilter: UIFilter[EntityType] = UIFilterNothing()
@@ -146,37 +147,34 @@ class UITextAttribute[EntityType, AttributeType](
 
   def renderEdit(
       formId: String,
-      editing: Var[Option[(EntityType, Var[EntityType])]],
+      editing: Var[EntityType],
       props: VMod*,
   ): VMod = Signal.dynamic {
-    editing.value.map(editing => {
-      val (editStart, entityVar) = editing
-      val editStartAttr = getter(editStart)
-      val id = s"${js.Math.round(js.Math.random() * 1000000)}"
-      div(
-        cls := "relative min-w-[1rem] edit-value",
-        renderEditInput(
-          formId,
-          entityVar.map(getter(_)),
-          x => set(entityVar, x),
-          Some(s"$id-conflicting-values"),
-          entityVar,
-          props,
-        ),
-        if (editStartAttr.getAll.size > 1) {
-          Some(
-            Seq(
-              dataList(
-                idAttr := s"$id-conflicting-values",
-                renderConflicts(editStartAttr),
-              ),
+    val id = s"${js.Math.round(js.Math.random() * 1000000)}"
+    val editStartAttr = getter(editing.now)
+    div(
+      cls := "relative min-w-[1rem] edit-value",
+      renderEditInput(
+        formId,
+        editing.map(getter(_)),
+        x => set(editing, x),
+        Some(s"$id-conflicting-values"),
+        editing,
+        props,
+      ),
+      if (editStartAttr.getAll.size > 1) {
+        Some(
+          Seq(
+            dataList(
+              idAttr := s"$id-conflicting-values",
+              renderConflicts(editStartAttr),
             ),
-          )
-        } else {
-          None
-        },
-      )
-    })
+          ),
+        )
+      } else {
+        None
+      },
+    )
   }
 
   protected def getEditString(attr: Attribute[AttributeType]): String =

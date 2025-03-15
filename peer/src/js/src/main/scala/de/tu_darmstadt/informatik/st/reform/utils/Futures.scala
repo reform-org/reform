@@ -16,7 +16,7 @@ object Futures {
 
     def toastOnError(using
         jsImplicits: JSImplicits,
-    )(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error): Unit = {
+    )(mode: ToastMode = ToastMode.Short, style: ToastType = ToastType.Error): Future[T] = {
       self
         .onComplete(value => {
           if (value.isFailure) {
@@ -24,6 +24,7 @@ object Futures {
             jsImplicits.toaster.make(value.failed.get.getMessage.nn, mode, style)
           }
         })
+      self
     }
   }
 

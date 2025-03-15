@@ -6,8 +6,7 @@ import com.github.plokhotnyuk.jsoniter_scala.core.*
 import com.github.plokhotnyuk.jsoniter_scala.macros.JsonCodecMaker
 import de.tu_darmstadt.informatik.st.reform.Globals
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
-import de.tu_darmstadt.informatik.st.reform.entity.Hiwi
-import de.tu_darmstadt.informatik.st.reform.entity.Supervisor
+import de.tu_darmstadt.informatik.st.reform.entity.*
 import de.tu_darmstadt.informatik.st.reform.given_ExecutionContext
 import de.tu_darmstadt.informatik.st.reform.npm.JSUtils.toGermanDate
 import de.tu_darmstadt.informatik.st.reform.utils.Futures.*
@@ -116,7 +115,7 @@ class ReminderMail(hiwi: Hiwi, supervisor: Supervisor, due: Long, missingDocumen
   )
 }
 
-class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, letter: ArrayBuffer[Short])
+class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, documents: Seq[(String, ArrayBuffer[Short])])
     extends Mail("Hiwistelle Software Technology Group") {
   val body: VNode = div(
     p("Sehr geehrte Damen und Herren, "),
@@ -130,35 +129,37 @@ class DekanatMail(hiwi: Hiwi, supervisor: Supervisor, letter: ArrayBuffer[Short]
     Signature(supervisor.name.getOrElse("")),
   )
 
-  override val attachments: Seq[MailAttachment] = Seq(
-    new MailAttachment(
-      s"Anstellung-${hiwi.firstName.getOrElse("")}-${hiwi.lastName.getOrElse("")}.pdf",
-      letter,
-      "application/pdf",
-    ),
-  )
+  override val attachments: Seq[MailAttachment] =
+    documents.map((name, buffer) => {
+      MailAttachment(
+        s"$name-${hiwi.firstName.get}-${hiwi.lastName.get}.pdf",
+        buffer,
+        "application/pdf",
+      )
+    })
 }
 
-class ContractEmail(hiwi: Hiwi, supervisor: Supervisor, due: Long, contract: ArrayBuffer[Short])
+class ContractEmail(hiwi: Hiwi, supervisor: Supervisor, due: Long, documents: Seq[(String, ArrayBuffer[Short])])
     extends Mail("Hiwistelle Software Technology Group") {
   val body: VNode = div(
-    p("Hallo ", hiwi.firstName.getOrElse(""), " ", hiwi.lastName.getOrElse(""), ","),
+    p("Hallo ", hiwi.firstName.get, " ", hiwi.lastName.get, ","),
     p(
-      "Im Anhang findest du den Arbeitsvertrag. Bitte schicke uns den Vertrag ausgefüllt bis zum ",
+      "Im Anhang findest du den Arbeitsvertrag, sowie weitere Dokumente. Bitte schicke uns die Dokumente ausgefüllt bis zum ",
       i(toGermanDate(due)),
       " zurück.",
     ),
     p("Vielen Dank!"),
-    Signature(supervisor.name.getOrElse("")),
+    Signature(supervisor.name.get),
   )
 
-  override val attachments: Seq[MailAttachment] = Seq(
-    new MailAttachment(
-      s"Vertrag-${hiwi.firstName.getOrElse("")}-${hiwi.lastName.getOrElse("")}.pdf",
-      contract,
-      "application/pdf",
-    ),
-  )
+  override val attachments: Seq[MailAttachment] =
+    documents.map((name, buffer) => {
+      MailAttachment(
+        s"$name-${hiwi.firstName.get}-${hiwi.lastName.get}.pdf",
+        buffer,
+        "application/pdf",
+      )
+    })
 }
 
 object Signature {

@@ -16,7 +16,6 @@ limitations under the License.
 package de.tu_darmstadt.informatik.st.reform.pages
 
 import de.tu_darmstadt.informatik.st.reform.JSImplicits
-import de.tu_darmstadt.informatik.st.reform.entity.Document
 import de.tu_darmstadt.informatik.st.reform.entity.*
 import org.scalajs.dom.HTMLElement
 import outwatch.*
@@ -39,9 +38,14 @@ case class DocumentsPage()(using
         ),
         " has a number of documents that need to be checked before the contract can be finalized.",
       ),
-      jsImplicits.repositories.requiredDocuments,
-      jsImplicits.repositories.requiredDocuments.all,
-      Seq(DocumentAttributes().name, DocumentAttributes().location, DocumentAttributes().autofill),
+      jsImplicits.repositories.documents,
+      jsImplicits.repositories.documents.all,
+      Seq(
+        DocumentAttributes().name,
+        DocumentAttributes().location,
+        DocumentAttributes().autofill,
+        DocumentAttributes().mailto,
+      ),
       DefaultEntityRow(),
     ) {}
 
@@ -63,10 +67,18 @@ class DocumentAttributes(using jsImplicits: JSImplicits) {
     )
 
   def autofill: UIAttribute[Document, Autofill] = BuildUIAttribute()
-    .enumSelect(Autofill.values, Autofill.valueOf)
+    .enumSelect(Autofill.values, Autofill.valueOf, name = _.display)
     .withLabel("Automatic filling")
     .bindAsSelect[Document](
       _.autofill,
       (d, a) => d.copy(autofill = a),
+    )
+
+  def mailto: UIAttribute[Document, DocumentsForWhom] = BuildUIAttribute()
+    .enumSelect(DocumentsForWhom.values, DocumentsForWhom.valueOf, name = "For " + _.display)
+    .withLabel("For Whom?")
+    .bindAsSelect[Document](
+      _.mailto,
+      (d, a) => d.copy(mailto = a),
     )
 }

@@ -41,8 +41,8 @@ class DraftDetailPageEntityRow[T <: Entity[T]](
 ) extends EntityRow[T](title, repository, value, uiAttributes) {
   override protected def startEditing(): Unit = {
     value match {
-      case Existing(value, editingValue) => jsImplicits.routing.to(EditContractsPage(value.id))
-      case New(value)                    =>
+      case Existing(value) => jsImplicits.routing.to(EditContractsPage(value.id))
+      case New(value)      =>
     }
   }
 }
@@ -88,7 +88,7 @@ case class ContractDraftsPage()(using
 class ContractDraftAttributes(using jsImplicits: JSImplicits) {
   private def countForms(contract: Contract, predicate: String => Boolean): Signal[Int] =
     Signal.dynamic {
-      val contractTypeId = contract.contractType.getOrElse("")
+      val contractTypeId = contract.contractSchema.getOrElse("")
       val contractSchema =
         jsImplicits.repositories.contractSchemas.all.value.find(contractSchema => contractSchema.id == contractTypeId)
       contractSchema.flatMap(_.signal.value.files.option).getOrElse(Seq.empty).count(predicate)
