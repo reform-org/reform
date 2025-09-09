@@ -14,8 +14,8 @@
     "coverage": "vitest run --coverage"
   },
   "devDependencies": {
-    "@scala-js/vite-plugin-scalajs": "^1.0.0",
-    "@vitejs/plugin-basic-ssl": "^1.0.1",
+    "@scala-js/vite-plugin-scalajs": "^1.1.0",
+    "@vitejs/plugin-basic-ssl": "^1.2.0",
     "autoprefixer": "^10.4.16",
     "jsdom": "^22.1.0",
     "postcss": "^8.4.31",
@@ -25,7 +25,7 @@
     "ts-node": "^10.9.1",
     "vite-plugin-pwa": "^0.16.5",
     "vitest": "^0.34.6",
-    "vite": "^4.5.3"
+    "vite": "^7.1.5"
   },
   "dependencies": {
     "@popperjs/core": "^2.11.6",
